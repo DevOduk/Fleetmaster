@@ -5,12 +5,11 @@ import type { NextRequest } from 'next/server';
 export function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
   
-  // 1. Clean the host header to remove port numbers (e.g., "oduk.localhost:3000" -> "oduk.localhost")
   const hostHeader = req.headers.get('host') || '';
   const hostname = hostHeader.split(':')[0].toLowerCase();
   const pathname = url.pathname;
 
-  // 2. Instantly skip underlying application engine framework assets
+  // 1. Instantly skip underlying application engine framework assets
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
@@ -19,22 +18,30 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 3. GLOBAL AUTH BYPASS
-  // Keep signin/signup resolving globally out of (full-width-pages)
+  // 2. GLOBAL AUTH BYPASS
   if (pathname.startsWith('/signin') || pathname.startsWith('/signup')) {
     return NextResponse.next();
   }
 
-  // 4. Parse Hostname Segments
-  const parts = hostname.split('.');
-  const isLocalhost = hostname.includes('localhost');
+  // 3. IDENTIFY THE SUBDOMAIN (Production & Localhost Compatible)
+  let subdomain = '';
 
-  // Determine if a subdomain exists based on environment structural depth
-  const hasSubdomain = isLocalhost ? parts.length > 1 : parts.length > 2;
+  if (hostname.includes('localhost')) {
+    // Localhost: app.localhost:3000 -> parts: ['app', 'localhost']
+    const parts = hostname.split('.');
+    if (parts.length > 1) subdomain = parts[0];
+  } else {
+    // Production: app.fleetmaster-lemon.vercel.app -> target base: fleetmaster-lemon.vercel.app
+    // Or if you use custom domain: app.fleetmaster.com -> target base: fleetmaster.com
+    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'fleetmaster-lemon.vercel.app';
+    
+    if (hostname !== baseDomain && hostname.endsWith(`.${baseDomain}`)) {
+      subdomain = hostname.replace(`.${baseDomain}`, '');
+    }
+  }
 
-  // 5. ROOT DOMAIN HANDLER (localhost / fleetmaster.com)
-  if (!hasSubdomain || parts[0] === 'www') {
-    // SECURITY GUARD: Prevent root domain users from executing internal subfolder code
+  // 4. ROOT DOMAIN HANDLER (If no valid subdomain is found, or it's 'www')
+  if (!subdomain || subdomain === 'www') {
     if (
       pathname.startsWith('/admin-site') || 
       pathname.startsWith('/tenant-manager') || 
@@ -43,40 +50,22 @@ export function proxy(req: NextRequest) {
       url.pathname = '/404';
       return NextResponse.rewrite(url);
     }
-
     return NextResponse.next();
   }
 
-  const subdomain = parts[0];
-
-  // 6. ADMIN DASHBOARD ROUTER (app.localhost)
-  // Maps strictly to your physical `admin-site` folder
+  // 5. ADMIN DASHBOARD ROUTER (app.yourdomain.com)
   if (subdomain === 'app') {
     url.pathname = `/admin-site${pathname}`; 
     return NextResponse.rewrite(url);
   }
 
-  // 7. TENANT SYSTEM MANAGER ROUTER (dashboard.localhost)
-  // Maps strictly to your physical `tenant-manager` folder
+  // 6. TENANT SYSTEM MANAGER ROUTER (dashboard.yourdomain.com)
   if (subdomain === 'dashboard') {
     url.pathname = `/tenant-manager${pathname}`; 
     return NextResponse.rewrite(url);
   }
 
-  // 8. UNIFORM CLIENT GROUP HANDLER (*.localhost -> e.g., oduk.localhost)
-  // FIX: Because your files live inside `client-site/[tenant]`, we MUST supply the
-  // subdomain string as the dynamic [tenant] parameter folder segment in the rewrite!
+  // 7. UNIFORM CLIENT GROUP HANDLER (tenant-slug.yourdomain.com)
   url.pathname = `/client-site/${subdomain}${pathname}`;
   return NextResponse.rewrite(url);
 }
-
-// ALL PAGES
-
-// !-------------   Main   ------------!
-// hostname.com i.e fleetmaster.com
-// localhost
-// dashboard.hostname for managing tenants nd handling tickets
-
-// !-------------   TENANT SIDE   ------------!
-// [tenant].hostname
-// app.hostname
