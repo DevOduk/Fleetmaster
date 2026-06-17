@@ -10,7 +10,7 @@ import PhoneInput from "../form/group-input/PhoneInput";
 
 
 interface Tenant {
-  tenant: string;
+  tenant?: string;
 }
 
 export default function SignUpForm({ tenant }: Tenant) {
