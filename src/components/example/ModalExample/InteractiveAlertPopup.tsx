@@ -11,6 +11,7 @@ interface PopupPosition {
   bottom?: string;
   left?: string;
   right?: string;
+  transform?: string;
 }
 
 const getPositionStyles = (position: Position): PopupPosition => {
