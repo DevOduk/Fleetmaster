@@ -21,7 +21,6 @@
     "@mui/lab": "^9.0.0-beta.3",
     "@mui/material": "^9.0.0",
     "@mui/x-date-pickers": "^9.0.4",
-    "@next/swc-win32-x64-msvc": "^16.2.9",
     "@react-jvectormap/core": "^1.0.4",
     "@react-jvectormap/world": "^1.1.2",
     "@supabase/ssr": "^0.10.3",
