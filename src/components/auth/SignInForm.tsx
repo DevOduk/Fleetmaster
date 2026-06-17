@@ -12,7 +12,7 @@ import { useAdmin } from "@/context/AdminContext";
 import { useToast } from "@/context/ToastContext";
 
 interface Tenant {
-  tenant: string;
+  tenant?: string;
 }
 
 export default function SignInForm({ tenant }: Tenant) {
