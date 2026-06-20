@@ -15,7 +15,7 @@ import { CircularProgress } from "@mui/material";
 
 
 
-export default function PaymentsTable() {
+export default function ExpensesTable() {
   const { bookings: allBookings, loading } = useBooking();
 
   return (
@@ -129,7 +129,7 @@ export default function PaymentsTable() {
                           {booking.vehicleDetails?.dailyRate.toLocaleString()} Ksh
                         </TableCell>
                         <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                          {booking.discount}
+                          {'JHG4589GJKRG'}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
                           {booking.total.toLocaleString()} Ksh
@@ -164,7 +164,7 @@ export default function PaymentsTable() {
                             <Button
                               className="flex text-nowrap items-center justify-center font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
                             >
-                              View Payment
+                              View Expense
                             </Button>
                           </Link>
                         </TableCell>

@@ -69,7 +69,7 @@ export default function SecondaryHero({
                     </h1>
 
                     {description && (
-                        <p className="text-small text-gray-600 dark:text-gray-500 font-normal leading-relaxed max-w-xl">
+                        <p className="text-small text-gray-600 dark:text-gray-500 font-normal leading-relaxed max-w-2xl">
                             {description}
                         </p>
                     )}

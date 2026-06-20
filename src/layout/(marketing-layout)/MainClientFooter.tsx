@@ -12,7 +12,7 @@ const MainClientFooter: React.FC = () => {
         <span>|</span>
         <span><Link target="_blank" href={'http://localhost:3000'}>FleetMaster Home</Link></span>
         <span>|</span>
-        <span><Link href={'/terms-conditions'}>Terms & Conditions</Link> apply.</span>
+        <span><Link href={'/terms-conditions#'}>Terms & Conditions</Link> apply.</span>
         <span>|</span>
         <Link href={'/privacy-policy'}>Privacy Policy</Link>
         <span>|</span>

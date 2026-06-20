@@ -1,11 +1,20 @@
 "use client";
+import { Backdrop, CircularProgress } from "@mui/material";
+import React, { useState } from "react";
 
-import React from "react";
-
-export default function DashboardSkeleton() {
+export default function DashboardSkeleton({ loading }: { loading: boolean }) {
+    const [open, setOpen] = useState(true)
     return (
         <div className="min-h-screen bg-[#0b0e14] text-gray-400 flex overflow-hidden max-h-screen">
-
+            <Backdrop
+                sx={(theme) => ({ zIndex: theme.zIndex.drawer + 1 })}
+                open={open}
+                onClick={() => { }}
+                className="flex flex-col gap-2 text-black dark:text-white"
+            >
+                <CircularProgress color="inherit" />
+                <p>Loading Admin Profile ...</p>
+            </Backdrop>
             {/* 1. SIDEBAR SKELETON */}
             <div className="hidden lg:flex flex-col w-[290px] border-r border-slate-800 bg-[#121620] p-5 space-y-6 shrink-0">
                 {/* Brand Logo area */}
@@ -104,17 +113,17 @@ export default function DashboardSkeleton() {
 
                     </div>
 
-                                        {/* 3. FOUR METRIC TOP CARDS */}
-                                        
-                            <div className="bg-[#121620] border border-slate-800/60 p-5 rounded-xl space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <div className="h-4 w-24 bg-slate-800 rounded animate-pulse" />
-                                    <div className="h-7 w-9 bg-slate-800 rounded animate-pulse" />
-                                </div>
-                                <div className="h-12 w-full bg-slate-800 rounded animate-pulse" />
-                                <div className="h-4 w-16 bg-slate-800/60 rounded animate-pulse" />
-                            </div>
-                                        {/* 3. FOUR METRIC TOP CARDS */}
+                    {/* 3. FOUR METRIC TOP CARDS */}
+
+                    <div className="bg-[#121620] border border-slate-800/60 p-5 rounded-xl space-y-4">
+                        <div className="flex justify-between items-center">
+                            <div className="h-4 w-24 bg-slate-800 rounded animate-pulse" />
+                            <div className="h-7 w-9 bg-slate-800 rounded animate-pulse" />
+                        </div>
+                        <div className="h-12 w-full bg-slate-800 rounded animate-pulse" />
+                        <div className="h-4 w-16 bg-slate-800/60 rounded animate-pulse" />
+                    </div>
+                    {/* 3. FOUR METRIC TOP CARDS */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4">
                         {[...Array(2)].map((_, i) => (
                             <div key={i} className="bg-[#121620] border border-slate-800/60 p-5 rounded-xl space-y-4">

@@ -196,7 +196,7 @@ export default function SignInForm({ tenant }: Tenant) {
                   href="/signup"
                   className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
                 >
-                  Sign Up
+                  Contact support!
                 </Link>
               </p>
             </div>

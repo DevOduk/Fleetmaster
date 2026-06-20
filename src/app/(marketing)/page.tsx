@@ -51,7 +51,7 @@ export default function Home() {
               {/* Main Headline */}
               <h1 className="text-4xl sm:text-5xl xl:text-6xl font-bold tracking-tight max-w-2xl mx-auto lg:mx-0 leading-[1.1] text-black dark:text-white">
                 The intelligent way to manage your{" "}
-                <span className="bg-linear-to-r from-brand-500 to-indigo-500 bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-brand-500 to-brand-700 bg-clip-text text-transparent">
                   entire fleet
                 </span>
               </h1>
@@ -63,7 +63,7 @@ export default function Home() {
                 <button className="px-5 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white transition-colors cursor-pointer border-gray-500 rounded-xl shadow-sm bg-gray-50 dark:bg-gray-800">
                   Request demo
                 </button>
-                <button className="group px-5 py-3 bg-zinc-900 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-gray-900 transition-all shadow-md cursor-pointer">
+            <button className="group px-5 py-3 bg-amber-600 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-amber-700 transition-all shadow-md cursor-pointer">
                   Get Started Now
                   <KeyboardArrowRightIcon className="text-sm transition-transform group-hover:translate-x-0.5" fontSize="small" />
                 </button>
@@ -178,69 +178,113 @@ export default function Home() {
             <button className="px-5 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white transition-colors cursor-pointer border-gray-500 rounded-xl shadow-sm bg-gray-50 dark:bg-gray-800">
               Request demo
             </button>
-            <button className="group px-5 py-3 bg-zinc-900 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-gray-900 transition-all shadow-md cursor-pointer">
+            <button className="group px-5 py-3 bg-amber-600 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-amber-700 transition-all shadow-md cursor-pointer">
               Get Started Now
               <KeyboardArrowRightIcon className="text-sm transition-transform group-hover:translate-x-0.5" fontSize="small" />
             </button>
           </div>
         </div>
 
-        {/* 3. Swapped col-7 for col-span-7 */}
-        <div className="lg:col-span-7 w-full col-span-12">
-          <div className="grid mt-5 grid-cols-1 lg:grid-cols-2 m-auto gap-5 container mb-5">
+         <div className="lg:col-span-7 space-y-12 relative max-w-4xl mx-auto px-4">
+            {/* <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-12 text-center">
+              Core Applications
+            </h2> */}
 
-            <div className='rounded-2xl mb-3 p-4 shadow shadow-blue-500/60 bg-gray-700/9 border-l-blue-500 border-l-0'>
-              <div className='rounded-full w-10 h-10 flex items-center justify-center bg-brand-500/20'>
-                <CarRentalOutlinedIcon className='text-brand-500' />
-              </div>
-              <h3 className='mb-2 mt-3 font-bold text-black dark:text-white'>1. Centralized Dispatch & Fleet Overview</h3>
-              <p className='text-sm text-gray-500'>
-                One single source of truth. Eliminate messy spreadsheets and scattered communication. Manage vehicle assignments, active rentals, invoicing, and contract history from a single, unified dashboard designed for quick decision-making. </p>
-            </div>
+            {/* Center Timeline Line Indicator: Centered on desktop, shifted to the left edge on mobile screens */}
+            <div className="absolute left-[26px] md:left-1/2 top-24 bottom-6 w-0.5 -translate-x-1/2 bg-slate-200 dark:bg-slate-800 pointer-events-none" />
 
-            <div className='rounded-2xl mb-3 p-4 shadow shadow-blue-500/60 bg-gray-700/9 border-l-blue-500 border-l-0'>
-              <div className='rounded-full w-10 h-10 flex items-center justify-center bg-brand-500/20'>
-                <HttpIcon className='text-brand-500' />
-              </div>
-              <h3 className='mb-2 mt-3 font-bold text-black dark:text-white'>2. Free Domain & Zero-Config</h3>
-              <p className='text-sm text-gray-500'>We handle the infrastructure. Avoid the hidden costs of buying, configuring, and maintaining separate web domains. Launch instantly with a secure, fully-managed yourbrand.fleetmaster.com portal completely free.</p>
-            </div>
+            {[
+              {
+                imgSrc: '/images/product/3.webp',
+                badgeText: 'Overview',
+                icon: CarRentalOutlinedIcon,
+                title: '1. Centralized Dispatch & Fleet Overview',
+                description: 'One single source of truth. Eliminate messy spreadsheets and scattered communication. Manage vehicle assignments, active rentals, invoicing, and contract history from a single, unified dashboard designed for quick decision-making.',
+                imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
+              },
+              {
+                imgSrc: '/images/product/2.webp',
+                badgeText: 'Easy Setup',
+                icon: HttpIcon,
+                title: '2. Free Domain & Zero-Config',
+                description: 'We handle the infrastructure. Avoid the hidden costs of buying, configuring, and maintaining separate web domains. Launch instantly with a secure, fully-managed yourbrand.fleetmaster.com portal completely free.',
+                imgClassName: 'rounded-t-2xl bg-gray-200 mb-3 aspect-4/2 w-full object-cover'
+              },
+              {
+                imgSrc: '/images/product/4.webp',
+                badgeText: 'Live Dashboard',
+                icon: SubtitlesOutlinedIcon,
+                title: '3. Live Fleet Telematics',
+                description: 'We help you setup Real-time tracking and other features. Monitor vehicle diagnostics, live locations, and battery health on a unified map. Catch mechanical issues and unauthorized route deviations instantly before they become costly repairs.',
+                imgClassName: 'rounded-t-2xl bg-gray-200 mb-3 aspect-4/2 w-full object-cover'
+              },
+              {
+                imgSrc: '/images/product/5.webp',
+                badgeText: 'AI Automation',
+                icon: VerifiedUserOutlinedIcon,
+                title: '4. Automated Driver Vetting',
+                description: "Security-first verification. Protect high-value vehicles from liability risks. The onboarding pipeline automatically scans and verifies driver's licenses and credentials before a vehicle can ever be booked.",
+                imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
+              },
+              {
+                imgSrc: '/images/product/6.webp',
+                badgeText: 'Easy Management',
+                icon: NoCrashOutlinedIcon,
+                title: '5. Manage Bookings in One Place',
+                description: 'Easily view and manage all your vehicles on one place. Our live vehicle status checks lets clients know which cars are available and which are not. Preview all bookings before a booking even commence.',
+                imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
+              },
+              {
+                imgSrc: '/images/product/1.webp',
+                badgeText: 'Save Time',
+                icon: CalendarMonthIcon,
+                title: '6. Saves you Time & Money',
+                description: 'Save time with our built in Calendar that helps you plan dropoffs and pickups helping you keep track of all pending bookings. All in one place!',
+                imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
+              }
+            ].map((feature, index) => {
+              const FeatureIcon = feature.icon;
+              const isEven = index % 2 === 0;
 
+              return (
+                <div
+                  key={index}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center relative pl-12 md:pl-0 min-h-[300px]"
+                >
+                  {/* Center/Left Number Node Badge */}
+                  <div className="absolute left-0 md:left-1/2 top-0 md:top-1/2 -translate-x-0 md:-translate-x-1/2 md:-translate-y-1/2 w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 border-4 border-slate-50 dark:border-slate-950 flex items-center justify-center font-bold text-slate-800 dark:text-slate-200 shadow-sm z-10 text-sm">
+                    {index + 1}
+                  </div>
 
-            <div className='rounded-2xl mb-3 p-4 shadow shadow-blue-500/60 bg-gray-700/9 border-l-blue-500 border-l-0'>
-              <div className='rounded-full w-10 h-10 flex items-center justify-center bg-brand-500/20'>
-                <SubtitlesOutlinedIcon className='text-brand-500' />
-              </div>
-              <h3 className='mb-2 mt-3 font-bold text-black dark:text-white'>3. Live Fleet Telematics</h3>
-              <p className='text-sm text-gray-500'>We help you setup Real-time tracking and other features. Monitor vehicle diagnostics, live locations, and battery health on a unified map. Catch mechanical issues and unauthorized route deviations instantly before they become costly repairs.</p>
-            </div>
+                  {/* Content Card Wrapper (Image Container) */}
+                  {/* md:order-first and md:order-last push the image dynamically based on item index */}
+                  <div
+                    className={`rounded-2xl shadow-sm bg-white dark:bg-slate-900 transition-all hover:shadow-md flex overflow-hidden mb-10 ${isEven ? 'md:order-first' : 'md:order-last'}`}
+                  >
+                    <img
+                      src={feature.imgSrc}
+                      alt={feature.badgeText}
+                      className="aspect-3/2 w-full object-cover bg-gray-200"
+                    />
+                  </div>
 
+                  {/* Text Context Content Block */}
+                  {/* Optional alignment adjustment: alignment shifts to match the timeline spacing flow layout */}
+                  <div className={`flex flex-col justify-center mb-10 ${isEven ? 'md:pl-4' : 'md:pr-4'}`}>
+                    <div className="flex gap-2 font-bold items-center mt-4">
+                      <div className="rounded-full w-9 h-9 flex items-center justify-center bg-brand-500/10 dark:bg-brand-500/20">
+                        <FeatureIcon className="text-brand-500 !w-5 !h-5" />
+                      </div>
+                      <span className="text-brand-500 text-sm tracking-wide">{feature.badgeText}</span>
+                    </div>
+                    <h3 className="mb-2 mt-3 font-bold text-slate-900 dark:text-white text-lg">{feature.title}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{feature.description}</p>
+                  </div>
 
-            <div className='rounded-2xl mb-3 p-4 shadow shadow-blue-500/60 bg-gray-700/9 border-l-blue-500 border-l-0'>
-              <div className='rounded-full w-10 h-10 flex items-center justify-center bg-brand-500/20'>
-                <VerifiedUserOutlinedIcon className='text-brand-500' />
-              </div>
-              <h3 className='mb-2 mt-3 font-bold text-black dark:text-white'>4. Automated Driver Vetting</h3>
-              <p className='text-sm text-gray-500'> Security-first verification. Protect high-value vehicles from liability risks. The onboarding pipeline automatically scans and verifies driver's licenses and credentials before a vehicle can ever be booked.                               </p>
-            </div>
-
-            <div className='rounded-2xl mb-3 p-4 shadow shadow-blue-500/60 bg-gray-700/9 border-l-blue-500 border-l-0'>
-              <div className='rounded-full w-10 h-10 flex items-center justify-center bg-brand-500/20'>
-                <NoCrashOutlinedIcon className='text-brand-500' />
-              </div>
-              <h3 className='mb-2 mt-3 font-bold text-black dark:text-white'>5. Manage Bookings in One Place</h3>
-              <p className='text-sm text-gray-500'>Easily view and manage all your vehciles on one place. Our live vehicle statuschecks lets clients know which cars are available and which are not. Preview all bookings before a booking even commence.</p>
-            </div>
-
-            <div className='rounded-2xl mb-3 p-4 shadow shadow-blue-500/60 bg-gray-700/9 border-l-blue-500 border-l-0'>
-              <div className='rounded-full w-10 h-10 flex items-center justify-center bg-brand-500/20'>
-                <CalendarMonthIcon className='text-brand-500' />
-              </div>
-              <h3 className='mb-2 mt-3 font-bold text-black dark:text-white'>6. Saves you Time & Money</h3>
-              <p className='text-sm text-gray-500'>Save time with our built in Calendar thaat helps you plan dropoffs and pickups helping you keep track of all pending bokings. All in one place!</p>
-            </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
       </div>
 
       <div className="border-gray-500 border-t container m-auto mb-5"></div>
@@ -316,6 +360,7 @@ export default function Home() {
       <TestimonialsSection />
       <br />
       <CallToAction />
+
     </div>
   );
 }

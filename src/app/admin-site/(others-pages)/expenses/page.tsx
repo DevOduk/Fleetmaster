@@ -1,7 +1,6 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { Metadata } from "next";
-import Vehicles from "@/components/vehicles/Vehicles";
-import Bookings from "@/components/bookings/Bookings";
+import Expenses from "@/components/expenses/Expenses";
 
 export const metadata: Metadata = {
   title:
@@ -12,7 +11,7 @@ export default function page() {
   return (
     <div>
       <PageBreadcrumb pageTitle="All Expenses" />
-      <Bookings />
+      <Expenses />
     </div>
   );
 }

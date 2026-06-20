@@ -47,7 +47,7 @@ function AdminLayoutContent({
   }, [tenant, profile, router, loading]);
 
   if (loading || (!tenant && !profile)) {
-    return <DashboardSkeleton />;
+    return <DashboardSkeleton loading={true} />;
   }
 
   const mainContentMargin = isMobileOpen

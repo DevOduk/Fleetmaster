@@ -11,7 +11,7 @@ const ClientFooter: React.FC = () => {
       <div className="text-gray-500 text-theme-sm dark:text-gray-400 mb-4 mt-4 flex flex-wrap items-center justify-center gap-3">
         <span>@Copyright {tenant?.name || "FleetMaster"} {year} All Rights Reserved.</span>
         <span>|</span>
-        <span><Link target="_blank" href={'http://localhost:3000'}>FleetMaster Home</Link></span>
+        <span><Link target="_blank" href={'/'}>Home</Link></span>
         <span>|</span>
         <span><Link href={'/terms-conditions'}>Terms & Conditions</Link> apply.</span>
         <span>|</span>

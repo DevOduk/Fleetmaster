@@ -7,8 +7,9 @@ import Pagination from "../tables/Pagination";
 import { bookings } from "@/data/mockFleetData";
 import Link from "next/link";
 import PaymentsTable from "../tables/PaymentsTable";
+import ExpensesTable from "../tables/ExpensesTable";
 
-const Payments: React.FC = () => {
+const Expenses: React.FC = () => {
     const isDarkMode =
         typeof window !== "undefined" &&
         document.documentElement.classList.contains("dark");
@@ -42,35 +43,35 @@ const Payments: React.FC = () => {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 md:gap-6">
                 {[
                     {
-                        title: 'Daily Earnings',
+                        title: 'Daily Expenses',
                         currency: 'Ksh',
                         value: 950.00,
-                        description: 'Total earnings today',
+                        description: 'Total Expenses today',
                     },
                     {
-                        title: 'Weekly Earnings',
+                        title: 'Weekly Expenses',
                         currency: 'Ksh',
                         value: 5950.00,
-                        description: 'Total earnings this week',
+                        description: 'Total Expenses this week',
                     },
                     {
-                        title: 'Monthly  Earnings',
+                        title: 'Monthly  Expenses',
                         currency: 'Ksh',
                         value: 73450.00,
-                        description: 'Total earnings this Month',
+                        description: 'Total Expenses this Month',
                     },
                     {
                         title: 'Mobile Money (This Month)',
                         currency: 'Ksh',
                         value: 24700.00,
-                        description: 'Excluding voucher payments',
+                        description: 'Excluding voucher expenses',
                     },
                 ].map((p, i) => (
                     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 md:p-6" key={i}>
                         <h4 className="text-md text-black dark:text-white">
                             {p?.title}
                         </h4>
-                        <h2 className="text-2xl mt-3 mb-2 text-green-500 font-bold">{p.currency} {p?.value ? Number(p.value).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</h2>
+                        <h2 className="text-2xl mt-3 mb-2 text-amber-500 font-bold">{p.currency} {p?.value ? Number(p.value).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</h2>
                         <p className="text-gray-500 text-sm">
                             {p?.description}
                         </p>
@@ -82,18 +83,18 @@ const Payments: React.FC = () => {
                     <p className="font-medium text-gray-800 mb-2 text-theme-sm dark:text-white/90">View all bookings and manage them. Click Create New Booking to add a new booking.</p>
                     <span className="text-gray-500 text-start text-theme-sm dark:text-gray-400">{bookings?.length || 0} Bookings | {bookings?.filter((b: any) => b.status === "Active").length || 0} Active | 7 Average per Day</span>
                 </div>
-                <Link href="/payments/new">
+                <Link href="/expenses/new">
                     <button
                         className="flex items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
                     >
-                        Record Payment
+                        Record Expense
                     </button>
                 </Link>
             </div>
-            <PaymentsTable />
+            <ExpensesTable />
             <Pagination onPageChange={() => 2} currentPage={1} totalPages={1} />
         </div>
     );
 };
 
-export default Payments;
+export default Expenses;

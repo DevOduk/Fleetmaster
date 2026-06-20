@@ -1,6 +1,5 @@
 "use client"
 import { ChevronDownIcon } from "@/icons";
-import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined"
 import SpeedOutlinedIcon from "@mui/icons-material/SpeedOutlined"
 import Select from '@/components/form/Select';
 import { useState } from "react";

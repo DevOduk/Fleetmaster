@@ -12,7 +12,11 @@ export default function page() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Map" />
-      <Map />
+      <p className="mt-10 text-[10px] min-h-[75vh] justify-center flex items-center font-medium tracking-[0.2em] uppercase text-red-400 dark:text-red-600">
+        Error Status: FEATURE COMING SOON
+      </p>
+
+      {/* <Map /> */}
     </div>
   );
 }

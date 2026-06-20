@@ -11,6 +11,7 @@ import { Modal } from "../ui/modal";
 import { useModal } from "@/hooks/useModal";
 import { toast } from "sonner";
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import { useUser } from "@/context/UserContext";
 
 
 
@@ -26,32 +27,34 @@ const defaultIcon = L.icon({
 });
 
 const Yards: React.FC = () => {
+  const { profile: adminProfile } = useUser();
   const [isDarkMode, setIsDarkMode] = React.useState(false);
-  const [allYards, setAllYards] = React.useState([
-    {
-      title: 'Nairabi Yard, Kenya.',
-      description: 'This is the location of our yard in Kisumu.',
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Kenyatta_International_Convention_Centre_02.jpg/1920px-Kenyatta_International_Convention_Centre_02.jpg',
-      location: [-1.286389, 36.817223],
-    },
-    {
-      title: 'Kisumu Yard, Kenya.',
-      description: 'This is the location of our main yard in Nairobi.',
-      imageUrl: 'https://africanspicesafaris.com/wp-content/uploads/2020/06/kisumu-city-tours-kenya-1200x900.jpg',
-      location: [-0.091702, 34.767956],
-    },
-    {
-      title: 'Mombasa Yard, Kenya.',
-      description: 'This is the location of our yard in Mombasa.',
-      imageUrl: 'https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/09/b6/49/0f.jpg',
-      location: [-4.043740, 39.658871],
-    },
-  ]);
+  // const [allYards, setAllYards] = React.useState([
+  //   {
+  //     title: 'Nairabi Yard, Kenya.',
+  //     description: 'This is the location of our yard in Kisumu.',
+  //     imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Kenyatta_International_Convention_Centre_02.jpg/1920px-Kenyatta_International_Convention_Centre_02.jpg',
+  //     location: [-1.286389, 36.817223],
+  //   },
+  //   {
+  //     title: 'Kisumu Yard, Kenya.',
+  //     description: 'This is the location of our main yard in Nairobi.',
+  //     imageUrl: 'https://africanspicesafaris.com/wp-content/uploads/2020/06/kisumu-city-tours-kenya-1200x900.jpg',
+  //     location: [-0.091702, 34.767956],
+  //   },
+  //   {
+  //     title: 'Mombasa Yard, Kenya.',
+  //     description: 'This is the location of our yard in Mombasa.',
+  //     imageUrl: 'https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/09/b6/49/0f.jpg',
+  //     location: [-4.043740, 39.658871],
+  //   },
+  // ]);
   const { isOpen, openModal, closeModal } = useModal();
 
   const [selectedEvent, setSelectedEvent] = useState<any>(
     null
   );
+
   // Check for dark mode after component mounts
   useEffect(() => {
     const checkDarkMode = () => {
@@ -130,7 +133,7 @@ const Yards: React.FC = () => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             {
-              allYards.map((yard, i) => (
+              adminProfile?.fleetmaster_tenants?.yards?.map((yard, i) => (
                 <Marker key={i} position={[yard.location[0], yard.location[1]]} icon={defaultIcon}>
                   <Popup>
                     <div className="flex gap-3 items-center">
@@ -154,7 +157,7 @@ const Yards: React.FC = () => {
             <Button onClick={openModal} variant="primary" size="sm">New Yard <PlusIcon /></Button>
           </div>
           <div>
-            {allYards.map((yard, i) => (
+            {adminProfile?.fleetmaster_tenants?.yards.map((yard, i) => (
               <div key={i} style={{ width: '100%' }} className="flex p-2 pr-3 rounded bg-white dark:bg-white/2 cursor-pointer gap-3 w-full mt-4 items-center">
                 <div>
 
