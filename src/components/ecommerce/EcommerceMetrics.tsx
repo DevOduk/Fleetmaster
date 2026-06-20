@@ -47,7 +47,7 @@ export const EcommerceMetrics = () => {
       {
         totalRevenue ?
           <>
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 md:p-6">
+            <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 bg-brand-500/5 md:p-6">
               <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
                 <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />
               </div>
@@ -71,7 +71,7 @@ export const EcommerceMetrics = () => {
             {/* <!-- Metric Item Start --> */}
             {
               vehicles ?
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 md:p-6">
+                <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 bg-brand-500/5 md:p-6">
                   <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
                     <DirectionsCarFilledOutlinedIcon className="text-gray-800 size-6 dark:text-white/90" />
                   </div>
@@ -110,7 +110,7 @@ export const EcommerceMetrics = () => {
             {/* <!-- Metric Item Start --> */}
             {
               bookings ?
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 md:p-6">
+                <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 bg-brand-500/5 md:p-6">
                   <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
                     <ScheduleOutlinedIcon className="text-gray-800 dark:text-white/90" />
                   </div>
@@ -149,7 +149,7 @@ export const EcommerceMetrics = () => {
 
             {
               calculateFleetBookingRate ?
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 md:p-6">
+                <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 bg-brand-500/5 md:p-6">
                   <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
                     <TrendingUpOutlinedIcon className="text-gray-800 dark:text-white/90" />
                   </div>

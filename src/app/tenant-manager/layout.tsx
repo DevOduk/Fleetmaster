@@ -27,7 +27,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }, [adminProfile, router, loading]);
 
   if (loading || !adminProfile) {
-    return <DashboardSkeleton />;
+    return <DashboardSkeleton loading />;
   }
 
   const mainContentMargin = isMobileOpen

@@ -67,11 +67,11 @@ const Expenses: React.FC = () => {
                         description: 'Excluding voucher expenses',
                     },
                 ].map((p, i) => (
-                    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 md:p-6" key={i}>
+                    <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6" key={i}>
                         <h4 className="text-md text-black dark:text-white">
                             {p?.title}
                         </h4>
-                        <h2 className="text-2xl mt-3 mb-2 text-amber-500 font-bold">{p.currency} {p?.value ? Number(p.value).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</h2>
+                        <h2 className="text-2xl mt-3 mb-2 dark:text-gray-300 text-gray-600 font-bold"><span className=" text-xl">{p.currency}</span> {p?.value ? Number(p.value).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</h2>
                         <p className="text-gray-500 text-sm">
                             {p?.description}
                         </p>
