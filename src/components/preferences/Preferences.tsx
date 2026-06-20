@@ -13,7 +13,6 @@ import { useSettings } from "@/context/SettingsContext";
 import { useTheme } from "@/context/ThemeContext";
 import Input from "../form/input/InputField";
 import { useUser } from "@/context/UserContext";
-import { useAdmin } from "@/context/AdminContext";
 
 
 interface AccountData {
@@ -46,7 +45,6 @@ const defaultAccountData: AccountData = {
 
 export default function Preferences() {
   const { profile } = useUser();
-  const { adminProfile } = useAdmin();
   const { isOpen, openModal, closeModal } = useModal();
   const [formData, setFormData] = useState<AccountData>(defaultAccountData);
   const [isSaving, setIsSaving] = useState(false);
