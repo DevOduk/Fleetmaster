@@ -21,7 +21,8 @@ import { useUser } from '@/context/UserContext';
 import { useTenant } from '@/context/TenantContext';
 import Label from '@/components/form/Label';
 import Input from '@/components/form/input/InputField';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useToast } from '@/context/ToastContext';
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string }>;
@@ -29,10 +30,25 @@ interface VehiclePageProps {
 
 const breadcrumbItems = [{ label: "Vehicles", href: "/vehicles" }];
 
+const syncTimeToDateString = (dateTarget: string, sourceDateTime: string): string => {
+  if (!sourceDateTime || !dateTarget) return dateTarget;
+
+  // Extract the time portion (everything after the 'T')
+  const [, timeComponent] = sourceDateTime.split("T");
+  // Extract the date portion of the target string
+  const [dateComponent] = dateTarget.split("T");
+
+  if (!timeComponent || !dateComponent) return dateTarget;
+
+  return `${dateComponent}T${timeComponent}`;
+};
+
 const VehiclePage = ({ params }: VehiclePageProps) => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const resolvedParams = use(params);
   const { vehicles, loading } = useFleet();
+  const { showToast } = useToast();
   const { profile } = useUser();
   const { tenant } = useTenant();
   const [start, setStart] = useState(searchParams.get('start') || '');
@@ -148,6 +164,14 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
     return <VehicleNotFound />
   }
 
+  // --- DYNAMIC FINANCIAL CALCULATIONS ---
+  const dynamicDays = totalDays <= 0 ? 1 : totalDays; 
+  const baseRateTotal = dynamicDays * VehicleDetails.dailyRate;
+  const rescuePlanFee = 200;
+  const subTotalBeforeVat = baseRateTotal + rescuePlanFee;
+  const vatAmount = Math.round(subTotalBeforeVat * 0.16);
+  const grandTotalAmount = subTotalBeforeVat + vatAmount;
+
   return (
     <main className="p-6 container m-auto">
       <PageBreadcrumb
@@ -162,18 +186,20 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
         </div>
       </div>
 
-      <div className="grid border items-center border-gray-300 dark:border-gray-700 rounded grid-cols-[1fr_auto_1fr] gap-x-4 gap-y-3 text-sm mt-3 mb-2 p-2">
+      <div className="grid grid-cols-[1fr_auto_1fr] border items-center border-gray-300 dark:border-gray-700 rounded gap-x-4 gap-y-3 text-sm mt-3 mb-2 p-2">
         {/* Row 1 */}
         <h4 className="font-semibold text-gray-800 text-theme-l dark:text-white/90 lg:text-l">
           Total Amount:
         </h4>
         <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
-        <div className="text-right m-0 p-0 font-medium text-gray-800 dark:text-gray-200">KSH. {3000}</div>
+        <div className="text-right m-0 p-0 font-bold text-green-600 dark:text-green-400">
+          KSH. {grandTotalAmount.toLocaleString()}
+        </div>
       </div>
       <p role='button' className='font-medium text-right text-xs text-brand-400 mt-0 mb-4 underline' onClick={() => setExpandBreakdown(!expandBreakdown)}>{expandBreakdown ? 'Collapse' : 'Expand'} Cost Breakdown?</p>
 
       {
-      expandBreakdown &&
+        expandBreakdown &&
         <div className="flex ms-auto bg-gray-800 rounded-2xl top-0 lg:w-130 w-full gap-2 flex-col col-span-12 lg:col-span-3 mb-5">
           <h4 className="mt-4 text-right font-semibold text-gray-800 modal-title text-theme-l dark:text-white/90 lg:text-l">
             Booking Summary:</h4>
@@ -186,13 +212,13 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
               {/* Row 1 */}
               <div className="text-left text-gray-500 dark:text-gray-400">Duration</div>
               <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
-              <div className="text-right font-medium text-gray-800 dark:text-gray-200">{3} Days</div>
+              <div className="text-right font-medium text-gray-800 dark:text-gray-200">{dynamicDays} Days</div>
 
               {/* Row 2 */}
               <div className="text-left text-gray-500 dark:text-gray-400">Daily Rate</div>
               <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
               <div className="text-right font-medium text-gray-800 dark:text-gray-200">
-                Ksh. 0
+                Ksh. {VehicleDetails.dailyRate.toLocaleString()}
               </div>
 
               {/* Row 3 */}
@@ -203,12 +229,12 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
               {/* Row 4 */}
               <div className="text-left text-gray-500 dark:text-gray-400">Rescue Plan</div>
               <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
-              <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. 200</div>
+              <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. {rescuePlanFee}</div>
 
               {/* Row 5 */}
               <div className="text-left text-gray-500 dark:text-gray-400">VAT 16%</div>
               <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
-              <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. 0</div>
+              <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. {vatAmount.toLocaleString()}</div>
 
               {/* Horizontal Divider Span across all 3 columns */}
               <div className="col-span-3 border-t border-gray-200 my-1 dark:border-gray-800" />
@@ -217,13 +243,13 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
               <div className="text-left font-bold text-gray-800 dark:text-gray-100">Total</div>
               <div className="w-px h-5 bg-gray-300 dark:bg-gray-700" />
               <div className="text-right text-base font-bold text-green-600 dark:text-green-500">
-                Ksh. 9000
+                Ksh. {grandTotalAmount.toLocaleString()}
               </div>
 
             </div>
           </div>
         </div>
-        }
+      }
 
       <div className="grid grid-cols-12 gap-6">
         {/* Calendar Section: col-span-5 */}
@@ -243,7 +269,12 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                     type="datetime-local"
                     className="pl-15.5 text-inherit"
                     value={start}
-                    onChange={(e) => setStart(e.target.value)}
+                    onChange={(e) => {
+                      const newStart = e.target.value; // e.g., "2026-06-25T16:00"
+                      const updatedEnd = syncTimeToDateString(end, newStart);
+                      setStart(newStart);
+                      setEnd(updatedEnd);
+                    }}
                     name="end_date"
                   />
 
@@ -259,7 +290,12 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                     type="datetime-local"
                     className="pl-15.5 "
                     value={end}
-                    onChange={(e) => setEnd(e.target.value)}
+                    onChange={(e) => {
+                      const newEnd = e.target.value; // e.g., "2026-06-25T16:00"
+                      const updatedStart = syncTimeToDateString(start, newEnd);
+                      setStart(updatedStart);
+                      setEnd(newEnd);
+                    }}
                     name="end_date"
                   />
 
@@ -301,7 +337,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                   }`}>
                   {VehicleDetails.status}
                 </span>
-                <span className='px-3 bg-green-100 text-green-700 ms-3 py-1 rounded-full text-xs font-sm mt-2 mb-1 ' color='success'>Self Driven</span>
+                <span className='px-3 bg-green-100 text-green-700 ms-3 py-1 rounded-full text-xs font-sm mt-2 mb-1 '>Self Driven</span>
 
               </div>
             </div>
@@ -326,7 +362,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.year}</p>
               </div>
               <div>
-                <p className="text-gray-400">Seats</p>
+                <span className="text-gray-400">Seats</span>
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.seats}</p>
               </div>
               <div>
@@ -341,10 +377,6 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                 <p className="text-gray-400">Transmission</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.transmission}</p>
               </div>
-              {/* <div>
-                <p className="text-gray-400">License Plate</p>
-                <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.licensePlate}</p>
-              </div> */}
               <div>
                 <p className="text-gray-400">Daily Rate</p>
                 <p className="font-sm mt-2 mb-1 text-blue-600">Ksh. {VehicleDetails.dailyRate.toLocaleString()}</p>
@@ -366,9 +398,60 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
             </div>
             {
               profile ?
-                <Link href={'/vehicles/' + vehicleID + '/book'}>
+                <div
+                  onClick={() => {
+                    const today = dayjs(new Date()).startOf('day');
+                    const startDay = dayjs(start).startOf('day');
+                    const endDay = dayjs(end).startOf('day');
+
+                    const totalDaysCalculated = startDay.isValid() && endDay.isValid()
+                      ? endDay.diff(startDay, "day")
+                      : 0;
+
+                    if (totalDaysCalculated < 1 || endDay.isBefore(startDay) || startDay.isBefore(today)) {
+                      showToast('Please select a valid date!', 'warning');
+                      return;
+                    }
+
+                    if (totalDaysCalculated < Number(VehicleDetails?.minRentalDays)) {
+                      showToast('Please select a minimum of ' + VehicleDetails?.minRentalDays + ' days!', 'error');
+                      return;
+                    }
+
+                    // Compute token-specific metrics to match current selection
+                    const tokenDays = totalDaysCalculated <= 0 ? 1 : totalDaysCalculated;
+                    const tokenBaseRate = tokenDays * VehicleDetails.dailyRate;
+                    const tokenVat = Math.round((tokenBaseRate + 200) * 0.16);
+                    const tokenTotal = tokenBaseRate + 200 + tokenVat;
+
+                    // 1. Gather the state you want to protect
+                    const stateToEncode = {
+                      vehicleID: vehicleID,
+                      VehicleDetails: VehicleDetails,
+                      bookingInformation: { 
+                        start: start, 
+                        end: end, 
+                        totalDays: tokenDays, 
+                        vat: tokenVat, 
+                        rescue: 200, 
+                        total: tokenTotal 
+                      }
+                    };
+
+                    try {
+                      // 2. Convert to JSON, then encode to Base64
+                      const jsonString = JSON.stringify(stateToEncode);
+                      const encodedData = btoa(encodeURIComponent(jsonString));
+
+                      // 3. Navigate with the tokenized payload
+                      router.push(`/vehicles/${vehicleID}/book?token=${encodedData}`);
+                    } catch (error) {
+                      console.error("Failed to encode booking data:", error);
+                    }
+                  }}
+                >
                   <Button className='w-full mt-5' size='sm'>Continue to Book</Button>
-                </Link> :
+                </div> :
                 <Link target='_blank' href={'/signin'}>
                   <Button className='w-full mt-5' size='sm'>Continue to Book</Button>
                 </Link>

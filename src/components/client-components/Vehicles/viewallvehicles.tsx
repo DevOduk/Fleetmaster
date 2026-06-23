@@ -41,6 +41,8 @@ export default function ViewAllVehicles({ tenant, filters, loading = true }: Vie
     const router = useRouter();
     const pathname = usePathname();
 
+    
+
     const [isOpen, setIsOpen] = useState(false);
     const [sortBy, setSortBy] = useState('Recommended');
     const [isSorting, setIsSorting] = useState(false);
