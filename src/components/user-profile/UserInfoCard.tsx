@@ -51,7 +51,7 @@ export default function UserInfoCard() {
                 First Name
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {profile?.firstName || "Loading ..."}
+                {profile?.first_name || "Loading ..."}
               </p>
             </div>
 
@@ -60,7 +60,7 @@ export default function UserInfoCard() {
                 Last Name
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {profile?.lastName || "Loading ..."}
+                {profile?.last_name || "Loading ..."}
               </p>
             </div>
 

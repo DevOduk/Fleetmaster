@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
@@ -10,9 +9,8 @@ import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 
 export default function UserDropdown() {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const { profile, logout } = useUser();
+  const { profile, logout, loading } = useUser();
 
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.stopPropagation();
@@ -25,17 +23,16 @@ export default function UserDropdown() {
   return (
     <div className="relative flex items-center">
       {
-        profile ?
+        loading ? <div className="flex gap-2 items-center animate-pulse"><div className="w-9 h-9 bg-gray-500 rounded-full"></div> <span className="w-15 h-5 bg-gray-500 rounded"></span></div> : profile ?
           <button
             onClick={toggleDropdown}
             className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
           >
             <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-              <Image
-                width={44}
-                height={44}
-                src="/images/user/owner.jpg"
-                alt="User"
+              <Avatar
+                src={profile?.profile_pic}
+                alt={profile.first_name}
+                className="w-10 h-10"
               />
             </span>
 
@@ -64,7 +61,7 @@ export default function UserDropdown() {
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
-        className="absolute right-0 top-full mt-2 flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"      >
+        className="absolute right-0 top-full mt-2 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"      >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-300">
             {profile?.first_name} {profile?.last_name}
@@ -177,10 +174,10 @@ export default function UserDropdown() {
           </li>
         </ul>
         <div
-        onClick={()=>{
-          logout();
-          router.push('signin')
-        }}
+          onClick={() => {
+            closeDropdown();
+            logout();
+          }}
           className="flex cursor-pointer items-center gap-3 px-3 py-2 mt-3 font-medium text-red-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-red-500 dark:hover:bg-white/5 dark:hover:text-red-300"
         >
           <svg

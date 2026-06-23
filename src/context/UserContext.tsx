@@ -1,6 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { useToast } from "./ToastContext";
 
 interface UserContextType {
   profile: any | null;
@@ -15,6 +17,8 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const { showToast } = useToast();
 
   // On initial load, verify if the user has an active session cookie
   useEffect(() => {
@@ -56,8 +60,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    setProfile(null);
+    const response = await fetch("/api/auth/logout", { method: "POST" });
+    if (response.ok) {
+      setProfile(null);
+
+      showToast('You have been logged out successfully!', 'info');
+      setTimeout(() => {
+        router.push('/')
+      }, 3000);
+      return { success: true };
+    } else {
+      return { success: false };
+    }
   };
 
   return (

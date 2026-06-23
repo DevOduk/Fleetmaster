@@ -6,7 +6,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import { clearTimeout } from 'timers'
 
 export default function HeroSlider() {
-    const { vehicles } = useFleet();
+    const { vehicles, loading: loadingVehicles } = useFleet();
     const sliderRef = useRef<HTMLDivElement>(null);
     const [activeIndex, setActiveIndex] = useState(0);
     const [resetToken, setResetToken] = useState(0);
@@ -119,7 +119,7 @@ export default function HeroSlider() {
             </div>
 
             {/* --- FIXED DOT INDICATOR PANEL OVERLAY --- */}
-            <div className='flex absolute bottom-[-7px] right-5 bg-white rounded-t-2xl dark:bg-gray-900 px-5 py-3.5 gap-2 z-20'>
+            <div className='flex absolute -bottom-1.5 right-5 bg-white rounded-t-2xl dark:bg-gray-900 px-5 py-3.5 gap-2 z-20'>
                 {allImageUrls.map((_, i) => {
                     const isActive = i === activeIndex;
                     return (

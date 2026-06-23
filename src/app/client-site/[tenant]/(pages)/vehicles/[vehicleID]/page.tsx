@@ -1,23 +1,27 @@
 "use client"
 import { CalendarWrapper } from '@/components/calendar/CalendarWrapper';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import TextArea from '@/components/form/input/TextArea';
 import Button from '@/components/ui/button/Button';
 import VehicleNotFound from '@/components/vehicles/NotFound';
 import { useFleet } from '@/context/FleetContext';
 import Link from 'next/link';
-import { use } from 'react';
+import { use, useState } from 'react';
 import isBetween from 'dayjs/plugin/isBetween';
 import dayjs, { Dayjs } from 'dayjs';
 import { bookings } from '@/data/mockFleetData';
-import Badge from '@/components/ui/badge/Badge';
-import { Box, Chip, useAutocomplete } from '@mui/material';
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined"
+import ScheduleIcon from "@mui/icons-material/Schedule"
+import { Box, Chip } from '@mui/material';
 dayjs.extend(isBetween);
 import LocalGasStationOutlinedIcon from '@mui/icons-material/LocalGasStationOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined"
 import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
 import { useUser } from '@/context/UserContext';
+import { useTenant } from '@/context/TenantContext';
+import Label from '@/components/form/Label';
+import Input from '@/components/form/input/InputField';
+import { useSearchParams } from 'next/navigation';
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string }>;
@@ -26,9 +30,14 @@ interface VehiclePageProps {
 const breadcrumbItems = [{ label: "Vehicles", href: "/vehicles" }];
 
 const VehiclePage = ({ params }: VehiclePageProps) => {
+  const searchParams = useSearchParams();
   const resolvedParams = use(params);
-  const { vehicles } = useFleet();
+  const { vehicles, loading } = useFleet();
   const { profile } = useUser();
+  const { tenant } = useTenant();
+  const [start, setStart] = useState(searchParams.get('start') || '');
+  const [end, setEnd] = useState(searchParams.get('end') || '');
+  const [expandBreakdown, setExpandBreakdown] = useState(false);
 
   const vehicleID = resolvedParams.vehicleID;
   const VehicleDetails = vehicles.find(v => v.id === parseInt(vehicleID));
@@ -47,12 +56,100 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
     return days;
   });
 
+  const startDay = dayjs(start);
+  const endDay = dayjs(end);
+
+  const dayGap = startDay.isValid() && endDay.isValid() ? endDay.diff(start, "day") : 0;
+
+  // 2. Ensure it defaults to at least 1 Day if they select the same day or a short window
+  const totalDays = dayGap <= 0 ? 0 : dayGap;
+
+  if (loading) {
+    return (
+      <main className="space-y-6 p-6 container m-auto animate-pulse">
+        {/* Breadcrumb Skeleton */}
+        <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-1/4 mb-6" />
+
+        {/* Banner Alert Promos Skeleton */}
+        <div className="col-span-full h-24 bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl mb-5" />
+
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Panel: Calendar Skeleton (col-span-5) */}
+          <div className="col-span-12 lg:col-span-4 space-y-6">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 shadow-sm h-80 flex flex-col justify-between">
+              <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-1/2 mx-auto" />
+              <div className="grid grid-cols-7 gap-2 mt-4">
+                {Array.from({ length: 28 }).map((_, idx) => (
+                  <div key={idx} className="h-8 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+                ))}
+              </div>
+            </div>
+
+            {/* Date Inputs Form Fields Skeletons */}
+            <div className="space-y-4">
+              <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/3" />
+              <div className="h-11 bg-gray-200 dark:bg-gray-800 rounded-lg w-full" />
+              <div className="h-11 bg-gray-200 dark:bg-gray-800 rounded-lg w-full" />
+            </div>
+          </div>
+
+          {/* Right Panel: Specifications View Skeleton (col-span-7) */}
+          <div className="col-span-12 lg:col-span-8 space-y-6">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 shadow-sm space-y-6">
+
+              {/* Header Title Information */}
+              <div className="flex justify-between items-start">
+                <div className="space-y-2 w-1/2">
+                  <div className="h-7 bg-gray-200 dark:bg-gray-800 rounded w-3/4" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full" />
+                </div>
+                <div className="flex gap-2">
+                  <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded-full w-16" />
+                  <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded-full w-20" />
+                </div>
+              </div>
+
+              {/* Main Vector Image Area */}
+              <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-xl aspect-video" />
+
+              {/* Description Paragraph Blocks */}
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-5/6" />
+              </div>
+
+              {/* Specifications Matrix Metadata Grid */}
+              <div className="grid grid-cols-2 gap-y-6 gap-x-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                {Array.from({ length: 8 }).map((_, idx) => (
+                  <div key={idx} className="space-y-2">
+                    <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-1/3" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-2/3" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Action Buttons Layer */}
+              <div className="space-y-3 pt-4">
+                <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded-lg w-full" />
+                <div className="flex gap-3">
+                  <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded-lg w-full" />
+                  <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded-lg w-full" />
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (!VehicleDetails) {
     return <VehicleNotFound />
   }
 
   return (
-    <main className="space-y-6 p-6 container m-auto">
+    <main className="p-6 container m-auto">
       <PageBreadcrumb
         items={breadcrumbItems}
         pageTitle={`${VehicleDetails.make} ${VehicleDetails.model}`}
@@ -65,11 +162,127 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
         </div>
       </div>
 
+      <div className="grid border items-center border-gray-300 dark:border-gray-700 rounded grid-cols-[1fr_auto_1fr] gap-x-4 gap-y-3 text-sm mt-3 mb-2 p-2">
+        {/* Row 1 */}
+        <h4 className="font-semibold text-gray-800 text-theme-l dark:text-white/90 lg:text-l">
+          Total Amount:
+        </h4>
+        <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+        <div className="text-right m-0 p-0 font-medium text-gray-800 dark:text-gray-200">KSH. {3000}</div>
+      </div>
+      <p role='button' className='font-medium text-right text-xs text-brand-400 mt-0 mb-4 underline' onClick={() => setExpandBreakdown(!expandBreakdown)}>{expandBreakdown ? 'Collapse' : 'Expand'} Cost Breakdown?</p>
+
+      {
+      expandBreakdown &&
+        <div className="flex ms-auto bg-gray-800 rounded-2xl top-0 lg:w-130 w-full gap-2 flex-col col-span-12 lg:col-span-3 mb-5">
+          <h4 className="mt-4 text-right font-semibold text-gray-800 modal-title text-theme-l dark:text-white/90 lg:text-l">
+            Booking Summary:</h4>
+          <div className="mt-2 rounded-xl border border-gray-200 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-900/30">
+            <h3 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Cost Breakdown</h3>
+
+            {/* Grid Wrapper */}
+            <div className="grid grid-cols-[1fr_auto_1fr] gap-x-4 gap-y-3 text-sm items-center">
+
+              {/* Row 1 */}
+              <div className="text-left text-gray-500 dark:text-gray-400">Duration</div>
+              <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+              <div className="text-right font-medium text-gray-800 dark:text-gray-200">{3} Days</div>
+
+              {/* Row 2 */}
+              <div className="text-left text-gray-500 dark:text-gray-400">Daily Rate</div>
+              <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+              <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                Ksh. 0
+              </div>
+
+              {/* Row 3 */}
+              <div className="text-left text-gray-500 dark:text-gray-400">Delivery + Pickup fee</div>
+              <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+              <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. 0</div>
+
+              {/* Row 4 */}
+              <div className="text-left text-gray-500 dark:text-gray-400">Rescue Plan</div>
+              <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+              <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. 200</div>
+
+              {/* Row 5 */}
+              <div className="text-left text-gray-500 dark:text-gray-400">VAT 16%</div>
+              <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+              <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. 0</div>
+
+              {/* Horizontal Divider Span across all 3 columns */}
+              <div className="col-span-3 border-t border-gray-200 my-1 dark:border-gray-800" />
+
+              {/* Grand Total Row */}
+              <div className="text-left font-bold text-gray-800 dark:text-gray-100">Total</div>
+              <div className="w-px h-5 bg-gray-300 dark:bg-gray-700" />
+              <div className="text-right text-base font-bold text-green-600 dark:text-green-500">
+                Ksh. 9000
+              </div>
+
+            </div>
+          </div>
+        </div>
+        }
+
       <div className="grid grid-cols-12 gap-6">
         {/* Calendar Section: col-span-5 */}
         <div className="col-span-12 lg:col-span-5">
           <div className="rounded-2xl border border-gray-200 bg-white p-2 dark:border-gray-800 dark:bg-gray-900 shadow-sm">
             <CalendarWrapper isMarkedUnavailable={VehicleDetails.status === "Not Available"} vehicleId={parseInt(vehicleID)} dateString={new Date().toISOString().split('T')[0]} />
+          </div>
+
+          {/* Price Range Fields */}
+          <div className="mb-2">
+            <p className="mb-2 text-black dark:text-white">Rental Dates (All Times in {tenant?.timezone || 'Nairobi (UTC+3)'})</p>
+            <div className="grid grid-cols-1 gap-3 mt-4 mb-8">
+              <div className="col-span-6 lg:col-span-12">
+                <Label>Start Date</Label>
+                <div className="relative mt-2">
+                  <Input
+                    type="datetime-local"
+                    className="pl-15.5 text-inherit"
+                    value={start}
+                    onChange={(e) => setStart(e.target.value)}
+                    name="end_date"
+                  />
+
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                    <CalendarMonthOutlinedIcon />
+                  </span>
+                </div>
+              </div>
+              <div className="col-span-6 lg:col-span-12">
+                <Label>End Date</Label>
+                <div className="relative mt-2">
+                  <Input
+                    type="datetime-local"
+                    className="pl-15.5 "
+                    value={end}
+                    onChange={(e) => setEnd(e.target.value)}
+                    name="end_date"
+                  />
+
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                    <CalendarMonthOutlinedIcon />
+                  </span>
+                </div>
+              </div>
+              <div className="col-span-12">
+                <Label>Days</Label>
+                <div className="relative mt-2">
+                  <div
+                    className="pl-15.5 h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden dark:placeholder:text-white/30 bg-transparent text-gray-800 border-gray-300 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                  >
+                    {totalDays} Days
+                  </div>
+
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                    <ScheduleIcon />
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -79,7 +292,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
-                  {VehicleDetails.make} {VehicleDetails.model}
+                  {VehicleDetails.year} {VehicleDetails.make} {VehicleDetails.model}
                 </h2>
                 <p className="text-gray-500">Category: {VehicleDetails.category} | Body Type: {VehicleDetails.group}</p>
               </div>
@@ -103,7 +316,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
             </div>
 
             <div>
-              <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.description}</p>
+              <p className="font-sm mt-2 mb-1 dark:text-gray-400">{VehicleDetails.description}</p>
             </div>
 
 
@@ -128,10 +341,10 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                 <p className="text-gray-400">Transmission</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.transmission}</p>
               </div>
-              <div>
+              {/* <div>
                 <p className="text-gray-400">License Plate</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.licensePlate}</p>
-              </div>
+              </div> */}
               <div>
                 <p className="text-gray-400">Daily Rate</p>
                 <p className="font-sm mt-2 mb-1 text-blue-600">Ksh. {VehicleDetails.dailyRate.toLocaleString()}</p>
@@ -152,13 +365,13 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
               </div>
             </div>
             {
-              profile ? 
-            <Link href={'/vehicles/' + vehicleID + '/book'}>
-              <Button className='w-full mt-5' size='sm'>Continue to Book</Button>
-            </Link>: 
-            <Link target='_blank' href={'/signin'}>
-              <Button className='w-full mt-5' size='sm'>Continue to Book</Button>
-            </Link>
+              profile ?
+                <Link href={'/vehicles/' + vehicleID + '/book'}>
+                  <Button className='w-full mt-5' size='sm'>Continue to Book</Button>
+                </Link> :
+                <Link target='_blank' href={'/signin'}>
+                  <Button className='w-full mt-5' size='sm'>Continue to Book</Button>
+                </Link>
             }
             <div className='flex items-center gap-3'>
 

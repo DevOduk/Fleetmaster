@@ -28,6 +28,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     severity: "success", // Safe fallback initialization
   });
 
+
   // 2. High-utility trigger method for clean component-level calling
   const showToast = (message: string, severity: AlertColor = "success") => {
     setToast({ open: true, message, severity });
@@ -48,7 +49,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
   return (
     <ToastContext.Provider value={{ showToast, hideToast, loading, setLoading }}>
       {children}
-      
+
       <Snackbar
         open={toast.open}
         autoHideDuration={3000}
@@ -59,7 +60,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
           onClose={handleCloseToast}
           severity={toast.severity}
           variant="filled"
-          sx={{ width: "100%", borderRadius: "8px", fontWeight: 500 }}
+          sx={{ width: "100%", borderRadius: "8px", fontWeight: 500, zIndex: 1000 }}
         >
           {toast.message}
         </Alert>

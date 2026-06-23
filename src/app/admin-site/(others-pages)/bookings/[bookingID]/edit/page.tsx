@@ -32,7 +32,7 @@ const breadcrumbItems = [
 
   return (
     <main className="space-y-6 p-6">
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
       {/* this breadcrumb should show home / bookings / create new booking */}
 
             <PageBreadcrumb items={breadcrumbItems} pageTitle="Edit Booking" />

@@ -26,38 +26,37 @@ export default function SignInForm({ tenant }: Tenant) {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleSubmit = async () => {
     setIsLoggingIn(true);
 
     if (!email || !password) {
-      showToast("Email and password are required!", "warning")
+      showToast("Email and password are required!", "warning");
       setIsLoggingIn(false);
       return;
     }
 
     let result;
-
-    // 1. Safe runtime browser check to intercept subdomain traffic
     if (typeof window !== "undefined" && window.location.hostname.startsWith("dashboard.")) {
-      // Main management portal console authentication
       result = await adminLogin(email, password);
     } else {
-      // Tenant-specific car hire user authentication
       result = await login(tenant ? 'client' : 'admin', email, password, tenant);
     }
 
     if (result.success) {
-      setTimeout(() => {
-        router.push("/");
-
-      }, 3000);
       setIsLoggingIn(false);
-      showToast("Success! Login successfull redirecting ...", "success")
+      showToast("Success! Login successful, redirecting...", "success");
+
+      setIsRedirecting(true);
+
+      setTimeout(() => {
+        router.replace("/");
+      }, 3000);
+
     } else {
-      // Handle login error (e.g., show a notification)
       console.error(result.error);
-      showToast(result.error, "error")
+      showToast(result.error || "Invalid credentials", "error");
       setIsLoggingIn(false);
     }
   };
@@ -182,8 +181,8 @@ export default function SignInForm({ tenant }: Tenant) {
                   </Link>
                 </div>
                 <div>
-                  <Button disabled={isLoggingIn} className="w-full" size="sm" onClick={handleSubmit}>
-                    {isLoggingIn ? 'Signing In' : 'Sign in'}
+                  <Button disabled={isLoggingIn || isRedirecting} className="w-full disabled:text-black" size="sm" onClick={handleSubmit}>
+                    {isLoggingIn ? 'Signing In' : isRedirecting ? 'Redirecting ...' : 'Sign in'}
                   </Button>
                 </div>
               </div>
@@ -192,12 +191,21 @@ export default function SignInForm({ tenant }: Tenant) {
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                 Don&apos;t have an account? {""}
-                <Link
-                  href="/signup"
-                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                >
-                  Contact support!
-                </Link>
+                {
+                  tenant ?
+                    <Link
+                      href="/signup"
+                      className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                    >
+                      Signup
+                    </Link> :
+                    <Link
+                      href="/contact"
+                      className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                    >
+                      Contact support!
+                    </Link>
+                }
               </p>
             </div>
           </div>

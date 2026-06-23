@@ -73,7 +73,7 @@ export default function Home() {
         </main>
 
         {/* LOWER LAYER / APP MOCKUP OVERLAP Creates that cool dark-mode contrast break stretching across the bottom foldn */}
-        <section className="relative m-auto max-w-5xl top-[-100px] mx-auto px-4 sm:px-6 lg:px-8 select-none pointer-events-none">
+        <section className="relative m-auto max-w-5xl -top-25 mx-auto px-4 sm:px-6 lg:px-8 select-none pointer-events-none">
 
           {/* App Window Wrapper Container */}
           <div className="w-full max-w-5xl bg-zinc-900 rounded-t-2xl border-x border-t border-gray-200 dark:border-gray-600 shadow-2xl p-2">
@@ -103,7 +103,7 @@ export default function Home() {
 
 
               {/* Mobile View Dark/Light */}
-              <div className="bg-zinc-900  bottom-0 absolute right-[75%] md:right-0 translate-x-[0%] md:-translate-x-[-50%] w-[25%]  rounded-2xl border-x border-t border-gray-200 dark:border-gray-600 shadow-2xl p-1">
+              <div className="bg-zinc-900  bottom-0 absolute right-[75%] md:right-0 translate-x-[0%] md:translate-x-[-50%] w-[25%]  rounded-2xl border-x border-t border-gray-200 dark:border-gray-600 shadow-2xl p-1">
                 <div className="px-4 py-3 bg-zinc-900 flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
                   <div className="w-2.5 h-2.5 rounded-full bg-yellow-300" />
@@ -126,7 +126,7 @@ export default function Home() {
 
 
               {/* Tablet View Dark/Light */}
-              <div className="bg-zinc-900  bottom-0 absolute left-[10%] md:left-0 translate-x-[0%] md:-translate-x-[50%]  w-[35%]  rounded-t-2xl border-x border-t border-gray-200 dark:border-gray-600 shadow-2xl p-2">
+              <div className="bg-zinc-900  bottom-0 absolute left-[10%] md:left-0 translate-x-[0%] md:translate-x-[50%]  w-[35%]  rounded-t-2xl border-x border-t border-gray-200 dark:border-gray-600 shadow-2xl p-2">
                 <div className="px-4 py-3 bg-zinc-900 flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
                   <div className="w-2.5 h-2.5 rounded-full bg-yellow-300" />
@@ -170,7 +170,7 @@ export default function Home() {
           <h3 className="text-amber-500">Where We Come In</h3>
           <h2 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white">Focus on Business. Leave the Software Hassle to Us!</h2>
           {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[700px]">
+          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-175">
             Browse our extensive collection of well-maintained vehicles across diverse locations. From compact cars to luxury sedans, we have the perfect vehicle for your needs.
           </p>
 
@@ -191,7 +191,7 @@ export default function Home() {
             </h2> */}
 
             {/* Center Timeline Line Indicator: Centered on desktop, shifted to the left edge on mobile screens */}
-            <div className="absolute left-[26px] md:left-1/2 top-24 bottom-6 w-0.5 -translate-x-1/2 bg-slate-200 dark:bg-slate-800 pointer-events-none" />
+            <div className="absolute left-6.5 md:left-1/2 top-24 bottom-6 w-0.5 -translate-x-1/2 bg-slate-200 dark:bg-slate-800 pointer-events-none" />
 
             {[
               {
@@ -249,10 +249,10 @@ export default function Home() {
               return (
                 <div
                   key={index}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center relative pl-12 md:pl-0 min-h-[300px]"
+                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center relative pl-12 md:pl-0 min-h-75"
                 >
                   {/* Center/Left Number Node Badge */}
-                  <div className="absolute left-0 md:left-1/2 top-0 md:top-1/2 -translate-x-0 md:-translate-x-1/2 md:-translate-y-1/2 w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 border-4 border-slate-50 dark:border-slate-950 flex items-center justify-center font-bold text-slate-800 dark:text-slate-200 shadow-sm z-10 text-sm">
+                  <div className="absolute left-0 md:left-1/2 top-0 md:top-1/2 translate-x-0 md:-translate-x-1/2 md:-translate-y-1/2 w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 border-4 border-slate-50 dark:border-slate-950 flex items-center justify-center font-bold text-slate-800 dark:text-slate-200 shadow-sm z-10 text-sm">
                     {index + 1}
                   </div>
 
@@ -273,7 +273,7 @@ export default function Home() {
                   <div className={`flex flex-col justify-center mb-10 ${isEven ? 'md:pl-4' : 'md:pr-4'}`}>
                     <div className="flex gap-2 font-bold items-center mt-4">
                       <div className="rounded-full w-9 h-9 flex items-center justify-center bg-brand-500/10 dark:bg-brand-500/20">
-                        <FeatureIcon className="text-brand-500 !w-5 !h-5" />
+                        <FeatureIcon className="text-brand-500 w-5 h-5" />
                       </div>
                       <span className="text-brand-500 text-sm tracking-wide">{feature.badgeText}</span>
                     </div>
@@ -294,7 +294,7 @@ export default function Home() {
       <div>
         <h3 className="text-brand-500 text-center">Choose Convenience</h3>
         <h2 className="text-3xl mt-4 mb-3 font-bold text-black text-center dark:text-white">Be Among Hundreds of our Happy Clients Worldwide!</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-[700px] m-auto mb-5">Browse our extensive collection of well-maintained vehicles across divers locations. From compact cars to luxury sedans, we have the perfect vehicle for your needs.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-175 m-auto mb-5">Browse our extensive collection of well-maintained vehicles across divers locations. From compact cars to luxury sedans, we have the perfect vehicle for your needs.</p>
 
         <div className='container m-auto mb-4 gap-3 grid grid-cols-2 lg:grid-cols-4 p-2'>
           <div className='rounded-2xl mb-6 p-4 shadow shadow-blue-500/60 bg-gray-700/9 border-l-blue-500 border-l-0'>
@@ -339,7 +339,7 @@ export default function Home() {
           <h3 className="text-amber-500">SO, WHAT NEXT?</h3>
           <h2 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white">Get a Software that Works for You</h2>
           {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[700px]">
+          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-175">
             Fleetmster, we are passionate about providing exceptional car rental services that exceed our customers' expectations. With a commitment to quality, reliability, and customer satisfaction, we strive to be the preferred choice for all your car rental needs. Our extensive fleet of well-maintained vehicles, competitive pricing, and personalized service make us the go-to destination for travelers seeking convenience and comfort on the road.
           </p>
 

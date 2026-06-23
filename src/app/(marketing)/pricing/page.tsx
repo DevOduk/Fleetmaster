@@ -211,7 +211,7 @@ className={`font-medium text-foreground ${!feature?.included ? 'line-through opa
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <h3 className="text-amber-500 text-center" id="feature-comparison">Full Feature Comparison</h3>
           <h2 className="text-3xl mt-4 mb-3 font-bold text-black text-center dark:text-white">See exactly what you get on each plan!</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-[700px] m-auto mb-5">
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-175 m-auto mb-5">
             Pay less, get more. From independent fleet operators to enterprise rental networks, FleetMaster lets you automate operations, track hardware diagnostics, and secure your assets.
           </p>
 

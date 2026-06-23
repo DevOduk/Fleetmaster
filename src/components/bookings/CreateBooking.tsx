@@ -499,16 +499,54 @@ export default function CreateNewBookingForm() {
           </div>
           {
             selectedVehicleID && (
-              <div className="flex gap-2 flex-col items-end mt-2 border-t mt-6">
+              <div className="flex gap-2 flex-col items-end border-t mt-6">
                 <h4 className="mt-4 font-semibold text-gray-800 modal-title text-theme-l dark:text-white/90 lg:text-l">
                   Booking Summary:</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Days: {eventDays} Days</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Daily Rate: Ksh. {getVehicleDetails(selectedVehicleID).dailyRate.toLocaleString()} </p>
+                <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-900/30">
+                  <h3 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Cost Breakdown</h3>
 
-                <p className="text-sm font-bold text-green-500">
-                  Total Payable: Ksh. {getTotalAmount((selectedVehicleID), eventEndDate, eventStartDate).toLocaleString()}
-                </p>
+                  {/* Grid Wrapper */}
+                  <div className="grid grid-cols-[1fr_auto_1fr] gap-x-4 gap-y-3 text-sm items-center">
+
+                    {/* Row 1 */}
+                    <div className="text-left text-gray-500 dark:text-gray-400">Duration</div>
+                    <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                    <div className="text-right font-medium text-gray-800 dark:text-gray-200">{eventDays} Days</div>
+
+                    {/* Row 2 */}
+                    <div className="text-left text-gray-500 dark:text-gray-400">Daily Rate</div>
+                    <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                    <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                      Ksh. {getVehicleDetails(selectedVehicleID).dailyRate.toLocaleString()}
+                    </div>
+
+                    {/* Row 3 */}
+                    <div className="text-left text-gray-500 dark:text-gray-400">Delivery + Pickup fee</div>
+                    <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                    <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. 0</div>
+
+                    {/* Row 4 */}
+                    <div className="text-left text-gray-500 dark:text-gray-400">Rescue Plan</div>
+                    <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                    <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. 200</div>
+
+                    {/* Row 5 */}
+                    <div className="text-left text-gray-500 dark:text-gray-400">VAT 16%</div>
+                    <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                    <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. 0</div>
+
+                    {/* Horizontal Divider Span across all 3 columns */}
+                    <div className="col-span-3 border-t border-gray-200 my-1 dark:border-gray-800" />
+
+                    {/* Grand Total Row */}
+                    <div className="text-left font-bold text-gray-800 dark:text-gray-100">Customer Total</div>
+                    <div className="w-px h-5 bg-gray-300 dark:bg-gray-700" />
+                    <div className="text-right text-base font-bold text-green-600 dark:text-green-500">
+                      Ksh. {getTotalAmount(selectedVehicleID, eventEndDate, eventStartDate).toLocaleString()}
+                    </div>
+
+                  </div>
+                </div>
               </div>
             )
           }
@@ -559,7 +597,7 @@ export default function CreateNewBookingForm() {
           {/* go back to bookings view  */}
           <button
             type="button"
-            className="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
+            className="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 sm:w-auto"
           >
             Cancel
           </button>

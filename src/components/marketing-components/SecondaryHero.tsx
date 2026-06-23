@@ -23,7 +23,7 @@ export default function SecondaryHero({
     children
 }: SecondaryHeroProps) {
     return (
-        <div className='hero select-none bg-gray-200 dark:bg-gray-900 relative overflow-hidden'>
+        <div className='hero select-none bg-gray-200 dark:bg-gray-950 relative overflow-hidden mb-5'>
             {/* Background Masked Image */}
             {/* <div
                 className="absolute top-0 right-0 w-full h-full bg-cover bg-right lg:bg-center opacity-40 lg:opacity-100 mix-blend-multiply lg:mix-blend-normal pointer-events-none"

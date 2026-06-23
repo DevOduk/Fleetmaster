@@ -12,8 +12,7 @@ export const metadata: Metadata = {
 };
 export default function page() {
   return (
-        <div className="container m-auto min-h-screen">
-      <PageBreadcrumb pageTitle="Our Locations" />
+    <div className="min-h-screen">
       <ClientsYardView />
     </div>
   );

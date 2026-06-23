@@ -11,10 +11,9 @@ export const metadata: Metadata = {
   description: "nn",
 };
 
-export default function page() {  
+export default function page() {
   return (
-        <div className="container m-auto min-h-screen">
-      <PageBreadcrumb pageTitle="About Us" />
+    <div className="min-h-screen">
       <AboutPageContent />
     </div>
   );

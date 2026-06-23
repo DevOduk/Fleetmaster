@@ -7,6 +7,7 @@ import { TenantProvider } from "@/context/TenantContext";
 import { getCachedTenant } from "@/utils/tenant-cache";
 import { notFound } from "next/navigation";
 import { UserProvider } from "@/context/UserContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 export default async function TenantLayout({
   children,
@@ -25,23 +26,25 @@ export default async function TenantLayout({
   }
 
   return (
-    <TenantProvider>
-      <FleetProvider>
-        <UserProvider>
-          <BookingProvider>
-            <div>
-              <ClientHeader />
+    <ToastProvider>
+      <TenantProvider>
+        <FleetProvider>
+          <UserProvider>
+            <BookingProvider>
+              <div>
+                <ClientHeader />
 
-              <main className="flex-1 w-full">
-                {children}
-              </main>
+                <main className="flex-1 w-full">
+                  {children}
+                </main>
 
-              <ClientFooter />
-            </div>
+                <ClientFooter />
+              </div>
 
-          </BookingProvider>
-        </UserProvider>
-      </FleetProvider>
-    </TenantProvider>
+            </BookingProvider>
+          </UserProvider>
+        </FleetProvider>
+      </TenantProvider>
+    </ToastProvider>
   );
 }

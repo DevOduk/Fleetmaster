@@ -4,12 +4,14 @@ import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import jwt from "jsonwebtoken";
 
+export const dynamic = "force-dynamic";
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function GET() {
   try {
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("fleet_session");
+    const sessionCookie = cookieStore.get("user_session");
 
     // 1. If no session cookie exists, user is unauthenticated (anonymous client view)
     if (!sessionCookie) {

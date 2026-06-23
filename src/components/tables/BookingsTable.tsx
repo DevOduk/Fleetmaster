@@ -21,7 +21,7 @@ export default function BookingsTable() {
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
       <div className="max-w-full overflow-x-auto">
-        <div className="min-w-[1102px]">
+        <div className="min-w-275">
           <Table>
             {/* Table Header */}
             <TableHeader className="border-b border-gray-100 dark:border-white/5">
@@ -100,7 +100,7 @@ export default function BookingsTable() {
                     allBookings.map((booking: any) => (
                       <TableRow key={booking.id}>
                         <TableCell className="px-5 py-4 sm:px-6 text-start">
-                          <div className="flex items-center gap-3 min-w-[250px]">
+                          <div className="flex items-center gap-3 min-w-62.5">
                             <img
                               className="w-20 object-fit-cover object-center"
                               style={{ objectFit: 'cover', objectPosition: 'center' }}

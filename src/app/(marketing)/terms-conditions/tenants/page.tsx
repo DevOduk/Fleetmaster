@@ -40,7 +40,7 @@ export default function TenantTermsPage() {
         <div className="lg:col-span-6">
           <h3 className="text-amber-500 font-semibold tracking-wider text-sm">B2B MERCHANT COMPLIANCE</h3>
           <h2 className="text-3xl mt-2 mb-3 font-bold text-slate-900 dark:text-white">Securing System Integrations & Commercial Liabilities.</h2>
-          <p className="text-sm text-slate-600 dark:text-gray-400 leading-relaxed max-w-[700px]">
+          <p className="text-sm text-slate-600 dark:text-gray-400 leading-relaxed max-w-175">
             Designed specifically for fleet rental merchants, safari operators, and automotive logistical agencies deploying FleetMaster software and sensor infrastructure across Kenya. Understand your configuration risks, payment verification parameters, and data sovereignty definitions. 
             <span className="uppercase text-brand-600">ensure due delligence before accepting a booking</span>
           </p>

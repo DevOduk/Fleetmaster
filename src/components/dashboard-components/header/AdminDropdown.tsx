@@ -65,7 +65,7 @@ export default function AdminDropdown() {
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
-        className="absolute right-0 top-full mt-2 flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"      >
+        className="absolute right-0 top-full mt-2 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"      >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-300">
             {profile?.first_name} {profile?.last_name}

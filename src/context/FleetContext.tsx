@@ -25,7 +25,6 @@ export const FleetProvider = ({ children }: { children: ReactNode }) => {
         const response = await fetch("/api/vehicles/resolve");
         const data = await response.json();
 
-        console.log('cached vehicle data: ', data)
         if (response.ok) {
           setVehicles(data.vehicles);
         } else {

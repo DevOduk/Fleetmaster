@@ -25,24 +25,28 @@ interface SearchParams {
   start: string;
   end: string;
 }
+
+
+const syncTimeToDateString = (dateTarget: string, sourceDateTime: string): string => {
+  if (!sourceDateTime || !dateTarget) return dateTarget;
+
+  // Extract the time portion (everything after the 'T')
+  const [, timeComponent] = sourceDateTime.split("T");
+  // Extract the date portion of the target string
+  const [dateComponent] = dateTarget.split("T");
+
+  if (!timeComponent || !dateComponent) return dateTarget;
+
+  return `${dateComponent}T${timeComponent}`;
+};
+
 export default function SearchForm({ tenant }: SearchFormProps) {
   const router = useRouter();
   const [search, setSearch] = useState<number>(0);
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(10, 0, 0, 0); // Explicitly set to 10:00:00.000 AM local time
 
-  // 2. Get the date 3 days from now
-  const threeDaysOut = new Date();
-  threeDaysOut.setDate(threeDaysOut.getDate() + 3);
-  threeDaysOut.setHours(10, 0, 0, 0); // Explicitly set to 10:00:00.000 AM local time
-
-  // 3. Format both to 'YYYY-MM-DDTHH:mm' matching your HTML input type="datetime-local" needs
-  const start = tomorrow.toLocaleString('sv-SE').replace(' ', 'T').slice(0, 16);
-  const end = threeDaysOut.toLocaleString('sv-SE').replace(' ', 'T').slice(0, 16);
-  const [searchParams, setSearchParams] = useState<SearchParams>({ location: '', category: '', make: '', model: '', start: start, end: end });
+  const [searchParams, setSearchParams] = useState<SearchParams>({ location: '', category: '', make: '', model: '', start: '', end: '' });
   const { vehicles } = useFleet();
-  
+
   const allCategories = vehicles.map(v => v.category);
   const allMakes = vehicles.map(v => v.make);
   const allLocations = vehicles.map(v => v.location);
@@ -68,7 +72,7 @@ export default function SearchForm({ tenant }: SearchFormProps) {
   return (
     <form onSubmit={handleSubmit} className="p-7 min-h-[70vh] justify-center flex flex-col mb-2">
       {/* <h1 className="text-2xl font-bold">Welcome, {tenant}!</h1> */}
-      <p className="text-brand-500">Welcome to {tenant?.name || 'Car Hire'}, {tenant?.country || 'Kenya'}</p>
+      <p className="text-amber-500">Welcome to {tenant?.name || 'our Car Hire'}, {tenant?.country || 'Kenya'}</p>
       <h1 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white max-w-[80%]">Affordable, Reliable & Efficient Car Hire Services in {tenant?.country || 'Kenya'}</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400">Choose your preferred vehicle brand and category below to find the ideal ride for your journey. Visit our yard or make a booking online for delivery (See yard location on Map)</p>
 
@@ -92,7 +96,7 @@ export default function SearchForm({ tenant }: SearchFormProps) {
               options={locations.map((c) => ({ value: c, label: c }))}
               placeholder="Select Location"
               value={searchParams.location}
-              className="pl-[62px]"
+              className="pl-15.5"
               onChange={(e) => setSearchParams({ ...searchParams, location: e })}
             />
             <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -110,7 +114,7 @@ export default function SearchForm({ tenant }: SearchFormProps) {
             <Select
               options={categories.map((c) => ({ value: c, label: c }))}
               placeholder="Select category"
-              className="pl-[62px]"
+              className="pl-15.5"
               value={searchParams.category}
               onChange={(e) => setSearchParams({ ...searchParams, category: e })}
             />
@@ -132,13 +136,13 @@ export default function SearchForm({ tenant }: SearchFormProps) {
                 {/* <Input
                 placeholder="Make"
                 type="text"
-                className="pl-[62px]"
+                className="pl-15.5"
                 name="make"
               /> */}
                 <Select
                   options={makes.map((c) => ({ value: c, label: c }))}
                   placeholder="Select Make"
-                  className="pl-[62px]"
+                  className="pl-15.5"
                   value={searchParams.make}
                   onChange={(e) => setSearchParams({ ...searchParams, make: e })}
                 />
@@ -157,7 +161,7 @@ export default function SearchForm({ tenant }: SearchFormProps) {
                 <Select
                   options={modelsForMake(searchParams.make).map((c) => ({ value: c, label: c }))}
                   placeholder="Select Model"
-                  className="pl-[62px]"
+                  className="pl-15.5"
                   value={searchParams.model}
                   onChange={(e) => setSearchParams({ ...searchParams, model: e })}
                 />
@@ -177,25 +181,45 @@ export default function SearchForm({ tenant }: SearchFormProps) {
           <div className="relative">
             <Input
               type="datetime-local"
-              className="pl-[62px]"
+              className="pl-15.5"
               value={searchParams.start}
-              onChange={(e) => setSearchParams({ ...searchParams, start: e.target.value })}
+              onChange={(e) => {
+                const newStart = e.target.value; // e.g., "2026-06-22T14:30"
+                // Force the existing end date to adopt this new start time
+                const updatedEnd = syncTimeToDateString(searchParams.end, newStart);
+
+                setSearchParams({
+                  ...searchParams,
+                  start: newStart,
+                  end: updatedEnd,
+                });
+              }}
               name="start_date"
             />
             <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
               <CalendarMonthOutlinedIcon />
             </span>
-
           </div>
         </div>
+
         <div>
           <Label>End Date</Label>
           <div className="relative">
             <Input
               type="datetime-local"
-              className="pl-[62px]"
+              className="pl-15.5"
               value={searchParams.end}
-              onChange={(e) => setSearchParams({ ...searchParams, end: e.target.value })}
+              onChange={(e) => {
+                const newEnd = e.target.value; // e.g., "2026-06-25T16:00"
+                // Force the existing start date to adopt this new end time
+                const updatedStart = syncTimeToDateString(searchParams.start, newEnd);
+
+                setSearchParams({
+                  ...searchParams,
+                  start: updatedStart,
+                  end: newEnd,
+                });
+              }}
               name="end_date"
             />
             <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">

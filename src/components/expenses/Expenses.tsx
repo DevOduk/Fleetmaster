@@ -41,42 +41,43 @@ const Expenses: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 md:gap-6">
-                {[
-                    {
-                        title: 'Daily Expenses',
-                        currency: 'Ksh',
-                        value: 950.00,
-                        description: 'Total Expenses today',
-                    },
-                    {
-                        title: 'Weekly Expenses',
-                        currency: 'Ksh',
-                        value: 5950.00,
-                        description: 'Total Expenses this week',
-                    },
-                    {
-                        title: 'Monthly  Expenses',
-                        currency: 'Ksh',
-                        value: 73450.00,
-                        description: 'Total Expenses this Month',
-                    },
-                    {
-                        title: 'Mobile Money (This Month)',
-                        currency: 'Ksh',
-                        value: 24700.00,
-                        description: 'Excluding voucher expenses',
-                    },
-                ].map((p, i) => (
-                    <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6" key={i}>
-                        <h4 className="text-md text-black dark:text-white">
-                            {p?.title}
-                        </h4>
-                        <h2 className="text-2xl mt-3 mb-2 dark:text-gray-300 text-gray-600 font-bold"><span className=" text-xl">{p.currency}</span> {p?.value ? Number(p.value).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</h2>
-                        <p className="text-gray-500 text-sm">
-                            {p?.description}
-                        </p>
-                    </div>
-                ))}
+                {
+                    [
+                        {
+                            title: 'Daily Expenses',
+                            currency: 'Ksh',
+                            value: 950.00,
+                            description: 'Total Expenses today',
+                        },
+                        {
+                            title: 'Weekly Expenses',
+                            currency: 'Ksh',
+                            value: 5950.00,
+                            description: 'Total Expenses this week',
+                        },
+                        {
+                            title: 'Monthly  Expenses',
+                            currency: 'Ksh',
+                            value: 73450.00,
+                            description: 'Total Expenses this Month',
+                        },
+                        {
+                            title: 'Mobile Money (This Month)',
+                            currency: 'Ksh',
+                            value: 24700.00,
+                            description: 'Excluding voucher expenses',
+                        },
+                    ].map((p, i) => (
+                        <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6" key={i}>
+                            <h4 className="text-md text-black dark:text-white">
+                                {p?.title}
+                            </h4>
+                            <h2 className="text-2xl mt-3 mb-2 dark:text-gray-300 text-gray-600 font-bold"><span className="text-brand-500 text-xl">{p.currency}</span> {p?.value ? Number(p.value).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</h2>
+                            <p className="text-gray-500 text-sm">
+                                {p?.description}
+                            </p>
+                        </div>
+                    ))}
             </div>
             <div className="flex justify-between py-3 items-center">
                 <div>

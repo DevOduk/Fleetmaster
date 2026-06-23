@@ -34,7 +34,7 @@ interface ViewAllVehiclesProps {
     loading?: boolean;
 }
 
-export default function ViewAllVehicles({ tenant, filters, loading = false }: ViewAllVehiclesProps) {
+export default function ViewAllVehicles({ tenant, filters, loading = true }: ViewAllVehiclesProps) {
     const searchParams = useSearchParams();
     const { vehicles } = useFleet();
     const { bookings } = useBooking();
@@ -217,7 +217,7 @@ export default function ViewAllVehicles({ tenant, filters, loading = false }: Vi
                     <Dropdown
                         isOpen={isOpen}
                         onClose={closeDropdown}
-                        className="absolute right-0 mt-2.5 flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark z-50"
+                        className="absolute right-0 mt-2.5 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark z-50"
                     >
                         <ul className="flex flex-col gap-1 border-b border-gray-200 dark:border-gray-800">
                             {['Recommended', 'Price: Low to High', 'Price: High to Low', 'Year: Newest First', 'Year: Oldest First'].map((option) => (
@@ -254,7 +254,9 @@ export default function ViewAllVehicles({ tenant, filters, loading = false }: Vi
                         <VehicleItem
                             key={VehicleDetails.id || VehicleDetails.licensePlate}
                             VehicleDetails={VehicleDetails}
-                            isBooked={!availableVehicles?.some(v => v.id === VehicleDetails.id)} />
+                            isBooked={!availableVehicles?.some(v => v.id === VehicleDetails.id)}
+                            filters={filters}
+                        />
                     ))
                 ) : (
                     <div className="flex w-full col-span-full flex-col items-center justify-center min-h-[60vh] p-6 text-center">

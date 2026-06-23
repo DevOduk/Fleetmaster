@@ -44,7 +44,7 @@ export default function ShopPage() {
           <h3 className="text-amber-500">SHOP EQUIPMENT</h3>
           <h2 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white">Stay Safe & Secure w/ our variety of Hardware tools.</h2>
           {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[700px]">
+          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-175">
             Protect your automotive assets and access deep telemetry insight. All equipment includes complimentary pre-configuration protocols to map to your system subdomains instantly.          </p>
 
 
@@ -187,11 +187,11 @@ export default function ShopPage() {
                 </div>
 
                 {/* Card Main Body Content Elements */}
-                <div className="p-5 flex-grow flex flex-col justify-between">
+                <div className="p-5 grow flex flex-col justify-between">
                   <div>
                     {/* Category Header metadata badge elements */}
                     <div className="flex gap-1.5 font-bold items-center text-amber-500 mb-2">
-                      <ProductIcon className="!w-4 !h-4" />
+                      <ProductIcon className="w-4 h-4" />
                       <span className="text-xs uppercase tracking-wider">{product.category}</span>
                     </div>
 
@@ -227,7 +227,7 @@ export default function ShopPage() {
                       type="button"
                       className="inline-flex items-center gap-2 rounded-xl py-2.5 px-4 text-xs font-semibold bg-brand-500 hover:bg-brand-600 text-white shadow-sm transition-all active:scale-95"
                     >
-                      <ShoppingCartOutlinedIcon className="!w-4 !h-4" />
+                      <ShoppingCartOutlinedIcon className="w-4 h-4" />
                       Order Hardware
                     </button>
                   </div>

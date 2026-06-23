@@ -477,19 +477,55 @@ export default function EditBookingForm({ id: bookingID }: { id: number }) {
                 <div className="flex gap-2 flex-col items-end border-t mt-6">
                   <h4 className="mt-4 font-semibold text-gray-800 modal-title text-theme-l dark:text-white/90 lg:text-l">
                     Booking Summary:</h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Booked Days: {getNumberOfDays(getBookingDetails(bookingID)?.rentalStart, getBookingDetails(bookingID)?.rentalEnd)} Days</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Extension: {eventDays - Number(getBookingDetails(bookingID)?.days)} Days</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Daily Rate: Ksh. {getBookingDetails(bookingID).dailyRate.toLocaleString()} </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Amount: Ksh. {getBookingDetails(bookingID).totalAmount.toLocaleString()}
-                  </p>
-                  <p className="text-sm font-bold text-green-500">
-                    Total Payable: Ksh. {
-                      ((getTotalAmount(getBookingDetails(bookingID)?.vehicleID, eventEndDate, eventStartDate)) - (getBookingDetails(bookingID)?.totalAmount)).toLocaleString()
+                  <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-900/30">
+                    <h3 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Extension Cost Breakdown</h3>
 
-                    }
-                  </p>
+                    {/* Grid Wrapper */}
+                    <div className="grid grid-cols-[1fr_auto_1fr] gap-x-4 gap-y-3 text-sm items-center">
+
+                      {/* Row 1: Booked Days */}
+                      <div className="text-left text-gray-500 dark:text-gray-400">Booked Days</div>
+                      <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                      <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                        {getNumberOfDays(getBookingDetails(bookingID)?.rentalStart, getBookingDetails(bookingID)?.rentalEnd)} Days
+                      </div>
+
+                      {/* Row 2: Extension Days */}
+                      <div className="text-left text-gray-500 dark:text-gray-400">Extension Period</div>
+                      <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                      <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                        {eventDays - Number(getBookingDetails(bookingID)?.days || 0)} Days
+                      </div>
+
+                      {/* Row 3: Daily Rate */}
+                      <div className="text-left text-gray-500 dark:text-gray-400">Daily Rate</div>
+                      <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                      <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                        Ksh. {getBookingDetails(bookingID)?.dailyRate?.toLocaleString() || "0"}
+                      </div>
+
+                      {/* Row 4: Base Paid Amount */}
+                      <div className="text-left text-gray-500 dark:text-gray-400">Original Amount Paid</div>
+                      <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                      <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                        Ksh. {getBookingDetails(bookingID)?.totalAmount?.toLocaleString() || "0"}
+                      </div>
+
+                      {/* Horizontal Divider Span across all 3 columns */}
+                      <div className="col-span-3 border-t border-gray-200 my-1 dark:border-gray-800" />
+
+                      {/* Grand Total Row: Net Payable Difference */}
+                      <div className="text-left font-bold text-gray-800 dark:text-gray-100">Total Payable</div>
+                      <div className="w-px h-5 bg-gray-300 dark:bg-gray-700" />
+                      <div className="text-right text-base font-bold text-green-600 dark:text-green-500">
+                        Ksh. {
+                          ((getTotalAmount(getBookingDetails(bookingID)?.vehicleID, eventEndDate, eventStartDate) || 0) -
+                            (getBookingDetails(bookingID)?.totalAmount || 0)).toLocaleString()
+                        }
+                      </div>
+
+                    </div>
+                  </div>
                 </div>
 
               )

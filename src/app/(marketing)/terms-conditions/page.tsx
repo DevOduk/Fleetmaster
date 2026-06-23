@@ -39,7 +39,7 @@ export default function ClientTermsPage() {
         <div className="lg:col-span-6">
           <h3 className="text-emerald-600 font-semibold tracking-wider text-sm">DRIVER ACCOUNTABILITY</h3>
           <h2 className="text-3xl mt-2 mb-3 font-bold text-slate-900 dark:text-white">An Airtight Custody & Real-Time Tracking Agreement.</h2>
-          <p className="text-sm text-slate-600 dark:text-gray-400 leading-relaxed max-w-[700px]">
+          <p className="text-sm text-slate-600 dark:text-gray-400 leading-relaxed max-w-175">
             By leasing or operating a vehicle managed within our infrastructure ecosystem across Kenya, you assume complete civil, financial, and criminal accountability. This document establishes legal custody, tracking compliance protocols, speed limitations, and insurance deductible frameworks.
           </p>
 

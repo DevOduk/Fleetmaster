@@ -70,7 +70,7 @@ const Payments: React.FC = () => {
                         <h4 className="text-md text-black dark:text-white">
                             {p?.title}
                         </h4>
-                        <h2 className="text-2xl mt-3 mb-2 dark:text-gray-300 text-gray-600 font-bold"><span className=" text-xl">{p.currency}</span> {p?.value ? Number(p.value).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</h2>
+                        <h2 className="text-2xl mt-3 mb-2 dark:text-gray-300 text-gray-600 font-bold"><span className="text-brand-500 text-xl">{p.currency}</span> {p?.value ? Number(p.value).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</h2>
                         <p className="text-gray-500 text-sm">
                             {p?.description}
                         </p>

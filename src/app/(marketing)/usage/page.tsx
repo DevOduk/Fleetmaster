@@ -54,10 +54,10 @@ export default function UseCasesPage() {
           <h3 className="text-amber-500">WHAT PROBLEM DO WE SOLVE?</h3>
           <h2 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white">Get a Software that Works for You</h2>
           {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[700px] leading-relaxed mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-175 leading-relaxed mb-4">
             FleetMaster is an all-in-one fleet management platform designed specifically for small to medium-sized car rental agencies looking to eliminate technical complexity and significantly lower operational costs. We manage the entire digital infrastructure—including hosting, routine updates, robust security, and technical maintenance—allowing operators to bypass the expensive overhead associated with hiring software engineering teams. In competitive markets like Kenya, many operators lack dedicated software to handle bookings or optimize client navigation, which often leads to underutilized assets.
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[700px] leading-relaxed">
+          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-175 leading-relaxed">
             By establishing a powerful online presence backed by built-in SEO optimizations, FleetMaster ensures your business remains highly visible to prospective clients, maximizing your vehicle utilization rates. Our automated system streamlines vehicle dispatch, digital documentation, and real-time client booking interfaces. Contact our technical team today to launch a professional, secure, and production-ready fleet portal configured for your business in just ten minutes.
           </p>
 
@@ -95,7 +95,7 @@ export default function UseCasesPage() {
             </h2> */}
 
             {/* Center Timeline Line Indicator: Centered on desktop, shifted to the left edge on mobile screens */}
-            <div className="absolute left-[26px] md:left-1/2 top-24 bottom-6 w-0.5 -translate-x-1/2 bg-slate-200 dark:bg-slate-800 pointer-events-none" />
+            <div className="absolute left-6.5 md:left-1/2 top-24 bottom-6 w-0.5 -translate-x-1/2 bg-slate-200 dark:bg-slate-800 pointer-events-none" />
 
             {[
               {
@@ -153,10 +153,10 @@ export default function UseCasesPage() {
               return (
                 <div
                   key={index}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center relative pl-12 md:pl-0 min-h-[300px]"
+                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center relative pl-12 md:pl-0 min-h-75"
                 >
                   {/* Center/Left Number Node Badge */}
-                  <div className="absolute left-0 md:left-1/2 top-0 md:top-1/2 -translate-x-0 md:-translate-x-1/2 md:-translate-y-1/2 w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 border-4 border-slate-50 dark:border-slate-950 flex items-center justify-center font-bold text-slate-800 dark:text-slate-200 shadow-sm z-10 text-sm">
+                  <div className="absolute left-0 md:left-1/2 top-0 md:top-1/2 translate-x-0 md:-translate-x-1/2 md:-translate-y-1/2 w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 border-4 border-slate-50 dark:border-slate-950 flex items-center justify-center font-bold text-slate-800 dark:text-slate-200 shadow-sm z-10 text-sm">
                     {index + 1}
                   </div>
 
@@ -177,7 +177,7 @@ export default function UseCasesPage() {
                   <div className={`flex flex-col justify-center mb-10 ${isEven ? 'md:pl-4' : 'md:pr-4'}`}>
                     <div className="flex gap-2 font-bold items-center mt-4">
                       <div className="rounded-full w-9 h-9 flex items-center justify-center bg-brand-500/10 dark:bg-brand-500/20">
-                        <FeatureIcon className="text-brand-500 !w-5 !h-5" />
+                        <FeatureIcon className="text-brand-500 w-5 h-5" />
                       </div>
                       <span className="text-brand-500 text-sm tracking-wide">{feature.badgeText}</span>
                     </div>
@@ -198,7 +198,7 @@ export default function UseCasesPage() {
               </h3>
 
               {/* Stepper Downward Container */}
-              <div className="relative pl-6 space-y-8 before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200 dark:before:bg-slate-800">
+              <div className="relative pl-6 space-y-8 before:absolute before:left-4.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
 
                 {[
                   {
@@ -230,8 +230,8 @@ export default function UseCasesPage() {
                   return (
                     <div key={stepIdx} className="relative flex gap-4 items-start group">
                       {/* Step Indicator Node Badge */}
-                      <div className={`absolute -left-[27px] p-2 rounded-full flex items-center justify-center border-4 border-white dark:border-slate-900 z-10 ${step.iconColorClass}`}>
-                        <StepIcon className="!w-4 !h-4" />
+                      <div className={`absolute -left-0.75 p-2 rounded-full flex items-center justify-center border-4 border-white dark:border-slate-900 z-10 ${step.iconColorClass}`}>
+                        <StepIcon className="w-4 h-4" />
                       </div>
 
                       {/* Step Description Content */}

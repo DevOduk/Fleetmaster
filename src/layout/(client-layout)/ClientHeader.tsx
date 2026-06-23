@@ -111,13 +111,15 @@ export default function ClientHeader() {
 
 
     return (
-        <header className="sticky top-0 w-full bg-white border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
+        <header className="sticky top-0 w-full bg-white border-gray-200 z-999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
             {profile && <VerificationBanner profile={profile} />}
             <div className="flex container m-auto flex-col items-center justify-between grow lg:flex-row lg:px-2">
                 <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
 
                     <Link href="/" className="lg:block">
-                        {!tenantLoading && tenant && !imgFailed ? (
+                        {tenantLoading ? (
+                            <div className="h-8 w-40 rounded bg-gray-500 animate-pulse"></div>
+                        ) : (
                             <img
                                 style={{
                                     width: 154,
@@ -129,37 +131,6 @@ export default function ClientHeader() {
                                 // CATCH BROKEN IMAGE: If the CDN returns a 404 or ORB block, step back into fallback code block
                                 onError={() => setImgFailed(true)}
                             />
-                        ) : (
-                            <>
-                                {/* 1. Light Mode: Desktop/Tablet Logo (Hidden on mobile, visible up to lg) */}
-                                <Image
-                                    width={154}
-                                    height={39.2}
-                                    className="hidden sm:block dark:hidden"
-                                    src="/images/logo/logo.svg"
-                                    alt="Logo"
-                                />
-
-                                {/* 2. Dark Mode: Desktop/Tablet Logo (Hidden on mobile, visible up to lg) */}
-                                <Image
-                                    width={154}
-                                    height={39.2}
-                                    className="hidden sm:dark:block object-contain h-auto"
-                                    src="/images/logo/logo-dark.svg"
-                                    alt="Logo"
-                                    style={{ height: 'auto' }}
-                                    suppressHydrationWarning
-                                />
-
-                                {/* 3. Small Mobile Icon */}
-                                <Image
-                                    width={40}
-                                    height={40}
-                                    className="block sm:hidden object-contain"
-                                    src="/images/logo/logo-icon.svg"
-                                    alt="Logo Icon"
-                                />
-                            </>
                         )}
                     </Link>
 
@@ -227,10 +198,10 @@ export default function ClientHeader() {
                                     ref={inputRef}
                                     type="text"
                                     placeholder="hold ctrl + k to search"
-                                    className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/3 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
+                                    className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/3 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-107.5"
                                 />
 
-                                <button className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/3 dark:text-gray-400">
+                                <button className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-1.75 py-[4.5px] text-xs tracking-[-0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/3 dark:text-gray-400">
                                     <span> ⌘ </span>
                                     <span> K </span>
                                 </button>
@@ -242,7 +213,7 @@ export default function ClientHeader() {
                                 onClose={() => {
                                     closeModal()
                                 }}
-                                className="max-w-[700px] p-5 lg:p-8"
+                                className="max-w-175 p-5 lg:p-8"
                             >
                                 <p className="font-semibold text-gray-800 mb-6 text-medium dark:text-white/90">
                                     Search
@@ -276,14 +247,14 @@ export default function ClientHeader() {
                                             className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/3 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                                         />
                                         {
-                                            searching && <button className="absolute right-0 top-0 h-11 inline-flex items-center gap-0.5 rounded-lg px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/3 dark:text-gray-400">
+                                            searching && <button className="absolute right-0 top-0 h-11 inline-flex items-center gap-0.5 rounded-lg px-1.75 py-[4.5px] text-xs tracking-[-0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/3 dark:text-gray-400">
                                                 <CircularProgress size={25} />
                                             </button>
                                         }
                                     </div>
                                 </form>
 
-                                <div className="max-h-[500px] overflow-auto custom-scrollbar flex flex-col gap-3">
+                                <div className="max-h-125 overflow-auto custom-scrollbar flex flex-col gap-3">
 
                                     <div className="pt-5">
                                         <h5 className="text-gray-500">SEARCH RESULTS</h5>

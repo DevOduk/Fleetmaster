@@ -6,6 +6,7 @@ import React from "react";
 const ClientFooter: React.FC = () => {
   const { tenant } = useTenant();
   const year = (new Date()).getFullYear();
+
   return (
     <div>
       <div className="text-gray-500 text-theme-sm dark:text-gray-400 mb-4 mt-4 flex flex-wrap items-center justify-center gap-3">

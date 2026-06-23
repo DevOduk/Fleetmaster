@@ -13,12 +13,7 @@ import { useUser } from "@/context/UserContext";
 
 
 export default function UserDocumentsCard() {
-      const {profile} = useUser();
-  const { isOpen, openModal, closeModal } = useModal();
-  const handleSave = () => {
-    // Handle save logic here
-    closeModal();
-  };
+  const { profile } = useUser();
   return (
     <>
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">

@@ -185,7 +185,7 @@ export default function Preferences() {
                 {formData.buffer} Hrs
               </p> */}
               <div className="relative">
-                <Input type="number" name="buffer" className="pl-[62px]" value={formData.buffer} min="1" onChange={handleInputChange} />
+                <Input type="number" name="buffer" className="pl-15.5" value={formData.buffer} min="1" onChange={handleInputChange} />
 
                 <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
                   Hrs

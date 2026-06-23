@@ -2,8 +2,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-
-
 interface TenantContextType {
   tenant: any | null;
   loading: boolean;
@@ -14,17 +12,16 @@ const TenantContext = createContext<TenantContextType | undefined>(undefined);
 
 interface TenantProviderProps {
   children: React.ReactNode;
-  initialTenant?: any | null; // Optional prop to inject pre-cached server data
+  initialTenant?: any | null;
 }
 
 export function TenantProvider({ children, initialTenant = null }: TenantProviderProps) {
-  // 1. Initialize state instantly if the Server Layout supplied the cached data
   const [tenant, setTenant] = useState<any | null>(initialTenant);
-  const [loading, setLoading] = useState(!initialTenant); // false if initialized, true if it needs fetching
+  const [loading, setLoading] = useState(!initialTenant);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 2. Short-circuit if the data was already populated by the server layout
+    // 1. If tenant is already loaded by server or a previous run, do nothing
     if (tenant) return;
 
     async function resolveTenantContext() {
@@ -32,32 +29,40 @@ export function TenantProvider({ children, initialTenant = null }: TenantProvide
         const hostname = window.location.hostname;
         const parts = hostname.split(".");
         
-        // Handle local testing environments safely
         let slug = parts.length > 1 ? parts[0] : null;
         if (hostname === "localhost" || parts.includes("fleetmaster")) {
            if (parts.length <= 2) slug = null; 
         }
 
-        if (!slug) {
+        // If it's a root domain or global management portal (no tenant slug)
+        if (!slug || slug === "app" || slug === "dashboard") {
+          setTenant(null);
           setLoading(false);
           return;
         }
 
-        // Fetch fallback metadata from the edge-cached endpoint
         const res = await fetch(`/api/tenants/resolve?slug=${slug}`);
-        if (!res.ok) throw new Error("Failed to resolve tenant workspace configuration");
+        
+        // 2. Handle 404 cleanly instead of looping infinitely
+        if (!res.ok) {
+          console.warn(`Tenant workspace "${slug}" could not be resolved.`);
+          setTenant(null); 
+          return;
+        }
         
         const data = await res.json();
         setTenant(data.tenant);
       } catch (err: any) {
+        console.error("Tenant Context resolution error:", err);
         setError(err.message || "An error occurred");
+        setTenant(null); // Prevents infinite loop by neutralizing fallback state
       } finally {
         setLoading(false);
       }
     }
 
     resolveTenantContext();
-  }, [tenant]);
+  }, []); // 🌟 Dropped [tenant] dependency to guarantee execution fires exactly ONCE on mount
 
   return (
     <TenantContext.Provider value={{ tenant, loading, error }}>

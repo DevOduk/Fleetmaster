@@ -9,13 +9,12 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-export default function AuthLayout({
+export default function AuthSigInLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <UserProvider>
     <AdminProvider>
       <TenantProvider>
         <div className="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
@@ -49,6 +48,5 @@ export default function AuthLayout({
         </div>
       </TenantProvider>
     </AdminProvider>
-    </UserProvider>
   );
 }
