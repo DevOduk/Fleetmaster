@@ -91,15 +91,6 @@ export default function ClientHeader() {
         { name: "Our yards", href: "/yards" }
     ]
 
-    // 3. Keep the screen clean with your loader during the security evaluation phase
-    if (tenantLoading) {
-        return (
-            <div className="w-screen h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-                <span className="loader-custom"></span>
-            </div>
-        );
-    }
-
     return (
         <header className="sticky top-0 w-full bg-white border-gray-200 z-999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
             {profile?.role === 'Client' && <VerificationBanner profile={profile} />}

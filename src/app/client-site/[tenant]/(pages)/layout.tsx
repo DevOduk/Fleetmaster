@@ -1,4 +1,5 @@
-// src/app/(client)/[tenant]/(pages)/layout.tsx
+// ❌ DO NOT ADD "use client" HERE! Keep this as a Server Component.
+
 import ClientFooter from "@/layout/(client-layout)/ClientFooter";
 import ClientHeader from "@/layout/(client-layout)/ClientHeader";
 import { BookingProvider } from "@/context/BookingContext";
@@ -8,6 +9,7 @@ import { getCachedTenant } from "@/utils/tenant-cache";
 import { notFound } from "next/navigation";
 import { UserProvider } from "@/context/UserContext";
 import { ToastProvider } from "@/context/ToastContext";
+import TenantLoadingScreenGuard from "./TenantLoadingScreenGuard"; // We will create this next
 
 export default async function TenantLayout({
   children,
@@ -18,7 +20,7 @@ export default async function TenantLayout({
 }) {
   const { tenant: tenantSlug } = await params;
 
-  // Instantly fetches from Next.js server-side memory cache
+  // Instantly fetches from Next.js server-side memory cache safely
   const tenantData = await getCachedTenant(tenantSlug);
 
   if (!tenantData) {
@@ -27,19 +29,23 @@ export default async function TenantLayout({
 
   return (
     <ToastProvider>
-      <TenantProvider>
+      <TenantProvider initialTenant={tenantData}>
         <FleetProvider>
           <UserProvider>
             <BookingProvider>
-              <div>
-                <ClientHeader />
+              
+              {/* Wrap the layout elements inside our new isolated client boundary */}
+              <TenantLoadingScreenGuard>
+                <div>
+                  <ClientHeader />
 
-                <main className="flex-1 w-full">
-                  {children}
-                </main>
+                  <main className="flex-1 w-full">
+                    {children}
+                  </main>
 
-                <ClientFooter />
-              </div>
+                  <ClientFooter />
+                </div>
+              </TenantLoadingScreenGuard>
 
             </BookingProvider>
           </UserProvider>
