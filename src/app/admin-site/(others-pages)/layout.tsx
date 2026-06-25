@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSidebar } from "@/context/SidebarContext";
 import AppHeader from "@/layout/(admin-layout)/AppHeader";
@@ -10,7 +10,6 @@ import AppFooter from "@/layout/(admin-layout)/AppFooter";
 import { Toaster } from 'sonner';
 import { useSettings } from "@/context/SettingsContext";
 import { useUser } from "@/context/UserContext";
-import DashboardSkeleton from "@/components/DashboardSkeleton";
 
 function ToasterWrapper() {
   const { position } = useSettings();
@@ -26,60 +25,57 @@ export default function OthersPagesLayout({
   const { profile, loading } = useUser();
   const router = useRouter();
 
-  // State to track if we've explicitly checked for the local storage token
-  const [hasCheckedToken, setHasCheckedToken] = useState(false);
-  const [hasToken, setHasToken] = useState(false);
+  // Domain-aware multi-tenant routing controller
+  const executeAbsoluteAuthRedirect = () => {
+    if (typeof window === "undefined") return;
+
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+    const port = window.location.port ? `:${window.location.port}` : "";
+
+    // A. Localhost Subdomain Path Resolution (e.g., app.localhost:3000)
+    if (hostname.includes("localhost") && hostname.startsWith("app.")) {
+      window.location.href = `${protocol}//app.localhost${port}/signin`;
+      return;
+    }
+
+    // B. Vercel Staging/Trial Path Rules (Bypasses relative root routes)
+    if (hostname.includes("vercel.app")) {
+      window.location.href = `${protocol}//${hostname}${port}/admin-site/signin`;
+      return;
+    }
+
+    // C. Production Custom Domain Multi-tenant Fallback Layout (e.g., app.fleetmaster.co.ke)
+    if (!hostname.startsWith("app.") && !hostname.startsWith("dashboard.") && hostname !== "localhost") {
+      window.location.href = `${protocol}//app.${hostname}${port}/signin`;
+      return;
+    }
+
+    // Standard absolute fallback string execution path
+    router.replace('/signin');
+  };
 
   useEffect(() => {
-    // 1. Synchronous Token Check on Mount
-    // Adjust "token" to match whatever key you store your JWT under (e.g., "sb-access-token", "jwt")
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    
-    if (!token) {
-      // No token at all? Kick them out instantly before any async API loads
-      router.replace('/signin');
-    } else {
-      setHasToken(true);
-      setHasCheckedToken(true);
+    if (loading) return;
+
+    if (!profile) {
+      executeAbsoluteAuthRedirect();
     }
-  }, [router]);
+  }, [profile, router, loading]);
 
-  // 2. Secondary Safety: If the API finishes loading and explicitly finds the token is invalid/expired
-  useEffect(() => {
-    if (hasCheckedToken && !loading && !profile) {
-      router.replace('/signin');
-    }
-  }, [profile, loading, hasCheckedToken, router]);
-
-  // --- RENDERING STRATEGY ---
-
-  // Phase A: Split-second window where we don't even know if a token exists in storage yet
-  if (!hasCheckedToken) {
-    return null; // absolute blank slate to prevent any asset flash
-  }
-
-  // Phase B: Token exists, but profile state is still pulling the user data from the database
-  if (loading && hasToken) {
+  // 1. Phase A: App is actively pulling session context over the network
+  if (loading) {
     return (
-      <div className="min-h-screen xl:flex">
-        <AppSidebar />
-        <Backdrop />
-        <div className={`flex-1 transition-all duration-300 ease-in-out ${
-          isMobileOpen ? "ml-0" : isExpanded || isHovered ? "lg:ml-[290px]" : "lg:ml-[90px]"
-        }`}>
-          <AppHeader />
-          <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
-            <DashboardSkeleton loading={loading} />
-          </div>
-          <AppFooter />
-        </div>
+      <div className="w-screen h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <span className="loader-custom"></span>
       </div>
     );
   }
 
-  // Phase C: If the token was a dummy/expired and API completely finished returning null
+  // 2. Phase B: Hard Guard. Loading finished, profile is missing, and page is redirecting.
+  // Returning null here stops the dashboard shell below from ever leaking onto the viewport.
   if (!profile) {
-    return null; 
+    return null;
   }
 
   const mainContentMargin = isMobileOpen
@@ -88,7 +84,7 @@ export default function OthersPagesLayout({
       ? "lg:ml-[290px]"
       : "lg:ml-[90px]";
 
-  // Phase D: Full Authorization Success
+  // 3. Phase C: Full Authorization Success
   return (
     <>
       <ToasterWrapper />

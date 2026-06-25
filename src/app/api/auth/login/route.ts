@@ -74,7 +74,7 @@ export async function POST(request: Request) {
             accountType: role,
         };
 
-        const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: "1d" });
+        const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: "7d" });
 
         // Strip the raw password hash out of the server response object for security clean-up
         const { password: _, ...safeUserAccount } = userAccount;
