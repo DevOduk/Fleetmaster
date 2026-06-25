@@ -15,7 +15,6 @@ export default function AuthSigInLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AdminProvider>
       <TenantProvider>
         <div className="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
           <ThemeProvider>
@@ -30,7 +29,7 @@ export default function AuthSigInLayout({
                       <Image
                         width={231}
                         height={48}
-                        src="./images/logo/auth-logo.svg"
+                        src="/images/logo/auth-logo.svg"
                         alt="Logo"
                       />
                     </Link>
@@ -47,6 +46,5 @@ export default function AuthSigInLayout({
           </ThemeProvider>
         </div>
       </TenantProvider>
-    </AdminProvider>
   );
 }

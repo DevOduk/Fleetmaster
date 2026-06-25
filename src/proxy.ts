@@ -7,7 +7,7 @@
 
 // export async function proxy(req: NextRequest) {
 //   const url = req.nextUrl.clone();
-  
+//   
 //   const hostHeader = req.headers.get('host') || '';
 //   const hostname = hostHeader.split(':')[0].toLowerCase();
 //   const pathname = url.pathname;
@@ -32,7 +32,7 @@
 //     if (parts.length > 1) subdomain = parts[0];
 //   } else {
 //     const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'fleetmaster-lemon.vercel.app';
-    
+//     
 //     if (hostname !== baseDomain && hostname.endsWith(`.${baseDomain}`)) {
 //       subdomain = hostname.replace(`.${baseDomain}`, '');
 //     }
@@ -80,10 +80,10 @@
 //   // ========================================================================
 //   // CORE AUTH SECURITY INTERCEPTOR LAYER
 //   // ========================================================================
-//   const isPrivateAdmin = targetPathname.startsWith('/admin-site') && !pathname.startsWith('/signin');
-//   const isPrivateTenant = targetPathname.startsWith('/tenant-manager') && !pathname.startsWith('/signin');
+//   const isPrivateTenantAdmin = targetPathname.startsWith('/admin-site') && !pathname.startsWith('/signin');
+//   const isPrivateAdmin = targetPathname.startsWith('/tenant-manager') && !pathname.startsWith('/signin');
 
-//   if (isPrivateAdmin || isPrivateTenant) {
+//   if (isPrivateTenantAdmin || isPrivateAdmin) {
 //     const sessionToken = req.cookies.get("user_session")?.value;
 
 //     if (!sessionToken) {
@@ -94,10 +94,10 @@
 //       const { payload } = await jose.jwtVerify(sessionToken, JWT_SECRET);
 //       const userRole = (payload.accountType || payload.role || "").toString().toLowerCase();
 
-//       if (isPrivateAdmin && !userRole.includes('admin')) {
+//       if (isPrivateTenantAdmin && !userRole.includes('admin')) {
 //         return NextResponse.redirect(new URL('/signin', req.url));
 //       }
-//       if (isPrivateTenant && !userRole.includes('tenant') && !userRole.includes('operator')) {
+//       if (isPrivateAdmin && !userRole.includes('tenant') && !userRole.includes('operator')) {
 //         return NextResponse.redirect(new URL('/signin', req.url));
 //       }
 
@@ -205,30 +205,50 @@ export async function proxy(req: NextRequest) {
   // ========================================================================
   // CORE AUTH SECURITY INTERCEPTOR LAYER
   // ========================================================================
-  const isPrivateAdmin = targetPathname.startsWith('/admin-site') && !pathname.startsWith('/signin');
-  const isPrivateTenant = targetPathname.startsWith('/tenant-manager') && !pathname.startsWith('/signin');
+  const isSignInPage = pathname.startsWith('/signin') || targetPathname.includes('/signin');
+  
+  const isPrivateTenantAdmin = targetPathname.startsWith('/admin-site') && !isSignInPage;
+  const isPrivateAdmin = targetPathname.startsWith('/tenant-manager') && !isSignInPage;
 
-  if (isPrivateAdmin || isPrivateTenant) {
+  if (isPrivateTenantAdmin || isPrivateAdmin) {
     const sessionToken = req.cookies.get("user_session")?.value;
+    const managerSessionToken = req.cookies.get("admin_session")?.value;
 
-    if (!sessionToken) {
+    // Route Guard A: /admin-site targets only need user_session
+    if (isPrivateTenantAdmin && !sessionToken) {
+      return NextResponse.redirect(new URL('/signin', req.url));
+    }
+    
+    // Route Guard B: /tenant-manager targets only need admin_session
+    if (isPrivateAdmin && !managerSessionToken) {
       return NextResponse.redirect(new URL('/signin', req.url));
     }
 
     try {
-      const { payload } = await jose.jwtVerify(sessionToken, JWT_SECRET);
-      const userRole = (payload.accountType || payload.role || "").toString().toLowerCase();
+      // Validate user token rules on tenant subdomains
+      if (isPrivateTenantAdmin && sessionToken) {
+        const { payload } = await jose.jwtVerify(sessionToken, JWT_SECRET);
+        const userRole = (payload.accountType || payload.role || "").toString().toLowerCase();
 
-      if (isPrivateAdmin && !userRole.includes('admin')) {
-        return NextResponse.redirect(new URL('/signin', req.url));
+        if (!userRole.includes('admin')) {
+          return NextResponse.redirect(new URL('/signin', req.url));
+        }
       }
-      if (isPrivateTenant && !userRole.includes('tenant') && !userRole.includes('operator')) {
-        return NextResponse.redirect(new URL('/signin', req.url));
+      
+      // Validate manager token rules on the tenant-manager dashboard
+      if (isPrivateAdmin && managerSessionToken) {
+        await jose.jwtVerify(managerSessionToken, JWT_SECRET);
+        // Add any additional overarching tenant-manager role validations here if required
       }
 
     } catch (err) {
+      console.error("Proxy middleware session verification crash:", err);
       const failRedirect = NextResponse.redirect(new URL('/signin', req.url));
-      failRedirect.cookies.delete("user_session");
+      
+      // Selectively scrub out whichever specific context token failed validation
+      if (isPrivateTenantAdmin) failRedirect.cookies.delete("user_session");
+      if (isPrivateAdmin) failRedirect.cookies.delete("admin_session");
+      
       return failRedirect;
     }
   }

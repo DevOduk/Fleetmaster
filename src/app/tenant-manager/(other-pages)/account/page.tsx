@@ -1,8 +1,8 @@
-import UserAddressCard from "@/components/user-profile/UserAddressCard";
-import UserInfoCard from "@/components/user-profile/UserInfoCard";
-import UserMetaCard from "@/components/user-profile/UserMetaCard";
 import { Metadata } from "next";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import AdminInfoCard from "@/components/user-profile/Tenant-Manager/UserInfoCard";
+import AdminMetaCard from "@/components/user-profile/Tenant-Manager/UserMetaCard";
+import AdminAddressCard from "@/components/user-profile/Tenant-Manager/UserAddressCard";
 
 export const metadata: Metadata = {
   title:
@@ -14,15 +14,15 @@ export default function Profile() {
   return (
     <div>
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
-      
-      <PageBreadcrumb pageTitle="View Profile" />
+
+        <PageBreadcrumb pageTitle="View Profile" />
         {/* <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
           View Profile
         </h3> */}
         <div className="space-y-6">
-          <UserMetaCard />
-          <UserInfoCard />
-          <UserAddressCard />
+          <AdminMetaCard />
+          <AdminInfoCard />
+          <AdminAddressCard />
         </div>
       </div>
     </div>
