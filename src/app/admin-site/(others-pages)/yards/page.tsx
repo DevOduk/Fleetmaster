@@ -1,6 +1,6 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { Metadata } from "next";
-import YardsContent from "@/components/yards/Yards";
+import Yards from "@/components/yards/Yards";
 
 export const metadata: Metadata = {
   title: "FleetManager Admin Dashboard | Yards - Best tool for Fleet Management",
@@ -10,7 +10,7 @@ export default function page() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Your Yards" />
-      <YardsContent />
+      <Yards />
     </div>
   );
 }
