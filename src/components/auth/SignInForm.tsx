@@ -38,7 +38,12 @@ export default function SignInForm({ tenant }: Tenant) {
     }
 
     let result;
-    if (typeof window !== "undefined" && window.location.hostname.startsWith("dashboard.")) {
+    const isDashboard = typeof window !== "undefined" && (
+      window.location.hostname.startsWith("dashboard.") ||
+      window.location.hostname.includes("fleetmaster-lemon.vercel.app")
+    );
+
+    if (isDashboard) {
       result = await adminLogin(email, password);
     } else {
       result = await login(tenant ? 'client' : 'admin', email, password, tenant);

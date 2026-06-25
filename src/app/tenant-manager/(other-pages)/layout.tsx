@@ -20,7 +20,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   const { adminProfile, loading } = useAdmin(); // 🌟 Safe to call now!
-console.log("Current Admin Context State:", { adminProfile, loading });
+  console.log("Current Admin Context State:", { adminProfile, loading });
 
   useEffect(() => {
     if (loading) return;
@@ -44,7 +44,7 @@ console.log("Current Admin Context State:", { adminProfile, loading });
       : "lg:ml-[90px]";
 
   return (
-    <div className="min-h-screen xl:flex">
+    !loading && <div className="min-h-screen xl:flex">
       {/* Sidebar and Backdrop */}
       <AppSidebar />
       <Backdrop />
@@ -69,12 +69,12 @@ console.log("Current Admin Context State:", { adminProfile, loading });
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <SettingsProvider>
-      <AdminProvider> 
-      <AdminProvider> 
-        <UserProvider>
-          <AdminLayoutContent>{children}</AdminLayoutContent>
-        </UserProvider>
-      </AdminProvider>
+      <AdminProvider>
+        <AdminProvider>
+          <UserProvider>
+            <AdminLayoutContent>{children}</AdminLayoutContent>
+          </UserProvider>
+        </AdminProvider>
       </AdminProvider>
     </SettingsProvider>
   );
