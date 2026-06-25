@@ -188,7 +188,7 @@ const Yards: React.FC = () => {
           closeModal();
           setSelectedEvent(null);
         }}
-        className="max-w-[700px] p-6 lg:p-10"
+        className="max-w-175 p-6 lg:p-10"
       >
         <div className="flex flex-col px-2 overflow-y-auto max-h-[calc(100vh-120px)] custom-scrollbar">
           <div>

@@ -124,7 +124,7 @@ const ClientsYardView: React.FC = () => {
         <div className="mt-12">
           <h3 className="text-brand-500 text-center">SEE ALL OUR YARDS</h3>
           <h2 className="text-3xl mt-4 mb-3 font-bold text-black text-center dark:text-white">Find the Nearest Yard</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-[700px] m-auto">Browse all our locations all over the country. Vehicles can be returned at any of our locations upon agreement!</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-175 m-auto">Browse all our locations all over the country. Vehicles can be returned at any of our locations upon agreement!</p>
 
         </div>
         {
