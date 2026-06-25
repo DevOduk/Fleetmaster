@@ -181,7 +181,7 @@ const ClientsYardView: React.FC = () => {
                         const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
                         // Open the URL in a new browser tab or redirect the user
-                        window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
+                        window?.open(googleMapsUrl, "_blank", "noopener,noreferrer");
                       }} variant="primary" size="sm">
                         Get Directions <ArrowRightIcon className="rotate-315" />
                       </Button>
