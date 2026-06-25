@@ -103,11 +103,11 @@ export default function ClientHeader() {
 const isVercelStaging = typeof window !== "undefined" && window.location.hostname.includes("vercel.app");
 
 const navLinks = [
-        { name: "Find a car", href: isVercelStaging ? "/admin-site/vehicles" :"/vehicles" },
-        { name: "Lease your car", href: isVercelStaging ? "/admin-site/lease" :"/lease" },
-        { name: "About us", href: isVercelStaging ? "/admin-site/about" :"/about" },
-        { name: "Contact us", href: isVercelStaging ? "/admin-site/contact" :"/contact" },
-        { name: "Our yards", href: isVercelStaging ? "/admin-site/yards" :"/yards" }
+        { name: "Find a car", href: "/vehicles" },
+        { name: "Lease your car", href: "/lease" },
+        { name: "About us", href: "/about" },
+        { name: "Contact us", href: "/contact" },
+        { name: "Our yards", href: "/yards" }
     ]
 
 
