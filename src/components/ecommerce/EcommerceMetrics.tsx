@@ -48,18 +48,18 @@ export const EcommerceMetrics = () => {
             {/* CARD 1: Total Revenue */}
             <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 bg-brand-500/5 md:p-6">
               <div className="flex gap-3 items-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+                {/* <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
                   <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />
-                </div>
+                </div> */}
 
-                <span className="text-xl font-bold text-gray-200 dark:text-gray-100">
+                <span className="text-xl font-bold text-gray-200 dark:text-gray-300">
                   Total Revenue
                 </span>
               </div>
-              <div className="flex items-center justify-between mt-5">
+              <div className="flex items-center justify-between mt-3">
                 <div>
-                  <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                    $ {totalRevenue.toLocaleString()}
+                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-center text-title-sm dark:text-white/90">
+                    <AttachMoneyOutlinedIcon fontSize="large" className="text-gray-800 dark:text-white/90" />{totalRevenue.toLocaleString()}
                   </h4>
                 </div>
 
@@ -78,18 +78,18 @@ export const EcommerceMetrics = () => {
               vehicles ?
                 <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 bg-brand-500/5 md:p-6">
                   <div className="flex gap-3 items-center">
-                    <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+                    {/* <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
                       <DirectionsCarFilledOutlinedIcon className="text-gray-800 size-6 dark:text-white/90" />
-                    </div>
+                    </div> */}
 
-                    <span className="text-xl font-bold text-gray-200 dark:text-gray-100">
+                    <span className="text-xl font-bold text-gray-200 dark:text-gray-300">
                       Vehicles
                     </span>
                   </div>
-                  <div className="flex items-center justify-between mt-5">
+                  <div className="flex items-center justify-between mt-3">
                     <div>
-                      <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                        {vehicles.length} +
+                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-center text-title-sm dark:text-white/90">
+                        <DirectionsCarFilledOutlinedIcon fontSize="large" className="text-gray-800 dark:text-white/90" />{vehicles.length} +
                       </h4>
                     </div>
                     <Badge color="success">
@@ -122,18 +122,18 @@ export const EcommerceMetrics = () => {
               bookings ?
                 <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 bg-brand-500/5 md:p-6">
                   <div className="flex gap-3 items-center">
-                    <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+                    {/* <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
                       <ScheduleOutlinedIcon className="text-gray-800 dark:text-white/90" />
-                    </div>
+                    </div> */}
 
-                    <span className="text-xl font-bold text-gray-200 dark:text-gray-100">
+                    <span className="text-xl font-bold text-gray-200 dark:text-gray-300">
                       Completed Bookings
                     </span>
                   </div>
-                  <div className="flex items-center justify-between mt-5">
+                  <div className="flex items-center justify-between mt-3">
                     <div>
-                      <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                        {bookings.length} +
+                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-center text-title-sm dark:text-white/90">
+                        <ScheduleOutlinedIcon fontSize="large" className="text-gray-800 dark:text-white/90" />{bookings.length} +
                       </h4>
                     </div>
 
@@ -167,18 +167,18 @@ export const EcommerceMetrics = () => {
               calculateFleetBookingRate ?
                 <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 bg-brand-500/5 md:p-6">
                   <div className="flex gap-3 items-center">
-                    <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+                    {/* <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
                       <TrendingUpOutlinedIcon className="text-gray-800 dark:text-white/90" />
-                    </div>
+                    </div> */}
 
-                    <span className="text-xl font-bold text-gray-200 dark:text-gray-100">
+                    <span className="text-xl font-bold text-gray-200 dark:text-gray-300">
                       Booking Rate
                     </span>
                   </div>
-                  <div className="flex items-center justify-between mt-5">
+                  <div className="flex items-center justify-between mt-3">
                     <div>
-                      <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                        {(calculateFleetBookingRate().toFixed(2))} %
+                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-center text-title-sm dark:text-white/90">
+                        <TrendingUpOutlinedIcon fontSize="large" className="text-gray-800 dark:text-white/90" />{(calculateFleetBookingRate().toFixed(2))} %
                       </h4>
                     </div>
 

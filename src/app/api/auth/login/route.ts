@@ -12,7 +12,7 @@ export async function POST(request: Request) {
         
         if (!role || !email || !password) {
             return NextResponse.json(
-                { error: "Email, and password identifiers are required" },
+                { error: "Email and password identifiers are required" },
                 { status: 400 }
             );
         }
@@ -20,30 +20,40 @@ export async function POST(request: Request) {
         const supabase = await createClient();
         let userAccount = null;
 
-        // Clean up text parameters to avoid casing discrepancies
         const targetEmail = email.trim().toLowerCase();
-        const targetTenantSlug = tenant?.trim().toLowerCase();
+        // Fallback to null if tenant is a blank string or undefined
+        const targetTenantSlug = tenant && tenant.trim() ? tenant.trim().toLowerCase() : null;
 
-        // 1. QUERY ADMIN ACCOUNTS WITH TIGHT TENANT FILTER
+        // 1. QUERY ADMIN ACCOUNTS
         if (role === "admin") {
-            const { data, error } = await supabase
-                .from("fleetmaster_admins")
-                .select("*, fleetmaster_tenants!inner(*)")
+            // Drop the strict inner join if we are on a flat domain without an active tenant context
+            const queryBuilder = targetTenantSlug 
+                ? supabase.from("fleetmaster_admins").select("*, fleetmaster_tenants!inner(*)").eq("fleetmaster_tenants.slug", targetTenantSlug)
+                : supabase.from("fleetmaster_admins").select("*, fleetmaster_tenants(*)"); // Left join fallback
+
+            const { data, error } = await queryBuilder
                 .eq("email", targetEmail)
-                // .eq("fleetmaster_tenants.slug", targetTenantSlug) // Restricts admin explicitly to this tenant space
                 .maybeSingle();
 
             if (error) throw error;
             userAccount = data;
         } 
         
-        // 2. QUERY CLIENT ACCOUNTS WITH TIGHT TENANT FILTER
+        // 2. QUERY CLIENT ACCOUNTS
         else if (role === "client") {
+            // Clients absolutely MUST have a tenant space. Prevent database crash by intercepting early.
+            if (!targetTenantSlug) {
+                return NextResponse.json(
+                    { error: "A valid tenant workspace is required for client authentication." }, 
+                    { status: 400 }
+                );
+            }
+
             const { data, error } = await supabase
                 .from("fleetmaster_clients")
                 .select("*, fleetmaster_tenants!inner(*)")
                 .eq("email", targetEmail)
-                .eq("fleetmaster_tenants.slug", targetTenantSlug) // Restricts client explicitly to this tenant space
+                .eq("fleetmaster_tenants.slug", targetTenantSlug) 
                 .maybeSingle();
 
             if (error) throw error;
@@ -54,7 +64,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Invalid role specified" }, { status: 400 });
         }
 
-        // 3. Fail explicitly if no user matches BOTH the email AND the tenant slug boundary
+        // 3. Fail explicitly if no user matches filters
         if (!userAccount) {
             return NextResponse.json({ error: "Invalid credentials or unauthorized tenant access" }, { status: 401 });
         }
@@ -65,7 +75,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
         }
 
-        // 5. Package clean state parameters into the JWT payload 
+        // 5. Package state parameters into the JWT payload 
         const tokenPayload = {
             id: userAccount.id,
             tenant_id: userAccount.tenant_id,
@@ -76,7 +86,7 @@ export async function POST(request: Request) {
 
         const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: "7d" });
 
-        // Strip the raw password hash out of the server response object for security clean-up
+        // Strip the raw password hash
         const { password: _, ...safeUserAccount } = userAccount;
 
         const response = NextResponse.json({ success: true, user: safeUserAccount }, { status: 200 });
@@ -87,7 +97,7 @@ export async function POST(request: Request) {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
-            maxAge: 60 * 60 * 24 * 7, // 7 days matching maximum threshold
+            maxAge: 60 * 60 * 24 * 7, // 7 days
             path: "/",
         });
 
