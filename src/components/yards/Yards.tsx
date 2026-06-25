@@ -1,6 +1,7 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import dynamic from "next/dynamic"; // 1. Import dynamic
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
@@ -13,49 +14,34 @@ import { toast } from "sonner";
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { useUser } from "@/context/UserContext";
 
+// Crucial: Leaflet imports must be loaded dynamically to prevent SSR errors
+const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
 
+// Safely generate default marker icon inside browser context
+const createDefaultIcon = () => {
+  return L.icon({
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
+};
 
-
-// Fix for default marker icon
-const defaultIcon = L.icon({
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
-
-const Yards: React.FC = () => {
+// --- Part 1: The Core Content Component ---
+// This contains all your original code, renamed slightly so we can wrap it.
+const YardsContent: React.FC = () => {
   const { profile: adminProfile } = useUser();
   const [isDarkMode, setIsDarkMode] = React.useState(false);
-  // const [allYards, setAllYards] = React.useState([
-  //   {
-  //     title: 'Nairabi Yard, Kenya.',
-  //     description: 'This is the location of our yard in Kisumu.',
-  //     imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Kenyatta_International_Convention_Centre_02.jpg/1920px-Kenyatta_International_Convention_Centre_02.jpg',
-  //     location: [-1.286389, 36.817223],
-  //   },
-  //   {
-  //     title: 'Kisumu Yard, Kenya.',
-  //     description: 'This is the location of our main yard in Nairobi.',
-  //     imageUrl: 'https://africanspicesafaris.com/wp-content/uploads/2020/06/kisumu-city-tours-kenya-1200x900.jpg',
-  //     location: [-0.091702, 34.767956],
-  //   },
-  //   {
-  //     title: 'Mombasa Yard, Kenya.',
-  //     description: 'This is the location of our yard in Mombasa.',
-  //     imageUrl: 'https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/09/b6/49/0f.jpg',
-  //     location: [-4.043740, 39.658871],
-  //   },
-  // ]);
   const { isOpen, openModal, closeModal } = useModal();
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
-  const [selectedEvent, setSelectedEvent] = useState<any>(
-    null
-  );
+  const defaultIcon = typeof window !== 'undefined' ? createDefaultIcon() : undefined;
 
-  // Check for dark mode after component mounts
   useEffect(() => {
     const checkDarkMode = () => {
       setIsDarkMode(document.documentElement.classList.contains("dark"));
@@ -63,7 +49,6 @@ const Yards: React.FC = () => {
 
     checkDarkMode();
 
-    // Apply dark mode styles to leaflet
     const handleModeChange = () => {
       checkDarkMode();
       const tiles = document.querySelectorAll(".leaflet-tile");
@@ -314,4 +299,4 @@ const Yards: React.FC = () => {
   );
 };
 
-export default Yards;
+export default YardsContent;
