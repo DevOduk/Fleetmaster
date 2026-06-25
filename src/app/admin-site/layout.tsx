@@ -5,6 +5,7 @@ import { SettingsProvider } from "@/context/SettingsContext";
 import { UserProvider } from "@/context/UserContext";
 import { SidebarProvider } from "@/context/SidebarContext";
 import React from "react";
+import { AdminProvider } from "@/context/AdminContext";
 
 export default function RootAdminLayout({
     children,
@@ -13,16 +14,18 @@ export default function RootAdminLayout({
 }) {
     return (
         <UserProvider>
-            <SettingsProvider>
-                <FleetProvider>
-                    <BookingProvider>
-                        <SidebarProvider>
-                            {/* No UI elements here, just raw children */}
-                            {children}
-                        </SidebarProvider>
-                    </BookingProvider>
-                </FleetProvider>
-            </SettingsProvider>
+            <AdminProvider>
+                <SettingsProvider>
+                    <FleetProvider>
+                        <BookingProvider>
+                            <SidebarProvider>
+                                {/* No UI elements here, just raw children */}
+                                {children}
+                            </SidebarProvider>
+                        </BookingProvider>
+                    </FleetProvider>
+                </SettingsProvider>
+            </AdminProvider>
         </UserProvider>
     );
 }
