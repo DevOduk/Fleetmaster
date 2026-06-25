@@ -58,8 +58,8 @@ export const EcommerceMetrics = () => {
               </div>
               <div className="flex items-center justify-between mt-3">
                 <div>
-                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-center text-title-sm dark:text-white/90">
-                    <AttachMoneyOutlinedIcon fontSize="large" className="text-gray-800 dark:text-white/90" />{totalRevenue.toLocaleString()}
+                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-end text-title-sm dark:text-white/90">
+                    <AttachMoneyOutlinedIcon fontSize="inherit" className="text-gray-800 dark:text-white/90" />{totalRevenue.toLocaleString()}
                   </h4>
                 </div>
 
@@ -88,8 +88,8 @@ export const EcommerceMetrics = () => {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <div>
-                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-center text-title-sm dark:text-white/90">
-                        <DirectionsCarFilledOutlinedIcon fontSize="large" className="text-gray-800 dark:text-white/90" />{vehicles.length} +
+                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-end text-title-sm dark:text-white/90">
+                        <DirectionsCarFilledOutlinedIcon fontSize="inherit" className="text-gray-800 dark:text-white/90 pr-2" />{vehicles.length} +
                       </h4>
                     </div>
                     <Badge color="success">
@@ -132,8 +132,8 @@ export const EcommerceMetrics = () => {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <div>
-                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-center text-title-sm dark:text-white/90">
-                        <ScheduleOutlinedIcon fontSize="large" className="text-gray-800 dark:text-white/90" />{bookings.length} +
+                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-end text-title-sm dark:text-white/90">
+                        <ScheduleOutlinedIcon fontSize="inherit" className="text-gray-800 dark:text-white/90 pr-2" />{bookings.length} +
                       </h4>
                     </div>
 
@@ -177,8 +177,8 @@ export const EcommerceMetrics = () => {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <div>
-                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-center text-title-sm dark:text-white/90">
-                        <TrendingUpOutlinedIcon fontSize="large" className="text-gray-800 dark:text-white/90" />{(calculateFleetBookingRate().toFixed(2))} %
+                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-end text-title-sm dark:text-white/90">
+                        <TrendingUpOutlinedIcon fontSize="inherit" className="text-gray-800 dark:text-white/90 pr-2" />{(calculateFleetBookingRate().toFixed(2))} %
                       </h4>
                     </div>
 
