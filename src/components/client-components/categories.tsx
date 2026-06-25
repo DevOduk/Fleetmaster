@@ -28,8 +28,8 @@ export default function ViewAllCategories({ tenantData }: Tenant) {
 
             )) : (
                 <>{
-                    [...Array(6)].map((i) => (
-                    <div className="bg-gray-300 dark:bg-gray-700 animate-pulse shadow rounded-2xl mb-3 aspect-video">
+                    [...Array(6)].map((_,i) => (
+                    <div key={i} className="bg-gray-300 dark:bg-gray-700 animate-pulse shadow rounded-2xl mb-3 aspect-video">
                     </div>))
                     }
                 </>)

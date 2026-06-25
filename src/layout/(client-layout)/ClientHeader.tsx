@@ -21,47 +21,26 @@ import FileOpenOutlinedIcon from "@mui/icons-material/FileOpenOutlined"
 import { CircularProgress } from '@mui/material';
 
 
-
-
-interface AccountData {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    bio: string;
-    language: string;
-    timezone: string;
-    buffer: number;
-    newsletter: boolean;
-    notifications: boolean;
-    twoFactor: boolean;
-}
-
-// const defaultAccountData: AccountData = {
-//     firstName: "Musharof",
-//     lastName: "Chowdhury",
-//     email: "randomuser@pimjo.com",
-//     phone: "+09 363 398 46",
-//     bio: "Team Manager",
-//     language: "english-us",
-//     timezone: "Africa/Nairobi",
-//     buffer: 2,
-//     newsletter: true,
-//     notifications: true,
-//     twoFactor: false,
-// };
-
 export default function ClientHeader() {
     const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
     const [searching, setSearching] = useState(false);
     const [search, setSearch] = useState('');
     const pathname = usePathname();
     const { toggleSidebar, toggleMobileSidebar } = useSidebar();
-    const { profile } = useUser();
+    const { profile, logout, loading: authLoading } = useUser();
     const { tenant, loading: tenantLoading } = useTenant();
-    const [imgFailed, setImgFailed] = useState(false);
     const { isOpen, openModal, closeModal } = useModal();
 
+    useEffect(() => {
+        // 1. Wait until both authentication and tenant contexts have fully finished loading
+        if (authLoading || tenantLoading) return;
+
+        // 2. If a user profile exists, but their role is NOT 'Client', kick them out safely
+        if (profile && profile.role !== "Client") {
+            console.warn("Unauthorized role detected in client workspace. Executing logout...");
+            logout();
+        }
+    }, [profile, authLoading, tenantLoading, logout]);
 
     useEffect(() => {
         setSearching(true);
@@ -70,6 +49,8 @@ export default function ClientHeader() {
         }, 1000);
 
     }, [search])
+    
+
 
     const handleToggle = () => {
         if (window.innerWidth >= 1024) {
@@ -100,9 +81,9 @@ export default function ClientHeader() {
         openModal()
     }, []);
 
-const isVercelStaging = typeof window !== "undefined" && window.location.hostname.includes("vercel.app");
+    const isVercelStaging = typeof window !== "undefined" && window.location.hostname.includes("vercel.app");
 
-const navLinks = [
+    const navLinks = [
         { name: "Find a car", href: "/vehicles" },
         { name: "Lease your car", href: "/lease" },
         { name: "About us", href: "/about" },
@@ -110,10 +91,18 @@ const navLinks = [
         { name: "Our yards", href: "/yards" }
     ]
 
+    // 3. Keep the screen clean with your loader during the security evaluation phase
+    if (tenantLoading) {
+        return (
+            <div className="w-screen h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                <span className="loader-custom"></span>
+            </div>
+        );
+    }
 
     return (
         <header className="sticky top-0 w-full bg-white border-gray-200 z-999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
-            {profile && <VerificationBanner profile={profile} />}
+            {profile?.role === 'Client' && <VerificationBanner profile={profile} />}
             <div className="flex container m-auto flex-col items-center justify-between grow lg:flex-row lg:px-2">
                 <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
 
@@ -129,8 +118,6 @@ const navLinks = [
                                 className="w-auto object-contain"
                                 src={tenant.tenant_logo || "http://localhost:3000/images/logo/logo.svg"}
                                 alt={`${tenant.name} Logo`}
-                                // CATCH BROKEN IMAGE: If the CDN returns a 404 or ORB block, step back into fallback code block
-                                onError={() => setImgFailed(true)}
                             />
                         )}
                     </Link>
