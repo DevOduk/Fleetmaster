@@ -3,14 +3,28 @@ import React, { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import ComponentCard from "../common/ComponentCard";
 import Rating from '@mui/material/Rating';
-import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import TextArea from "../form/input/TextArea";
 import { useTheme } from '@mui/material/styles';
+import { useUser } from "@/context/UserContext"; // Adjust this hook import to your real location
+import { submitUserFeedback } from "@/app/actions/feedback";
+import { useToast } from "@/context/ToastContext";
+import { error } from "console";
+import Input from "../form/input/InputField";
 
 const Feedback: React.FC = () => {
-  const [messageTwo, setMessageTwo] = useState("");
   const theme = useTheme();
+  const { profile } = useUser();
+  const { showToast } = useToast();
+
+  // Form input control states
+  const [category, setCategory] = useState("UI/UX");
+  const [rating, setRating] = useState<number | null>(0);
+  const [description, setDescription] = useState("");
+
+  // Submission indicator states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const isDarkMode =
     typeof window !== "undefined" &&
@@ -40,46 +54,124 @@ const Feedback: React.FC = () => {
     return () => observer.disconnect();
   }, [isDarkMode]);
 
+  // Handle Form Submission
+  const handleSubmit = async () => {
+    // 1. Guard check: make sure description text exists
+    if (!description.trim()) {
+      showToast('Please enter a valid description before submitting.', 'error')
+      setStatusMessage({ type: "error", text: "Please enter a valid description before submitting." });
+      return;
+    }
+
+    // 2. Guard check: Make sure context has fully loaded the user profile
+    if (!profile) {
+      showToast('User profile context not loaded. Please log in again.', 'error');
+      setStatusMessage({ type: "error", text: "User profile context not loaded. Please log in again." });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatusMessage(null);
+
+    // 3. Fire server action passing state alongside useUser details parameters
+    const result = await submitUserFeedback(
+      {
+        category,
+        rating: rating || 5,
+        feedback_text: description,
+      },
+      {
+        id: profile.id,
+        tenant_id: profile.tenant_id,
+        role: profile.role,
+      }
+    );
+
+    setIsSubmitting(false);
+
+    if (result.success) {
+      showToast('Your feedback has been sent successfully.', 'success');
+      setStatusMessage({ type: "success", text: "Thank you! Your feedback has been saved successfully." });
+      setDescription("");
+      setRating(0);
+    } else {
+      showToast('Failed to submit feedback.', 'error');
+      setStatusMessage({ type: "error", text: result.error || "Failed to submit feedback." });
+    }
+  };
+
   return (
     <div>
-
       <div className="space-y-6">
         <ComponentCard title="Submit Feedback">
-          <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-            Please leave us a feedback to help us improve:</p>
-          <div>
+          <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90 mb-4">
+            Writing review as <span className="text-brand-500 font-semibold">{profile?.first_name} {profile?.last_name}</span> ({profile?.fleetmaster_tenants?.name || "Loading Company..."})
+          </p>
 
+          <div className="space-y-4">
+            {/* Category selection selector */}
             <div>
-              <Label>Feedback Title</Label>
-              <Input type="text" placeholder="Enter feedback title" />
+              <Label>Feedback/Review Title</Label>
+              <Input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="Enter Feedback/Revie title"
+                className="w-full mt-1 p-2.5 border rounded-lg bg-transparent border-gray-200 dark:border-white/10 text-theme-sm text-gray-800 dark:text-white/90 outline-none focus:border-brand-500"
+              />
             </div>
+
+            {/* Evaluation Score Selection */}
             <div>
               <Label>Pick Your Rating</Label>
-              <div className="flex justify-center py-5">
-                <Rating name="customized-10" defaultValue={0} size='large' max={10}
+              <div className="flex flex-col justify-center items-center py-3 gap-3">
+                <div>
+                  <h3 className="text-purple-600 text-2xl font-bold">({rating.toFixed(1)})</h3>
+                </div>
+                <Rating
+                  name="feedback-rating"
+                  value={rating}
+                  onChange={(_, newValue) => setRating(newValue)}
+                  size="large"
+                  max={5}
+                  precision={.5}
                   sx={{
                     '& .MuiRating-iconEmpty': {
-                      color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.9)' : '#616b7a'
+                      color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : '#cbd5e1'
                     }
-                  }} />
+                  }}
+                />
               </div>
             </div>
 
+            {/* Narrative Box */}
             <div>
               <Label>Feedback Description</Label>
               <TextArea
                 rows={6}
-                value={messageTwo}
-                error
-                onChange={(value) => setMessageTwo(value)}
-                hint="Please enter a valid message."
+                value={description}
+                onChange={(value) => setDescription(value)}
+                placeholder="Describe what you encountered or what you would like to see added..."
               />
             </div>
-            <button
-              className="flex mt-3 ms-auto items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
 
+            {/* Notification alert response box */}
+            {statusMessage && (
+              <div className={`p-3 rounded-lg text-theme-sm ${statusMessage.type === "success"
+                  ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                  : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                }`}>
+                {statusMessage.text}
+              </div>
+            )}
+
+            {/* Submission Action Button */}
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className={`flex mt-3 ms-auto items-center justify-center p-2 px-4 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600 transition-all ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                }`}
             >
-              Submit Feedback
+              {isSubmitting ? "Processing Submission..." : "Submit Feedback"}
             </button>
           </div>
         </ComponentCard>

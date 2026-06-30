@@ -1,12 +1,10 @@
 "use client";
-import { use, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
-dayjs.extend(isBetween);
-
-// UI Components & Contexts
+import { createClient } from '@/utils/supabase/client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import VehicleNotFound from '@/components/vehicles/NotFound';
@@ -17,7 +15,6 @@ import { useUser } from '@/context/UserContext';
 import { useTenant } from '@/context/TenantContext';
 import LocalCarWashOutlinedIcon from "@mui/icons-material/LocalCarWashOutlined"
 import GppGoodOutlinedIcon from "@mui/icons-material/GppGoodOutlined"
-import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined"
 import CancelPresentationOutlinedIcon from "@mui/icons-material/CancelPresentationOutlined"
 import MobileScreenShareOutlinedIcon from "@mui/icons-material/MobileScreenShareOutlined"
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
@@ -28,11 +25,19 @@ import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-
-// Material UI
-import { Box, Chip, Modal, Typography, IconButton, Radio, RadioGroup, FormControlLabel, FormControl } from '@mui/material';
+import { Box, Chip, Modal as MuiModal, Typography, IconButton, Radio, RadioGroup, FormControlLabel, FormControl } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useToast } from '@/context/ToastContext';
+import Checkbox from '@/components/form/input/Checkbox';
+import { Modal } from '@/components/ui/modal';
+import { useModal } from '@/hooks/useModal';
+import { ArrowRightIcon } from '@/icons';
+import Alert from '@/components/ui/alert/Alert';
+
+
+dayjs.extend(isBetween);
+const supabase = createClient();
+
 
 interface VehiclePageProps {
     params: Promise<{ vehicleID: string }>;
@@ -47,6 +52,7 @@ const modalStyle = {
     maxWidth: 750,
     maxHeight: '85vh',
     overflowY: 'hidden',
+    border: 0,
 };
 
 const BookingPage = ({ params }: VehiclePageProps) => {
@@ -56,8 +62,12 @@ const BookingPage = ({ params }: VehiclePageProps) => {
     const { profile } = useUser();
     const { tenant } = useTenant();
     const { showToast } = useToast();
+    const [mpesaNumber, setMpesaNumber] = useState(profile?.phone || '');
+    const [isPaying, setIsPaying] = useState(false);
+    const [error, setError] = useState(null);
+    const [paymentSuccess, setPaymentSuccess] = useState(false);
+    const successModal = useModal();
 
-    // --- TOKEN EXTRACTION AND PARSING ---
     const token = searchParams.get('token');
     let decodedData = null;
     if (token) {
@@ -68,15 +78,19 @@ const BookingPage = ({ params }: VehiclePageProps) => {
         }
     }
 
+    useEffect(() => {
+        if (!profile?.phone) return;
+        setMpesaNumber((profile?.phone).replace('+254', '').replace(' ', ''))
+    }, [profile?.phone])
+
     // Basic Setup & State (Extract defaults from token payload fallback to search parameters)
     const [start, setStart] = useState(decodedData?.bookingInformation?.start || searchParams.get('start') || '');
     const [end, setEnd] = useState(decodedData?.bookingInformation?.end || searchParams.get('end') || '');
     const [expandBreakdown, setExpandBreakdown] = useState(true);
     const [openPolicyModal, setOpenPolicyModal] = useState(false);
-    const [policiesAccepted, setPoliciesAccepted] = useState(false);
+    const [policiesAccepted, setPoliciesAccepted] = useState(localStorage.getItem('policiesAccepted') ? JSON.parse(localStorage.getItem('policiesAccepted')) : false);
 
     // Logistics Options State
-    const [pickupOption, setPickupOption] = useState('default'); // 'default' | 'nairobi' | 'airport' | 'outside'
     const [dropoffOption, setDropoffOption] = useState('same'); // 'same' | 'elsewhere'
     const [dropoffLocation, setDropoffLocation] = useState(''); // 'same' | 'elsewhere'
 
@@ -85,13 +99,14 @@ const BookingPage = ({ params }: VehiclePageProps) => {
 
     const vehicleID = resolvedParams.vehicleID;
 
-    if (vehicleID !== decodedData?.vehicleID) {
-        showToast('There was a critical error when resolving booking!', 'error');
-        return;
+    if (!decodedData || vehicleID != decodedData?.vehicleID) {
+        showToast('There was a critical error when resolving booking data!', 'error');
+        return <div className='max-w-screen h-screen text-red-500 text-center py-6'>Something went wrong!</div>;
     }
 
     // Prefer the secure payload parameters, fallback to finding it inside the local collections arrays
     const VehicleDetails = decodedData?.VehicleDetails || vehicles.find(v => v.id === parseInt(vehicleID));
+    const [pickupOption, setPickupOption] = useState(VehicleDetails?.location || ''); // 'default' | 'nairobi' | 'airport' | 'outside'
 
     // Date Parsing Logic
     const startDay = dayjs(start);
@@ -101,24 +116,11 @@ const BookingPage = ({ params }: VehiclePageProps) => {
     // Extract calculated totalDays directly from token data or calculate from fields dynamically
     const totalDays = decodedData?.bookingInformation?.totalDays || (dayGap <= 0 ? 1 : dayGap);
 
-    if (loading) {
-        return (
-            <main className="space-y-6 p-6 container m-auto animate-pulse">
-                <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-1/4 mb-6" />
-                <div className="grid grid-cols-12 gap-6">
-                    <div className="col-span-12 lg:col-span-7 space-y-6">
-                        <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-xl aspect-video" />
-                        <div className="h-20 bg-gray-200 dark:bg-gray-800 rounded-xl" />
-                    </div>
-                    <div className="col-span-12 lg:col-span-5 h-96 bg-gray-200 dark:bg-gray-800 rounded-xl" />
-                </div>
-            </main>
-        );
-    }
+    // Transform raw input or state into uniform, clean ISO date strings
+    const startDayString = dayjs(start).format('YYYY-MM-DD'); // Outputs e.g., "2026-06-28"
+    const endDayString = dayjs(end).format('YYYY-MM-DD');   // Outputs e.g., "2026-07-02"
+    const rentalTimeString = dayjs(start).format('HH:mm:ss'); // Outputs e.g., "18:30:00"
 
-    if (!VehicleDetails) {
-        return <VehicleNotFound />;
-    }
 
     // Cost Computations
     const baseRateTotal = totalDays * VehicleDetails.dailyRate;
@@ -141,22 +143,327 @@ const BookingPage = ({ params }: VehiclePageProps) => {
     const vatAmount = Math.round(grossSubTotal * 0.16);
     const grandTotalAmount = grossSubTotal + vatAmount;
 
-    const handleCheckoutSubmit = () => {
+
+
+
+
+    const handleCheckoutSubmit = async () => {
+        setError(null);
+
         if (!profile) {
-            showToast('Please sign in to your account to place a booking!', 'error')
+            showToast('Please sign in to your account to place a booking!', 'error');
             return;
         }
         if (!policiesAccepted) {
-            showToast('Please read and accept the terms of rental to proceed!', 'error')
+            showToast('Please read and accept the terms of rental to proceed!', 'error');
+            return;
+        }
+        if (paymentMethod === 'm-pesa' && !mpesaNumber) {
+            showToast('Please enter a valid M-Pesa phone number!', 'error');
             return;
         }
         if (dropoffOption === 'elsewhere' && dropoffLocation === '') {
             showToast('Please select a dropoff location to proceed!', 'error');
             return;
         }
-        // Paystack integration payload initialization goes here
-        showToast(`Initializing Paystack processing for KSH. ${grandTotalAmount.toLocaleString()} via ${paymentMethod}...`, 'info');
+
+        setIsPaying(true);
+        const firstName = profile?.first_name; // Keeping your custom profile schema spelling
+        const lastName = profile?.last_name;
+
+        // --- BRANCH 1: ONE-CLICK DIRECT M-PESA STK PUSH (NO MODAL) ---
+        if (paymentMethod === 'm-pesa') {
+            showToast('Processing your security checks...', 'info');
+
+            // --- SANITIZE AND NORMALIZE PHONE NUMBER INPUT ---
+            let sanitizedNumber = mpesaNumber.replace(/\D/g, '');
+
+            if (sanitizedNumber.startsWith('0')) {
+                sanitizedNumber = `254${sanitizedNumber.substring(1)}`;
+            } else if (sanitizedNumber.startsWith('7') || sanitizedNumber.startsWith('1')) {
+                sanitizedNumber = `254${sanitizedNumber}`;
+            } else if (sanitizedNumber.startsWith('254') && sanitizedNumber.length > 3) {
+                // Already formatted
+            } else {
+                console.warn("Phone formatting fallback pattern encountered:", sanitizedNumber);
+            }
+
+            if (sanitizedNumber.length !== 12) {
+                showToast('Please enter a valid 9 or 10-digit M-Pesa phone number.', 'error');
+                setIsPaying(false);
+                return;
+            }
+
+            showToast('Verifying fleet asset availability...', 'info');
+
+            try {
+                // --- ATOMIC BACKEND PIPELINE TRIGGER ---
+                const res = await fetch('/api/intasend/stk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: Number(grandTotalAmount),
+                        phone: sanitizedNumber,
+                        email: profile.email,
+                        firstName,
+                        lastName,
+                        vehicleID: Number(vehicleID),
+                        rentalStart: startDayString,       // 'YYYY-MM-DD'
+                        rentalEnd: endDayString,           // 'YYYY-MM-DD'
+                        rentalTime: rentalTimeString,      // 'HH:mm:ss'
+                        rentalDays: Number(totalDays),
+                        tenantID: tenant?.id,
+                        userID: profile?.id,
+                        nationalID: profile.national_id_number || "UNKNOWN",
+                        pickupLocation: pickupOption,
+                        dropoffLocation: dropoffOption === 'elsewhere' ? dropoffLocation : pickupOption
+                    })
+                });
+
+                const data = await res.json();
+
+                // Catch explicit backend conflict errors (e.g., 409 overlapping reservation blocks)
+                if (!res.ok) {
+                    throw new Error(data.error || 'Failed to dispatch payment payload.');
+                }
+
+                showToast(`STK Push Sent! Enter your M-Pesa PIN on your phone to complete payment.`, 'success');
+                console.log("Tracking Invoice State Details:", data);
+
+                const targetInvoiceId = data.invoice?.invoice_id || data.id;
+
+                if (!targetInvoiceId) {
+                    throw new Error('No tracking invoice ID returned from billing gateway.');
+                }
+
+                showToast('STK Push Request Sent! Please enter your M-Pesa PIN', 'info');
+
+                const intervalId = setInterval(async () => {
+                    try {
+                        const statusRes = await fetch('/api/intasend/status', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ invoice_id: targetInvoiceId })
+                        });
+
+                        const statusData = await statusRes.json();
+                        console.log("Data Response: statusData.data ", statusData);
+
+                        // Dig into statusData.data.invoice first
+                        const mpesaRef = statusData.data?.invoice?.mpesa_reference ||
+                            statusData.data?.invoice?.provider_ref ||
+                            `ST-${targetInvoiceId}`;
+
+                        if (statusData.state === 'COMPLETE') {
+                            clearInterval(intervalId);
+                            setIsPaying(false);
+                            showToast('Payment Confirmed! Your booking has been processed successfully.', 'success');
+                            successModal.openModal();
+                            setPaymentSuccess(true);
+
+
+
+                            if (statusData.state) {
+                                // 1. Corrected 'bookigs' to 'bookings'
+                                const response = await fetch('/api/bookings/update', {
+                                    method: 'POST', // 2. Changed 'UPDATE' to 'POST'
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        amount: Number(grandTotalAmount),
+                                        phone: sanitizedNumber,
+                                        firstName,
+                                        lastName,
+                                        vehicleID: Number(vehicleID),
+                                        rentalStart: startDayString,
+                                        rentalEnd: endDayString,
+                                        rentalTime: rentalTimeString,
+                                        rentalDays: Number(totalDays),
+                                        tenantID: tenant?.id,
+                                        userID: profile?.id,
+                                        nationalID: profile.national_id_number || "UNKNOWN",
+                                        pickupLocation: pickupOption,
+                                        dropoffLocation: dropoffOption === 'elsewhere' ? dropoffLocation : pickupOption,
+                                        payment_method: 'M-PESA',
+                                        booking_status: 'Booked',
+                                        payment_status: statusData.state,
+                                        intasend_invoice_id: targetInvoiceId,
+                                        payment_ref: mpesaRef
+                                    })
+                                });
+                                // console.log("Database update response:", response.status, response.ok);
+                            }
+
+                        } else if (statusData.state === 'FAILED') {
+                            clearInterval(intervalId);
+                            setIsPaying(false);
+                            showToast(statusData.data.invoice.failed_reason || 'Transaction was declined, canceled, or timed out.', 'error');
+                            setError({ message: statusData.data.invoice.failed_reason || 'Transaction was declined, canceled, or timed out.' })
+
+                            if (statusData.state) {
+                                // 1. Corrected 'bookigs' to 'bookings'
+                                const response = await fetch('/api/bookings/update', {
+                                    method: 'POST', // 2. Changed 'UPDATE' to 'POST'
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        amount: Number(grandTotalAmount),
+                                        phone: sanitizedNumber,
+                                        firstName,
+                                        lastName,
+                                        vehicleID: Number(vehicleID),
+                                        rentalStart: startDayString,
+                                        rentalEnd: endDayString,
+                                        rentalTime: rentalTimeString,
+                                        rentalDays: Number(totalDays),
+                                        tenantID: tenant?.id,
+                                        userID: profile?.id,
+                                        nationalID: profile.national_id_number || "UNKNOWN",
+                                        pickupLocation: pickupOption,
+                                        dropoffLocation: dropoffOption === 'elsewhere' ? dropoffLocation : pickupOption,
+                                        payment_method: 'M-PESA',
+                                        booking_status: 'Reserved',
+                                        payment_status: statusData.state,
+                                        intasend_invoice_id: targetInvoiceId,
+                                        payment_ref: mpesaRef
+                                    })
+                                });
+                                console.log("Database update response:", response.status, response.ok);
+                            }
+                        }
+                    } catch (pollErr) {
+                        console.error("Error during background status poll checking:", pollErr);
+                    }
+                }, 3500);
+
+                // Safety lifecycle fallback boundary loop limit (2 minutes)
+                setTimeout(() => {
+                    clearInterval(intervalId);
+                    setIsPaying(false);
+                }, 120000);
+
+            } catch (err: any) {
+                setError(err)
+                console.error("Direct STK Push Failed:", err);
+                showToast(err.message || 'M-Pesa STK verification failed.', 'error');
+                setIsPaying(false);
+            }
+
+            // --- BRANCH 2: SECURE CARD CHECKOUT via BACKEND INLINE MODAL ---
+        } else {
+            if (!(window as any).IntaSend) {
+                showToast('Card engine failed to initialize. Please refresh.', 'error');
+                setIsPaying(false);
+                return;
+            }
+
+            showToast('Opening secure card payment gateway...', 'info');
+
+            const intasendInstance = new (window as any).IntaSend({
+                publicAPIKey: process.env.NEXT_PUBLIC_INTASEND_PUBLISHABLE_KEY,
+                live: false,
+            });
+
+            intasendInstance
+                .on("COMPLETE", async (results: any) => {
+                    showToast('Card transaction captured successfully! Finalizing reservation...', 'success');
+
+                    try {
+                        // Save booking directly to database now that transaction funds are captured
+                        const { data: cardBooking, error: cardBookingError } = await supabase
+                            .from('fleetmaster_bookings')
+                            .insert({
+                                user_id: profile?.id,
+                                tenant_id: tenant?.id,
+                                vehicle_id: Number(vehicleID),
+                                renter_name: `${firstName} ${lastName}`.trim(),
+                                renter_phone: profile.phone_number || "CARD_PAYMENT",
+                                renter_id: profile.national_id_number || "UNKNOWN",
+                                rental_start: startDayString,
+                                rental_end: endDayString,
+                                rental_time: rentalTimeString,
+                                rental_days: Number(totalDays),
+                                pickup_location: pickupOption,
+                                dropoff_location: dropoffOption === 'elsewhere' ? dropoffLocation : pickupOption,
+                                total: grandTotalAmount,
+                                payment_method: 'CARD',
+                                booking_status: 'Confirmed', // Automatically confirmed via immediate payment capture
+                                payment_status: 'PAID',
+                                payment_ref: results.invoice_id || `CARD_${Date.now()}`
+                            })
+                            .select('id')
+                            .single();
+
+                        if (cardBookingError) {
+                            console.error("Failed to commit post-payment card reservation:", cardBookingError);
+                            showToast('Payment caught, but local row registration failed. Contact administration with reference.', 'error');
+                        } else {
+                            console.log("Card Booking Successfully Registered ID:", cardBooking?.id);
+                        }
+                    } catch (dbErr) {
+                        console.error("Unhandled error updating database ledger:", dbErr);
+                    } finally {
+                        setIsPaying(false);
+                        successModal.openModal();
+                        setPaymentSuccess(true);
+                    }
+                })
+                .on("FAILED", () => {
+                    showToast('Card validation failed or modal dismissed.', 'error');
+                    setIsPaying(false);
+                });
+
+            try {
+                await intasendInstance.run({
+                    amount: Number(grandTotalAmount),
+                    currency: "KES",
+                    firstName,
+                    lastName,
+                    email: profile.email,
+                    api_ref: String(vehicleID),
+                    method: "CARD",
+                    comment: `FleetMaster Booking - Vehicle Ref: ${vehicleID}`
+                });
+            } catch (cardErr) {
+                console.error("Card Gateway Launch Failure:", cardErr);
+                setIsPaying(false);
+            }
+        }
     };
+
+
+
+
+
+
+    useEffect(() => {
+        if (!document.getElementById("intasend-inline-sdk")) {
+            const script = document.createElement("script");
+            script.id = "intasend-inline-sdk";
+            script.src = "https://unpkg.com/intasend-checkout-sdk";
+            script.async = true;
+            document.body.appendChild(script);
+        }
+    }, []);
+
+
+    if (loading) {
+        return (
+            <main className="space-y-6 p-6 container m-auto animate-pulse">
+                <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-1/4 mb-6" />
+                <div className="grid grid-cols-12 gap-6">
+                    <div className="col-span-12 lg:col-span-7 space-y-6">
+                        <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-xl aspect-video" />
+                        <div className="h-20 bg-gray-200 dark:bg-gray-800 rounded-xl" />
+                    </div>
+                    <div className="col-span-12 lg:col-span-5 h-96 bg-gray-200 dark:bg-gray-800 rounded-xl" />
+                </div>
+            </main>
+        );
+    }
+
+    if (!VehicleDetails) {
+        return <VehicleNotFound />;
+    }
+
     return (
         <main className="p-6 container m-auto">
             {/* Dynamic Header Promo Banner */}
@@ -168,7 +475,12 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                     <p className="text-brand-500 font-medium text-xs mt-1">📍 1,000 Ksh Within Nairobi | 1,500 Ksh Airport Dropoffs | 2,000 Ksh Outside Nairobi (&lt;100km)</p>
                 </div>
             </div>
-
+            {
+                paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='                                    Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.' />
+            }
+            {
+                error && <Alert title='Booking Error!' variant='error' message={error?.message || 'An error occured. Please try again later!'} />
+            }
             <div className="grid grid-cols-12 gap-6">
 
                 {/* ================= LEFT SIDE: VEHICLE & LOGISTICS PRODUCTION PANEL (col-span-7) ================= */}
@@ -236,20 +548,24 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">1. Select Pickup Type & Fleet Handover</label>
                                 <FormControl component="fieldset" className="w-full">
                                     <RadioGroup value={pickupOption} onChange={(e) => setPickupOption(e.target.value)} className="space-y-2">
-                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'default' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
-                                            <FormControlLabel value="default" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Station Handover ({VehicleDetails?.location})</span>} />
+                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === VehicleDetails?.location ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
+                                            <FormControlLabel value={VehicleDetails?.location} control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Station Handover ({VehicleDetails?.location})</span>} />
                                             <span className="text-xs font-semibold text-gray-500">Free</span>
                                         </div>
                                         <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'nairobi' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
                                             <FormControlLabel value="nairobi" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Door Delivery within Nairobi</span>} />
                                             <span className="text-xs font-semibold text-brand-500">+ Ksh 1,000</span>
                                         </div>
-                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'airport' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
-                                            <FormControlLabel value="airport" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Airport Dropoff (JKIA - NBO, Wilson Airport - WIL)</span>} />
+                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'JKIA - NBO' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
+                                            <FormControlLabel value="JKIA - NBO" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Airport Dropoff (JKIA - NBO)</span>} />
+                                            <span className="text-xs font-semibold text-brand-500">+ Ksh 1,500</span>
+                                        </div>
+                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'Wilson Airport - WIL' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
+                                            <FormControlLabel value="Wilson Airport - WIL" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Airport Dropoff (JKIA - NBO, Wilson Airport - WIL)</span>} />
                                             <span className="text-xs font-semibold text-brand-500">+ Ksh 1,500</span>
                                         </div>
                                         <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'outside' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
-                                            <FormControlLabel value="outside" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Outside Nairobi (Distances max 100km out)</span>} />
+                                            <FormControlLabel value="outside" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Outside Major Yards (Distances max 100km out)</span>} />
                                             <span className="text-xs font-semibold text-brand-500">+ Ksh 2,000</span>
                                         </div>
                                     </RadioGroup>
@@ -297,28 +613,34 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                         }
 
                         {/* Explicit Modal Checkpoint Anchor */}
-                        <div className="mt-6 p-4 rounded-xl border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-900/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <div className={`mt-6 p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-amber-50/50 transition-colors duration-200 ${policiesAccepted
+                            ? 'border-emerald-200 dark:border-emerald-900/50 dark:bg-emerald-950/20'
+                            : 'border-red-200 dark:border-red-900/50 dark:bg-red-950/20'
+                            }`}>
                             <div className="flex items-start gap-3">
-                                <InfoOutlinedIcon className="text-amber-600 dark:text-amber-400 mt-0.5" />
+                                <InfoOutlinedIcon className={`mt-0.5 ${policiesAccepted ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                                    }`} />
                                 <div>
-                                    <h4 className="text-sm font-bold text-amber-900 dark:text-amber-200">Review Legal Rules & Handover Policies</h4>
-                                    <p className="text-xs text-amber-700 dark:text-amber-400">You must review and acknowledge documentation, liability thresholds, and insurance policies prior to booking fulfillment.</p>
+                                    <h4 className={`text-sm font-bold text-amber-900 ${policiesAccepted ? 'dark:text-emerald-300' : 'dark:text-red-300'
+                                        }`}>
+                                        Review Legal Rules & Handover Policies
+                                    </h4>
+                                    <p className={`text-xs mt-2 ${policiesAccepted ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'
+                                        }`}>
+                                        You must review and acknowledge the documentation, liability thresholds, and insurance policies prior to booking fulfillment.
+                                    </p>
+                                    <p className="text-xs text-brand-500 mt-2 underline cursor-pointer" onClick={() => setOpenPolicyModal(true)}>
+                                        Read Key Info & Policies Checklist.
+                                    </p>
                                 </div>
                             </div>
-                            <Button
-                                onClick={() => setOpenPolicyModal(true)}
-                                variant={policiesAccepted ? "success" : "outline"}
-                                size="sm"
-                                className="whitespace-nowrap w-full sm:w-auto"
-                            >
-                                {policiesAccepted ? "Rules Read & Approved ✓" : "Read Essential Rules"}
-                            </Button>
+                            <Checkbox onChange={() => { }} checked={policiesAccepted} />
                         </div>
 
                     </div>
                 </div>
 
-                {/* ================= RIGHT SIDE: INVOICE & PAYSTACK GATEWAY (col-span-5) ================= */}
+                {/* ================= RIGHT SIDE: INVOICE & INTASEND GATEWAY (col-span-5) ================= */}
                 <div className="col-span-12 lg:col-span-5 space-y-6">
                     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 shadow-sm sticky top-6">
 
@@ -446,8 +768,9 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                             type="tel"
                                             placeholder="e.g., 0712345678"
                                             className="pl-[62px]"
-                                        // value={mpesaNumber}
-                                        // onChange={(e) => setMpesaNumber(e.target.value)}
+                                            value={mpesaNumber}
+                                            onChange={(e) => setMpesaNumber(e.target.value)}
+                                            disabled={isPaying}
                                         />
                                         <span className="absolute left-0 top-1/2 flex text-sm h-11 w-[55px] dark:text-white -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
                                             +254
@@ -455,6 +778,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                     </div>
                                 </div>
                             )}
+
                             {paymentMethod === 'card' && (
                                 <div className="space-y-4">
                                     {/* Card Number Row */}
@@ -525,16 +849,82 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                             )}
                         </div>
 
+
+                        <Modal
+                            isOpen={successModal.isOpen}
+                            onClose={successModal.closeModal}
+                            className="max-w-150 p-5 lg:p-10 z-99999"
+                        >
+                            <div className="text-center">
+                                <div className="relative flex items-center justify-center z-1 mb-7">
+                                    <svg
+                                        className="fill-success-50 dark:fill-success-500/15"
+                                        width="90"
+                                        height="90"
+                                        viewBox="0 0 90 90"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z"
+                                            fill=""
+                                            fillOpacity=""
+                                        />
+                                    </svg>
+
+                                    <span className="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+                                        <svg
+                                            className="fill-success-600 dark:fill-success-500"
+                                            width="38"
+                                            height="38"
+                                            viewBox="0 0 38 38"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                clipRule="evenodd"
+                                                d="M5.9375 19.0004C5.9375 11.7854 11.7864 5.93652 19.0014 5.93652C26.2164 5.93652 32.0653 11.7854 32.0653 19.0004C32.0653 26.2154 26.2164 32.0643 19.0014 32.0643C11.7864 32.0643 5.9375 26.2154 5.9375 19.0004ZM19.0014 2.93652C10.1296 2.93652 2.9375 10.1286 2.9375 19.0004C2.9375 27.8723 10.1296 35.0643 19.0014 35.0643C27.8733 35.0643 35.0653 27.8723 35.0653 19.0004C35.0653 10.1286 27.8733 2.93652 19.0014 2.93652ZM24.7855 17.0575C25.3713 16.4717 25.3713 15.522 24.7855 14.9362C24.1997 14.3504 23.25 14.3504 22.6642 14.9362L17.7177 19.8827L15.3387 17.5037C14.7529 16.9179 13.8031 16.9179 13.2173 17.5037C12.6316 18.0894 12.6316 19.0392 13.2173 19.625L16.657 23.0647C16.9383 23.346 17.3199 23.504 17.7177 23.504C18.1155 23.504 18.4971 23.346 18.7784 23.0647L24.7855 17.0575Z"
+                                                fill=""
+                                            />
+                                        </svg>
+                                    </span>
+                                </div>
+                                <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90 sm:text-title-sm">
+                                    Confirmed! Payment Successful.
+                                </h4>
+                                <p className="text-sm leading-6 text-gray-500 dark:text-gray-400">
+                                    Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.
+                                </p>
+
+                                <div className="flex items-center justify-center w-full gap-3 mt-7">
+                                    <Button size="sm" variant="outline" endIcon={<ArrowRightIcon />} >
+                                        Go to bookings
+                                    </Button>
+                                    <button
+                                        type="button"
+                                        onClick={successModal.closeModal}
+                                        className="flex justify-center w-full px-4 py-3 text-sm font-medium text-white rounded-lg bg-success-500 shadow-theme-xs hover:bg-success-600 sm:w-auto"
+                                    >
+                                        Okay, Got It
+                                    </button>
+                                </div>
+                            </div>
+                        </Modal>
+
                         {/* Dynamic Call-To-Action Operations Routing Grid */}
                         <div className="space-y-3 mt-4">
-                            <Button onClick={handleCheckoutSubmit} className='w-full' size='md'>
-                                Secure Checkout with Paystack
+                            <Button onClick={handleCheckoutSubmit} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md' disabled={isPaying || paymentSuccess}>
+                                {isPaying
+                                    ? "Processing Transaction..."
+                                    : `Pay Now (Ksh. ${grandTotalAmount.toLocaleString()})`
+                                }
                             </Button>
 
                             <div className='flex items-center gap-3'>
                                 <Link className='w-full' href={'tel:+254768927617'}>
                                     <Button className='w-full' size='sm' variant='outline'>
-                                        <PhoneOutlinedIcon fontSize='small' className="me-1" /> Call Support
+                                        <PhoneOutlinedIcon fontSize='small' className="me-1" /> Call To Book
                                     </Button>
                                 </Link>
                                 <Link className='w-full' href={`https://wa.me/254768927617?text=I%20am%20interested%20in%20booking%20the%20${VehicleDetails.make}%20${VehicleDetails.model}`}>
@@ -551,7 +941,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
             </div>
 
             {/* ================= MUI REGULATORY & COMPLIANCE MODAL LAYER ================= */}
-            <Modal
+            <MuiModal
                 open={openPolicyModal}
                 onClose={() => setOpenPolicyModal(false)}
                 aria-labelledby="policy-modal-title"
@@ -559,7 +949,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
             >
                 <Box sx={modalStyle}>
                     {/* Outer container managing layout height and strict layout flex limits */}
-                    <div className="dark:bg-gray-900 relative rounded-2xl bg-white dark:text-white border dark:border-gray-800 custom-scrollbar max-h-[85vh] flex flex-col">
+                    <div className="dark:bg-gray-900 relative rounded-2xl bg-white dark:text-white dark:border-gray-800 custom-scrollbar max-h-[85vh] flex flex-col">
 
                         {/* Pinned Header */}
                         <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 p-6 pb-3">
@@ -590,9 +980,9 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                     The exact make and model of your booked vehicle may vary. We'll always provide a similar vehicle that meets your rental needs.
                                 </p>
                                 <ul className="list-disc list-inside pl-2 text-xs mt-1 space-y-2 text-gray-500 dark:text-gray-400">
-                                    <li>• Regular vehicle maintenance schedules</li>
-                                    <li>• Extended bookings by previous renters</li>
-                                    <li>• The dynamic nature of our rental operations</li>
+                                    <li>Regular vehicle maintenance schedules</li>
+                                    <li>Extended bookings by previous renters</li>
+                                    <li>The dynamic nature of our rental operations</li>
                                 </ul>
                                 <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 leading-6">
                                     This policy helps us ensure reliable service for all our customers.
@@ -615,6 +1005,26 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                     Please verify exact policy with rental partner
                                 </p>
                             </section>
+
+                            <h4 className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm inline-block items-center mt-6">
+                                <GppGoodOutlinedIcon fontSize='small' /> &nbsp;Vandalism and Theft Liability Policy
+                            </h4>
+
+                            <section className='border border-gray-300 dark:border-gray-600 rounded-2xl p-3'>
+                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-6">
+                                    Renters are strictly responsible for the vehicle's security and structural integrity during the active booking window. In the event of malicious damage, break-ins, or vehicle theft, immediate operational protocols must be followed.
+                                </p>
+                                <ul className="list-disc list-inside pl-2 text-xs mt-1 space-y-2 text-gray-500 dark:text-gray-400">
+                                    <li>Immediate reporting to the nearest police station to secure a formal abstract</li>
+                                    <li>Mandatory notification to our fleet support desk within 2 hours of any incident</li>
+                                    <li>Strict Zero-Tolerance for Intentional Vandalism: Any deliberate destruction, modification, interior tearing, or forced abuse of the vehicle by the renter will result in an immediate forfeiture of the security deposit.</li>
+                                    <li>Renter liability for third-party theft is capped at the insurance deductible threshold, provided no negligence occurred</li>
+                                </ul>
+                                <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 leading-6">
+                                    Failure to secure a police abstract, or evidence of damage, you (driver/renter) will be liable for these damages. Under these conditions, the renter remains fully liable for repair & replacement costs.
+                                </p>
+                            </section>
+
                             <h4 className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm inline-block items-center"><GppGoodOutlinedIcon fontSize='small' /> Free Cancelation &gt; 24hrs start time</h4>
 
                             <section className='border border-gray-300 dark:border-gray-600 rounded-2xl p-3'>
@@ -694,15 +1104,16 @@ const BookingPage = ({ params }: VehiclePageProps) => {
 
                         {/* Pinned Action Buttons Footer */}
                         <div className="mt-auto border-t border-gray-100 dark:border-gray-800 p-6 pt-3 flex flex-col sm:flex-row gap-3 items-center justify-between bg-gray-50 dark:bg-gray-900/50 rounded-b-2xl">
-                            <p className="text-xs text-gray-400">By approving, you legally bind execution parameters.</p>
-                            <div className="flex gap-2 w-full sm:w-auto">
-                                {/* <Button size="sm" variant="outline" onClick={() => { setPoliciesAccepted(false); setOpenPolicyModal(false); }}>Reject</Button> */}
-                                <Button size="sm" variant="success" onClick={() => { setPoliciesAccepted(true); setOpenPolicyModal(false); }}>Acknowledge & Accept</Button>
-                            </div>
+                            <Checkbox label='I have read all the terms, rules aand regulations. By approving, you legally bind execution parameters.' checked={policiesAccepted} onChange={() => {
+                                setPoliciesAccepted(!policiesAccepted);
+                                setOpenPolicyModal(false);
+
+                                localStorage.setItem('policiesAccepted', JSON.stringify(!policiesAccepted))
+                            }} />
                         </div>
                     </div>
                 </Box>
-            </Modal>
+            </MuiModal>
         </main>
     );
 };

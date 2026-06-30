@@ -71,6 +71,10 @@ export default function ClientVehiclesPage() {
     const { vehicles, loading: loadingVehicles } = useFleet();
     const { tenant } = useTenant();
     const searchParams = useSearchParams();
+
+    const fallbackStart = dayjs().add(1, 'day').toDate().toString(); // Tomorrow at current time
+    const fallbackEnd = dayjs().add(3, 'day').toDate().toString();
+
     const initialFilters = {
         category: searchParams.get('category') || '',
         make: searchParams.get('make') || '',
@@ -81,8 +85,8 @@ export default function ClientVehiclesPage() {
         maxPrice: parseInt(searchParams.get('maxPrice') || '100000'),
         driverType: searchParams.get('driverType') || "All",
         location: searchParams.get('location') || "Countrywide",
-        start: searchParams.get('start') || '',
-        end: searchParams.get('end') || '',
+        start: searchParams.get('start') || (fallbackStart),
+        end: searchParams.get('end') || fallbackEnd,
     };
 
     const [filters, setFilters] = useState<Filters>(initialFilters);
@@ -91,7 +95,6 @@ export default function ClientVehiclesPage() {
 
     // 1. Initialize loading as true so it defaults to skeleton cards on first paint
     const [loading, setLoading] = useState<boolean>(false);
-
 
 
 
@@ -116,7 +119,6 @@ export default function ClientVehiclesPage() {
             : 0;
 
         if (totalDays < 1 || endDay.isBefore(startDay) || startDay.isBefore(today)) {
-            console.log('Please select a valid date!');
             showToast('Please select a valid date!', 'warning');
             setLoading(false); // Turn off loaders, reveal vehicles list
             return;
@@ -209,8 +211,7 @@ export default function ClientVehiclesPage() {
                             <Input
                                 type="datetime-local"
                                 className="pl-15.5"
-                                value={filters.start}
-
+                                value={filters.start ? dayjs(filters.start).format('YYYY-MM-DDTHH:mm') : ''}
                                 onChange={(e) => {
                                     const newStart = e.target.value; // e.g., "2026-06-22T14:30"
                                     // Force the existing end date to adopt this new start time
@@ -236,8 +237,7 @@ export default function ClientVehiclesPage() {
                             <Input
                                 type="datetime-local"
                                 className="pl-15.5 "
-                                value={filters.end}
-                                onChange={(e) => {
+                                value={filters.end ? dayjs(filters.end).format('YYYY-MM-DDTHH:mm') : ''} onChange={(e) => {
                                     const newEnd = e.target.value; // e.g., "2026-06-25T16:00"
                                     // Force the existing start date to adopt this new end time
                                     const updatedStart = syncTimeToDateString(filters.start, newEnd);

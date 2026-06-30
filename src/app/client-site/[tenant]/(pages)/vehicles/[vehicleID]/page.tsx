@@ -5,10 +5,9 @@ import Button from '@/components/ui/button/Button';
 import VehicleNotFound from '@/components/vehicles/NotFound';
 import { useFleet } from '@/context/FleetContext';
 import Link from 'next/link';
-import { use, useState } from 'react';
+import { use, useMemo, useState } from 'react';
 import isBetween from 'dayjs/plugin/isBetween';
 import dayjs, { Dayjs } from 'dayjs';
-import { bookings } from '@/data/mockFleetData';
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined"
 import ScheduleIcon from "@mui/icons-material/Schedule"
 import { Box, Chip } from '@mui/material';
@@ -23,6 +22,7 @@ import Label from '@/components/form/Label';
 import Input from '@/components/form/input/InputField';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/context/ToastContext';
+import { useBooking } from '@/context/BookingContext';
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string }>;
@@ -51,26 +51,44 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
   const { showToast } = useToast();
   const { profile } = useUser();
   const { tenant } = useTenant();
-  const [start, setStart] = useState(searchParams.get('start') || '');
-  const [end, setEnd] = useState(searchParams.get('end') || '');
+  const { bookings } = useBooking();
+
+const fallbackStart = dayjs().add(1, 'day').format('YYYY-MM-DD[T]HH:mm'); 
+
+// 2 days after tomorrow (3 days total) at the exact same hour and minute
+const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
+
+  const [start, setStart] = useState(searchParams.get('start') ? searchParams.get('start') : fallbackStart);
+  const [end, setEnd] = useState(searchParams.get('end') ? searchParams.get('end') : fallbackEnd);
   const [expandBreakdown, setExpandBreakdown] = useState(false);
 
   const vehicleID = resolvedParams.vehicleID;
   const VehicleDetails = vehicles.find(v => v.id === parseInt(vehicleID));
-  const allVehicleBookings = bookings.filter((booking) => booking.vehicleId === parseInt(vehicleID))
+  const allVehicleBookings = bookings?.filter((booking) => booking.vehicleId === parseInt(vehicleID)) || [];
 
-  const bookedDateStrings = allVehicleBookings.flatMap((booking) => {
-    const start = dayjs(booking.rentalStart);
-    const end = dayjs(booking.rentalEnd);
-    const days = [];
 
-    let current = start;
-    while (current.isBefore(end) || current.isSame(end, 'day')) {
-      days.push(current.format('YYYY-MM-DD'));
-      current = current.add(1, 'day');
-    }
-    return days;
-  });
+  // Calculate all booked date strings for this vehicle
+  const bookedDates = useMemo(() => {
+    if (loading) return;
+
+    const vehicleBookings = bookings?.filter((b) => b.vehicleId === Number(vehicleID));
+    const vehicleBookedDates = vehicleBookings.filter((b) => b.bookingStatus === "Booked");
+
+    return vehicleBookedDates.flatMap((booking) => {
+      const start = dayjs(booking.rentalStart);
+      const end = dayjs(booking.rentalEnd);
+      const days = [];
+      let current = start;
+
+      while (current.isBefore(end) || current.isSame(end, "day")) {
+        days.push(current.format("YYYY-MM-DD"));
+        current = current.add(1, "day");
+      }
+      return days;
+    });
+  }, [vehicleID, bookings]);
+
+
 
   const startDay = dayjs(start);
   const endDay = dayjs(end);
@@ -165,7 +183,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
   }
 
   // --- DYNAMIC FINANCIAL CALCULATIONS ---
-  const dynamicDays = totalDays <= 0 ? 1 : totalDays; 
+  const dynamicDays = totalDays <= 0 ? 1 : totalDays;
   const baseRateTotal = dynamicDays * VehicleDetails.dailyRate;
   const rescuePlanFee = 200;
   const subTotalBeforeVat = baseRateTotal + rescuePlanFee;
@@ -268,8 +286,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                   <Input
                     type="datetime-local"
                     className="pl-15.5 text-inherit"
-                    value={start}
-                    onChange={(e) => {
+                    value={start ? dayjs(start).format('YYYY-MM-DDTHH:mm') : ''} onChange={(e) => {
                       const newStart = e.target.value; // e.g., "2026-06-25T16:00"
                       const updatedEnd = syncTimeToDateString(end, newStart);
                       setStart(newStart);
@@ -289,8 +306,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                   <Input
                     type="datetime-local"
                     className="pl-15.5 "
-                    value={end}
-                    onChange={(e) => {
+                    value={end ? dayjs(end).format('YYYY-MM-DDTHH:mm') : ''} onChange={(e) => {
                       const newEnd = e.target.value; // e.g., "2026-06-25T16:00"
                       const updatedStart = syncTimeToDateString(start, newEnd);
                       setStart(updatedStart);
@@ -408,6 +424,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                       ? endDay.diff(startDay, "day")
                       : 0;
 
+                    // 1. Basic validation checks
                     if (totalDaysCalculated < 1 || endDay.isBefore(startDay) || startDay.isBefore(today)) {
                       showToast('Please select a valid date!', 'warning');
                       return;
@@ -418,32 +435,54 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                       return;
                     }
 
+                    // --- 2. NEW OVERLAP CHECK INTERCEPTION ---
+                    let isOverlapping = false;
+                    let checkDay = startDay;
+
+                    // Loop through each day of the user's current selection
+                    while (checkDay.isBefore(endDay) || checkDay.isSame(endDay, 'day')) {
+                      const formattedCheckDay = checkDay.format('YYYY-MM-DD');
+
+                      // If the current day string matches an array item in your memoized bookedDates...
+                      if (bookedDates?.includes(formattedCheckDay)) {
+                        isOverlapping = true;
+                        break; // Exit loop immediately upon finding a conflict
+                      }
+                      checkDay = checkDay.add(1, 'day');
+                    }
+
+                    if (isOverlapping) {
+                      showToast('This vehicle is already booked for some of your selected dates!', 'error');
+                      return; // Stop execution: blocks router.push entirely
+                    }
+                    // ----------------------------------------
+
                     // Compute token-specific metrics to match current selection
                     const tokenDays = totalDaysCalculated <= 0 ? 1 : totalDaysCalculated;
                     const tokenBaseRate = tokenDays * VehicleDetails.dailyRate;
                     const tokenVat = Math.round((tokenBaseRate + 200) * 0.16);
                     const tokenTotal = tokenBaseRate + 200 + tokenVat;
 
-                    // 1. Gather the state you want to protect
+                    // Gather the state you want to protect
                     const stateToEncode = {
                       vehicleID: vehicleID,
                       VehicleDetails: VehicleDetails,
-                      bookingInformation: { 
-                        start: start, 
-                        end: end, 
-                        totalDays: tokenDays, 
-                        vat: tokenVat, 
-                        rescue: 200, 
-                        total: tokenTotal 
+                      bookingInformation: {
+                        start: start,
+                        end: end,
+                        totalDays: tokenDays,
+                        vat: tokenVat,
+                        rescue: 200,
+                        total: tokenTotal
                       }
                     };
 
                     try {
-                      // 2. Convert to JSON, then encode to Base64
+                      // Convert to JSON, then encode to Base64
                       const jsonString = JSON.stringify(stateToEncode);
                       const encodedData = btoa(encodeURIComponent(jsonString));
 
-                      // 3. Navigate with the tokenized payload
+                      // Navigate with the tokenized payload
                       router.push(`/vehicles/${vehicleID}/book?token=${encodedData}`);
                     } catch (error) {
                       console.error("Failed to encode booking data:", error);

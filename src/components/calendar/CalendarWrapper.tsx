@@ -6,7 +6,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
-import { bookings } from "@/data/mockFleetData";
+import { useBooking } from "@/context/BookingContext";
+import { CircularProgress } from "@mui/material";
 
 export const CalendarWrapper = ({
   isMarkedUnavailable,
@@ -18,6 +19,7 @@ export const CalendarWrapper = ({
   vehicleId: number;
 }) => {
   const [isDark, setIsDark] = useState(false);
+  const { bookings, loading } = useBooking();
 
   // Theme observer for dark mode sync
   useEffect(() => {
@@ -34,9 +36,12 @@ export const CalendarWrapper = ({
 
   // Calculate all booked date strings for this vehicle
   const bookedDates = useMemo(() => {
-    const vehicleBookings = bookings.filter((b) => b.vehicleId === vehicleId);
+    if (loading) return;
 
-    return vehicleBookings.flatMap((booking) => {
+    const vehicleBookings = bookings?.filter((b) => b.vehicleId === vehicleId);
+    const vehicleBookedDates = vehicleBookings.filter((b) => b.bookingStatus === "Booked");
+
+    return vehicleBookedDates.flatMap((booking) => {
       const start = dayjs(booking.rentalStart);
       const end = dayjs(booking.rentalEnd);
       const days = [];
@@ -48,7 +53,9 @@ export const CalendarWrapper = ({
       }
       return days;
     });
-  }, [vehicleId]);
+  }, [vehicleId, bookings]);
+
+  console.log('booked dates: ', vehicleId, bookings, bookedDates)
 
 
   const theme = useMemo(() => createTheme({
@@ -62,54 +69,58 @@ export const CalendarWrapper = ({
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DateCalendar
-          defaultValue={dayjs(dateString)}
-          value={null}
-          displayWeekNumber
-          readOnly
-          slotProps={{
-            day: (ownerState) => ({
-              // We inject the date string into a custom data attribute
-              "data-date": ownerState.day.format("YYYY-MM-DD"),
-            } as any),
-          }}
-          sx={{
-            width: "100%",
-            backgroundColor: "transparent",
-            // MuiButtonBase-root MuiPickerDay-root css-1cqb494-MuiButtonBase-root-MuiPickerDay-root
-            ...(isMarkedUnavailable && {
-              "& .MuiPickerDay-root": {
-                backgroundColor: "#ff00003f !important", // Tailwind red-500
-                borderRadius: "50%",
-                opacity: "1 !important",
-                "&:hover": {
-                  backgroundColor: "#ff000060 !important", // Tailwind red-600
+        {loading ? <div className="w-full flex-col h-90 mb-5 gap-3 border-gray-600 rounded-2xl flex items-center justify-center text-green-500 text-center">
+          <CircularProgress size={25} color="success" />
+          Just a moment! Assessing booked dates ...
+        </div> :
+          <DateCalendar
+            defaultValue={dayjs(dateString)}
+            value={null}
+            displayWeekNumber
+            readOnly
+            slotProps={{
+              day: (ownerState) => ({
+                // We inject the date string into a custom data attribute
+                "data-date": ownerState.day.format("YYYY-MM-DD"),
+              } as any),
+            }}
+            sx={{
+              width: "100%",
+              backgroundColor: "transparent",
+              // MuiButtonBase-root MuiPickerDay-root css-1cqb494-MuiButtonBase-root-MuiPickerDay-root
+              ...(isMarkedUnavailable && {
+                "& .MuiPickerDay-root": {
+                  backgroundColor: "#ff00003f !important", // Tailwind red-500
+                  borderRadius: "50%",
+                  opacity: "1 !important",
+                  "&:hover": {
+                    backgroundColor: "#ff000060 !important", // Tailwind red-600
+                  },
                 },
-              },
-            }),
-            // Target any button that has a 'data-date' matching our booked list
-            // This is the trick: We use a template literal to build a CSS selector
-            ...bookedDates.reduce((acc, date) => ({
-              ...acc,
-              [`& button[data-date="${date}"]`]: {
-                backgroundColor: "green !important",
-                color: "#ffffff !important",
-                borderRadius: "50%",
-                fontWeight: "bold",
-                opacity: "1 !important",
-                "&:hover": {
+              }),
+              // Target any button that has a 'data-date' matching our booked list
+              // This is the trick: We use a template literal to build a CSS selector
+              ...bookedDates?.reduce((acc, date) => ({
+                ...acc,
+                [`& button[data-date="${date}"]`]: {
                   backgroundColor: "green !important",
+                  color: "#ffffff !important",
+                  borderRadius: "50%",
+                  fontWeight: "bold",
+                  opacity: "1 !important",
+                  "&:hover": {
+                    backgroundColor: "green !important",
+                  },
                 },
-              },
-            }), {}),
+              }), {}),
 
-            // Standard Theme Styles
-            "& .MuiPickersCalendarHeader-label": { color: isDark ? "#f3f4f6" : "inherit" },
-            "& .MuiTypography-root": { color: isDark ? "#f3f4f6" : "inherit" },
-            "& .MuiDayCalendar-weekDayLabel": { color: isDark ? "#9ca3af" : "inherit" },
-            "& .MuiPickersArrowSwitcher-root button": { color: isDark ? "#f3f4f6" : "inherit" }
-          }}
-        />
+              // Standard Theme Styles
+              "& .MuiPickersCalendarHeader-label": { color: isDark ? "#f3f4f6" : "inherit" },
+              "& .MuiTypography-root": { color: isDark ? "#f3f4f6" : "inherit" },
+              "& .MuiDayCalendar-weekDayLabel": { color: isDark ? "#9ca3af" : "inherit" },
+              "& .MuiPickersArrowSwitcher-root button": { color: isDark ? "#f3f4f6" : "inherit" }
+            }}
+          />}
       </LocalizationProvider>
     </ThemeProvider>
   );

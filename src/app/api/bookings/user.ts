@@ -2,19 +2,27 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    
+        const body = await request.json();
+
+        const {
+            userID
+        } = body;
     const supabase = await createClient();
 
     // Fetch every single row and column from the vehicles table
     const { data, error } = await supabase
       .from('fleetmaster_bookings')
       .select('*')
-      // .eq('tenant_id', '33429a1a-4c40-40e4-8f8f-3d2f58f2ed54')
+      .eq('user_id', userID)
+      .maybeSingle()
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
 
     const bookings = data.map((booking) => ({
       id: booking.id,

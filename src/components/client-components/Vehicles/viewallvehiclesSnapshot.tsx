@@ -1,15 +1,5 @@
 "use client"
 import { useFleet } from "@/context/FleetContext";
-import { Box, Chip } from "@mui/material";
-import LocalGasStationOutlinedIcon from '@mui/icons-material/LocalGasStationOutlined';
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
-import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined"
-import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined"
-import LuggageOutlinedIcon from "@mui/icons-material/LuggageOutlined"
-import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined"
-import Button from "../../ui/button/Button";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined"
-import Link from "next/link";
 import VehicleItem from "@/components/client-components/Vehicles/VehicleItem"
 import { VehicleSkeleton } from "./VehicleSkeleton";
 

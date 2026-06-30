@@ -14,14 +14,15 @@ import AppFooter from "@/layout/(admin-layout)/AppFooter";
 import AppSidebar from "@/layout/(dashboard-layout)/AppSidebar";
 import { AdminProvider, useAdmin } from "@/context/AdminContext";
 import { UserProvider } from "@/context/UserContext";
+import { FleetProvider } from "@/context/FleetContext";
 
 // 1. THE INNER COMPONENT: Safe to call hooks because its parent provides context
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   const { adminProfile, loading } = useAdmin(); // 🌟 Safe to call now!
-  console.log("Current Admin Context State:", { adminProfile, loading });
 
+  
   useEffect(() => {
     if (loading) return;
     if (!adminProfile) {
@@ -72,7 +73,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <AdminProvider>
         <AdminProvider>
           <UserProvider>
-            <AdminLayoutContent>{children}</AdminLayoutContent>
+            <FleetProvider>
+              <AdminLayoutContent>{children}</AdminLayoutContent>
+            </FleetProvider>
           </UserProvider>
         </AdminProvider>
       </AdminProvider>

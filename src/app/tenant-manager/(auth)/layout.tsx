@@ -14,7 +14,7 @@ export default function AuthSigInLayout({
 }: {
   children: React.ReactNode;
 }) {
-  console.log('this is the tenant manager login layout showing')
+
   return (
     <UserProvider>
       <AdminProvider>

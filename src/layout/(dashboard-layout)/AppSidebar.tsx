@@ -15,6 +15,7 @@ import FeedbackOutlinedIcon from '@mui/icons-material/FeedbackOutlined';
 import WysiwygOutlinedIcon from '@mui/icons-material/WysiwygOutlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
+import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined"
 
 type NavItem = {
   name: string;
@@ -41,6 +42,11 @@ const othersItems: NavItem[] = [
     icon: <ContrastOutlinedIcon />,
     name: "Preferences",
     path: "/admin-preferences",
+  },
+  {
+    icon: <SupportAgentOutlinedIcon />,
+    name: "Support",
+    path: "/view-support",
   },
   {
     icon: <FeedbackOutlinedIcon />,

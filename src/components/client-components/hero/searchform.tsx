@@ -12,6 +12,7 @@ import Select from '@/components/form/Select';
 import { useFleet } from '@/context/FleetContext';
 import { useRouter } from 'next/navigation';
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined"
+import dayjs from 'dayjs';
 
 interface SearchFormProps {
   tenant: any;
@@ -44,7 +45,11 @@ export default function SearchForm({ tenant }: SearchFormProps) {
   const router = useRouter();
   const [search, setSearch] = useState<number>(0);
 
-  const [searchParams, setSearchParams] = useState<SearchParams>({ location: '', category: '', make: '', model: '', start: '', end: '' });
+  const fallbackStart = dayjs().add(1, 'day').format('YYYY-MM-DD[T]HH:mm'); 
+
+// 2 days after tomorrow (3 days total) at the exact same hour and minute
+const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
+  const [searchParams, setSearchParams] = useState<SearchParams>({ location: '', category: '', make: '', model: '', start: fallbackStart, end: fallbackEnd });
   const { vehicles } = useFleet();
 
   const allCategories = vehicles.map(v => v.category);
@@ -182,7 +187,7 @@ export default function SearchForm({ tenant }: SearchFormProps) {
             <Input
               type="datetime-local"
               className="pl-15.5"
-              value={searchParams.start}
+              value={searchParams.start ? dayjs(searchParams.start).format('YYYY-MM-DDTHH:mm') : ''}
               onChange={(e) => {
                 const newStart = e.target.value; // e.g., "2026-06-22T14:30"
                 // Force the existing end date to adopt this new start time
@@ -208,7 +213,7 @@ export default function SearchForm({ tenant }: SearchFormProps) {
             <Input
               type="datetime-local"
               className="pl-15.5"
-              value={searchParams.end}
+              value={searchParams.end ? dayjs(searchParams.end).format('YYYY-MM-DDTHH:mm') : ''}
               onChange={(e) => {
                 const newEnd = e.target.value; // e.g., "2026-06-25T16:00"
                 // Force the existing start date to adopt this new end time
