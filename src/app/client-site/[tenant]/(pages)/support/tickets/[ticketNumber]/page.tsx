@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { getTicketDetails, addSupportResponse } from "@/app/actions/support";
 import TextArea from "@/components/form/input/TextArea";
 import { useAdmin } from "@/context/AdminContext";
+import { useUser } from "@/context/UserContext";
 
 type Response = {
   id: string;
@@ -26,15 +27,9 @@ export default function ManageTicketPage() {
   const params = useParams();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [reply, setReply] = useState("");
-  const { adminProfile, loading } = useAdmin();
+  const { profile, loading } = useUser();
 
-  if (!adminProfile || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-gray-600 dark:text-gray-300">
-        Just a moment...
-      </div>
-    );
-  }
+
 
   const rawTicketNumber = params.ticketNumber as string;
   const displayTicketNumber = `#${rawTicketNumber}`;
@@ -52,10 +47,10 @@ export default function ManageTicketPage() {
 
     const result = await addSupportResponse(
       ticket!.id,
-      adminProfile.id,
-      adminProfile.role,
+      profile.id,
+      profile.role,
       reply,
-      true
+      false
     );
 
     if (result.success) {
@@ -65,17 +60,23 @@ export default function ManageTicketPage() {
       );
     }
   };
-
+  if (!profile || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-600 dark:text-gray-300">
+        Just a moment...
+      </div>
+    );
+  }
   if (!ticket) {
     return (
       <div className="flex items-center justify-center min-h-screen text-gray-600 dark:text-gray-300">
-        Loading conversation...
+        There is a problem with this ticket!
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6 min-h-screen">
       {/* Header */}
       <div className="border-b pb-4 border-gray-200 dark:border-gray-700">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
@@ -87,37 +88,37 @@ export default function ManageTicketPage() {
       </div>
 
       {/* Ticket Details */}
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
-        <p className="font-medium text-gray-800 dark:text-gray-200">
+      <div className="rounded-xl text-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
+        <p className=" font-bold text-xl text-gray-800 dark:text-gray-200">
           {ticket.subject}
         </p>
-        <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
+        <p className="text-sm mt-1 text-center text-gray-600 dark:text-gray-400">
           {ticket.description}
         </p>
       </div>
 
       {/* Conversation */}
-      <div className="space-y-4">
+      <div className="space-y-4 min-h-[70vh] rounded-2xl p-3">
         {ticket.responses?.map((msg) => {
           const isAdmin = msg.is_admin;
 
           return (
             <div
               key={msg.id}
-              className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}
+              className={`flex ${!isAdmin ? "justify-end" : "justify-start"}`}
             >
               <div
                 className={`max-w-[75%] min-w-45 rounded-xl px-4 py-3 shadow-sm text-sm
                   ${
-                    isAdmin
+                    !isAdmin
                       ? "bg-blue-500 text-white"
                       : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
                   }`}
               >
                 <p className="text-xs font-semibold mb-1 opacity-80">
-                  {msg.sender_id === adminProfile.id
-                    ? "Support Team"
-                    : "Client"}
+                  {msg.sender_id === profile.id
+                    ? ""
+                    : "Support Team"}
                 </p>
 
                 <p className="leading-relaxed">{msg.message}</p>

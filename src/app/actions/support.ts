@@ -15,7 +15,7 @@ interface SupportTicketPayload {
 }
 
 export async function submitSupportRequest(
-  payload: SupportTicketPayload, 
+  payload: SupportTicketPayload,
   userProfile: UserProfileParam
 ) {
   try {
@@ -29,8 +29,8 @@ export async function submitSupportRequest(
       subject: payload.subject,
       description: payload.description,
       category: payload.category,
-      priority: "Medium", 
-      status: "Open",     
+      priority: "Medium",
+      status: "Open",
     });
 
     if (error) throw error;
@@ -43,7 +43,7 @@ export async function submitSupportRequest(
 
 export async function fetchUserTickets(userId: string) {
   const supabase = await createClient();
-  
+
   const { data, error } = await supabase
     .from("fleetmaster_support_tickets")
     .select("*")
@@ -66,12 +66,14 @@ export async function getTicketDetails(ticketNumber: string) {
   return { data, error };
 }
 
-export async function addSupportResponse(ticketId: string, response: string, isAdmin: boolean) {
+export async function addSupportResponse(ticketId: string, sender_id: string, sender_role: string, response: string, is_admin: boolean) {
   const supabase = await createClient();
   const { error } = await supabase.from("fleetmaster_ticket_responses").insert({
     ticket_id: ticketId,
-    response_text: response,
-    is_admin: isAdmin,
+    sender_id: sender_id,
+    message: response,
+    sender_role: sender_role,
+    is_admin: is_admin,
     created_at: new Date().toISOString()
   });
 

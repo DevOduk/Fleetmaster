@@ -21,8 +21,8 @@ export default function page() {
         highlightedText="Bookings"
         description="Monitor your fleet performance and track your active rentals."
       />
-<br />
-      <div className="container mx-auto mt-5 max-w-6xl">
+      <br />
+      <div className="container mx-auto mt-5 max-w-6xl min-h-screen">
         <Support />
       </div>
     </div>

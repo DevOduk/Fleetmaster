@@ -12,8 +12,10 @@ import { Table, TableBody, TableHeader, TableRow } from "../ui/table";
 import { TableCell, TableHead } from "@mui/material";
 import Badge from "../ui/badge/Badge";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { PlusIcon } from "@/icons";
+import { ArrowRightIcon, PlusIcon } from "@/icons";
 import Select from "../form/Select";
+import Button from "../ui/button/Button";
+import Link from "next/link";
 
 const Support: React.FC = () => {
   const searchParams = useSearchParams();
@@ -201,6 +203,7 @@ const Support: React.FC = () => {
                   <TableCell className="p-3">Description</TableCell>
                   <TableCell className="p-3">Opened</TableCell>
                   <TableCell className="p-3">Status</TableCell>
+                  <TableCell className="p-3">Action</TableCell>
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -213,14 +216,19 @@ const Support: React.FC = () => {
                       <TableCell className="p-3 text-slate-700 dark:text-slate-300 max-w-130 truncate">{t.description}</TableCell>
                       <TableCell className="p-3 text-slate-500">{new Date(t.created_at).toLocaleDateString()}</TableCell>
                       <TableCell className="p-3 text-green-600 font-medium">{t.status}</TableCell>
+                      <TableCell>
+                        <Link className="p-2 flex gap-2 items-center text-brand-600" href={`/support/tickets/${t.ticket_number.replace('#', '')}`}>
+                          View <ArrowRightIcon />
+                        </Link>
+                      </TableCell>
                     </TableRow>
                   )) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="p-6 flex justify-center text-center text-slate-400"><p className="w-full text-center">No tickets found.</p></TableCell>
+                      <TableCell colSpan={7} className="p-6 flex justify-center text-center text-slate-400"><p className="w-full text-center">No tickets found.</p></TableCell>
                     </TableRow>
                   ) :
                     <TableRow>
-                      <TableCell colSpan={6} className="p-6 flex justify-center text-center text-gray-400"><p className="w-full text-center">Processing tickets. Just a moment ...</p></TableCell>
+                      <TableCell colSpan={7} className="p-6 flex justify-center text-center text-gray-400"><p className="w-full text-center">Processing tickets. Just a moment ...</p></TableCell>
                     </TableRow>
                 }
               </TableBody>
