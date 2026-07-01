@@ -1,41 +1,13 @@
 "use client";
 import React, { useEffect } from "react";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import ComponentCard from "../common/ComponentCard";
 import Pagination from "../tables/Pagination";
-import { bookings } from "@/data/mockFleetData";
 import Link from "next/link";
 import PaymentsTable from "../tables/PaymentsTable";
+import { useBooking } from "@/context/BookingContext";
 
 const Payments: React.FC = () => {
-    const isDarkMode =
-        typeof window !== "undefined" &&
-        document.documentElement.classList.contains("dark");
-
-    // Apply dark mode styles to leaflet
-    useEffect(() => {
-        const handleModeChange = () => {
-            const tiles = document.querySelectorAll(".leaflet-tile");
-            tiles.forEach((tile) => {
-                const img = tile as HTMLImageElement;
-                if (isDarkMode) {
-                    img.style.filter = "invert(0.93) hue-rotate(180deg) saturate(0.9)";
-                } else {
-                    img.style.filter = "none";
-                }
-            });
-        };
-
-        const observer = new MutationObserver(handleModeChange);
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ["class"],
-        });
-
-        handleModeChange();
-        return () => observer.disconnect();
-    }, [isDarkMode]);
+    const { bookings } = useBooking();
 
     return (
         <div className="space-y-6">
