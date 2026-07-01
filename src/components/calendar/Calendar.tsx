@@ -12,7 +12,6 @@ import {
 } from "@fullcalendar/core";
 import { useModal } from "@/hooks/useModal";
 import { Modal } from "@/components/ui/modal";
-import { bookings } from "@/data/mockFleetData";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import { CalenderIcon, ChevronDownIcon, ErrorIcon, PlusIcon, TimeIcon } from "@/icons";
@@ -25,6 +24,7 @@ import { toast, Toaster } from "sonner";
 import { CalendarWrapper } from "./CalendarWrapper";
 import dayjs from "dayjs";
 import Link from "next/link";
+import { useBooking } from "@/context/BookingContext";
 
 const BUFFER_HOURS = 2;
 
@@ -68,6 +68,8 @@ const extractBookingOnly = (booking: any) => ({
 
 
 const Calendar: React.FC = () => {
+    const { bookings } = useBooking();
+  
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
     null
   );

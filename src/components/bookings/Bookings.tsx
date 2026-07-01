@@ -4,12 +4,12 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import ComponentCard from "../common/ComponentCard";
 import Pagination from "../tables/Pagination";
-import VehiclesTable from "../tables/VehiclesTable";
 import BookingsTable from "../tables/BookingsTable";
-import { bookings } from "@/data/mockFleetData";
 import Link from "next/link";
+import { useBooking } from "@/context/BookingContext";
 
 const Bookings: React.FC = () => {
+  const { bookings } = useBooking();
   const isDarkMode =
     typeof window !== "undefined" &&
     document.documentElement.classList.contains("dark");
@@ -40,9 +40,7 @@ const Bookings: React.FC = () => {
 
   return (
     <div>
-
       <div className="space-y-6">
-
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 md:gap-6">
           {[
             {
@@ -70,7 +68,7 @@ const Bookings: React.FC = () => {
               description: 'Average Daily Bookings for This Month',
             },
           ].map((p, i) => (
-                    <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6" key={i}>
+            <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6" key={i}>
               <h4 className="text-md text-black dark:text-white">
                 {p?.title}
               </h4>

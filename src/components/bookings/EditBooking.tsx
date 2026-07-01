@@ -6,8 +6,6 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { EventInput } from "@fullcalendar/core/index.js";
-import Select from "../form/Select";
-import { bookings, vehicles as VehicleData } from "@/data/mockFleetData";
 import FullCalendar from "@fullcalendar/react";
 import { CalenderIcon, ChevronDownIcon, CloseLineIcon, ErrorIcon, PlusIcon, TimeIcon } from "@/icons";
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -16,6 +14,8 @@ import Link from "next/link";
 import { CircularProgress } from "@mui/material";
 import { CalendarWrapper } from "../calendar/CalendarWrapper";
 import { toast } from "sonner";
+import { useBooking } from "@/context/BookingContext";
+import { useFleet } from "@/context/FleetContext";
 
 
 
@@ -62,6 +62,8 @@ const extractBookingOnly = (booking: any) => ({
 
 
 export default function EditBookingForm({ id: bookingID }: { id: number }) {
+  const { bookings } = useBooking();
+  const { vehicles: VehicleData } = useFleet();
   const [allBookings, setAllBookings] = useState<any[]>([...bookings]);
   const [bookingName, setBookingName] = useState("");
   const [eventStartDate, setEventStartDate] = useState(new Date().toISOString().split("T")[0]);

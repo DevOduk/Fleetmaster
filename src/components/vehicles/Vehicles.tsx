@@ -3,12 +3,13 @@ import React, { useEffect } from "react";
 import ComponentCard from "../common/ComponentCard";
 import Pagination from "../tables/Pagination";
 import VehiclesTable from "../tables/VehiclesTable";
-import { bookings } from "@/data/mockFleetData";
 import Link from "next/link";
 import { useFleet } from "@/context/FleetContext";
+import { useBooking } from "@/context/BookingContext";
 
 const Vehicles: React.FC = () => {
   const { vehicles } = useFleet();
+  const { bookings } = useBooking();
 
   return (
     <div>

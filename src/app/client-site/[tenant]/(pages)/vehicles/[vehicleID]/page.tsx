@@ -218,10 +218,10 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
 
       {
         expandBreakdown &&
-        <div className="flex ms-auto bg-gray-800 rounded-2xl top-0 lg:w-130 w-full gap-2 flex-col col-span-12 lg:col-span-3 mb-5">
-          <h4 className="mt-4 text-right font-semibold text-gray-800 modal-title text-theme-l dark:text-white/90 lg:text-l">
-            Booking Summary:</h4>
-          <div className="mt-2 rounded-xl border border-gray-200 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-900/30">
+        <div className="flex ms-auto dark:bg-gray-800 bg-gray-200 rounded-2xl top-0 lg:w-130 w-full gap-2 flex-col col-span-12 lg:col-span-3 mb-5">
+          <h4 className="mt-4 px-3 text-right font-semibold text-gray-800 modal-title text-theme-l dark:text-white/90 lg:text-l">
+            Booking Summary</h4>
+          <div className="mt-2 p-2 px-3 rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/30">
             <h3 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Cost Breakdown</h3>
 
             {/* Grid Wrapper */}

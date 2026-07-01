@@ -17,6 +17,8 @@ export const EcommerceMetrics = () => {
     return sum + (booking.total || 0);
   }, 0);
 
+  const completed = bookings.filter((b) => b.bookingStatus === 'Completed');
+
   const calculateFleetBookingRate = () => {
     const daysInMonth = 30;
     const totalVehicles = vehicles.length;
@@ -133,7 +135,7 @@ export const EcommerceMetrics = () => {
                   <div className="flex items-center justify-between mt-3">
                     <div>
                   <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-end text-title-sm dark:text-white/90">
-                        <ScheduleOutlinedIcon fontSize="inherit" className="text-gray-800 dark:text-white/90 pr-2" />{bookings.length} +
+                        <ScheduleOutlinedIcon fontSize="inherit" className="text-gray-800 dark:text-white/90 pr-2" />{completed.length} +
                       </h4>
                     </div>
 

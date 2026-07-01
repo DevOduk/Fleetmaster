@@ -1,144 +1,113 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { useModal } from "../../hooks/useModal";
-import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
-import { EventInput } from "@fullcalendar/core/index.js";
-import Select from "../form/Select";
-import { bookings, vehicles as VehicleData } from "@/data/mockFleetData";
-import FullCalendar from "@fullcalendar/react";
 import { CalenderIcon, ChevronDownIcon, CloseIcon, CloseLineIcon, DownloadIcon, PencilIcon, PlusIcon, TimeIcon } from "@/icons";
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Link from "next/link";
 import { CircularProgress } from "@mui/material";
+import Badge from "../ui/badge/Badge";
+import { getBookingDetailsServer } from "@/app/api/bookings/booking-details";
+import { useUser } from "@/context/UserContext";
+import BookingNotFound from "./NotFound";
+import Alert from "../ui/alert/Alert";
 
 
-
-interface CalendarEvent extends EventInput {
-  extendedProps: {
-    calendar: string;
-    registration?: string;
-    renter?: string;
-    renterID?: string;
-  };
-}
 const calendarsEvents = {
   'High Priority': "success",
   'Medium Priority': "primary",
   'Low Priority': "warning",
 };
+function getTimeRemaining(status: string, start: string, end: string, time: string, created_at: string): string {
+  const startDate = new Date(`${start}T${time}`);
+  const endDate = new Date(`${end}T${time}`);
+  const now = new Date();
 
-const getNumberOfDays = (start: string, end: string) => {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
-  return days;
-};
+  if (status.toLowerCase() === 'reserved') {
+    if(new Date().getTime() > new Date(created_at).getTime() + (30 * 60 * 1000)){
+      return 'Reservation Expired!'
+    }
+    return 'Reserved (Awaiting Payment)';
+  }
 
-// Extract only booking properties (remove merged vehicle data)
-const extractBookingOnly = (booking: any) => ({
-  id: booking.id,
-  vehicleId: booking.vehicleId,
-  renterName: booking.renterName,
-  renterPhone: booking.renterPhone,
-  renterID: booking.renterID,
-  pickupLocation: booking.pickupLocation,
-  dropoffLocation: booking.dropoffLocation,
-  rentalStart: booking.rentalStart,
-  rentalEnd: booking.rentalEnd,
-  rentalDays: booking.rentalDays,
-  discount: booking.discount,
-  total: booking.total,
-  status: booking.status,
-  priority: booking.priority,
-});
+  if (now > endDate) {
+    return `Rental ended on ${endDate.toLocaleDateString()}`;
+  }
 
+  if (now >= startDate && now <= endDate) {
+    return `Ends in ${formatDuration(endDate.getTime() - now.getTime())}`;
+  }
 
-export default function ViewBooking({ BookingDetails }: { BookingDetails: any }) {
-  const [allBookings, setAllBookings] = useState<any[]>([...bookings]);
-  const [bookingName, setBookingName] = useState("");
+  return `Starts in ${formatDuration(startDate.getTime() - now.getTime())}`;
+}
+
+/**
+ * Helper to convert milliseconds into "X Days Y Hrs Z Mins S Secs"
+ */
+function formatDuration(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  
+  const days = Math.floor(totalSeconds / (3600 * 24));
+  const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${days} Days ${hours} Hrs ${minutes} Mins ${seconds} Secs`;
+}
+
+export default function ViewBooking({ BookingID }: { BookingID: number; }) {
+  const { loading, profile } = useUser();
   const [eventStartDate, setEventStartDate] = useState(new Date().toISOString().split("T")[0]);
-  const [eventStartTime, setEventStartTime] = useState("10:00");
-  const [eventEndDate, setEventEndDate] = useState(new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split("T")[0]);
-  const [eventEndTime, setEventEndTime] = useState("10:00");
-  const [eventDays, setEventDays] = useState(0);
-  const [minDays, setMinDays] = useState(1);
-  const [eventLevel, setEventLevel] = useState("");
-  const calendarRef = useRef<FullCalendar>(null);
-  const [renterName, setRenterName] = useState('');
-  const [renterID, setRenterID] = useState('');
-  const [renterPhone, setRenterPhone] = useState('');
-  const [processingPayment, setProcessingPayment] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [updatingBooking, setUpdatingBooking] = useState(false);
-  const [disableButton, setDisableButton] = useState(false);
+  const [loadingBooking, setLoadingBooking] = useState(false);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
-
-
-
-  const getTotalAmount = (vehicleId: number, endDate: string, startDate: string) => {
-    const days = getNumberOfDays(startDate, endDate);
-    const vehicle = VehicleData.find((v) => v.id === vehicleId);
-    const Total = (days * (vehicle ? vehicle.dailyRate : 0));
-
-    return Number(Total);
-  };
-
-  const getBookingDetails = (id: number) => {
-    // Search by 'id', not 'vehicleId'
-    const booking = allBookings.find((b) => b.id === id);
-
-    // Use the vehicleId found inside that booking to get vehicle rates
-    const vehicle = VehicleData.find((v) => v.id === booking?.vehicleId);
-
-    return {
-      days: booking?.rentalDays || 0,
-      dailyRate: vehicle?.dailyRate || 0,
-      totalAmount: Number(booking?.total || 0),
-      vehicleID: booking?.vehicleId,
-    };
-  };
+  const [timerString, setTimerString] = useState<string>('');
 
   useEffect(() => {
-    const vehicleID = getBookingDetails(BookingDetails?.id).vehicleID;
-    const bookingDetailsDraft = allBookings.find(b => b.id === BookingDetails?.id);
-    const vehicle = VehicleData.find(v => v.id === vehicleID);
-    const days = Math.ceil((new Date(eventEndDate).getTime() - new Date(eventStartDate).getTime()) / (1000 * 3600 * 24));
-    const minimum = VehicleData.find((vehicle) => vehicle.id === (BookingDetails?.id))?.minRentalDays || 1;
+    if (loading) return;
+    setLoadingBooking(true);
 
-    const hydratedBooking = { ...vehicle, ...bookingDetailsDraft }
+    getBookingDetailsServer(BookingID)
+      .then(res => {
+        console.log('get bookings', res);
+        if (!res.error) {
+          setBookingDetails(res.data);
+          setLoadingBooking(false);
+
+        } else {
+          setLoadingBooking(false);
+          setBookingDetails(null);
+        }
+
+      })
+  }, [loading, BookingID])
 
 
-    setEventDays(days);
-    setMinDays(minimum);
-    setBookingName(
-      // registration: year make model
-      hydratedBooking.licensePlate + ': ' + hydratedBooking.year + ' ' + hydratedBooking.make + ' ' + hydratedBooking.model
+useEffect(() => {
+  if (!bookingDetails) return;
+
+  // Define the interval function
+  const updateTimer = () => {
+    setTimerString(
+      getTimeRemaining(
+        bookingDetails.booking_status, 
+        bookingDetails.rental_start, 
+        // Ensure you use the correct field for the end date!
+        bookingDetails.rental_end, 
+        bookingDetails.rental_time,
+        bookingDetails.created_at,
+      )
     );
-    setEventLevel(hydratedBooking.priority);
-    setEventStartDate(hydratedBooking.rentalStart);
-    setEventEndDate(hydratedBooking.rentalEnd);
-    setEventStartTime(hydratedBooking.rentalTime);
-    setEventEndTime(hydratedBooking.rentalTime);
-    setRenterID(hydratedBooking.renterID)
-    setRenterName(hydratedBooking.renterName)
-    setRenterPhone(hydratedBooking.renterPhone)
-
-  }, [eventStartDate, eventEndDate, BookingDetails?.id]);
-
-
-  const getVehicleDetails = (id: number) => {
-    // Search by 'id'
-    const vehicle = VehicleData.find((b) => b.id === id);
-
-    return {
-      dailyRate: vehicle?.dailyRate || 0,
-      vehicleID: vehicle?.id,
-    };
   };
+
+  // Run once immediately to avoid 1-second delay on mount
+  updateTimer();
+
+  const int = setInterval(updateTimer, 1000);
+
+  // Return a function to correctly clear the interval
+  return () => clearInterval(int);
+}, [bookingDetails]); // Added dependency to re-run if details change
+
 
 
 
@@ -164,23 +133,49 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
 
     return `${year}-${month}-${day}`;
   };
+
+
   // Helper to format Date object to YYYY-MM-DD (Local Time)
+  if (loading || loadingBooking) {
+    return <div className="min-h-[70vh]">
+      <div className="py-6 flex flex-col items-center">
+        <CircularProgress color="primary" size={30} />
+
+        <h4 className="mb-0 mt-3 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
+          Just a moment!
+        </h4>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Geting booking's details! Please bear with us for a moment ...
+        </p>
+      </div>
+    </div>
+  }
+
+
+  if (!bookingDetails || (profile.role === 'Client' && bookingDetails.user_id !== profile.id)) {
+    return <BookingNotFound />
+  }
 
   return (
-    <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
-      {bookingName ?
-        <div className="flex flex-col px-2">
+    <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6 max-w-6xl mx-auto">
+      {bookingDetails ?
+        <div className="flex flex-col px-2 relative">
+          <Button className="sticky right-0 top-20 z-9999" variant="primary" size="sm">{timerString}</Button>
+          {bookingDetails?.booking_status.toLowerCase() === 'reserved' && (new Date().getTime() > new Date(bookingDetails.created_at).getTime() + (30 * 60 * 1000)) && (
+            <Alert variant="error" title="Reservation expired!" message="This reservation has expired and can be rented by anther person. Once reservation is made, you have 30 minutes to complete payment or the reservation will be released for someone. If this happens you can check again after a few minutes for availability. Thank you!"></Alert>
+          )}
+          <div className="mt-5">
+            <Badge size="md" color="success">STATUS: {bookingDetails?.booking_status}</Badge>
+          </div>
+          <h4 className="mt-3 mb-3 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
+            Rental Information
+          </h4>
+
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Manage your bookings by adding new ones or editing existing bookings. Click on any date to add a new booking or click on an existing booking to edit it.
             </p>
           </div>
-
-
-          <h4 className="mb-0 mt-3 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
-            Rental Information
-          </h4>
-
           <div className="mt-3">
             <div>
               <div className="hidden">
@@ -190,13 +185,13 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
                 <input
                   id="event-id"
                   type="text"
-                  value={BookingDetails?.id}
+                  value={bookingDetails?.id}
                   disabled
                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                 />
               </div>
               <div className="mb-4 mt-2">
-                <img className="h-45 w-full object-cover rounded-lg" src={BookingDetails?.vehicleDetails?.imageUrl} alt={BookingDetails?.vehicleDetails?.make} />
+                <img className="h-45 w-full object-cover rounded-lg" src={bookingDetails?.vehicle?.image_url} alt={bookingDetails?.vehicle?.make} />
               </div>
               <div className="">
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -205,7 +200,7 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
                 <input
                   id="event-title"
                   type="text"
-                  value={bookingName}
+                  value={(profile.role !== 'Client' && (bookingDetails?.vehicle?.license_plate + ': ')) + bookingDetails?.vehicle?.year + ' ' + bookingDetails?.vehicle?.make + ' ' + bookingDetails?.vehicle?.model}
                   disabled
                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                 />
@@ -231,13 +226,12 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
                             type="radio"
                             name="event-level"
                             value={key}
-                            id={`modal${key}`}
-                            checked={eventLevel === key}
-                            onChange={() => setEventLevel(key)}
+                            id={`modal${key}`} readOnly
+                            checked={bookingDetails.priority === key}
                           />
                           <span className="flex items-center justify-center w-5 h-5 mr-2 border border-gray-300 rounded-full box dark:border-gray-700">
                             <span
-                              className={`h-2 w-2 rounded-full bg-white ${eventLevel === key ? "block" : "hidden"
+                              className={`h-2 w-2 rounded-full bg-white ${bookingDetails.priority === key ? "block" : "hidden"
                                 }`}
                             ></span>
                           </span>
@@ -253,7 +247,7 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
             <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2 mt-6">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Enter Start Date
+                  Start Date
                 </label>
                 <div className="relative">
                   <input
@@ -277,12 +271,8 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
                   <Input
                     type="time"
                     id="start-time"
-                    value={eventStartTime}
+                    value={bookingDetails.rental_time}
                     disabled
-                    onChange={(e) => {
-                      setEventStartTime(e.target.value);
-                      setEventEndTime(e.target.value);
-                    }}
                     name="start-time"
                   />
                   <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
@@ -295,14 +285,14 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
             <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2 mt-6">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Enter End Date
+                  End Date
                 </label>
                 <div className="relative">
                   <input
                     id="event-end-date"
                     type="date"
                     disabled
-                    value={formatDateToLocal(eventEndDate)}
+                    value={formatDateToLocal(bookingDetails.rental_end)}
                     className="dark:bg-dark-900 col-8 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                   />
                   <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
@@ -318,22 +308,18 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
                   <Input
                     type="time"
                     id="end-time"
-                    value={eventEndTime}
+                    value={bookingDetails.rental_time}
                     name="end-time"
                     disabled
-                    onChange={(e) => {
-                      setEventStartTime(e.target.value);
-                      setEventEndTime(e.target.value);
-                    }}
                   />
                   <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
                     <TimeIcon />
                   </span>
                 </div>
               </div>
-              {BookingDetails?.id && (
+              {bookingDetails?.id && (
                 <div className="text-sm text-green-500">
-                  Rental period set at a minimum of {minDays} Days
+                  Rental period set at a minimum of {bookingDetails?.vehicle?.min_rental_days} Days
                 </div>
               )}
             </div>
@@ -370,9 +356,8 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
               <input
                 id="renter-name"
                 type="text"
-                value={renterName}
+                value={bookingDetails?.renter_name}
                 readOnly
-                onChange={(e) => setRenterName(e.target.value)}
                 className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
               />
             </div>
@@ -383,9 +368,8 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
               <input
                 id="renter-id"
                 type="text"
-                value={renterID}
+                value={bookingDetails?.renter_id}
                 readOnly
-                onChange={(e) => setRenterID(e.target.value)}
                 className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
               />
             </div>
@@ -396,73 +380,74 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
               <input
                 id="renter-phone"
                 type="text"
-                value={renterPhone}
+                value={bookingDetails?.renter_phone}
                 readOnly
                 className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
               />
             </div>
             {
-              BookingDetails?.id && (
-                <div className="flex gap-2 flex-col items-end border-t mt-6">
-                  <h4 className="mt-4 font-semibold text-gray-800 modal-title text-theme-l dark:text-white/90 lg:text-l">
-                    Booking Summary:</h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Booked Days: {getBookingDetails(BookingDetails.id)?.days} Days</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Daily Rate: Ksh. {getBookingDetails(BookingDetails.id).dailyRate.toLocaleString()} </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Amount: Ksh. {getBookingDetails(BookingDetails.id).totalAmount.toLocaleString()}
-                  </p>
-                  <p className="text-sm font-bold text-green-500">
-                    Total Paid: Ksh. {getBookingDetails(BookingDetails.id)?.totalAmount.toLocaleString()}
-                  </p>
+              bookingDetails?.id && (
+
+                <div className={`flex mt-5 ms-auto ${bookingDetails?.booking_status.toLowerCase() === 'reserved' && (new Date().getTime() > new Date(bookingDetails.created_at).getTime() + (30 * 60 * 1000)) ? 'dark:bg-red-800/30 bg-red-200' : 'dark:bg-green-800/30 bg-green-200'} rounded-2xl top-0  w-full gap-2 flex-col col-span-12 lg:col-span-3 mb-5`}>
+                  <h4 className="mt-4 px-3 text-right font-semibold text-gray-800 modal-title text-theme-l dark:text-white/90 lg:text-l">
+                    Booking Summary</h4>
+                  <div className="mt-2 p-2 px-3 rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/30">
+                    <h3 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Cost Breakdown</h3>
+
+                    {/* Grid Wrapper */}
+                    <div className="grid grid-cols-[1fr_auto_1fr] gap-x-4 gap-y-3 text-sm items-center">
+
+                      {/* Row 1 */}
+                      <div className="text-left text-gray-500 dark:text-gray-400">Duration</div>
+                      <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                      <div className="text-right font-medium text-gray-800 dark:text-gray-200">{bookingDetails?.rental_days} Days</div>
+
+                      {/* Row 2 */}
+                      <div className="text-left text-gray-500 dark:text-gray-400">Daily Rate</div>
+                      <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                      <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                        Ksh. {bookingDetails?.vehicle?.daily_rate.toLocaleString()}
+                      </div>
+
+                      {/* Row 3 */}
+                      <div className="text-left text-gray-500 dark:text-gray-400">Delivery + Pickup fee</div>
+                      <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                      <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. 0</div>
+
+                      {/* Row 4 */}
+                      <div className="text-left text-gray-500 dark:text-gray-400">Rescue Plan</div>
+                      <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                      <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. {200}</div>
+
+                      {/* Row 5 */}
+                      <div className="text-left text-gray-500 dark:text-gray-400">VAT 16%</div>
+                      <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
+                      <div className="text-right font-medium text-gray-800 dark:text-gray-200">Ksh. {((bookingDetails?.vehicle?.daily_rate * bookingDetails?.rental_days) * 0.16).toLocaleString()}</div>
+
+                      {/* Horizontal Divider Span across all 3 columns */}
+                      <div className="col-span-3 border-t border-gray-200 my-1 dark:border-gray-800" />
+
+                      {/* Grand Total Row */}
+                      <div className="text-left font-bold text-gray-800 dark:text-gray-100">Total</div>
+                      <div className="w-px h-5 bg-gray-300 dark:bg-gray-700" />
+                      <div className={`text-right text-base font-bold ${bookingDetails?.booking_status.toLowerCase() === 'reserved' && (new Date().getTime() > new Date(bookingDetails.created_at).getTime() + (30 * 60 * 1000)) ? 'text-red-600 dark:text-red-500' : 'text-green-600 dark:text-green-500'}`}>
+                        Ksh. {bookingDetails?.total?.toLocaleString() || 0}
+                      </div>
+
+                    </div>
+                  </div>
                 </div>
 
               )
             }
           </div>
 
-          {/* <div style={{minHeight: '8.5rem', position: 'relative'}}>
-            { processingPayment && ( <div className="animate-pulse flex items-center gap-3 p-2 py-3 mt-6 border rounded-md border-blue-400 bg-blue-500/10">
-                  <div className="p-2">
-                  <AccessTimeIcon fontSize="large" color="primary"/>
-                  </div>
-                  <div>
-
-              <h5 className="text-blue-500"><strong>Processing Payment!</strong></h5>
-            
-                <div className="text-sm mt-1 text-blue-300 dark:text-blue-200">
-                   <p> A payment request will be sent to the renter's phone number ({renterPhone}) upon booking confirmation. The booking will be finalized once the payment is successfully processed.
-                </p></div>
-                  </div>
-              
-            </div>)}
-
-
-            {paymentSuccess && (
-              <div className="flex items-center gap-3 p-2 py-3 mt-6 border rounded-md border-green-400 bg-green-500/10">
-                  <div className="p-2 text-green-500">
-                  <TaskAltIcon fontSize="large" />
-                  </div>
-                  <div>
-
-              <h5 className="text-green-500"><strong>Payment Success!</strong></h5>
-            
-                <div className="text-sm mt-1 text-green-300 dark:text-green-200">
-                   <p>
-                    Payment has been successfully processed. The booking is now confirmed and will appear on the calendar. An SMS confirmation will be sent to the renter's phone number ({renterPhone}) with the booking details and receipt.
-                </p></div>
-                  </div>
-              
-            </div>)}
-
-
-            </div> */}
-
+          <div className={`p-5 tracking-[0.2em] text-center uppercase ${bookingDetails?.booking_status.toLowerCase() === 'reserved' && (new Date().getTime() > new Date(bookingDetails.created_at).getTime() + (30 * 60 * 1000)) ? 'text-red-500' : 'text-brand-500'}`}>payment method: {bookingDetails?.booking_status.toLowerCase() === 'reserved' && (new Date().getTime() > new Date(bookingDetails.created_at).getTime() + (30 * 60 * 1000)) ? 'NOT PAID' : bookingDetails.payment_method}</div>
 
 
           <div className="flex items-center gap-3 mt-6 modal-footer sm:justify-end">
             <Link href={'#download'}><Button size="sm" variant="success-outline"><DownloadIcon /> Print Receipt</Button></Link>
-            <Link href={'/bookings/' + BookingDetails?.id + '/edit'}>
+            <Link href={'/bookings/' + bookingDetails?.id + '/edit'}>
               <Button
                 variant="primary"
                 size="sm"
@@ -470,12 +455,13 @@ export default function ViewBooking({ BookingDetails }: { BookingDetails: any })
                 Edit Booking <PencilIcon />
               </Button></Link>
           </div>
-        </div> : (
+        </div> :
+        (
           <div className="py-6 flex flex-col items-center">
             <CircularProgress color="primary" size={30} />
 
             <h4 className="mb-0 mt-3 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
-              Just a moment!
+              Opps! That booking could not be found.
             </h4>
 
             <p className="text-sm text-gray-500 dark:text-gray-400">

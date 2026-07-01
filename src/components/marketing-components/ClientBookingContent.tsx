@@ -10,6 +10,7 @@ import ConstructionIcon from "@mui/icons-material/Construction";
 import { useUser } from "@/context/UserContext";
 import { createClient } from "@/utils/supabase/client";
 import Badge from "../ui/badge/Badge";
+import Link from "next/link";
 
 interface TermSection {
   id: string;
@@ -65,6 +66,7 @@ function ClientBookingContent({ initialBookings }: InitialBookings) {
     }
   };
 
+
   return (
     <div className="container mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 py-12">
       <div className="col-span-12 lg:col-span-4 lg:sticky lg:top-22 h-fit space-y-2">
@@ -101,11 +103,10 @@ function ClientBookingContent({ initialBookings }: InitialBookings) {
         <section id="acceptance" className="space-y-4 scroll-mt-12">
           {loading ?
             <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl text-[11px] text-slate-400 uppercase tracking-widest">
-              Preparing your bookings ...
+              Preparing your profile ...
             </div> : filteredBookings.length > 0 ? (
               filteredBookings.map((b) => (
-                <div
-                  className="border border-slate-100 dark:border-slate-800 p-4 rounded-2xl flex gap-6 bg-white dark:bg-slate-900/20 items-center transition-all hover:border-amber-500/30"
+                <Link href={'/bookings/' + b.id} className="border border-slate-100 dark:border-slate-800 p-4 dark:hover:bg-gray-800 hover:bg-gray-200 rounded-2xl flex gap-6 bg-white dark:bg-slate-900/20 items-center transition-all hover:border-amber-500/30"
                   key={b.id}
                 >
                   <div className="w-45 flex-shrink-0">
@@ -119,8 +120,16 @@ function ClientBookingContent({ initialBookings }: InitialBookings) {
                   <div className="flex-1 gap-4">
                     <div className="col-span-1">
                       <h4 className="text-sm font-bold text-slate-900 dark:text-white">{b.vehicleDetails.make} {b.vehicleDetails.model} • <span className="text-green-500 dark:text-green-600">{b.vehicleDetails.category}</span></h4>
-                      <p className="text-[11px] text-slate-400 uppercase tracking-wider">{b.vehicleDetails.year} • {b.payment_method} • {b.rental_days} days • {b.pickup_location} •  <Badge size="sm" color={b.booking_status.toLowerCase() === 'reserved' ? "info" : b.booking_status.toLowerCase() === 'booked' ? "primary" : b.booking_status.toLowerCase() === 'active' ? "success" : b.booking_status.toLowerCase() === 'completed' ? "warning" : "error" } >{b.booking_status}</Badge></p>
+                      <p className="text-[11px] text-slate-400 uppercase tracking-wider">
+                        {b.vehicleDetails.year} •
+                        {b.payment_method} •
+                        {b.rental_days} days •
+                        {b.pickup_location} •
+                        <Badge size="sm" color={b.booking_status.toLowerCase() === 'reserved' ? "info" : b.booking_status.toLowerCase() === 'booked' ? "primary" : b.booking_status.toLowerCase() === 'active' ? "success" : b.booking_status.toLowerCase() === 'completed' ? "warning" : "error"} >{b.booking_status}</Badge>
+                      </p>
                       <p className="mb-3 w-full flex justify-between p-.5 max-w-[80%] px-0"><span className="font-semibold">{b.rental_start}</span> - <span className="font-semibold">{b.rental_end}</span></p>
+                      {/* 30 minutes past creation time  */}
+                      {b.booking_status.toLowerCase() === 'reserved' && (new Date().getTime() > new Date(b.created_at).getTime() + (30 * 60 * 1000)) && <p className="text-sm text-red-500">Reservation expired!</p>}
                     </div>
                   </div>
 
@@ -130,7 +139,7 @@ function ClientBookingContent({ initialBookings }: InitialBookings) {
                       kes {Number(b.total).toLocaleString()}
                     </p>
                   </div>
-                </div>
+                </Link>
               ))
             ) : (
               <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl text-[11px] text-slate-400 uppercase tracking-widest">

@@ -10,7 +10,8 @@ export async function GET() {
     const { data, error } = await supabase
       .from('fleetmaster_bookings')
       .select('*')
-      // .eq('tenant_id', '33429a1a-4c40-40e4-8f8f-3d2f58f2ed54')
+      // exclude all reserved vehicles from bookings object 
+      .neq('booking_status', 'Reserved')
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

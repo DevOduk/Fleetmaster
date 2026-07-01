@@ -7,7 +7,6 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { EventInput } from "@fullcalendar/core/index.js";
 import Select from "../form/Select";
-import { bookings, vehicles as VehicleData } from "@/data/mockFleetData";
 import FullCalendar from "@fullcalendar/react";
 import { CalenderIcon, ChevronDownIcon, ErrorIcon, PlusIcon, TimeIcon } from "@/icons";
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -16,6 +15,8 @@ import { CalendarWrapper } from "../calendar/CalendarWrapper";
 import dayjs from "dayjs";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useBooking } from "@/context/BookingContext";
+import { useFleet } from "@/context/FleetContext";
 
 
 
@@ -62,6 +63,8 @@ const extractBookingOnly = (booking: any) => ({
 
 
 export default function CreateNewBookingForm() {
+  const { bookings } = useBooking();
+  const { vehicles: VehicleData } = useFleet();
   const [allBookings, setAllBookings] = useState<any[]>([...bookings]);
   const [bookingName, setBookingName] = useState("");
   const [selectedVehicleID, setSelectedVehicleID] = useState<number>(0);
