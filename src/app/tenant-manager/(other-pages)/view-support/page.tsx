@@ -1,6 +1,6 @@
 // src/app/admin-site/(others-pages)/support/page.tsx
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import SupportTicketsDashboard from "@/components/support/SupportTicketsDashboard";
+import SupportTicketsDashboard, { SupportTicket } from "@/components/support/SupportTicketsDashboard";
 import { createClient } from "@/utils/supabase/server";
 
 export const metadata = {
@@ -11,7 +11,7 @@ export const metadata = {
 async function getSupportTickets() {
   try {
     const supabase = await createClient();
-    
+
     // Pull down tickets ordered by priority weight and submission date
     const { data, error } = await supabase
       .from("fleetmaster_support_tickets")
@@ -22,7 +22,11 @@ async function getSupportTickets() {
       console.error("Supabase support ticket fetch error:", error.message);
       return [];
     }
-    return data || [];
+
+    const formattedFeedbacks: SupportTicket[] = (data || []).map((item) => ({
+      ...item
+    }));
+    return formattedFeedbacks || [];
   } catch (err) {
     console.error("Critical error fetching support workspace:", err);
     return [];

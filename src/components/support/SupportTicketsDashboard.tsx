@@ -24,13 +24,6 @@ export interface SupportTicket {
   status: string;
   created_at: string;
   updated_at: string;
-  fleetmaster_tenants: {
-    id: string;
-    name: string;
-    slug: string;
-    about: string;
-    email: string;
-  }
 }
 
 interface SupportDashboardProps {
