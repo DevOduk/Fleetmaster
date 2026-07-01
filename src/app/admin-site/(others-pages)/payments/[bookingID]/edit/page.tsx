@@ -3,8 +3,7 @@ import EditBookingForm from '@/components/bookings/EditBooking';
 import BookingNotFound from '@/components/bookings/NotFound';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
-import { useFleet } from '@/context/FleetContext';
-import { bookings } from '@/data/mockFleetData';
+import { useBooking } from '@/context/BookingContext';
 import { ChevronLeftIcon } from '@/icons';
 import Link from 'next/link';
 import { use } from 'react';
@@ -16,6 +15,7 @@ interface VehiclePageProps {
 
 const EditBookingsPage = ({ params }: VehiclePageProps) => {
 const resolvedParams = use(params);
+    const { bookings } = useBooking();
 
   const bookingID = resolvedParams.bookingID;
     const bookingDetails = bookings.find(b => b.id === parseInt(bookingID));
