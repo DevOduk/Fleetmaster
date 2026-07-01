@@ -9,12 +9,12 @@ import Link from 'next/link';
 import { use } from 'react';
 import isBetween from 'dayjs/plugin/isBetween';
 import dayjs, { Dayjs } from 'dayjs';
-import { bookings } from '@/data/mockFleetData';
 import Badge from '@/components/ui/badge/Badge';
 import { Box, Chip } from '@mui/material';
 dayjs.extend(isBetween);
 import LocalGasStationOutlinedIcon from '@mui/icons-material/LocalGasStationOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import { useBooking } from '@/context/BookingContext';
 
 
 interface VehiclePageProps {
@@ -25,6 +25,7 @@ const breadcrumbItems = [{ label: "Vehicles", href: "/vehicles" }];
 
 const VehiclePage = ({ params }: VehiclePageProps) => {
   const resolvedParams = use(params);
+    const { bookings } = useBooking();
 
   const { vehicles } = useFleet();
   const vehicleID = resolvedParams.vehicleID;
