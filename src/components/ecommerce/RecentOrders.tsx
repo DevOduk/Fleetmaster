@@ -120,7 +120,7 @@ export default function RecentOrders() {
                       <div className="flex items-center gap-3">
                         <img
                           src={product.vehicleDetails?.imageUrl}
-                          className="h-[45px] w-[70px] object-cover rounded"
+                          className="h-11 w-17 object-cover rounded"
                           alt={product.vehicleDetails?.make}
                         />
                         <div>
