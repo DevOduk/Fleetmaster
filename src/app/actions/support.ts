@@ -59,7 +59,7 @@ export async function getTicketDetails(ticketNumber: string) {
   // Fetch ticket and joined responses
   const { data, error } = await supabase
     .from("fleetmaster_support_tickets")
-    .select("*, responses:fleetmaster_ticket_responses(*)")
+    .select("*, responses:fleetmaster_ticket_responses(*), admin:fleetmaster_main_admins (id, first_name, last_name)")
     .eq("ticket_number", ticketNumber)
     .single();
 
@@ -78,4 +78,13 @@ export async function addSupportResponse(ticketId: string, sender_id: string, se
   });
 
   return { success: !error, error };
+}
+
+export async function updateTicket(ticketId: string, adminId: string, status: string) {
+  const supabase = await createClient();
+  const { error, data } = await supabase.from("fleetmaster_support_tickets")
+  .update({ status, assigned_admin_id: adminId, updated_at: new Date().toISOString() })
+  .eq("id", ticketId);
+
+  return { success: !error, error, data };
 }

@@ -2,7 +2,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { Metadata } from "next";
 import Vehicles from "@/components/vehicles/Vehicles";
 import Bookings from "@/components/bookings/Bookings";
-import Support from "@/components/support/Support";
+import Support from "@/components/support/SupportTicketsTable";
 
 export const metadata: Metadata = {
   title:

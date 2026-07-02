@@ -5,11 +5,12 @@ import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import Button from "../ui/button/Button";
 import { PlusIcon } from "@/icons";
-import { Modal } from "../ui/modal";
 import { useModal } from "@/hooks/useModal";
-import { toast } from "sonner";
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { useUser } from "@/context/UserContext";
+import UpdateYardsModal from "./UpdateYardsModal";
+import { fetchTenantDetails, updateTenantDetails } from "@/app/actions/tenant";
+import { useToast } from "@/context/ToastContext";
+import Image from "next/image";
 
 // --- Part 1: Client-Only Map Sub-Component ---
 // This safely loads and renders Leaflet elements ONLY in the browser environment.
@@ -67,9 +68,31 @@ const SafeLeafletMap: React.FC<{
 // --- Part 2: The Main Component Structure ---
 const YardsContent: React.FC = () => {
   const { profile: adminProfile } = useUser();
+  const { showToast } = useToast();
   const [isDarkMode, setIsDarkMode] = React.useState(false);
-  const { isOpen, openModal, closeModal } = useModal();
+  const [isOpen, setIsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [loadingCompany, setLoadingCompany] = useState<boolean>(true);
+  const [companyFormData, setCompanyFormData] = useState<any>(null);
+
+  useEffect(() => {
+    const getTenantDetails = async () => {
+      if (!adminProfile?.tenant_id) {
+        setLoadingCompany(false);
+        return;
+      }
+      if (adminProfile?.tenant_id) {
+        const res = await fetchTenantDetails(adminProfile.tenant_id);
+        setCompanyFormData(res.data);
+        if (res) {
+          setLoadingCompany(false);
+        }
+      }
+    };
+
+    getTenantDetails();
+  }, [adminProfile?.tenant_id]);
+
 
   useEffect(() => {
     const checkDarkMode = () => {
@@ -101,32 +124,101 @@ const YardsContent: React.FC = () => {
     return () => observer.disconnect();
   }, [isDarkMode]);
 
-  const addCreateYard = () => {
-    if (selectedEvent) {
-      toast.success('Updated yard success');
-    } else {
-      toast(
-        <div className="flex gap-2 font-bold items-center"><TaskAltIcon style={{ width: 16, height: 16 }} />Success!</div>,
-        {
-          description: (
-            <span className="font-sm">
-              New yard has been added successfully.
-            </span>
-          ),
-          style: {
-            padding: '10px 12px',
-            color: 'green',
-          },
-        }
-      );
-    }
-  };
 
-  const mainMapYards = adminProfile?.fleetmaster_tenants?.yards || [];
-  const modalMapYards = selectedEvent ? [selectedEvent] : [];
+  const handleDeleteYard = async (yard: any) => {
+    if (!yard || !yard.title) {
+      console.error("Invalid yard data for deletion:", yard);
+      return;
+    }
+
+    const confirmDelete = window.confirm(`Are you sure you want to delete the yard "${yard.title}"?`);
+    if (!confirmDelete) return;
+
+    const updatedYards = companyFormData.yards.filter((y: any) => y.title !== yard.title);
+
+    const res = await updateTenantDetails(adminProfile.tenant_id, { ...companyFormData, yards: updatedYards });
+    if (res.success) {
+      showToast(`Yard "${yard.title}" deleted successfully.`, "success");
+      setCompanyFormData((prev: any) => ({ ...prev, yards: updatedYards }));
+    } else {
+      showToast("Failed to delete yard.", "error");
+    }
+  }
+
+  const mainMapYards = companyFormData?.yards || [];
+
+  if (!adminProfile || !adminProfile.tenant_id || loadingCompany) {
+    return (
+      <div className="w-full mx-auto p-6 space-y-6 animate-pulse">
+        <div className="flex items-center justify-between pb-6 border-b border-gray-100 dark:border-gray-800">
+          <div className="space-y-2">
+            <div className="h-6 w-48 bg-gray-200 rounded-md dark:bg-gray-600"></div>
+            <div className="h-4 w-32 bg-gray-100 rounded-md dark:bg-gray-600"></div>
+          </div>
+          <div className="h-10 w-28 bg-gray-200 rounded-lg dark:bg-gray-600"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="p-5 border border-gray-100 dark:border-gray-700 rounded-xl space-y-3">
+              <div className="h-4 w-34 bg-gray-100 rounded-md dark:bg-gray-600"></div>
+              <div className="h-8 w-19 bg-gray-200 rounded-md dark:bg-gray-600"></div>
+            </div>
+          ))}
+        </div>
+        <div className="border border-gray-100 dark:border-gray-800 rounded-xl p-4 space-y-4">
+          <div className="h-5 w-36 bg-gray-200 dark:bg-gray-500 rounded-md mb-2"></div>
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-gray-600 last:border-0">
+              <div className="flex items-center space-x-3 w-full">
+                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-full shrink-0"></div>
+                <div className="space-y-2 w-full max-w-[60%]">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded-md w-3/4"></div>
+                  <div className="h-3 bg-gray-100 dark:bg-gray-600 rounded-md w-1/2"></div>
+                </div>
+              </div>
+              <div className="h-4 w-12 bg-gray-100 rounded-md dark:bg-gray-600"></div>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-center space-x-2 pt-2">
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+          <span className="text-xs text-gray-400 font-medium pl-1">Syncing workspace...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!companyFormData) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 min-h-[70vh]">
+        <div className="text-4xl mb-4">🏢</div>
+        <h3 className="text-lg font-semibold text-red-600">Company Not Found</h3>
+        <p className="text-gray-500 max-w-sm mt-2">
+          We couldn't locate a profile associated with your account. If you believe this is an error, please contact support.
+        </p>
+        <button onClick={() => window.location.reload()} className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          Refresh Page
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
+      {isOpen && (
+        <UpdateYardsModal
+          tenantId={adminProfile?.tenant_id}
+          isDarkMode={isDarkMode}
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          yardDetails={selectedEvent}
+          setCompanyFormData={setCompanyFormData}
+          companyFormData={companyFormData}
+        />
+      )}
+
       <div className="grid grid-cols-12 gap-6">
         <div
           className={`w-full col-span-12 lg:col-span-5 rounded-2xl border transition-colors duration-200 mt-4 h-100 ${isDarkMode ? "border-gray-800 bg-white/3" : "border-gray-200 bg-white"
@@ -144,25 +236,28 @@ const YardsContent: React.FC = () => {
         <div className="py-3 col-span-12 lg:col-span-7">
           <div className="flex items-center justify-between">
             <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90"> Below is a list of your working yards/locations:</p>
-            <Button onClick={openModal} variant="primary" size="sm">New Yard <PlusIcon /></Button>
+            <Button onClick={() => setIsOpen(true)} variant="primary" size="sm">New Yard <PlusIcon /></Button>
           </div>
-          <div>
+          <div className="grid grid-cols-1 gap-4 grid-cols-2">
             {mainMapYards.map((yard: any, i: number) => (
-              <div key={i} style={{ width: '100%' }} className="flex p-2 pr-3 rounded bg-white dark:bg-white/2 cursor-pointer gap-3 w-full mt-4 items-center">
-                <div>
-                  <img className="w-35 h-18 rounded object-fit object-cover" alt={yard.title} src={yard.imageUrl} />
-                </div>
-                <div className="w-full">
-                  <h6 className="font-medium text-md text-gray-800 dark:text-white/80">{yard.title}</h6>
-                  <p className="text-gray-800 text-sm dark:text-white/70 mb-1">{yard.description}</p>
-                  <p className="font-small text-sm text-gray-700 dark:text-gray-500">Lat: {yard.location?.[0]} | long: {yard.location?.[1]}</p>
-                </div>
-                <div className="p-2 flex gap-3">
+              <div key={i} className="rounded-xl relative border border-gray-100 p-4 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                <img
+                  src={yard.imageUrl || "/images/brand/default-yard.png"}
+                  alt={yard.title || "Yard"}
+                  className="mb-2 h-auto aspect-video w-full rounded-lg object-cover"
+                />
+                <p className="text-sm font-bold text-gray-900 dark:text-white">{yard.title}</p>
+                <p className="mt-1text-sm mb-2 mt-1 truncate text-gray-500 line-clamp-2">{yard.description}</p>
+                <p className="font-small text-xs text-gray-700 dark:text-gray-500">Lat: {yard.location?.[0]} | long: {yard.location?.[1]}</p>
+
+                <div className="p-2 flex gap-4 absolute top-5 right-5 bg-white/50 dark:bg-gray-800/50 rounded-lg z-3">
                   <BorderColorOutlinedIcon onClick={() => {
                     setSelectedEvent(yard);
-                    openModal();
-                  }} color="primary" />
-                  <DeleteOutlinedIcon color="error" />
+                    setIsOpen(true);
+                  }} fontSize="small" className="text-white cursor-pointer" />
+                  <DeleteOutlinedIcon onClick={() => {
+                    handleDeleteYard(yard);
+                  }} fontSize="small" color="error" className="cursor-pointer" />
                 </div>
               </div>
             ))}
@@ -170,111 +265,6 @@ const YardsContent: React.FC = () => {
         </div>
       </div>
 
-      <Modal
-        isOpen={isOpen}
-        onClose={() => {
-          closeModal();
-          setSelectedEvent(null);
-        }}
-        className="max-w-175 p-6 lg:p-10"
-      >
-        <div className="flex flex-col px-2 overflow-y-auto max-h-[calc(100vh-120px)] custom-scrollbar">
-          <div>
-            <h5 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-2xl">
-              {selectedEvent ? "Edit Booking" : "Create Booking"}
-            </h5>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Manage your yards by adding new ones or editing existing yrds.
-            </p>
-          </div>
-
-          <h4 className="mb-2 mt-4 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
-            Yard Information
-          </h4>
-
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Image
-            </label>
-            {selectedEvent ?
-              <img className="w-40 mt-3 mb-3 rounded object-fit object-cover" alt={selectedEvent?.title || ''} src={selectedEvent?.imageUrl} />
-              : <p className="text-sm font-small text-red-800 dark:text-red-400 py-4">No image yet ...</p>}
-          </div>
-
-          <input
-            id="image"
-            type="file"
-            accept="image/*"
-            onChange={(e) => console.log(e.target.value)}
-            className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-          />
-          <div>
-            <label className="mb-1.5 mt-3 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Yard Name
-            </label>
-            <input
-              id="renter-name"
-              type="text"
-              value={selectedEvent?.title || ''}
-              onChange={(e) => console.log(e.target.value)}
-              className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1.5 mt-4 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Yard Description
-            </label>
-            <input
-              id="renter-desc"
-              type="text"
-              value={selectedEvent?.description || ''}
-              onChange={(e) => console.log(e.target.value)}
-              className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1.5 mt-4 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Location
-            </label>
-            <div
-              className={`w-full col-span-12 lg:col-span-5 rounded-2xl border transition-colors duration-200 mt-4 h-100 ${isDarkMode
-                ? "border-gray-800 bg-white/3"
-                : "border-gray-200 bg-white"
-                }`}
-              style={{ aspectRatio: 16 / 10 }}
-            >
-              <SafeLeafletMap
-                center={[selectedEvent?.location?.[0] || -1.286389, selectedEvent?.location?.[1] || 36.817223]}
-                zoom={8}
-                yardsData={modalMapYards}
-                isDarkMode={isDarkMode}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 mt-6 modal-footer sm:justify-end">
-            <button
-              onClick={() => {
-                closeModal();
-                setSelectedEvent(null);
-              }}
-              type="button"
-              className="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 sm:w-auto"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => addCreateYard()}
-              type="button"
-              className="btn btn-success btn-update-event flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
-            >
-              {selectedEvent ? "Update Yard" : "Create Yard"}
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };

@@ -5,17 +5,8 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../../context/SidebarContext";
 import {
-  BoxCubeIcon,
-  CalenderIcon,
   ChevronDownIcon,
-  GridIcon,
   HorizontaLDots,
-  ListIcon,
-  PageIcon,
-  PieChartIcon,
-  PlugInIcon,
-  TableIcon,
-  UserCircleIcon,
 } from "../../icons/index";
 import SidebarWidget from "./SidebarWidget";
 import DashboardCustomizeOutlinedIcon from '@mui/icons-material/DashboardCustomizeOutlined';
@@ -31,7 +22,7 @@ import WysiwygOutlinedIcon from '@mui/icons-material/WysiwygOutlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined"
-
+import EmojiTransportationOutlinedIcon from "@mui/icons-material/EmojiTransportationOutlined"
 
 
 type NavItem = {
@@ -41,7 +32,7 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
-const navItems: NavItem[] = [
+export const navItems: NavItem[] = [
   {
     icon: <DashboardCustomizeOutlinedIcon />,
     name: "Dashboard",
@@ -63,7 +54,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "All Bookings", path: "/bookings", pro: false },
       { name: "Calendar", path: "/calendar", pro: false },
-      { name: "Payments", path: "/payments", pro: false },
+      { name: "Payments", path: "/payments", pro: false, new: true },
     ],
   },
   {
@@ -107,7 +98,7 @@ const navItems: NavItem[] = [
   // },
 ];
 
-const othersItems: NavItem[] = [
+export const othersItems: NavItem[] = [
   {
     icon: <ContrastOutlinedIcon />,
     name: "Preferences",
@@ -157,7 +148,7 @@ const othersItems: NavItem[] = [
   //   ],
   // },
 ];
-const accountItems: NavItem[] = [
+export const accountItems: NavItem[] = [
   {
     icon: <SupportAgentOutlinedIcon />,
     name: "Support",
@@ -167,6 +158,11 @@ const accountItems: NavItem[] = [
     icon: <AccountCircleOutlinedIcon />,
     name: "User Profile",
     path: "/profile",
+  },
+  {
+    icon: <EmojiTransportationOutlinedIcon />,
+    name: "Company Profile",
+    path: "/company-profile",
   },
   {
     icon: <ManageAccountsOutlinedIcon />,

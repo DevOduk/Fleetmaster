@@ -1,16 +1,39 @@
 "use client";
+import { fetchUserTickets } from "@/app/actions/support";
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
+import SearchModal from "@/components/header/SearchModal";
 import UserDropdown from "@/components/header/UserDropdown";
+import { useFleet } from "@/context/FleetContext";
 import { useSidebar } from "@/context/SidebarContext";
+import { useUser } from "@/context/UserContext";
+import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState ,useEffect,useRef} from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { accountItems, navItems, othersItems } from "./AppSidebar";
+  const supabase = createClient();
+
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-
+  const [isOpen, setIsOpen] = useState(false);
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
+  const [cachedTickets, setCachedTickets] = useState([]);
+  const { profile } = useUser();
+  const [cachedBookings, setCachedBookings] = useState([]);
+  const { vehicles } = useFleet();
+  
+  const tenantVehicles = vehicles.filter(vehicle => vehicle.tenant_id === profile?.tenant_id);
+
+
+  const fetchUserBookings = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('fleetmaster_bookings')
+      .select(`*, vehicleDetails:fleetmaster_vehicles!inner(*)`)
+      .eq('user_id', userId);
+    return { data, error };
+  }
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -23,13 +46,14 @@ const AppHeader: React.FC = () => {
   const toggleApplicationMenu = () => {
     setApplicationMenuOpen(!isApplicationMenuOpen);
   };
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         event.preventDefault();
-        inputRef.current?.focus();
+        setIsOpen(true);
       }
     };
 
@@ -39,6 +63,59 @@ const AppHeader: React.FC = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const loadSearchData = async () => {
+      const [ticketsRes, bookingsRes] = await Promise.all([
+        fetchUserTickets(profile.id),
+        fetchUserBookings(profile.id),
+      ]);
+
+      setCachedTickets(ticketsRes?.data || []);
+      setCachedBookings(bookingsRes?.data || []);
+    };
+
+    loadSearchData();
+  }, [profile?.id]);
+
+
+  const otherLinks = useMemo(() => [
+    ...navItems.map(nav => {
+      return {
+        title: nav.name,
+        description:
+          `${nav.name} | Open ${nav.name} Admin Page`,
+        link: nav.path || '#'
+      }
+    }),
+    ...othersItems.map(nav => {
+      return {
+        title: nav.name,
+        description:
+          `${nav.name} | Open ${nav.name} Admin Page`,
+        link: nav.path || '#'
+      }
+    }),
+    ...accountItems.map(nav => {
+      return {
+        title: nav.name,
+        description:
+          nav.name === "Account Settings" ? "Manage your account settings, change password, preferences, 2FA, Two Factor Authentication, dark/light theme, notifications preferences etc." :
+            nav.name === "User Profile" ? "View your admin profile information." :
+              nav.name === "Support" ? "Support Tickets | View, manage and track support tickets" :
+                `${nav.name} | Open ${nav.name} Admin Page`,
+        link: nav.path || '#'
+      }
+    })
+  ], []);
+  // client component 
+  const ADMIN_PAGES = useMemo(() => [
+    { title: "Terms and Conditions", description: "Review our terms and conditions", link: "/terms-conditions" },
+    { title: "Edit Profile", description: "Update my profile information. Change my details name, email, phone number etc.", link: "/profile" },
+    ...otherLinks
+  ], [otherLinks]);
 
   return (
     <header className="sticky top-0 flex w-full bg-white border-gray-200 z-9999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
@@ -121,7 +198,7 @@ const AppHeader: React.FC = () => {
           </button>
 
           <div className="hidden lg:block">
-            <form>
+            <div>
               <div className="relative">
                 <span className="absolute -translate-y-1/2 left-4 top-1/2 pointer-events-none">
                   <svg
@@ -143,6 +220,7 @@ const AppHeader: React.FC = () => {
                 <input
                   ref={inputRef}
                   type="text"
+                  onClick={() => setIsOpen(true)}
                   placeholder="Search or type command..."
                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
                 />
@@ -152,25 +230,34 @@ const AppHeader: React.FC = () => {
                   <span> K </span>
                 </button>
               </div>
-            </form>
+
+
+              <SearchModal
+                isOpen={isOpen}
+                setIsOpen={setIsOpen}
+                Tickets={cachedTickets}
+                Bookings={cachedBookings}
+                Vehicles={tenantVehicles}
+                PAGES={ADMIN_PAGES}
+              />
+            </div>
           </div>
         </div>
         <div
-          className={`${
-            isApplicationMenuOpen ? "flex" : "hidden"
-          } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
+          className={`${isApplicationMenuOpen ? "flex" : "hidden"
+            } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
 
-           <NotificationDropdown /> 
+            <NotificationDropdown />
             {/* <!-- Notification Menu Area --> */}
           </div>
           {/* <!-- User Area --> */}
-          <UserDropdown /> 
-    
+          <UserDropdown />
+
         </div>
       </div>
     </header>

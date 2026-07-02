@@ -109,7 +109,7 @@ export default function RecentOrders() {
             {
               loading ? (
                 <>
-                  {[...Array(4)].map((i) => <TableRow key={i}>
+                  {[...Array(4)].map((_,i) => <TableRow key={i}>
                     <TableCell className="w-full py-2" colSpan={4}><div className="dark:bg-gray-600 rounded bg-gray-300 mb-2 h-12 text-center animate-pulse"></div></TableCell>
                   </TableRow>)}
                 </>

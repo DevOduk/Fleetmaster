@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import SecondaryHero from "@/components/marketing-components/SecondaryHero";
 import ClientTicketView from "@/components/support/ClientTicketView";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 
 // Define the shape of your params
 type PageProps = {
@@ -24,19 +25,14 @@ export default async function ManageTicketPage({ params }: PageProps) {
   const displayTicketNumber = `#${ticketNumber}`;
   
   const pages = [
-    { label: 'Home', href: '/' }, 
-    { label: 'Support', href: '/support' }, 
-    { label: `Ticket ${displayTicketNumber}`, href: `/support/tickets/${ticketNumber}` }
+    { label: 'Support', href: '/support' }
   ];
 
   return (
     <div className="space-y-6">
-      <SecondaryHero
-        pages={pages}
-        title="View ticket"
-        highlightedText={`${displayTicketNumber}`}
-      />
+      <PageBreadcrumb items={pages} pageTitle={`Ticket ${displayTicketNumber}`} />
       <br />
+      
       <ClientTicketView />
     </div>
   );

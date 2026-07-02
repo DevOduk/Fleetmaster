@@ -10,6 +10,8 @@ import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumb
 import PendingActionsOutlinedIcon from "@mui/icons-material/PendingActionsOutlined"
 import PendingOutlinedIcon from "@mui/icons-material/PendingOutlined"
 import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined"
+import { updateTicket } from "@/app/actions/support";
+import { useAdmin } from "@/context/AdminContext";
 
 export interface SupportTicket {
   id: string;
@@ -24,6 +26,11 @@ export interface SupportTicket {
   status: string;
   created_at: string;
   updated_at: string;
+  admin: {
+    id: string | any;
+    first_name: string | any;
+    last_name: string | any;
+  };
 }
 
 interface SupportDashboardProps {
@@ -33,15 +40,17 @@ interface SupportDashboardProps {
 const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTickets }) => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
-
+const {adminProfile} = useAdmin();
   // Calculate real-time metrics overview cards
   const metrics = useMemo(() => {
     if (!initialTickets) return;
     return {
       total: initialTickets?.length,
-      open: initialTickets.filter(t => t.status === 'open').length,
-      pending: initialTickets.filter(t => t.status === 'in_progress').length,
-      critical: initialTickets.filter(t => t.priority === 'critical' || t.priority === 'high').length
+      open: initialTickets.filter(t => t.status === 'Open').length,
+      pending: initialTickets.filter(t => t.status === 'In Progress').length,
+      critical: initialTickets.filter(t => t.priority === 'critical' || t.priority === 'High').length,
+      resolved: initialTickets.filter(t => t.status === 'Resolved').length,
+      closed: initialTickets.filter(t => t.status === 'Closed').length,
     };
   }, [initialTickets]);
 
@@ -53,6 +62,8 @@ const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTicke
       return matchStatus && matchPriority;
     });
   }, [initialTickets, filterStatus, filterPriority]);
+
+// console.log(initialTickets, "initialTickets");
 
   return (
     <div className="space-y-8">
@@ -69,7 +80,7 @@ const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTicke
               icon: <ConfirmationNumberOutlinedIcon fontSize="large" className="text-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1 dark:text-white/90" />
             },
             {
-              title: "Unassigned/Open",
+              title: "Open Tickets",
               label: 'New tickets awaiting initial admin review and triage.',
               count: metrics.open,
               style: "bg-blue-50/40 border-blue-100 text-blue-600 dark:bg-blue-500/10 dark:border-blue-500/10 dark:text-blue-400",
@@ -90,8 +101,6 @@ const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTicke
               icon: <ReportGmailerrorredOutlinedIcon fontSize="large" className="text-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1 dark:text-white/90" />
             }
           ].map((card, idx) => (
-            <>
-              {/* CARD 1: Tlayout */}
               <div key={idx} className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 bg-brand-500/5 md:p-6">
                 <div className="flex gap-3 items-center">
                   {/* <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
@@ -118,7 +127,6 @@ const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTicke
                   {card.label}
                 </div>
               </div>
-            </>
           ))}
       </div>
 
@@ -131,18 +139,6 @@ const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTicke
 
           {/* Dual Control Filtering Utility Dropdowns */}
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="flex-1 md:flex-initial p-2 px-3 border rounded-lg bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-theme-sm text-gray-700 dark:text-gray-300 outline-none"
-            >
-              <option value="all">All Statuses</option>
-              <option value="open">Open</option>
-              <option value="in_progress">In Progress</option>
-              <option value="resolved">Resolved</option>
-              <option value="closed">Closed</option>
-            </select>
-
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
@@ -159,6 +155,23 @@ const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTicke
 
         {/* Support Registry Ledger Table */}
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
+          <div className="p-3">
+            {
+              [
+                'All', 'Open', 'In Progress', 'Resolved', 'Closed'
+              ].map((status) => (
+                <Button key={status} variant={filterStatus === status.toLowerCase() ? "primary" : "outline"} size="sm" className="mr-2 mb-2 text-theme-xs px-3 min-w-35! py-1.5! rounded!" onClick={() => setFilterStatus(status.toLowerCase())}>
+                  {status} Tickets (
+                  {
+                    status === "All" ? metrics.total :
+                      status === "Open" ? metrics.open :
+                        status === "In Progress" ? metrics.pending :
+                          status === "Resolved" ? metrics.resolved :
+                            status === "Closed" ? metrics.closed : 0})
+                </Button>
+              ))
+            }
+          </div>
           <div className="max-w-full overflow-x-auto">
             <Table>
               <TableHeader className="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/2">
@@ -175,8 +188,11 @@ const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTicke
                   <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                     Priority
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell isHeader className="px-5 text-nowrap py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                     Workflow Status
+                  </TableCell>
+                  <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    Assigned To
                   </TableCell>
                   <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                     Last Action
@@ -190,7 +206,7 @@ const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTicke
               <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
                 {filteredTickets.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="px-5 py-10 text-center text-gray-500 dark:text-gray-400">
+                    <TableCell colSpan={7} className="px-5 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                       No active support service tickets match your chosen criteria.
                     </TableCell>
                   </TableRow>
@@ -238,11 +254,11 @@ const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTicke
                       </TableCell>
 
                       {/* Workflow Status Tracker Badge */}
-                      <TableCell className="px-5 py-4 text-start">
+                      <TableCell className="px-5 py-4 text-nowrap text-start">
                         <Badge color={
                           ticket.status === 'open' ? 'primary' :
                             ticket.status === 'in_progress' ? 'warning' : 'success'
-                        }>
+                        } >
                           {ticket.status?.replace('_', ' ')}
                         </Badge>
                       </TableCell>
@@ -255,11 +271,19 @@ const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTicke
                         }) : "—"}
                       </TableCell>
 
+                      {/* Domain category */}
+                      <TableCell className="px-5 text-nowrap py-4 text-start text-theme-sm text-gray-600 dark:text-gray-300">
+                        {ticket.admin ? `${ticket.admin.first_name} ${ticket.admin.last_name}${ticket.admin.id === adminProfile.id ? " (You)" : ""}` : <span className="text-gray-500 italic text-sm">Unassigned</span>}
+                      </TableCell>
                       {/* Action trigger passing Ticket reference parameters to details route */}
                       <TableCell className="px-5 py-4 text-start text-nowrap">
-                        <Link href={`/view-support/tickets/${ticket.ticket_number.replace('#', '')}`}>                          <Button variant="primary" size="sm" className="font-medium text-theme-xs px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white">
-                          Manage Conversation
-                        </Button>
+                        <Link onClick={async () => {
+                          if (ticket.status !== "Resolved") {
+                            await updateTicket(ticket!.id, adminProfile.id, ticket.status === "Resolved" ? ticket.status : "In Progress");
+                          }
+                        }} href={`/view-support/tickets/${ticket.ticket_number.replace('#', '')}`}>                          <Button variant="primary" size="sm" className="font-medium text-theme-xs px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white">
+                            Open Ticket
+                          </Button>
                         </Link>
                       </TableCell>
 

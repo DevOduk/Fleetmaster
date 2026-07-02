@@ -2,7 +2,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { Metadata } from "next";
 import Vehicles from "@/components/vehicles/Vehicles";
 import Bookings from "@/components/bookings/Bookings";
-import Support from "@/components/support/Support";
+import Support from "@/components/support/SupportTicketsTable";
 import SecondaryHero from "@/components/marketing-components/SecondaryHero";
 
 export const metadata: Metadata = {
@@ -18,8 +18,8 @@ export default function page() {
       <SecondaryHero
         pages={pages}
         title="View all your"
-        highlightedText="Bookings"
-        description="Monitor your fleet performance and track your active rentals."
+        highlightedText="Support Tickets"
+        description="Need help? Our support team is here to assist you. Browse through your support tickets, check their status, and get the assistance you need to keep your fleet running smoothly."
       />
       <br />
       <div className="container mx-auto mt-5 max-w-6xl min-h-screen">
