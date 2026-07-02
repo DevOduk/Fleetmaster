@@ -11,7 +11,7 @@ export async function getSupportTickets() {
       .select(`
         id, ticket_number, user_id, tenant_id, user_role, subject, description, category, priority, status, created_at, updated_at, 
         admin:fleetmaster_main_admins (id, first_name, last_name)`)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })      ;
 
     if (error) {
       console.error("Supabase support ticket fetch error:", error.message);

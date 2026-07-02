@@ -30,7 +30,7 @@ export interface SupportTicket {
     id: string | any;
     first_name: string | any;
     last_name: string | any;
-  };
+  } | any;
 }
 
 interface SupportDashboardProps {
