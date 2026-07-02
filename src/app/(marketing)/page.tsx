@@ -57,7 +57,7 @@ export default function Home() {
               </h1>
 
               <p className="text-small text-gray-600 dark:text-gray-500 font-normal leading-relaxed max-w-xl">
-                Streamline your vehicle rentals, track real-time diagnostics, and verify user credentials from a single, beautifully unified workspace.                        </p>
+                Streamline your vehicle rentals, track real-time diagnostics, and verify user credentials from a single, beautifully unified workspace.<span className="font-bold text-green-500">Made by Africa for Africa!</span></p>
 
               <div className="flex items-center gap-4 pt-2">
                 <button className="px-5 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white transition-colors cursor-pointer border-gray-500 rounded-xl shadow-sm bg-gray-50 dark:bg-gray-800">
@@ -73,7 +73,7 @@ export default function Home() {
         </main>
 
         {/* LOWER LAYER / APP MOCKUP OVERLAP Creates that cool dark-mode contrast break stretching across the bottom foldn */}
-        <section className="relative m-auto max-w-5xl -top-25 mx-auto px-4 sm:px-6 lg:px-8 select-none pointer-events-none">
+        <section className="relative m-auto max-w-[90%] lg:max-w-5xl -top-25 mx-auto px-4 sm:px-6 lg:px-8 select-none pointer-events-none">
 
           {/* App Window Wrapper Container */}
           <div className="w-full max-w-5xl bg-zinc-900 rounded-t-2xl border-x border-t border-gray-200 dark:border-gray-600 shadow-2xl p-2">
@@ -103,12 +103,12 @@ export default function Home() {
 
 
               {/* Mobile View Dark/Light */}
-              <div className="bg-zinc-900  bottom-0 absolute right-[75%] md:right-0 translate-x-[0%] md:translate-x-[-50%] w-[25%]  rounded-2xl border-x border-t border-gray-200 dark:border-gray-600 shadow-2xl p-1">
-                <div className="px-4 py-3 bg-zinc-900 flex items-center gap-2">
+              <div className="bg-zinc-900  bottom-0 absolute right-[75%] md:right-0 translate-x-[0%] md:translate-x-[50%] w-[25%]  rounded-2xl border-x border-t border-gray-200 dark:border-gray-600 shadow-2xl p-1">
+                {/* <div className="px-4 py-3 bg-zinc-900 flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
                   <div className="w-2.5 h-2.5 rounded-full bg-yellow-300" />
                   <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                </div>
+                </div> */}
                 <img
                   src="/images/product/light_mobile_brave_screenshot_app.localhost.png"
                   alt="Product Dashboard Mockup"
@@ -126,7 +126,7 @@ export default function Home() {
 
 
               {/* Tablet View Dark/Light */}
-              <div className="bg-zinc-900  bottom-0 absolute left-[10%] md:left-0 translate-x-[0%] md:translate-x-[50%]  w-[35%]  rounded-t-2xl border-x border-t border-gray-200 dark:border-gray-600 shadow-2xl p-2">
+              <div className="bg-zinc-900  bottom-0 absolute left-[10%] md:left-0 translate-x-[0%] md:translate-x-[-50%]  w-[35%]  rounded-t-2xl border-x border-t border-gray-200 dark:border-gray-600 shadow-2xl p-2">
                 <div className="px-4 py-3 bg-zinc-900 flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
                   <div className="w-2.5 h-2.5 rounded-full bg-yellow-300" />
@@ -171,7 +171,7 @@ export default function Home() {
           <h2 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white">Focus on Business. Leave the Software Hassle to Us!</h2>
           {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}
           <p className="text-sm text-gray-500 dark:text-gray-400 max-w-175">
-            Browse our extensive collection of well-maintained vehicles across diverse locations. From compact cars to luxury sedans, we have the perfect vehicle for your needs.
+            Our neatly crafted, optimised and easy to set up software helps you manage your rental fleet sweatless. You do your daily workflow, we automatically let clients know what is happening. Help your clients find the perfect car for their needs without loosing them.
           </p>
 
           <div className="flex mt-5 items-center gap-4 pt-2">

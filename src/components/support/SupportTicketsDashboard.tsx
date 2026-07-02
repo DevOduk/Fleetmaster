@@ -232,7 +232,7 @@ const {adminProfile} = useAdmin();
                           <span className="font-semibold text-gray-800 text-theme-sm dark:text-white/90 truncate">
                             {ticket.subject}
                           </span>
-                          <span className="text-gray-500 text-theme-xs truncate max-w-[240px] mt-1">
+                          <span className="text-gray-500 text-theme-xs truncate max-w-60 mt-1">
                             {ticket.description}
                           </span>
                         </div>
