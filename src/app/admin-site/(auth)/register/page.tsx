@@ -1,8 +1,8 @@
 // [tenant]/(auth)/register/page.tsx
 import type { Metadata } from "next";
-import SignInForm from "@/components/auth/SignInForm";
 import RegisterForm from "@/components/auth/RegisterForm";
 
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title:

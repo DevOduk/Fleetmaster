@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
@@ -38,9 +38,8 @@ const timezones = [
   { "timezone": "GMT+10:00", "regions": ["Australian Eastern Standard Time", "Vladivostok Time", "Chamorro Standard Time"] },
   { "timezone": "GMT+12:00", "regions": ["New Zealand Standard Time", "Fiji Time", "Gilbert Islands Time (Kiribati)"] }
 ];
-
-export default function RegisterForm() {
-  const router = useRouter();
+function RegisterFormInner() {
+    const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
 
@@ -194,5 +193,18 @@ export default function RegisterForm() {
       )}
     </div>
   </div>
+  );
+}
+
+export default function RegisterForm() {
+  return (
+    <Suspense fallback={
+      <div className="w-full mx-auto p-6 space-y-6 animate-pulse">
+        <div className="h-6 w-48 bg-gray-200 rounded-md dark:bg-gray-600"></div>
+        <div className="h-10 w-full bg-gray-100 rounded-lg dark:bg-gray-600"></div>
+      </div>
+    }>
+      <RegisterFormInner />
+    </Suspense>
   );
 }
