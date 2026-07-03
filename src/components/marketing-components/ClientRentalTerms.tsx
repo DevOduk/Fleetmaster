@@ -57,10 +57,10 @@ const ClientRentalTerms: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`!w-4 !h-4 ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500"}`} />
+                    <Icon className={`w-4! h-4! ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500"}`} />
                     <span>{clause.title}</span>
                   </div>
-                  <ChevronRightIcon className="!w-4 !h-4 opacity-70" />
+                  <ChevronRightIcon className="w-4! h-4! opacity-70" />
                 </button>
               );
             })}
@@ -74,13 +74,13 @@ const ClientRentalTerms: React.FC = () => {
         {/* Clause 1 */}
         <section id="client-possession" className="space-y-3 scroll-mt-12">
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-            <CarRentalIcon className="text-green-700 !w-5 !h-5" />
+            <CarRentalIcon className="text-green-700 w-5! h-5!" />
             <h3 className="text-lg font-bold">1. Legal Custody, Possession & Usage Constraints</h3>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 text-xs">
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">
             The Renter acknowledges receiving the designated vehicle in optimal operational mechanical condition. From the timestamp of key transition until formal system return reconciliation, the Renter assumes full civil, financial, and criminal responsibility for the vehicle, its components, and actions committed with the asset.
           </p>
-          <p className="text-slate-600 dark:text-slate-400 text-xs font-semibold text-red-600 dark:text-red-400">
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-6">
             Prohibited Use Cases: Sub-leasing, mechanical racing, towing external loads, driving under the influence of intoxicating compounds, or utilizing the vehicle to transport contraband or commit offenses under the Penal Code of Kenya is strictly prohibited. Breach results in instant contract termination without refund.
           </p>
         </section>
@@ -90,13 +90,13 @@ const ClientRentalTerms: React.FC = () => {
         {/* Clause 2 */}
         <section id="client-telemetry" className="space-y-3 scroll-mt-12">
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-            <GpsFixedIcon className="text-green-700 !w-5 !h-5" />
+            <GpsFixedIcon className="text-green-700 w-5! h-5!" />
             <h3 className="text-lg font-bold">2. Digital Telemetry Surveillance & Immobilization Consent</h3>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 text-xs">
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">
             In compliance with the **Kenya Data Protection Act**, the Renter is hereby formally notified that the vehicle is fitted with a live global positioning system (GPS) tracker, fuel depth telemetry monitoring, and remote starter circuit cut-off capabilities.
           </p>
-          <p className="text-slate-600 dark:text-slate-400 text-xs font-medium">
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">
             By signing this agreement, the Renter provides explicit, irrevocable consent for the collection, transmission, and tracking of spatial location, driving vector data, and speed metrics. The operator retains the absolute legal right to deploy remote immobilization protocols if security anomalies or contractual breaches are verified.
           </p>
         </section>
@@ -106,13 +106,13 @@ const ClientRentalTerms: React.FC = () => {
         {/* Clause 3 */}
         <section id="client-boundaries" className="space-y-3 scroll-mt-12">
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-            <WarningAmberIcon className="text-green-700 !w-5 !h-5" />
+            <WarningAmberIcon className="text-green-700 w-5! h-5!" />
             <h3 className="text-lg font-bold">3. Geofencing & Cross-Border Boundaries</h3>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 text-xs">
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">
             The vehicle is configured with active operational geofences restricting transit outside standard operational regions. Unless explicitly approved in writing on the scheduling ticket, **the vehicle is strictly barred from exiting the borders of the Republic of Kenya.**
           </p>
-          <p className="text-slate-600 dark:text-slate-400 text-xs">
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">
             Attempted border crossings or unauthorized exit out of approved territories will register as a critical system asset threat event. This will trigger immediate vehicle shut down and the automatic dispatch of security recovery personnel at the Renter&apos;s personal cost.
           </p>
         </section>
@@ -122,13 +122,13 @@ const ClientRentalTerms: React.FC = () => {
         {/* Clause 4 */}
         <section id="client-behavior" className="space-y-3 scroll-mt-12">
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-            <SpeedIcon className="text-green-700 !w-5 !h-5" />
+            <SpeedIcon className="text-green-700 w-5! h-5!" />
             <h3 className="text-lg font-bold">4. Speed Violations & Harsh Driving Penalties</h3>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 text-xs">
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">
             To preserve engine lifespan and public roadway safety, a maximum speed constraint benchmark is set at **100 km/h** (or as mandated by local NTSA zone limits). 
           </p>
-          <p className="text-slate-600 dark:text-slate-400 text-xs">
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">
             Telemetry software flags repetitive over-speeding behaviors, aggressive braking patterns, and dangerous acceleration curves. The operator reserves the right to issue punitive penalty surcharges of up to Ksh 5,000 per verified system telemetry warning flag.
           </p>
         </section>
@@ -138,13 +138,13 @@ const ClientRentalTerms: React.FC = () => {
         {/* Clause 5 */}
         <section id="client-insurance" className="space-y-3 scroll-mt-12 bg-zinc-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-            <LocalShieldIcon className="text-green-700 !w-5 !h-5" />
+            <LocalShieldIcon className="text-green-700 w-5! h-5!" />
             <h3 className="text-lg font-bold">5. Excess Liability, Insurance Voids & Deductibles</h3>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 text-xs">
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-6">
             In the event of an accident or physical impact, the Renter is liable to pay the standard insurance non-waivable excess deductible value outlined on their specific reservation booking card.
           </p>
-          <p className="text-slate-600 dark:text-slate-400 text-xs font-semibold">
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-6">
             Insurance coverage becomes entirely null and void if the accident occurs while the Renter is: driving off-road without 4x4 classification clearance, driving at night in designated high-risk conflict zones, or operating the vehicle while violating any telemetry velocity or boundary parameters listed within this document. Under such conditions, total asset recovery repair costs shift directly to the Renter.
           </p>
         </section>

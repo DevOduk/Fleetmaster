@@ -59,10 +59,10 @@ const TermsConditions: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`!w-4 !h-4 ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500"}`} />
+                    <Icon className={`w-4! h-4! ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500"}`} />
                     <span>{section.title}</span>
                   </div>
-                  <ChevronRightIcon className={`!w-4 !h-4 opacity-70 transition-transform ${isActive ? "translate-x-0.5" : ""}`} />
+                  <ChevronRightIcon className={`w-4! h-4! opacity-70 transition-transform ${isActive ? "translate-x-0.5" : ""}`} />
                 </button>
               );
             })}
@@ -76,7 +76,7 @@ const TermsConditions: React.FC = () => {
         {/* Clause 1 */}
         <section id="acceptance" className="space-y-3 scroll-mt-12">
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-            <ScaleIcon className="text-amber-500 !w-5 !h-5" />
+            <ScaleIcon className="text-amber-500 w-5! h-5!" />
             <h3 className="text-lg font-bold">1. Acceptance of Operational Terms</h3>
           </div>
           <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">
@@ -92,7 +92,7 @@ const TermsConditions: React.FC = () => {
         {/* Clause 2 */}
         <section id="liability" className="space-y-3 scroll-mt-12 bg-green-100/40 dark:bg-green-900/30 p-5 rounded-2xl border border-red-100 dark:border-red-900/30">
           <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
-            <ShieldIcon className="!w-5 !h-5" />
+            <ShieldIcon className="w-5! h-5!" />
             <h3 className="text-lg font-bold">2. Absolute Limitation of Liability & Telemetry Indemnity</h3>
           </div>
           <p className="font-semibold text-sm leading-7 text-amber-700 dark:text-amber-500 uppercase tracking-wide">
@@ -119,7 +119,7 @@ const TermsConditions: React.FC = () => {
         {/* Clause 3 */}
         <section id="installation" className="space-y-3 scroll-mt-12">
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-            <ConstructionIcon className="text-amber-500 !w-5 !h-5" />
+            <ConstructionIcon className="text-amber-500 w-5! h-5!" />
             <h3 className="text-lg font-bold">3. Hardware Deployment, Installation & Driver Tampering</h3>
           </div>
           <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">
@@ -140,7 +140,7 @@ const TermsConditions: React.FC = () => {
         {/* Clause 4 */}
         <section id="booking" className="space-y-3 scroll-mt-12">
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-            <CalendarMonthIcon className="text-amber-500 !w-5 !h-5" />
+            <CalendarMonthIcon className="text-amber-500 w-5! h-5!" />
             <h3 className="text-lg font-bold">4. Booking Management & Calendar Accuracy</h3>
           </div>
           <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">
@@ -156,7 +156,7 @@ const TermsConditions: React.FC = () => {
         {/* Clause 5 */}
         <section id="payments" className="space-y-3 scroll-mt-12">
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-            <AccountBalanceWalletIcon className="text-amber-500 !w-5 !h-5" />
+            <AccountBalanceWalletIcon className="text-amber-500 w-5! h-5!" />
             <h3 className="text-lg font-bold">5. Integrated Payments & Financial Reconciliation</h3>
           </div>
           <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">
@@ -172,7 +172,7 @@ const TermsConditions: React.FC = () => {
         {/* Clause 6 */}
         <section id="governing-law" className="space-y-3 scroll-mt-12">
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-            <GavelIcon className="text-amber-500 !w-5 !h-5" />
+            <GavelIcon className="text-amber-500 w-5! h-5!" />
             <h3 className="text-lg font-bold">6. Governing Law & Dispute Resolution</h3>
           </div>
           <p className="text-slate-600 dark:text-slate-400 text-sm leading-7">

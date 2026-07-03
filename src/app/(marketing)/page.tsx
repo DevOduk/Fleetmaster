@@ -17,6 +17,7 @@ import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined"
 import InventoryOutlinedIcon from "@mui/icons-material/InventoryOutlined"
 import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined"
 import CallToAction from "@/components/marketing-components/CallToAction";
+import Link from "next/link";
 
 
 
@@ -60,13 +61,13 @@ export default function Home() {
                 Streamline your vehicle rentals, track real-time diagnostics, and verify user credentials from a single, beautifully unified workspace.<span className="font-bold text-green-500">Made by Africa for Africa!</span></p>
 
               <div className="flex items-center gap-4 pt-2">
-                <button className="px-5 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white transition-colors cursor-pointer border-gray-500 rounded-xl shadow-sm bg-gray-50 dark:bg-gray-800">
+                <Link target="_blank" href='/request-demo' className="px-5 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white transition-colors cursor-pointer border-gray-500 rounded-xl shadow-sm bg-gray-50 dark:bg-gray-800">
                   Request demo
-                </button>
-            <button className="group px-5 py-3 bg-amber-600 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-amber-700 transition-all shadow-md cursor-pointer">
+                </Link>
+                <Link target="_blank" href='http://app.localhost:3000/register' className="group px-5 py-3 bg-amber-600 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-amber-700 transition-all shadow-md cursor-pointer">
                   Get Started Now
                   <KeyboardArrowRightIcon className="text-sm transition-transform group-hover:translate-x-0.5" fontSize="small" />
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -175,116 +176,116 @@ export default function Home() {
           </p>
 
           <div className="flex mt-5 items-center gap-4 pt-2">
-            <button className="px-5 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white transition-colors cursor-pointer border-gray-500 rounded-xl shadow-sm bg-gray-50 dark:bg-gray-800">
+            <Link target="_blank" href='/request-demo' className="px-5 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white transition-colors cursor-pointer border-gray-500 rounded-xl shadow-sm bg-gray-50 dark:bg-gray-800">
               Request demo
-            </button>
-            <button className="group px-5 py-3 bg-amber-600 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-amber-700 transition-all shadow-md cursor-pointer">
+            </Link>
+            <Link target="_blank" href='http://app.localhost:3000/register' className="group px-5 py-3 bg-amber-600 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-amber-700 transition-all shadow-md cursor-pointer">
               Get Started Now
               <KeyboardArrowRightIcon className="text-sm transition-transform group-hover:translate-x-0.5" fontSize="small" />
-            </button>
+            </Link>
           </div>
         </div>
 
-         <div className="lg:col-span-7 space-y-12 relative max-w-4xl mx-auto px-4">
-            {/* <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-12 text-center">
+        <div className="lg:col-span-7 space-y-12 relative max-w-4xl mx-auto px-4">
+          {/* <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-12 text-center">
               Core Applications
             </h2> */}
 
-            {/* Center Timeline Line Indicator: Centered on desktop, shifted to the left edge on mobile screens */}
-            <div className="absolute left-6.5 md:left-1/2 top-24 bottom-6 w-0.5 -translate-x-1/2 bg-slate-200 dark:bg-slate-800 pointer-events-none" />
+          {/* Center Timeline Line Indicator: Centered on desktop, shifted to the left edge on mobile screens */}
+          <div className="absolute left-6.5 md:left-1/2 top-24 bottom-6 w-0.5 -translate-x-1/2 bg-slate-200 dark:bg-slate-800 pointer-events-none" />
 
-            {[
-              {
-                imgSrc: '/images/product/3.webp',
-                badgeText: 'Overview',
-                icon: CarRentalOutlinedIcon,
-                title: '1. Centralized Dispatch & Fleet Overview',
-                description: 'One single source of truth. Eliminate messy spreadsheets and scattered communication. Manage vehicle assignments, active rentals, invoicing, and contract history from a single, unified dashboard designed for quick decision-making.',
-                imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
-              },
-              {
-                imgSrc: '/images/product/2.webp',
-                badgeText: 'Easy Setup',
-                icon: HttpIcon,
-                title: '2. Free Domain & Zero-Config',
-                description: 'We handle the infrastructure. Avoid the hidden costs of buying, configuring, and maintaining separate web domains. Launch instantly with a secure, fully-managed yourbrand.fleetmaster.com portal completely free.',
-                imgClassName: 'rounded-t-2xl bg-gray-200 mb-3 aspect-4/2 w-full object-cover'
-              },
-              {
-                imgSrc: '/images/product/4.webp',
-                badgeText: 'Live Dashboard',
-                icon: SubtitlesOutlinedIcon,
-                title: '3. Live Fleet Telematics',
-                description: 'We help you setup Real-time tracking and other features. Monitor vehicle diagnostics, live locations, and battery health on a unified map. Catch mechanical issues and unauthorized route deviations instantly before they become costly repairs.',
-                imgClassName: 'rounded-t-2xl bg-gray-200 mb-3 aspect-4/2 w-full object-cover'
-              },
-              {
-                imgSrc: '/images/product/5.webp',
-                badgeText: 'AI Automation',
-                icon: VerifiedUserOutlinedIcon,
-                title: '4. Automated Driver Vetting',
-                description: "Security-first verification. Protect high-value vehicles from liability risks. The onboarding pipeline automatically scans and verifies driver's licenses and credentials before a vehicle can ever be booked.",
-                imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
-              },
-              {
-                imgSrc: '/images/product/6.webp',
-                badgeText: 'Easy Management',
-                icon: NoCrashOutlinedIcon,
-                title: '5. Manage Bookings in One Place',
-                description: 'Easily view and manage all your vehicles on one place. Our live vehicle status checks lets clients know which cars are available and which are not. Preview all bookings before a booking even commence.',
-                imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
-              },
-              {
-                imgSrc: '/images/product/1.webp',
-                badgeText: 'Save Time',
-                icon: CalendarMonthIcon,
-                title: '6. Saves you Time & Money',
-                description: 'Save time with our built in Calendar that helps you plan dropoffs and pickups helping you keep track of all pending bookings. All in one place!',
-                imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
-              }
-            ].map((feature, index) => {
-              const FeatureIcon = feature.icon;
-              const isEven = index % 2 === 0;
+          {[
+            {
+              imgSrc: '/images/product/3.webp',
+              badgeText: 'Overview',
+              icon: CarRentalOutlinedIcon,
+              title: '1. Centralized Dispatch & Fleet Overview',
+              description: 'One single source of truth. Eliminate messy spreadsheets and scattered communication. Manage vehicle assignments, active rentals, invoicing, and contract history from a single, unified dashboard designed for quick decision-making.',
+              imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
+            },
+            {
+              imgSrc: '/images/product/2.webp',
+              badgeText: 'Easy Setup',
+              icon: HttpIcon,
+              title: '2. Free Domain & Zero-Config',
+              description: 'We handle the infrastructure. Avoid the hidden costs of buying, configuring, and maintaining separate web domains. Launch instantly with a secure, fully-managed yourbrand.fleetmaster.com portal completely free.',
+              imgClassName: 'rounded-t-2xl bg-gray-200 mb-3 aspect-4/2 w-full object-cover'
+            },
+            {
+              imgSrc: '/images/product/4.webp',
+              badgeText: 'Live Dashboard',
+              icon: SubtitlesOutlinedIcon,
+              title: '3. Live Fleet Telematics',
+              description: 'We help you setup Real-time tracking and other features. Monitor vehicle diagnostics, live locations, and battery health on a unified map. Catch mechanical issues and unauthorized route deviations instantly before they become costly repairs.',
+              imgClassName: 'rounded-t-2xl bg-gray-200 mb-3 aspect-4/2 w-full object-cover'
+            },
+            {
+              imgSrc: '/images/product/5.webp',
+              badgeText: 'AI Automation',
+              icon: VerifiedUserOutlinedIcon,
+              title: '4. Automated Driver Vetting',
+              description: "Security-first verification. Protect high-value vehicles from liability risks. The onboarding pipeline automatically scans and verifies driver's licenses and credentials before a vehicle can ever be booked.",
+              imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
+            },
+            {
+              imgSrc: '/images/product/6.webp',
+              badgeText: 'Easy Management',
+              icon: NoCrashOutlinedIcon,
+              title: '5. Manage Bookings in One Place',
+              description: 'Easily view and manage all your vehicles on one place. Our live vehicle status checks lets clients know which cars are available and which are not. Preview all bookings before a booking even commence.',
+              imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
+            },
+            {
+              imgSrc: '/images/product/1.webp',
+              badgeText: 'Save Time',
+              icon: CalendarMonthIcon,
+              title: '6. Saves you Time & Money',
+              description: 'Save time with our built in Calendar that helps you plan dropoffs and pickups helping you keep track of all pending bookings. All in one place!',
+              imgClassName: 'rounded-t-2xl mb-3 aspect-4/2 w-full object-cover'
+            }
+          ].map((feature, index) => {
+            const FeatureIcon = feature.icon;
+            const isEven = index % 2 === 0;
 
-              return (
-                <div
-                  key={index}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center relative pl-12 md:pl-0 min-h-75"
-                >
-                  {/* Center/Left Number Node Badge */}
-                  <div className="absolute left-0 md:left-1/2 top-0 md:top-1/2 translate-x-0 md:-translate-x-1/2 md:-translate-y-1/2 w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 border-4 border-slate-50 dark:border-slate-950 flex items-center justify-center font-bold text-slate-800 dark:text-slate-200 shadow-sm z-10 text-sm">
-                    {index + 1}
-                  </div>
-
-                  {/* Content Card Wrapper (Image Container) */}
-                  {/* md:order-first and md:order-last push the image dynamically based on item index */}
-                  <div
-                    className={`rounded-2xl shadow-sm bg-white dark:bg-slate-900 transition-all hover:shadow-md flex overflow-hidden mb-10 ${isEven ? 'md:order-first' : 'md:order-last'}`}
-                  >
-                    <img
-                      src={feature.imgSrc}
-                      alt={feature.badgeText}
-                      className="aspect-3/2 w-full object-cover bg-gray-200"
-                    />
-                  </div>
-
-                  {/* Text Context Content Block */}
-                  {/* Optional alignment adjustment: alignment shifts to match the timeline spacing flow layout */}
-                  <div className={`flex flex-col justify-center mb-10 ${isEven ? 'md:pl-4' : 'md:pr-4'}`}>
-                    <div className="flex gap-2 font-bold items-center mt-4">
-                      <div className="rounded-full w-9 h-9 flex items-center justify-center bg-brand-500/10 dark:bg-brand-500/20">
-                        <FeatureIcon className="text-brand-500 w-5 h-5" />
-                      </div>
-                      <span className="text-brand-500 text-sm tracking-wide">{feature.badgeText}</span>
-                    </div>
-                    <h3 className="mb-2 mt-3 font-bold text-slate-900 dark:text-white text-lg">{feature.title}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{feature.description}</p>
-                  </div>
-
+            return (
+              <div
+                key={index}
+                className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center relative pl-12 md:pl-0 min-h-75"
+              >
+                {/* Center/Left Number Node Badge */}
+                <div className="absolute left-0 md:left-1/2 top-0 md:top-1/2 translate-x-0 md:-translate-x-1/2 md:-translate-y-1/2 w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 border-4 border-slate-50 dark:border-slate-950 flex items-center justify-center font-bold text-slate-800 dark:text-slate-200 shadow-sm z-10 text-sm">
+                  {index + 1}
                 </div>
-              );
-            })}
-          </div>
+
+                {/* Content Card Wrapper (Image Container) */}
+                {/* md:order-first and md:order-last push the image dynamically based on item index */}
+                <div
+                  className={`rounded-2xl shadow-sm bg-white dark:bg-slate-900 transition-all hover:shadow-md flex overflow-hidden mb-10 ${isEven ? 'md:order-first' : 'md:order-last'}`}
+                >
+                  <img
+                    src={feature.imgSrc}
+                    alt={feature.badgeText}
+                    className="aspect-3/2 w-full object-cover bg-gray-200"
+                  />
+                </div>
+
+                {/* Text Context Content Block */}
+                {/* Optional alignment adjustment: alignment shifts to match the timeline spacing flow layout */}
+                <div className={`flex flex-col justify-center mb-10 ${isEven ? 'md:pl-4' : 'md:pr-4'}`}>
+                  <div className="flex gap-2 font-bold items-center mt-4">
+                    <div className="rounded-full w-9 h-9 flex items-center justify-center bg-brand-500/10 dark:bg-brand-500/20">
+                      <FeatureIcon className="text-brand-500 w-5 h-5" />
+                    </div>
+                    <span className="text-brand-500 text-sm tracking-wide">{feature.badgeText}</span>
+                  </div>
+                  <h3 className="mb-2 mt-3 font-bold text-slate-900 dark:text-white text-lg">{feature.title}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{feature.description}</p>
+                </div>
+
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className="border-gray-500 border-t container m-auto mb-5"></div>
@@ -345,10 +346,10 @@ export default function Home() {
 
 
           <div className="flex mt-5 items-center gap-4 pt-2">
-            <button className="group px-5 py-3 bg-green-800 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-gray-900 transition-all shadow-md cursor-pointer">
+            <Link target="_blank" href='http://app.localhost:3000/register' className="group px-5 py-3 bg-amber-600 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-amber-700 transition-all shadow-md cursor-pointer">
               Get Started Now
               <KeyboardArrowRightIcon className="text-sm transition-transform group-hover:translate-x-0.5" fontSize="small" />
-            </button>
+            </Link>
           </div>
         </div>
 

@@ -16,6 +16,7 @@ import HowToRegIcon from '@mui/icons-material/HowToReg';
 import DomainAddIcon from '@mui/icons-material/DomainAdd';
 import LayersIcon from '@mui/icons-material/Layers';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "FleetMaster Use Cases - Platform Capabilities",
@@ -63,10 +64,10 @@ export default function UseCasesPage() {
 
 
           <div className="flex mt-5 items-center gap-4 pt-2">
-            <button className="group px-5 py-3 bg-green-800 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-gray-900 transition-all shadow-md cursor-pointer">
+            <Link target='_blank' href={'http://app.localhost:3000/register'} className="group px-5 py-3 bg-green-800 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-green-900 transition-all shadow-md cursor-pointer">
               Get Started Now
               <KeyboardArrowRightIcon className="text-sm transition-transform group-hover:translate-x-0.5" fontSize="small" />
-            </button>
+            </Link>
           </div>
         </div>
 

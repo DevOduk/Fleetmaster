@@ -45,17 +45,10 @@ export default function ClientTermsPage() {
 
           <div className="flex mt-5 items-center gap-4 pt-2">
             <Link
-              href="#terms-root"
+              href="/terms-conditions/tenants"
               className="group px-5 py-3 bg-green-800 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-green-900 transition-all shadow-md cursor-pointer"
             >
-              Review Renter Clauses
-              <KeyboardArrowRightIcon className="text-sm transition-transform group-hover:translate-x-0.5" fontSize="small" />
-            </Link>
-            <Link 
-              href="/terms-conditions/tenants"
-              className="group px-5 py-3 bg-amber-600 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-amber-700 transition-all shadow-md cursor-pointer"
-            >
-              Tenants Clauses
+              Review Tenants Clauses
               <KeyboardArrowRightIcon className="text-sm transition-transform group-hover:translate-x-0.5" fontSize="small" />
             </Link>
           </div>

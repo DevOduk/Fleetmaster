@@ -30,10 +30,10 @@ export default function TenantTermsPage() {
       {/* Info Split Section */}
       <div className="grid items-center container m-auto grid-cols-1 lg:grid-cols-12 gap-6 p-4 mt-8 mb-8">
         <div className="lg:col-span-6">
-          <img 
-            className='rounded-xl w-full object-cover shadow-sm aspect-video' 
-            alt='Fleet B2B Governance Framework' 
-            src='/images/user/why-you-should-provide-terms-and-conditions-for-your-website.webp' 
+          <img
+            className='rounded-xl w-full object-cover shadow-sm aspect-video'
+            alt='Fleet B2B Governance Framework'
+            src='/images/user/why-you-should-provide-terms-and-conditions-for-your-website.webp'
           />
         </div>
 
@@ -41,16 +41,16 @@ export default function TenantTermsPage() {
           <h3 className="text-amber-500 font-semibold tracking-wider text-sm">B2B MERCHANT COMPLIANCE</h3>
           <h2 className="text-3xl mt-2 mb-3 font-bold text-slate-900 dark:text-white">Securing System Integrations & Commercial Liabilities.</h2>
           <p className="text-sm text-slate-600 dark:text-gray-400 leading-relaxed max-w-175">
-            Designed specifically for fleet rental merchants, safari operators, and automotive logistical agencies deploying FleetMaster software and sensor infrastructure across Kenya. Understand your configuration risks, payment verification parameters, and data sovereignty definitions. 
+            Designed specifically for fleet rental merchants, safari operators, and automotive logistical agencies deploying FleetMaster software and sensor infrastructure across Kenya. Understand your configuration risks, payment verification parameters, and data sovereignty definitions.
             <span className="uppercase text-brand-600">ensure due delligence before accepting a booking</span>
           </p>
 
           <div className="flex mt-5 items-center gap-4 pt-2">
             <Link
-              href="#terms-root"
+              href="/terms-conditions"
               className="group px-5 py-3 bg-amber-600 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-amber-700 transition-all shadow-md cursor-pointer"
             >
-              Review Operator Clauses
+              Review Renter Clauses
               <KeyboardArrowRightIcon className="text-sm transition-transform group-hover:translate-x-0.5" fontSize="small" />
             </Link>
           </div>

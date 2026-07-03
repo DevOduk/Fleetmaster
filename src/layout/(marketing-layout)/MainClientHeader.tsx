@@ -66,7 +66,7 @@ export default function MainClientHeader() {
                 <div className='flex gap-2 items-center'>
                     <ThemeToggleButton />
                     {/* CTA Button */}
-                    <Link href="http://app.localhost:3000" target="_blank" className="">
+                    <Link href="http://app.localhost:3000/register" target="_blank" className="">
                         <button className="px-5 py-2 bg-white text-nowrap dark:bg-zinc-50 text-black dark:text-zinc-950 text-sm font-semibold border border-gray-200 dark:border-zinc-300 hover:border-gray-400 dark:hover:bg-zinc-200 rounded-xl shadow-sm transition-all cursor-pointer">
                             Open app
                         </button>

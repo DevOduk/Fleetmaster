@@ -1,5 +1,6 @@
 import React from 'react'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import Link from 'next/link';
 
 
 export default function CallToAction() {
@@ -27,14 +28,14 @@ export default function CallToAction() {
 
                         {/* Action Row */}
                         <div className="flex flex-col sm:flex-row gap-4 items-center justify-center pt-4">
-                            <button className="w-full sm:w-auto px-6 py-3 bg-white dark:bg-zinc-800/40 hover:bg-gray-100 dark:hover:bg-zinc-800 text-sm font-semibold border border-gray-200 dark:border-zinc-700/80 rounded-xl transition-all shadow-xs cursor-pointer dark:text-gray-50">
+                            <Link href={'/contact'} className="w-full sm:w-auto px-6 py-3 bg-white dark:bg-zinc-800/40 hover:bg-gray-100 dark:hover:bg-zinc-800 text-sm font-semibold border border-gray-200 dark:border-zinc-700/80 rounded-xl transition-all shadow-xs cursor-pointer dark:text-gray-50">
                                 Talk to an expert
-                            </button>
+                            </Link>
 
-                            <button className="group w-full sm:w-auto px-6 py-3 bg-brand-500 dark:bg-brand-500 text-white dark:text-brand-50 text-sm font-medium rounded-xl flex items-center justify-center gap-2 hover:bg-brand-900 transition-all shadow-md cursor-pointer">
+                            <Link target='_blank' href={'http://app.localhost:3000/register'} className="group w-full sm:w-auto px-6 py-3 bg-brand-500 dark:bg-brand-500 text-white dark:text-brand-50 text-sm font-medium rounded-xl flex items-center justify-center gap-2 hover:bg-brand-900 transition-all shadow-md cursor-pointer">
                                 Start for free
                                 <ArrowForwardIcon className="text-xs transition-transform duration-200 group-hover:translate-x-0.5" />
-                            </button>
+                            </Link>
                         </div>
 
                         {/* Small Guarantee Disclaimer */}
