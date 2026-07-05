@@ -4,11 +4,10 @@ import "leaflet/dist/leaflet.css";
 import Pagination from "../tables/Pagination";
 import Link from "next/link";
 import ExpensesTable from "../tables/ExpensesTable";
-import { useBooking } from "@/context/BookingContext";
+import { useAdminBooking } from "@/context/AdminBookingContext";
 
 const Expenses: React.FC = () => {
-        const { bookings } = useBooking();
-    
+    const { bookings } = useAdminBooking();
 
     return (
         <div className="space-y-6">

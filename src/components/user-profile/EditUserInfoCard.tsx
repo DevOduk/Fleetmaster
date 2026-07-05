@@ -6,9 +6,11 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Link from "next/link";
+import { useUser } from "@/context/UserContext";
 
 export default function EditUserInfoCard() {
-  const { isOpen, openModal, closeModal } = useModal();
+      const {profile} = useUser();
+      
   const handleSave = () => {
     // Handle save logic here
   };
@@ -36,20 +38,23 @@ export default function EditUserInfoCard() {
                     <Label>Facebook</Label>
                     <Input
                       type="text"
-                      defaultValue="https://www.facebook.com/PimjoHQ"
+                      value={profile.socials?.facebook}
+                      placeholder="https://www.facebook.com/"
                     />
                   </div>
 
                   <div>
                     <Label>X.com</Label>
-                    <Input type="text" defaultValue="https://x.com/PimjoHQ" />
+                    <Input type="text"
+                      value={profile.socials?.x} placeholder="https://x.com/" />
                   </div>
 
                   <div>
                     <Label>Linkedin</Label>
                     <Input
                       type="text"
-                      defaultValue="https://www.linkedin.com/company/pimjo"
+                      value={profile.socials?.linkedin}
+                      placeholder="https://www.linkedin.com/company/"
                     />
                   </div>
 
@@ -57,7 +62,8 @@ export default function EditUserInfoCard() {
                     <Label>Instagram</Label>
                     <Input
                       type="text"
-                      defaultValue="https://instagram.com/PimjoHQ"
+                      value={profile.socials?.instagram}
+                      placeholder="https://instagram.com/"
                     />
                   </div>
                 </div>
@@ -70,27 +76,27 @@ export default function EditUserInfoCard() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
                     <Label>First Name</Label>
-                    <Input type="text" defaultValue="Musharof" />
+                    <Input type="text" placeholder="John" />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Last Name</Label>
-                    <Input type="text" defaultValue="Chowdhury" />
+                    <Input type="text" placeholder="Doe" />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Email Address</Label>
-                    <Input type="text" defaultValue="randomuser@pimjo.com" />
+                    <Input type="text" placeholder="example@email.com" />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Phone</Label>
-                    <Input type="text" defaultValue="+09 363 398 46" />
+                    <Input type="text" placeholder="+1 093 633 9846" />
                   </div>
 
                   <div className="col-span-2">
                     <Label>Bio</Label>
-                    <Input type="text" defaultValue="Team Manager" />
+                    <Input type="text" placeholder="Team Manager & Operations Supretendant" />
                   </div>
                 </div>
               </div>

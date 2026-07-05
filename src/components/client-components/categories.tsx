@@ -8,7 +8,7 @@ interface Tenant {
 }
 
 export default function ViewAllCategories({ tenantData }: Tenant) {
-    const { vehicles } = useFleet();
+    const { vehicles, loading } = useFleet();
 
     const myVehicles = vehicles?.filter((v) => v.tenant_id == tenantData?.id)
 

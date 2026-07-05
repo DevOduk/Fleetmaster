@@ -14,8 +14,8 @@ import Link from "next/link";
 import { CircularProgress } from "@mui/material";
 import { CalendarWrapper } from "../calendar/CalendarWrapper";
 import { toast } from "sonner";
-import { useBooking } from "@/context/BookingContext";
 import { useFleet } from "@/context/FleetContext";
+import { useAdminBooking } from "@/context/AdminBookingContext";
 
 
 
@@ -62,7 +62,7 @@ const extractBookingOnly = (booking: any) => ({
 
 
 export default function EditBookingForm({ id: bookingID }: { id: number }) {
-  const { bookings } = useBooking();
+  const { bookings } = useAdminBooking();
   const { vehicles: VehicleData } = useFleet();
   const [allBookings, setAllBookings] = useState<any[]>([...bookings]);
   const [bookingName, setBookingName] = useState("");

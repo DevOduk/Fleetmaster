@@ -134,7 +134,7 @@ export default function MonthlyTarget() {
                 </div>
               </div>
               <div className="relative ">
-                <div className="max-h-[330px]">
+                <div className="max-h-82.5">
                   <ReactApexChart
                     options={options}
                     series={series}
@@ -147,7 +147,7 @@ export default function MonthlyTarget() {
                   +10%
                 </span>
               </div>
-              <p className="mx-auto mt-10 w-full max-w-[380px] text-center text-sm text-gray-500 sm:text-base">
+              <p className="mx-auto mt-10 w-full max-w-95 text-center text-sm text-gray-500 sm:text-base">
                 You earn $3287 today, it&apos;s higher than last month. Keep up your
                 good work!
               </p>

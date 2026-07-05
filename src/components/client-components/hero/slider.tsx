@@ -13,7 +13,11 @@ export default function HeroSlider() {
 
     // if (!vehicles || vehicles.length === 0) return null;
 
-    const allImageUrls = vehicles.length > 0 ? vehicles.map(v => v?.imageUrl).filter(Boolean) : ['https://www.pigiame.co.ke/discover/wp-content/uploads/2025/06/Car-Hire-Nairobi.jpg', 'https://images.kobemotor.com/images/v70245-yi003.jpeg'];
+    const allImageUrls = vehicles.length > 0 ? vehicles.map(v => v?.imageUrl).filter(Boolean) : [
+        'https://www.toyotawalton.com/wp-content/uploads/2025/01/Toyota-Land-Cruiser-Prado-used-vehicle-Toyota-walton.webp', 
+        'https://images.kobemotor.com/images/v70245-yi003.jpeg',
+        'https://www.autocraftjapan.com/adminPanel/uploads/avis/veh_images/17170579389image_2.JPG',
+    ];
     // const allImageUrls = ['https://www.pigiame.co.ke/discover/wp-content/uploads/2025/06/Car-Hire-Nairobi.jpg', 'https://images.kobemotor.com/images/v70245-yi003.jpeg']; 
 
     const triggerUserInteraction = () => {

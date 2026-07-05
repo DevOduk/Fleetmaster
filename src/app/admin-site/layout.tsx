@@ -1,11 +1,12 @@
 // app/(admin)/layout.tsx
 import { BookingProvider } from "@/context/BookingContext";
-import { FleetProvider } from "@/context/FleetContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { UserProvider } from "@/context/UserContext";
 import { SidebarProvider } from "@/context/SidebarContext";
 import React from "react";
 import { AdminProvider } from "@/context/AdminContext";
+import { AdminFleetProvider } from "@/context/AdminFleetContext";
+import { AdminBookingProvider } from "@/context/AdminBookingContext";
 
 export default function RootAdminLayout({
     children,
@@ -16,14 +17,14 @@ export default function RootAdminLayout({
         <UserProvider>
             <AdminProvider>
                 <SettingsProvider>
-                    <FleetProvider>
-                        <BookingProvider>
+                    <AdminFleetProvider>
+                        <AdminBookingProvider>
                             <SidebarProvider>
                                 {/* No UI elements here, just raw children */}
                                 {children}
                             </SidebarProvider>
-                        </BookingProvider>
-                    </FleetProvider>
+                        </AdminBookingProvider>
+                    </AdminFleetProvider>
                 </SettingsProvider>
             </AdminProvider>
         </UserProvider>

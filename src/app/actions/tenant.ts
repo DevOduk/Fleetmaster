@@ -26,3 +26,15 @@ export async function updateTenantDetails(tenantId: string, updatedData: any) {
 }
 
 
+
+export async function createNewTenant( newTenantData: any) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("fleetmaster_tenants")
+    .insert(newTenantData)
+    .select('id')
+    .single();
+
+  return { data, error, success: !error };
+}

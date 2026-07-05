@@ -10,18 +10,18 @@ import Badge from "../ui/badge/Badge";
 import { PencilIcon, TrashBinIcon } from "@/icons";
 import Button from "../ui/button/Button";
 import Link from "next/link";
-import { useBooking } from "@/context/BookingContext";
 import { CircularProgress } from "@mui/material";
+import { useAdminBooking } from "@/context/AdminBookingContext";
 
 
 
 export default function ExpensesTable() {
-  const { bookings: allBookings, loading } = useBooking();
+  const { bookings: allBookings, loading } = useAdminBooking();
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
       <div className="max-w-full overflow-x-auto">
-        <div className="min-w-[1102px]">
+        <div className="min-w-275.5">
           <Table>
             {/* Table Header */}
             <TableHeader className="border-b border-gray-100 dark:border-white/5">
@@ -100,7 +100,7 @@ export default function ExpensesTable() {
                     allBookings.map((booking: any) => (
                       <TableRow key={booking.id}>
                         <TableCell className="px-5 py-4 sm:px-6 text-start">
-                          <div className="flex items-center gap-3 min-w-[150px]">
+                          <div className="flex items-center gap-3 min-w-37.5">
                             {/* <img
                               className="w-20 object-fit-cover object-center"
                               style={{ objectFit: 'cover', objectPosition: 'center' }}
@@ -115,7 +115,7 @@ export default function ExpensesTable() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="px-4 min-w-[200px] py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        <TableCell className="px-4 min-w-50 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
                           {booking.renterName}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
@@ -126,7 +126,7 @@ export default function ExpensesTable() {
                           {booking.rentalStart} | {booking.rentalDays} Days
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
-                          {booking.vehicleDetails?.dailyRate.toLocaleString()} Ksh
+                          {booking.vehicleDetails?.daily_rate.toLocaleString()} Ksh
                         </TableCell>
                         <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                           {'JHG4589GJKRG'}

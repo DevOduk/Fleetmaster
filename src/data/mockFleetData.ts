@@ -30,6 +30,7 @@ export interface Vehicle {
 }
 
 export interface Booking {
+  tenantId: string,
   id: number;
   date: string;
   vehicleId: number;
@@ -46,9 +47,9 @@ export interface Booking {
   total: number;
   paymentMethod: string;
   paymentRef: string;
-  bookingStatus:  "Reserved" |"Booked" | "Completed" | "Active" | "Cancelled";
+  bookingStatus: "Reserved" | "Booked" | "Completed" | "Active" | "Cancelled";
   priority?: "High Priority" | "Medium Priority" | "Low Priority";
-  vehicleDetails: Vehicle | any; // This will be populated when merging with vehicles data
+  vehicleDetails: any; // This will be populated when merging with vehicles data
 }
 
 // export const vehicles: Vehicle[] = [

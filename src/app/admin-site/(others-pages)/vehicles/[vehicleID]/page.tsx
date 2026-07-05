@@ -4,17 +4,16 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import TextArea from '@/components/form/input/TextArea';
 import Button from '@/components/ui/button/Button';
 import VehicleNotFound from '@/components/vehicles/NotFound';
-import { useFleet } from '@/context/FleetContext';
 import Link from 'next/link';
 import { use } from 'react';
 import isBetween from 'dayjs/plugin/isBetween';
 import dayjs, { Dayjs } from 'dayjs';
-import Badge from '@/components/ui/badge/Badge';
 import { Box, Chip } from '@mui/material';
 dayjs.extend(isBetween);
 import LocalGasStationOutlinedIcon from '@mui/icons-material/LocalGasStationOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
-import { useBooking } from '@/context/BookingContext';
+import { useAdminFleet } from '@/context/AdminFleetContext';
+import { useAdminBooking } from '@/context/AdminBookingContext';
 
 
 interface VehiclePageProps {
@@ -25,9 +24,9 @@ const breadcrumbItems = [{ label: "Vehicles", href: "/vehicles" }];
 
 const VehiclePage = ({ params }: VehiclePageProps) => {
   const resolvedParams = use(params);
-    const { bookings } = useBooking();
+    const { bookings } = useAdminBooking();
 
-  const { vehicles } = useFleet();
+  const { vehicles } = useAdminFleet();
   const vehicleID = resolvedParams.vehicleID;
   const VehicleDetails = vehicles.find(v => v.id === parseInt(vehicleID));
   const allVehicleBookings = bookings.filter((booking) => booking.vehicleId === parseInt(vehicleID))

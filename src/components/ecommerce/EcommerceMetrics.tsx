@@ -2,22 +2,18 @@
 import React from "react";
 import Badge from "../ui/badge/Badge";
 import { ArrowDownIcon, ArrowUpIcon, BoxIconLine, GroupIcon } from "@/icons";
-import { useBooking } from "@/context/BookingContext";
-import { useFleet } from "@/context/FleetContext";
 import DirectionsCarFilledOutlinedIcon from '@mui/icons-material/DirectionsCarFilledOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 
-export const EcommerceMetrics = () => {
-  const { bookings, loading } = useBooking();
-  const { vehicles, loading: loadingVehicles } = useFleet();
+export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading }: { vehicles: any, loadingVehicles: boolean, bookings: any, loading: boolean }) => {
 
-  const totalRevenue = bookings.reduce((sum, booking) => {
+  const totalRevenue = bookings?.reduce((sum, booking) => {
     return sum + (booking.total || 0);
   }, 0);
 
-  const completed = bookings.filter((b) => b.bookingStatus === 'Completed');
+  const completed = bookings?.filter((b) => b.bookingStatus === 'Completed') || [];
 
   const calculateFleetBookingRate = () => {
     const daysInMonth = 30;
@@ -45,7 +41,7 @@ export const EcommerceMetrics = () => {
 
       {/* */}
       {
-        (!loadingVehicles && !loading) && totalRevenue ?
+        (!loadingVehicles && !loading) ?
           <>
             {/* CARD 1: Total Revenue */}
             <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 bg-brand-500/5 md:p-6">
@@ -90,7 +86,7 @@ export const EcommerceMetrics = () => {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <div>
-                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-end text-title-sm dark:text-white/90">
+                      <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-end text-title-sm dark:text-white/90">
                         <DirectionsCarFilledOutlinedIcon fontSize="inherit" className="text-gray-800 dark:text-white/90 pr-2" />{vehicles.length} +
                       </h4>
                     </div>
@@ -134,7 +130,7 @@ export const EcommerceMetrics = () => {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <div>
-                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-end text-title-sm dark:text-white/90">
+                      <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-end text-title-sm dark:text-white/90">
                         <ScheduleOutlinedIcon fontSize="inherit" className="text-gray-800 dark:text-white/90 pr-2" />{completed.length} +
                       </h4>
                     </div>
@@ -179,7 +175,7 @@ export const EcommerceMetrics = () => {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <div>
-                  <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-end text-title-sm dark:text-white/90">
+                      <h4 className="mt-2 font-bold text-gray-800 flex gap-1 items-end text-title-sm dark:text-white/90">
                         <TrendingUpOutlinedIcon fontSize="inherit" className="text-gray-800 dark:text-white/90 pr-2" />{(calculateFleetBookingRate().toFixed(2))} %
                       </h4>
                     </div>

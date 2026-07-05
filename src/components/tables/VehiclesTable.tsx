@@ -8,20 +8,21 @@ import {
 
 import Badge from "../ui/badge/Badge";
 import Link from "next/link";
-import { useFleet } from "@/context/FleetContext";
 import { ArrowRightIcon } from "@/icons";
 import Pagination from "./Pagination";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CircularProgress } from "@mui/material";
 import { useBooking } from "@/context/BookingContext";
+import { useAdminFleet } from "@/context/AdminFleetContext";
+import { useAdminBooking } from "@/context/AdminBookingContext";
 
 
 export default function VehiclesTable() {
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams.toString());
-  const { vehicles, loading } = useFleet();
-  const { bookings } = useBooking();
+  const { vehicles, loading } = useAdminFleet();
+  const { bookings } = useAdminBooking();
   const router = useRouter();
   const pathname = usePathname();
   const urlPage = parseInt(searchParams.get("page") || "1", 10);
@@ -53,7 +54,7 @@ export default function VehiclesTable() {
     <div>
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
         <div className="max-w-full overflow-x-auto">
-          <div className="min-w-[1102px]">
+          <div className="min-w-275.5">
             <Table>
               {/* Table Header */}
               <TableHeader className="border-b border-gray-100 dark:border-white/5">
@@ -135,15 +136,15 @@ export default function VehiclesTable() {
                             className="w-20 bg-white object-fit-cover object-center"
                             style={{ objectFit: 'cover', objectPosition: 'center' }}
                             // src={vehicle.image}
-                            src={vehicle.imageUrl}
-                            alt={vehicle.licensePlate}
+                            src={vehicle.image_url}
+                            alt={vehicle.license_plate}
                           />
                           <div>
                             <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                               {vehicle.year} {vehicle.make} {vehicle.model}
                             </span>
                             <span className="block text-gray-500 text-theme-xs py-2 dark:text-gray-400">
-                              {vehicle.licensePlate} | VIN: {vehicle.vin} |  {vehicle.location}
+                              {vehicle.license_plate} | VIN: {vehicle.vin} |  {vehicle.location}
                             </span>
                           </div>
                         </div>
@@ -155,13 +156,13 @@ export default function VehiclesTable() {
                         {vehicle.owner}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        {vehicle.nextServiceDue}
+                        {vehicle.next_service_due}
                       </TableCell>
                       <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                        {vehicle.dailyRate} Ksh.
+                        {vehicle.daily_rate} Ksh.
                       </TableCell>
                       <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                        {vehicle.minRentalDays} {vehicle.minRentalDays > 1 ? 'Days' : 'Day'}
+                        {vehicle.min_rental_days} {vehicle.min_rental_days > 1 ? 'Days' : 'Day'}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         <Badge

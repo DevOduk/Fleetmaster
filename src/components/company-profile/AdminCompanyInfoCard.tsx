@@ -1,26 +1,24 @@
 "use client";
 
 import { fetchTenantDetails } from "@/app/actions/tenant";
-import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import ComponentCard from "../common/ComponentCard";
 import ExpiryBanner from "./ExpiryBanner";
 
 
-export default function CompanyInfoCard() {
-  const { profile } = useUser();
+export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string }) {
   const [company, setCompany] = useState<any>(null);
   const [loadingCompany, setLoadingCompany] = useState<boolean>(true);
 
   useEffect(() => {
     const getTenantDetails = async () => {
-      if (!profile?.tenant_id) {
+      if (!TenantID) {
         setLoadingCompany(false);
         return;
       }
-      if (profile?.tenant_id) {
-        const res = await fetchTenantDetails(profile.tenant_id);
+      if (TenantID) {
+        const res = await fetchTenantDetails(TenantID);
         setCompany(res.data);
         if (res) {
           setLoadingCompany(false);
@@ -29,10 +27,10 @@ export default function CompanyInfoCard() {
     };
 
     getTenantDetails();
-  }, [profile?.tenant_id]);
+  }, [TenantID]);
 
 
-  if (!profile || !profile.tenant_id || loadingCompany) {
+  if (!TenantID || loadingCompany) {
     return (
       <div className="w-full mx-auto p-6 space-y-6 animate-pulse">
         {/* Header Section Placeholder */}
@@ -99,7 +97,7 @@ export default function CompanyInfoCard() {
       </div>
     );
   }
-  
+
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
       {/* Header Section */}
@@ -126,16 +124,20 @@ export default function CompanyInfoCard() {
           </div>
         </div>
 
-        <Link
+        {/* <Link
           href="/company-profile/edit"
           className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
         >
           Edit Profile
-        </Link>
+        </Link> */}
       </div>
+
       <ExpiryBanner plan={company.subscription_plan} expiryDate={company.expiry_date} />
 
       <div className="p-6 space-y-8">
+        <h5 className="font-bold text-lg text-black dark:text-white">About</h5>
+        <p className="text-sm text-gray-600 dark:text-gray-300">{company.about || 'No about available.'}</p>
+        <h5 className="font-bold text-lg text-black dark:text-white">Description</h5>
         <p className="text-sm text-gray-600 dark:text-gray-300">{company.description || 'No description available.'}</p>
 
         {/* Contact Details */}
@@ -143,7 +145,7 @@ export default function CompanyInfoCard() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <DataPoint label="Email Address" value={company.email} />
             <DataPoint label="Primary Phone Number" value={company.phone} />
-            <DataPoint label="Location" value={`${company.county}, ${company.country}`} />
+            <DataPoint label="Location" value={`${company.county || 'N/A'}, ${company.country}`} />
             <DataPoint label="City" value={`${company.city || "N/A"}`} />
             <DataPoint label="Zip Code" value={`${company.zip_code || "N/A"}`} />
             <DataPoint label="Address" value={`${company.address || "N/A"}`} />
@@ -158,6 +160,7 @@ export default function CompanyInfoCard() {
             <DataPoint label="Currency" value={company.currency} />
             <DataPoint label="Buffer (Hours)" value={`${company.buffer || "N/A"} hrs`} />
             <DataPoint label="Color Preference" value={`${company.color || "Default"}`} />
+            <DataPoint label="Admins" value={`${company.color || "2"}`} />
           </div>
         </ComponentCard>
 
@@ -167,11 +170,11 @@ export default function CompanyInfoCard() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {company.yards.map((yard: any, idx: number) => (
                 <div key={idx} className="rounded-xl border border-gray-100 p-4 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
-<img
-                  src={yard.imageUrl || "/images/brand/default-yard.png"}
-                  alt={yard.title || "Yard"}
-                  className="mb-2 h-auto aspect-video w-full rounded-lg object-cover"
-                />                  <p className="text-sm font-bold text-gray-900 dark:text-white">{yard.title}</p>
+                  <img
+                    src={yard.imageUrl || "/images/brand/default-yard.png"}
+                    alt={yard.title || "Yard"}
+                    className="mb-2 h-auto aspect-video w-full rounded-lg object-cover"
+                  />                  <p className="text-sm font-bold text-gray-900 dark:text-white">{yard.title}</p>
                   <p className="mt-1 text-xs text-gray-500 line-clamp-2">{yard.description}</p>
                 </div>
               ))}

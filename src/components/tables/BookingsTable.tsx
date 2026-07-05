@@ -10,17 +10,16 @@ import Badge from "../ui/badge/Badge";
 import { PencilIcon } from "@/icons";
 import Button from "../ui/button/Button";
 import Link from "next/link";
-import { useBooking } from "@/context/BookingContext";
 import { CircularProgress } from "@mui/material";
+import { useAdminBooking } from "@/context/AdminBookingContext";
 
 
 
 export default function BookingsTable() {
-  const { bookings: allBookings, loading } = useBooking();
-
+  const { bookings: allBookings, loading } = useAdminBooking();
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
-      <div className="max-w-full overflow-x-auto">
+      <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-275">
           <Table>
             {/* Table Header */}
@@ -105,35 +104,35 @@ export default function BookingsTable() {
                               className="w-20 object-fit-cover object-center"
                               style={{ objectFit: 'cover', objectPosition: 'center' }}
                               // src={order.user.image}
-                              src={booking?.vehicleDetails?.imageUrl}
+                              src={booking?.vehicleDetails?.image_url}
                               alt={booking.id.toString()}
                             />
                             <div>
-                              <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                              <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90 text-nowrap">
                                 {booking.vehicleDetails?.year} {booking.vehicleDetails?.make} {booking.vehicleDetails?.model}
                               </span>
                               <span className="block text-gray-500 text-theme-xs py-2 dark:text-gray-400">
                                 {/* {order.user.role} */}
-                                {booking.vehicleDetails?.licensePlate}
+                                {booking.vehicleDetails?.license_plate}
                               </span>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          {booking.renterName}
+                          {booking.renter_name}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          {booking.renterPhone}
+                          {booking.renter_phone}
                         </TableCell>
                         <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                           {/* {order.nextService} */}
-                          {booking.rentalStart} | {booking.rentalDays} Days
+                          {booking.rental_start} | {booking.rental_days} Days
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
-                          {booking.vehicleDetails?.dailyRate.toLocaleString()} Ksh
+                         Ksh. {booking.vehicleDetails?.daily_rate?.toLocaleString()} 
                         </TableCell>
                         <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                          {booking.discount}
+                          Ksh. {booking.discount}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
                           {booking.total.toLocaleString()} Ksh
@@ -142,14 +141,14 @@ export default function BookingsTable() {
                           <Badge
                             size="sm"
                             color={
-                              booking.bookingStatus === "Active"
+                              booking.booking_status === "Active"
                                 ? "error"
-                                : booking.bookingStatus === "Reserved"
+                                : booking.booking_status === "Reserved"
                                   ? "primary"
                                   : "success"
                             }
                           >
-                            {booking.bookingStatus}
+                            {booking.booking_status}
                           </Badge>
                         </TableCell>
                         <TableCell className="px-4 flex gap-3 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">

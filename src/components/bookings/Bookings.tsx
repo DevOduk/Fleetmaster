@@ -1,19 +1,17 @@
 "use client";
 import React, { useEffect } from "react";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import ComponentCard from "../common/ComponentCard";
 import Pagination from "../tables/Pagination";
 import BookingsTable from "../tables/BookingsTable";
 import Link from "next/link";
-import { useBooking } from "@/context/BookingContext";
+import { useAdminBooking } from "@/context/AdminBookingContext";
 
 const Bookings: React.FC = () => {
-  const { bookings } = useBooking();
+  const { bookings } = useAdminBooking();
   const isDarkMode =
     typeof window !== "undefined" &&
     document.documentElement.classList.contains("dark");
-
+console.log('client side ready ',bookings)
   // Apply dark mode styles to leaflet
   useEffect(() => {
     const handleModeChange = () => {

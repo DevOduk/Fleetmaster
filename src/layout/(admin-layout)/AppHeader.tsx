@@ -4,7 +4,6 @@ import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
 import SearchModal from "@/components/header/SearchModal";
 import UserDropdown from "@/components/header/UserDropdown";
-import { useFleet } from "@/context/FleetContext";
 import { useSidebar } from "@/context/SidebarContext";
 import { useUser } from "@/context/UserContext";
 import { createClient } from "@/utils/supabase/client";
@@ -12,6 +11,8 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { accountItems, navItems, othersItems } from "./AppSidebar";
+import { useAdminFleet } from "@/context/AdminFleetContext";
+import { useAdminBooking } from "@/context/AdminBookingContext";
   const supabase = createClient();
 
 
@@ -21,19 +22,9 @@ const AppHeader: React.FC = () => {
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
   const [cachedTickets, setCachedTickets] = useState([]);
   const { profile } = useUser();
-  const [cachedBookings, setCachedBookings] = useState([]);
-  const { vehicles } = useFleet();
+  const { bookings } = useAdminBooking();
+  const { vehicles } = useAdminFleet();
 
-  const tenantVehicles = vehicles.filter(vehicle => vehicle.tenant_id === profile?.tenant_id);
-
-
-  const fetchUserBookings = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('fleetmaster_bookings')
-      .select(`*, vehicleDetails:fleetmaster_vehicles!inner(*)`)
-      .eq('user_id', userId);
-    return { data, error };
-  }
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -68,13 +59,11 @@ const AppHeader: React.FC = () => {
     if (!profile?.id) return;
 
     const loadSearchData = async () => {
-      const [ticketsRes, bookingsRes] = await Promise.all([
+      const [ticketsRes] = await Promise.all([
         fetchUserTickets(profile.id),
-        fetchUserBookings(profile.id),
       ]);
 
       setCachedTickets(ticketsRes?.data || []);
-      setCachedBookings(bookingsRes?.data || []);
     };
 
     loadSearchData();
@@ -236,8 +225,8 @@ const AppHeader: React.FC = () => {
                 isOpen={isOpen}
                 setIsOpen={setIsOpen}
                 Tickets={cachedTickets}
-                Bookings={cachedBookings}
-                Vehicles={tenantVehicles}
+                Bookings={bookings}
+                Vehicles={vehicles}
                 PAGES={ADMIN_PAGES}
               />
             </div>

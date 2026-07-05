@@ -61,7 +61,7 @@ const Map: React.FC = () => {
   return (
     <div
       className={`w-full rounded-2xl border transition-colors duration-200 h-100 ${isDarkMode
-          ? "border-gray-800 bg-white/[0.03]"
+          ? "border-gray-800 bg-white/3"
           : "border-gray-200 bg-white"
         }`}
       style={{ height: '80vh' }}
@@ -69,7 +69,7 @@ const Map: React.FC = () => {
       <MapContainer
         center={[-1.286389, 36.817223]}
         zoom={7}
-        className="h-[100%] rounded-2xl"
+        className="h-full rounded-2xl"
         scrollWheelZoom={true}
       >
         <TileLayer

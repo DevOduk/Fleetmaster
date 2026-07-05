@@ -2,9 +2,11 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Booking } from "@/data/mockFleetData";
-import { useFleet } from "./FleetContext";
+import { useAdminFleet } from "./AdminFleetContext";
+import { useUser } from "./UserContext";
+import { fetchBookingsForAdmin } from "@/app/actions/bookings";
 
-interface BookingContextType {
+interface AdminBookingContextType {
   bookings: Booking[];
   loading: boolean;
   setBookings: React.Dispatch<React.SetStateAction<Booking[]>>;
@@ -12,35 +14,25 @@ interface BookingContextType {
   newBooking: (booking: Omit<Booking, "id" | "date">) => Promise<boolean>; // Returns success flag to forms
 }
 
-const BookingContext = createContext<BookingContextType | undefined>(undefined);
+const AdminBookingContext = createContext<AdminBookingContextType | undefined>(undefined);
 
-export const BookingProvider = ({ children }: { children: ReactNode }) => {
-  const { vehicles, loading: fleetLoading } = useFleet();
-  const [bookings, setBookings] = useState<Booking[]>([]);
+export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
+  const { profile: adminProfile } = useUser();
+  const { vehicles } = useAdminFleet();
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. Fetch and merge bookings data on layout mount pass
-  useEffect(() => {
-    async function fetchAllBookings() {
-      if (fleetLoading) return; // Wait until vehicles are hydrated in client state
-      
-      try {
-        const response = await fetch("/api/bookings");
-        const data = await response.json();
 
-        if (response.ok) {
-          // Keep your structural merging pattern clean and explicit
-          const allBookings = data.map((b: any) => {
-            const vehicleInfo = vehicles.find((v) => v.id === b.vehicleId);
-            return {
-              ...b,
-              // If you need the vehicle details nested or flattened:
-              vehicleDetails: vehicleInfo || null 
-            };
-          });
-          setBookings(allBookings);
+  useEffect(() => {
+    if (!adminProfile) return;
+
+    async function fetchAllBookings() {
+      try {
+        const response = await fetchBookingsForAdmin(adminProfile?.tenant_id);
+        if (response.success) {
+          setBookings(response.data);
         } else {
-          console.error("API Error fetching bookings:", data.error);
+          console.error("API Error fetching bookings:", response.error);
         }
       } catch (err) {
         console.error("Network connection failure:", err);
@@ -50,7 +42,7 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
     }
 
     fetchAllBookings();
-  }, [vehicles, fleetLoading]);
+  }, [adminProfile]);
 
   // 2. Update existing fields cleanly by ID
   const updateBooking = (id: number, updatedFields: Partial<Booking>) => {
@@ -93,14 +85,14 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <BookingContext.Provider value={{ bookings, loading, setBookings, updateBooking, newBooking }}>
+    <AdminBookingContext.Provider value={{ bookings, loading, setBookings, updateBooking, newBooking }}>
       {children}
-    </BookingContext.Provider>
+    </AdminBookingContext.Provider>
   );
 };
 
-export const useBooking = () => {
-  const context = useContext(BookingContext);
-  if (!context) throw new Error("useBooking must be used within a BookingProvider");
+export const useAdminBooking = () => {
+  const context = useContext(AdminBookingContext);
+  if (!context) throw new Error("useBooking must be used within an Admin BookingProvider");
   return context;
 };

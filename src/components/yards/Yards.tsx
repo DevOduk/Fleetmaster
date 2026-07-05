@@ -235,36 +235,48 @@ const YardsContent: React.FC = () => {
 
         <div className="py-3 col-span-12 lg:col-span-7">
           <div className="flex items-center justify-between">
-            <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90"> Below is a list of your working yards/locations:</p>
+            <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+              Below is a list of your working yards/locations:
+            </p>
             <Button onClick={() => setIsOpen(true)} variant="primary" size="sm">New Yard <PlusIcon /></Button>
           </div>
-          <div className="grid grid-cols-1 gap-4 grid-cols-2">
-            {mainMapYards.map((yard: any, i: number) => (
-              <div key={i} className="rounded-xl relative border border-gray-100 p-4 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
-                <img
-                  src={yard.imageUrl || "/images/brand/default-yard.png"}
-                  alt={yard.title || "Yard"}
-                  className="mb-2 h-auto aspect-video w-full rounded-lg object-cover"
-                />
-                <p className="text-sm font-bold text-gray-900 dark:text-white">{yard.title}</p>
-                <p className="mt-1text-sm mb-2 mt-1 truncate text-gray-500 line-clamp-2">{yard.description}</p>
-                <p className="font-small text-xs text-gray-700 dark:text-gray-500">Lat: {yard.location?.[0]} | long: {yard.location?.[1]}</p>
+          {mainMapYards.length > 0 ? (
+            <div className="grid gap-4 grid-cols-2">
+              {
+                mainMapYards.map((yard: any, i: number) => (
+                  <div key={i} className="rounded-xl relative border border-gray-100 p-4 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                    <img
+                      src={yard.imageUrl || "/images/brand/default-yard.png"}
+                      alt={yard.title || "Yard"}
+                      className="mb-2 h-auto aspect-video w-full rounded-lg object-cover"
+                    />
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{yard.title}</p>
+                    <p className="mt-1text-sm mb-2 mt-1 truncate text-gray-500 line-clamp-2">{yard.description}</p>
+                    <p className="font-small text-xs text-gray-700 dark:text-gray-500">Lat: {yard.location?.[0]} | long: {yard.location?.[1]}</p>
 
-                <div className="p-2 flex gap-4 absolute top-5 right-5 bg-white/50 dark:bg-gray-800/50 rounded-lg z-3">
-                  <BorderColorOutlinedIcon onClick={() => {
-                    setSelectedEvent(yard);
-                    setIsOpen(true);
-                  }} fontSize="small" className="text-white cursor-pointer" />
-                  <DeleteOutlinedIcon onClick={() => {
-                    handleDeleteYard(yard);
-                  }} fontSize="small" color="error" className="cursor-pointer" />
-                </div>
-              </div>
-            ))}
-          </div>
+                    <div className="p-2 flex gap-4 absolute top-5 right-5 bg-white/50 dark:bg-gray-800/50 rounded-lg z-3">
+                      <BorderColorOutlinedIcon onClick={() => {
+                        setSelectedEvent(yard);
+                        setIsOpen(true);
+                      }} fontSize="small" className="text-white cursor-pointer" />
+                      <DeleteOutlinedIcon onClick={() => {
+                        handleDeleteYard(yard);
+                      }} fontSize="small" color="error" className="cursor-pointer" />
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          ) : (
+            <div className="relative mt-3 border dark:border-gray-600 rounded-lg w-full gap-3 min-h-85 flex items-center justify-center flex-col text-gray-600 dark:text-gray-400">
+              <h5 className="text-2xl mb-0 font-bold text-red-500">Oops!</h5>
+              <p className="text-gray-600 text-sm dark:text-gray-400 mb-2">You don't seem to have any yard loctaions yet. Create one now!</p>
+              <Button onClick={() => setIsOpen(true)} variant="primary" size="sm">New Yard <PlusIcon /></Button>
+            </div>
+          )}
         </div>
       </div>
-
+      <p className="font-medium py-9 mt-3 text-gray-800 text-center text-theme-sm dark:text-white/90">You have  {mainMapYards.length} Yards. You can add unlimitted yards</p>
     </div>
   );
 };

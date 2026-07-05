@@ -6,14 +6,15 @@ import TextArea from '@/components/form/input/TextArea';
 import Select from '@/components/form/Select';
 import Button from '@/components/ui/button/Button';
 import VehicleNotFound from '@/components/vehicles/NotFound';
-import { useFleet } from '@/context/FleetContext';
 import { ChevronLeftIcon } from '@/icons';
 import { Backdrop, Box, Chip, CircularProgress } from '@mui/material';
 import Link from 'next/link';
-import { use, useState } from 'react';
-import { toast, Toaster } from 'sonner';
+import { use, useEffect, useState } from 'react';
 import LocalGasStationOutlinedIcon from '@mui/icons-material/LocalGasStationOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import { fetchVehicleDetails, updateVehicleDetails } from '@/app/actions/vehicles';
+import { useAdminFleet } from '@/context/AdminFleetContext';
+import { useToast } from '@/context/ToastContext';
 
 
 interface VehiclePageProps {
@@ -23,24 +24,46 @@ interface VehiclePageProps {
 
 
 const EditVehiclePage = ({ params }: VehiclePageProps) => {
-  const { vehicles, setVehicles, updateVehicle } = useFleet();
+  const { setVehicles } = useAdminFleet();
+  const { showToast } = useToast();
   const resolvedParams = use(params);
   const vehicleID = resolvedParams.vehicleID;
 
+  const [loadingVehicle, setLoadingVehicle] = useState(false);
   const [backDrop, setBackDrop] = useState(false);
   const [disableButton, setDisableButton] = useState(false);
-  const [VehicleDetails, setVehicleDetails] = useState<any>(vehicles.find(v => v.id === parseInt(vehicleID)) || {});
+  const [VehicleDetails, setVehicleDetails] = useState<any>(null);
 
-  if (!VehicleDetails) {
-    return <VehicleNotFound />
-  }
+  useEffect(() => {
+    if (!vehicleID) return;
+
+    async function fetchAllVehicles() {
+      try {
+        const response = await fetchVehicleDetails(Number(vehicleID));
+
+        if (!response.error) {
+          setVehicleDetails(response.data);
+        } else {
+          console.error("API Error fetching vehicle detailss:", response.error);
+        }
+      } catch (err) {
+        console.error("Network connection failure:", err);
+      } finally {
+        setLoadingVehicle(false);
+      }
+    }
+
+    fetchAllVehicles();
+  }, [vehicleID]);
+
+
   const breadcrumbItems = [
     { label: "Vehicles", href: "/vehicles" },
     { label: VehicleDetails.make + ' ' + VehicleDetails.model, href: "/vehicles/" + vehicleID }
   ];
 
 
-  const updateVehicles = () => {
+  const updateVehicles = async () => {
     setDisableButton(true);
     setBackDrop(true);
     // Use .map to replace ONLY the vehicle that matches the ID
@@ -50,26 +73,45 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
       )
     );
 
-    setTimeout(() => {
-      toast.success('Vehicle details updated successfully', { style: { color: 'green' } })
-      setDisableButton(false);
-      setBackDrop(false);
-    }, 3000);
 
-    // Optional: Add a success toast or redirect here
+    const res = await updateVehicleDetails(Number(vehicleID), VehicleDetails);
+
+    if (res.success) {
+
+      setTimeout(() => {
+        showToast('Vehicle details updated successfully', 'success')
+        setDisableButton(false);
+        setBackDrop(false);
+      }, 3000);
+    } else {
+
+    }
+
   };
 
 
-  const updateAvailability = (status: string) => {
+  const updateAvailability = async (status: string) => {
     setBackDrop(true);
-    setTimeout(() => {
-      updateVehicle(VehicleDetails.id, { ...VehicleDetails, status: status });
+    const res = await updateVehicleDetails(VehicleDetails.id, { ...VehicleDetails, status: status });
+
+    if (res.success) {
+      showToast('Vehicle status updated successfully', 'success')
       setVehicleDetails((prev: any) => ({
         ...prev,
         status: status
-      }))
+      }));
       setBackDrop(false);
-    }, 1000);
+    } else {
+      showToast('An error ocuured while updating vehicle status!', 'error')
+      setBackDrop(false);
+    }
+  }
+
+  if (loadingVehicle) {
+    return <div>Fetching vehicle details</div>
+  }
+  if (!VehicleDetails) {
+    return <VehicleNotFound />
   }
 
   return (

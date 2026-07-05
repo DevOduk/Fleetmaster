@@ -19,12 +19,12 @@ import Select from "../form/Select";
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import Button from "../ui/button/Button";
-import { useFleet } from "@/context/FleetContext";
 import { toast, Toaster } from "sonner";
 import { CalendarWrapper } from "./CalendarWrapper";
 import dayjs from "dayjs";
 import Link from "next/link";
-import { useBooking } from "@/context/BookingContext";
+import { useAdminFleet } from "@/context/AdminFleetContext";
+import { useAdminBooking } from "@/context/AdminBookingContext";
 
 const BUFFER_HOURS = 2;
 
@@ -68,14 +68,10 @@ const extractBookingOnly = (booking: any) => ({
 
 
 const Calendar: React.FC = () => {
-    const { bookings } = useBooking();
-  
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
-    null
-  );
-  const { vehicles, setVehicles } = useFleet();
+  const { bookings, loading: loadingBookings } = useAdminBooking();
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(    null  );
+  const { vehicles, loading } = useAdminFleet();
   const [allBookings, setAllBookings] = useState<any[]>([]);
-  const [BookingData, setBookingData] = useState<any[]>(bookings || []);
   const [bookingName, setBookingName] = useState("");
   const [bookingID, setBookingID] = useState(0);
   const [eventStartDate, setEventStartDate] = useState("");
@@ -131,6 +127,11 @@ const Calendar: React.FC = () => {
     };
   };
 
+  useEffect(() => {
+    if(loadingBookings) return;
+    setAllBookings(bookings)
+  }, [bookings])
+  
 
   useEffect(() => {
     const days = Math.ceil((new Date(eventEndDate).getTime() - new Date(eventStartDate).getTime()) / (1000 * 3600 * 24));
@@ -142,7 +143,7 @@ const Calendar: React.FC = () => {
 
   const selectVehicleOptions = [
     // get all vehicles and render their names i.e year make model as label and id as value from vehicles
-    ...vehicles.map((vehicle) => ({
+    ...vehicles?.map((vehicle) => ({
       value: vehicle.id.toString(),
       label: `${vehicle.licensePlate}: ${vehicle.year} ${vehicle.make} ${vehicle.model}`,
     })),
@@ -151,21 +152,11 @@ const Calendar: React.FC = () => {
     setBookingID(parseInt(value));
     setBookingName(
       // find vehicle in list using id and merge tits Yesteryear, make, model
-      vehicles.find((vehicle) => vehicle.id === parseInt(value))?.year && vehicles.find((vehicle) => vehicle.id === parseInt(value))?.make && vehicles.find((vehicle) => vehicle.id === parseInt(value))?.model ? `${vehicles.find((vehicle) => vehicle.id === parseInt(value))?.year} ${vehicles.find((vehicle) => vehicle.id === parseInt(value))?.make} ${vehicles.find((vehicle) => vehicle.id === parseInt(value))?.model}` : ""
+      vehicles?.find((vehicle) => vehicle.id === parseInt(value))?.year && vehicles.find((vehicle) => vehicle.id === parseInt(value))?.make && vehicles.find((vehicle) => vehicle.id === parseInt(value))?.model ? `${vehicles.find((vehicle) => vehicle.id === parseInt(value))?.year} ${vehicles.find((vehicle) => vehicle.id === parseInt(value))?.make} ${vehicles.find((vehicle) => vehicle.id === parseInt(value))?.model}` : ""
     );
   };
 
 
-  useEffect(() => {
-    // Merge booking with vehicles data
-    const mergedBookings = BookingData.map(booking => {
-      const vehicle = vehicles.find(v => v.id === booking.vehicleId);
-      return { ...booking, ...vehicle };
-    });
-
-    setAllBookings(mergedBookings);
-
-  }, [BookingData]);
 
   const calendarsEvents = {
     'High Priority': "success",
@@ -268,7 +259,7 @@ const Calendar: React.FC = () => {
         }, 5000);
       } else {
         setTimeout(() => {
-          
+
           setAllBookings((prevData) => prevData.map((booking) => {
             if (booking.id === bookingID) {
               return {
@@ -326,7 +317,7 @@ const Calendar: React.FC = () => {
       }, 5000);
     }
   };
-console.log(allBookings)
+  console.log(bookings)
 
   const resetModalFields = () => {
     setBookingID(0);
@@ -346,7 +337,7 @@ console.log(allBookings)
   // 1. Process existing bookings by stitching date and time strings together directly
   const existingBookingsIntervals = useMemo(() => {
     return bookings
-      .filter((b) => b.vehicleId === bookingID)
+      ?.filter((b) => b.vehicleId === bookingID)
       .map((booking) => {
         // Merges "2026-06-01" and "12:30" into "2026-06-01T12:30:00"
         const startDateTimeStr = `${booking.rentalStart}T${booking.rentalTime}:00`;
@@ -399,7 +390,9 @@ console.log(allBookings)
     });
   }, [currentSelectionInterval, existingBookingsIntervals, bookingID]);
 
-
+if(loading){
+  <>Loading vehicles!</>
+}
   return (
     <div className="rounded-2xl border  border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
 
@@ -413,12 +406,12 @@ console.log(allBookings)
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay",
           }}
-          events={allBookings.map((booking) => ({
+          events={bookings?.map((booking) => ({
             id: booking.id.toString(),
-            title: booking.year + ' ' + booking.make + ' ' + booking.model,
+            title: booking.vehicleDetails.year + ' ' + booking.vehicleDetails.make + ' ' + booking.vehicleDetails.model,
             start: booking.rentalStart,
             end: booking.rentalEnd,
-            extendedProps: { calendar: booking.priority, registration: booking.licensePlate, renter: booking.renterName, renterID: booking.renterID, renterPhone: booking.renterPhone, bookingDbId: booking.id, rentalTime: booking.rentalTime },
+            extendedProps: { calendar: booking.priority, registration: booking.vehicleDetails.license_plate, renter: booking.renterName, renterID: booking.renterID, renterPhone: booking.renterPhone, bookingDbId: booking.id, rentalTime: booking.rentalTime },
           }))}
           selectable={true}
           select={handleDateSelect}

@@ -7,13 +7,10 @@ import {
   TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
-import Image from "next/image";
 import Link from "next/link";
-import { useBooking } from "@/context/BookingContext";
 
 
-export default function RecentOrders() {
-  const { bookings, loading } = useBooking();
+export default function RecentOrders({ bookings, loading }: {  bookings: any, loading: boolean }) {
 
 
   return (
@@ -119,7 +116,7 @@ export default function RecentOrders() {
                     <TableCell className="py-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={product.vehicleDetails?.imageUrl}
+                          src={product.vehicleDetails?.image_url}
                           className="h-11 w-17 object-cover rounded"
                           alt={product.vehicleDetails?.make}
                         />
@@ -128,7 +125,7 @@ export default function RecentOrders() {
                             {product.vehicleDetails?.make} {product.vehicleDetails?.model} {product.vehicleDetails?.year}
                           </p>
                           <span className="text-gray-500 text-theme-xs dark:text-gray-400">
-                            {product.vehicleDetails?.licensePlate} | {product.vehicleDetails?.rentalDays} Days
+                            {product.vehicleDetails?.license_plate} | {product.vehicleDetails?.rental_days} Days
                           </span>
                         </div>
                       </div>
@@ -153,7 +150,10 @@ export default function RecentOrders() {
                     </TableCell>
                   </TableRow>
                 )) : <TableRow>
-                  <TableCell>You dont have any bookings! Go to <Link href={'/bookings'}>Bookings</Link> to create one.</TableCell>
+                  <TableCell colSpan={4}>
+                    <div className="border rounded-lg dark:border-gray-600 text-center h-80 flex items-center justify-center text-red-500 text-sm">You don't have any bookings! Go to &nbsp; <Link className="text-brand-500 underline" href={'/bookings'}>Bookings</Link> &nbsp; to create one.
+                      </div>
+                      </TableCell>
                 </TableRow>
             }
           </TableBody>

@@ -50,13 +50,13 @@ export default function OthersPagesLayout({
       window.location.href = `${protocol}//app.${hostname}${port}/signin`;
       return;
     }
-
     // Standard absolute fallback string execution path
     router.replace('/signin');
   };
 
   useEffect(() => {
     if (loading) return;
+    if (window.location.href.includes('/register')) return;
 
     if (!profile) {
       executeAbsoluteAuthRedirect();

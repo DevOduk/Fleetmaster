@@ -18,6 +18,7 @@ export async function GET() {
     }
 
     const bookings = data.map((booking) => ({
+      tenantId: booking.tenant_id,
       id: booking.id,
       date: booking.date,
       vehicleId: booking.vehicle_id,

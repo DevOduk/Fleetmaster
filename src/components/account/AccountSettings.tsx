@@ -1,45 +1,27 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useModal } from "../../hooks/useModal";
-import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Link from "next/link";
 import { TrashBinIcon } from "@/icons";
 import { useUser } from "@/context/UserContext";
+import Checkbox from "../form/input/Checkbox";
 
-interface AccountData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  bio: string;
-  language: string;
-  timezone: string;
-  newsletter: boolean;
-  notifications: boolean;
-  twoFactor: boolean;
-}
-
-const defaultAccountData: AccountData = {
-  firstName: "Musharof",
-  lastName: "Chowdhury",
-  email: "randomuser@pimjo.com",
-  phone: "+09 363 398 46",
-  bio: "Team Manager",
-  language: "English",
-  timezone: "UTC +6",
-  newsletter: true,
-  notifications: true,
-  twoFactor: false,
-};
 
 export default function AccountSettings() {
   const { isOpen, openModal, closeModal } = useModal();
-  const [formData, setFormData] = useState<AccountData>(defaultAccountData);
+  const [formData, setFormData] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
   const { profile } = useUser();
+
+  useEffect(() => {
+    if (!profile) return;
+    setFormData(profile || null)
+  }, [profile])
+
+  console.log(profile)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -61,88 +43,29 @@ export default function AccountSettings() {
   };
 
   const handleCancel = () => {
-    setFormData(defaultAccountData);
+    setFormData(null);
     closeModal();
   };
 
   return (
-    <div className="space-y-6">
-      {/* Notifications Section */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 lg:p-6">
-        <h3 className="mb-6 text-lg font-semibold text-gray-900 dark:text-white">
-          Notifications
-        </h3>
-
-        <div className="space-y-4 lg:space-y-5">
-          <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-            <div>
-              <p className="font-medium text-gray-900 dark:text-white">Popup Notifications</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Receive updates about your account activity
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              checked={formData.notifications}
-              readOnly
-              className="h-5 w-5 cursor-pointer rounded border-gray-300 accent-brand-500"
-            />
-          </div>
-          <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-            <div>
-              <p className="font-medium text-gray-900 dark:text-white">Email Notifications</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Receive updates about your account activity
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              checked={formData.notifications}
-              readOnly
-              className="h-5 w-5 cursor-pointer rounded border-gray-300 accent-brand-500"
-            />
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-            <div>
-              <p className="font-medium text-gray-900 dark:text-white">Newsletter</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Subscribe to our weekly newsletter for updates and features
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              checked={formData.newsletter}
-              readOnly
-              className="h-5 w-5 cursor-pointer rounded border-gray-300 accent-brand-500"
-            />
-          </div>
-
-        </div>
-      </div>
+    <div className="">
 
       {/* Security Section */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 lg:p-6">
-        <h3 className="mb-6 text-lg font-semibold text-gray-900 dark:text-white">
-          Security
-        </h3>
+      <div className="relative w-full p-5 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900">
+
 
         <div className="space-y-4 lg:space-y-5">
-          <div className="flex flex-col items-start justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-            <div className="mb-3">
-              <p className="font-medium text-gray-900 dark:text-white">Two-Factor Authentication</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Add an extra layer of security to your account
-              </p>
-            </div>
-            {/* <input
-              type="checkbox"
-              checked={formData.twoFactor}
-              readOnly
-              className="h-5 w-5 cursor-pointer rounded border-gray-300 accent-brand-500"
-            /> */}
-            <div className="p-3 rounded-xl mt-3 border border-green-500/50 w-full">
-              <p className="text-muted mb-3 text-gray-400 text-sm">No 2FA Added.</p>
+          <div className="px-2 pr-14">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+              Security
+            </h4>
+            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+              Add an extra layer of security to your account
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl mt-3 border border-green-500/50 w-full">
+            <p className="text-muted mb-3 text-gray-400 text-sm">No 2FA Added.</p>
             <Button onClick={openModal} variant="primary-outline" size="sm">
               <svg
                 className="h-4 w-4 fill-current"
@@ -158,20 +81,68 @@ export default function AccountSettings() {
               </svg>
               Add 2FA
             </Button>
-            </div>
           </div>
-
         </div>
       </div>
 
-      {/* Danger Zone Section */}
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-5 dark:border-red-900/30 dark:bg-red-900/10 lg:p-6">
-        <h3 className="mb-6 text-lg font-semibold text-red-900 dark:text-red-400">
-          Danger Zone
-        </h3>
+      <div className="relative w-full p-5 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900">
+        <div className="px-2 pr-14">
+          <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+            Change Password
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+            Update your details to keep your profile up-to-date.
+          </p>
+        </div>
+        <form className="flex flex-col">
+          <div className="px-2 overflow-y-auto custom-scrollbar">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+              <div>
+                <Label>Old Password</Label>
+                <Input type="password" value={profile?.country} placeholder="********" />
+              </div>
+              <div>
+                <Label>New Password</Label>
+                <Input type="password" value={profile?.country} placeholder="********" />
+              </div>
+              <div>
+                <Label>Confirm New Password</Label>
+                <Input type="password" value={profile?.country} placeholder="********" />
+              </div>
 
-        <div className="space-y-4">
-          <div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+            <Link href="/profile" className="mr-2">
+              <Button size="sm" variant="outline">
+                Cancel
+              </Button>
+            </Link>
+            <Button size="sm" onClick={handleSave}>
+              Save Changes
+            </Button>
+          </div>
+        </form>
+      </div>
+      <div className="relative w-full p-5 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 space-y-4">
+
+        {/* Danger Zone Section */}
+
+        <div className="px-2 pr-14">
+          <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+            Account Management
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+            Manage your account state here. Delete, pause, unpause your account
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-900/30 dark:bg-red-900/10 lg:p-5">
+          <h3 className="mb-2 text-lg font-semibold text-red-900 dark:text-red-400">
+            Delete Account
+          </h3>
+
+          <div className="space-y-4">
             <p className="mb-3 text-sm text-red-800 dark:text-red-300">
               Permanently delete your account and all associated data. This action cannot be undone.
             </p>
@@ -180,8 +151,22 @@ export default function AccountSettings() {
             </Button>
           </div>
         </div>
-      </div>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-900/30 dark:bg-red-900/10 lg:p-5">
+          <h3 className="mb-2 text-lg font-semibold text-red-900 dark:text-red-400">
+            Pause Account
+          </h3>
 
+          <div className="space-y-4">
+            <p className="mb-3 text-sm text-red-800 dark:text-red-300">
+              Permanently delete your account and all associated data. This action cannot be undone.
+            </p>
+            <Button variant="danger-outline" size="sm">
+              Delete Account <TrashBinIcon />
+            </Button>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }

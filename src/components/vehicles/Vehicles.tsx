@@ -4,12 +4,12 @@ import ComponentCard from "../common/ComponentCard";
 import Pagination from "../tables/Pagination";
 import VehiclesTable from "../tables/VehiclesTable";
 import Link from "next/link";
-import { useFleet } from "@/context/FleetContext";
-import { useBooking } from "@/context/BookingContext";
+import { useAdminFleet } from "@/context/AdminFleetContext";
+import { useAdminBooking } from "@/context/AdminBookingContext";
 
 const Vehicles: React.FC = () => {
-  const { vehicles } = useFleet();
-  const { bookings } = useBooking();
+  const { vehicles } = useAdminFleet();
+  const { bookings } = useAdminBooking();
 
   return (
     <div>

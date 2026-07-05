@@ -116,13 +116,13 @@
 // src/proxy.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import * as jose from 'jose'; 
+import * as jose from 'jose';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
-  
+
   const hostHeader = req.headers.get('host') || '';
   const hostname = hostHeader.split(':')[0].toLowerCase();
   const pathname = url.pathname;
@@ -145,8 +145,8 @@ export async function proxy(req: NextRequest) {
     // If accessing via the staging domain using explicit path prefixes, 
     // bypass proxy mapping and serve directly from Next.js filesystem layout
     if (
-      pathname.startsWith('/client-site') || 
-      pathname.startsWith('/admin-site') || 
+      pathname.startsWith('/client-site') ||
+      pathname.startsWith('/admin-site') ||
       pathname.startsWith('/tenant-manager')
     ) {
       return NextResponse.next();
@@ -160,8 +160,8 @@ export async function proxy(req: NextRequest) {
     const parts = hostname.split('.');
     if (parts.length > 1) subdomain = parts[0];
   } else {
-    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'fleetmaster.co.ke';
-    
+    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'fleetmaster';
+
     if (hostname !== baseDomain && hostname.endsWith(`.${baseDomain}`)) {
       subdomain = hostname.replace(`.${baseDomain}`, '');
     }
@@ -169,13 +169,13 @@ export async function proxy(req: NextRequest) {
 
   // 4. ROOT DOMAIN HANDLER (If no valid subdomain is found, or it's 'www')
   if (!subdomain || subdomain === 'www') {
-    if (pathname.startsWith('/signin') || pathname.startsWith('/signup')) {
+    if (pathname.startsWith('/signin') || pathname.startsWith('/signup') || pathname.startsWith('/register')) {
       return NextResponse.next();
     }
 
     if (
-      pathname.startsWith('/admin-site') || 
-      pathname.startsWith('/tenant-manager') || 
+      pathname.startsWith('/admin-site') ||
+      pathname.startsWith('/tenant-manager') ||
       pathname.startsWith('/client-site')
     ) {
       url.pathname = '/404';
@@ -189,25 +189,26 @@ export async function proxy(req: NextRequest) {
 
   // 5. ADMIN DASHBOARD ROUTER (app.yourdomain.com)
   if (subdomain === 'app') {
-    targetPathname = `/admin-site${pathname}`; 
+    targetPathname = `/admin-site${pathname}`;
   }
 
   // 6. TENANT SYSTEM MANAGER ROUTER (dashboard.yourdomain.com)
   else if (subdomain === 'dashboard') {
-    targetPathname = `/tenant-manager${pathname}`; 
+    targetPathname = `/tenant-manager${pathname}`;
   }
 
   // 7. UNIFORM CLIENT GROUP HANDLER (tenant-slug.yourdomain.com)
   else {
     targetPathname = `/client-site/${subdomain}${pathname}`;
   }
-
-  // ========================================================================
+// ========================================================================
   // CORE AUTH SECURITY INTERCEPTOR LAYER
   // ========================================================================
-  const isSignInPage = pathname.startsWith('/signin') || targetPathname.includes('/signin');
-  
-  const isPrivateTenantAdmin = targetPathname.startsWith('/admin-site') && !isSignInPage;
+  const isSignInPage = pathname.startsWith('/signin') || targetPathname.includes('/signin') || pathname.startsWith('/signup');
+  // Explicitly identify the register page
+  const isRegisterPage = pathname.startsWith('/register') || targetPathname.includes('/register');
+
+  const isPrivateTenantAdmin = targetPathname.startsWith('/admin-site') && !isSignInPage && !isRegisterPage;
   const isPrivateAdmin = targetPathname.startsWith('/tenant-manager') && !isSignInPage;
 
   if (isPrivateTenantAdmin || isPrivateAdmin) {
@@ -216,9 +217,12 @@ export async function proxy(req: NextRequest) {
 
     // Route Guard A: /admin-site targets only need user_session
     if (isPrivateTenantAdmin && !sessionToken) {
+      // The logic below already handles the redirect; 
+      // by excluding isRegisterPage from isPrivateTenantAdmin above,
+      // this block won't even trigger for /register
       return NextResponse.redirect(new URL('/signin', req.url));
     }
-    
+
     // Route Guard B: /tenant-manager targets only need admin_session
     if (isPrivateAdmin && !managerSessionToken) {
       return NextResponse.redirect(new URL('/signin', req.url));
@@ -234,7 +238,7 @@ export async function proxy(req: NextRequest) {
           return NextResponse.redirect(new URL('/signin', req.url));
         }
       }
-      
+
       // Validate manager token rules on the tenant-manager dashboard
       if (isPrivateAdmin && managerSessionToken) {
         await jose.jwtVerify(managerSessionToken, JWT_SECRET);
@@ -244,11 +248,11 @@ export async function proxy(req: NextRequest) {
     } catch (err) {
       console.error("Proxy middleware session verification crash:", err);
       const failRedirect = NextResponse.redirect(new URL('/signin', req.url));
-      
+
       // Selectively scrub out whichever specific context token failed validation
       if (isPrivateTenantAdmin) failRedirect.cookies.delete("user_session");
       if (isPrivateAdmin) failRedirect.cookies.delete("admin_session");
-      
+
       return failRedirect;
     }
   }

@@ -1,7 +1,7 @@
 // @/components/client-components/Vehicles/VehicleSkeleton.tsx
-export function VehicleSkeleton() {
+export function VehicleSkeleton({animate}: {animate?: boolean}) {
   return (
-    <div className="mb-3 dark:bg-gray-500/10 bg-gray-500/3 shadow rounded-2xl animate-pulse">
+    <div className={`mb-3 dark:bg-gray-500/10 bg-gray-500/3 shadow rounded-2xl ${animate && 'animate-pulse'}`}>
       {/* Mirroring Image Area */}
       <div className="relative w-full aspect-video bg-gray-300 dark:bg-gray-700 rounded-xl rounded-b-none" />
       

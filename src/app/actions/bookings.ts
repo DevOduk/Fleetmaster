@@ -1,0 +1,47 @@
+"use server";
+import { createClient } from "@/utils/supabase/server";
+
+
+export async function fetchAllBookings() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("fleetmaster_bookings")
+    .select(`*, vehicleDetails:fleetmaster_vehicles(*)`)
+    .order("created_at", { ascending: false });
+
+  if (error) return { success: false, error: error.message };
+  return { success: true, data };
+}
+
+export async function fetchBookingDetails(id: number) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("fleetmaster_bookings")
+    .select(`*, vehicleDetails:fleetmaster_vehicles(*)`)
+    .eq("id", id)
+    .single();
+
+  return { data, error };
+}
+
+export async function updateBookingDetails(id: number, vehicleDetails) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("fleetmaster_bookings")
+    .update(vehicleDetails)
+    .eq("id", id)
+    .single();
+
+  return { data, error, success: !error };
+}
+
+export async function fetchBookingsForAdmin(tenantId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("fleetmaster_bookings")
+    .select(`*, vehicleDetails:fleetmaster_vehicles(*)`)
+    .eq("tenant_id", tenantId);
+
+  return { data, success: !error, error };
+}

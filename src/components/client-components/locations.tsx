@@ -35,6 +35,7 @@ const allYards = [
 ];
 
 export default function ViewAllLocations({ tenantData }: Tenant) {
+    console.log('tenant.yards: ',tenantData?.yards)
     return (
         <div key={tenantData?.id} datatype={tenantData?.slug} className="grid mt-5 grid-cols-2 lg:grid-cols-3 m-auto gap-3 container mb-5">
             {tenantData?.yards.length > 1 ? tenantData?.yards.slice(0, 6).map((VehicleDetails) => (

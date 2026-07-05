@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -23,13 +23,24 @@ import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined"
 import EmojiTransportationOutlinedIcon from "@mui/icons-material/EmojiTransportationOutlined"
+import { useAdminFleet } from "@/context/AdminFleetContext";
+import { useAdminBooking } from "@/context/AdminBookingContext";
 
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  pro?: boolean;
+  count?: [boolean, number?];
+  new?: boolean
+  subItems?: {
+    name: string;
+    path: string;
+    pro?: boolean;
+    new?: boolean;
+    count?: [boolean, number?];
+  }[];
 };
 
 export const navItems: NavItem[] = [
@@ -52,20 +63,22 @@ export const navItems: NavItem[] = [
     icon: <CalendarTodayOutlinedIcon />,
     name: " Bookings",
     subItems: [
-      { name: "All Bookings", path: "/bookings", pro: false },
+      { name: "All Bookings", path: "/bookings", pro: false, count: [true] },
       { name: "Calendar", path: "/calendar", pro: false },
-      { name: "Payments", path: "/payments", pro: false, new: true },
+      { name: "Payments", path: "/payments", pro: false, new: false },
     ],
   },
   {
     icon: <DirectionsCarFilledOutlinedIcon />,
     name: " Vehicles",
     path: "/vehicles",
+    count: [true]
   },
   {
     icon: <TrendingDownOutlinedIcon />,
     name: " Expenses",
     path: "/expenses",
+    pro: true,
   },
   {
     icon: <LocationOnOutlinedIcon />,
@@ -76,6 +89,7 @@ export const navItems: NavItem[] = [
     icon: <NavigationOutlinedIcon />,
     name: "Live Map",
     path: "/map",
+    pro: true,
   },
 
   // {
@@ -203,6 +217,35 @@ const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
+  const { bookings } = useAdminBooking();
+  const { vehicles } = useAdminFleet();
+
+
+  const hydratedNavItems = useMemo(() => {
+    return navItems.map((nav) => {
+      // Create a copy so we don't mutate the original exported constant
+      const updatedNav = { ...nav };
+
+      // 1. Inject count for Vehicles
+      if (updatedNav.path === "/vehicles") {
+        updatedNav.count = [true, vehicles.length];
+      }
+
+      // 2. Inject count for nested Bookings
+      if (updatedNav.subItems) {
+        updatedNav.subItems = updatedNav.subItems.map((sub) => {
+          const updatedSub = { ...sub };
+          if (updatedSub.path === "/bookings") {
+            updatedSub.count = [true, bookings.length];
+          }
+          return updatedSub;
+        });
+      }
+
+      return updatedNav;
+    });
+  }, [vehicles.length, bookings.length]); // Re-run only when counts change
+
   const renderMenuItems = (
     navItems: NavItem[],
     menuType: "main" | "others" | "account"
@@ -260,6 +303,27 @@ const AppSidebar: React.FC = () => {
                 {(isExpanded || isHovered || isMobileOpen) && (
                   <span className={`menu-item-text`}>{nav.name}</span>
                 )}
+
+                {nav.pro && (
+                  <span
+                    className={`ml-auto ${isActive('/')
+                      ? "menu-dropdown-badge-active"
+                      : "menu-dropdown-badge-inactive"
+                      } menu-dropdown-badge `}
+                  >
+                    pro
+                  </span>
+                )}
+                {nav.count?.[0] && (
+                  <span
+                    className={`ml-auto ${isActive('/')
+                      ? "menu-dropdown-badge-active"
+                      : "menu-dropdown-badge-inactive"
+                      } menu-dropdown-badge `}
+                  >
+                    {nav.count?.[1] || 0}
+                  </span>
+                )}
               </Link>
             )
           )}
@@ -308,6 +372,17 @@ const AppSidebar: React.FC = () => {
                             pro
                           </span>
                         )}
+
+                        {subItem.count?.[0] && (
+                          <span
+                            className={`ml-auto ${isActive('/bookings')
+                              ? "menu-dropdown-badge-active"
+                              : "menu-dropdown-badge-inactive"
+                              } menu-dropdown-badge `}
+                          >
+                            {subItem.count?.[1] || 0}
+                          </span>
+                        )}
                       </span>
                     </Link>
                   </li>
@@ -336,7 +411,7 @@ const AppSidebar: React.FC = () => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
     ["main", "others", "account"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : menuType === "others" ? othersItems : accountItems;
+      const items = menuType === "main" ? hydratedNavItems : menuType === "others" ? othersItems : accountItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
@@ -446,7 +521,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(hydratedNavItems, "main")}
             </div>
 
             <div className="">

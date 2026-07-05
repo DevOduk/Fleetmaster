@@ -1,33 +1,33 @@
 "use client";
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
-import { useTenant } from "./TenantContext";
-import { fetchVehiclesForTenant } from "@/app/actions/vehicles";
+import { useUser } from "./UserContext";
+import { fetchVehiclesForAdmin } from "@/app/actions/vehicles";
 // import { useBooking } from "./BookingContext";
 // import dayjs from "dayjs";
 
 // Define the shape of our context
-interface FleetContextType {
+interface AdminFleetContextType {
   vehicles: any[]; // Replace 'any' with your Vehicle interface
   loading: boolean;
   setVehicles: React.Dispatch<React.SetStateAction<any[]>>;
   updateVehicle: (id: number, updatedVehicle: any) => void;
 }
 
-const FleetContext = createContext<FleetContextType | undefined>(undefined);
+const AdminFleetContext = createContext<AdminFleetContextType | undefined>(undefined);
 
-export const FleetProvider = ({ children }: { children: ReactNode }) => {
+export const AdminFleetProvider = ({ children }: { children: ReactNode }) => {
+  const { profile: adminProfile } = useUser();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { tenant } = useTenant();
-
+  // const { bookings } = useBooking();
 
 
   useEffect(() => {
-    if (!tenant) return;
+    if(!adminProfile) return;
 
     async function fetchAllVehicles() {
       try {
-        const response = await fetchVehiclesForTenant(tenant?.id);
+        const response = await fetchVehiclesForAdmin(adminProfile?.tenant_id);
 
         if (response.success) {
           setVehicles(response.data);
@@ -42,8 +42,7 @@ export const FleetProvider = ({ children }: { children: ReactNode }) => {
     }
 
     fetchAllVehicles();
-  }, [tenant]);
-
+  }, [adminProfile]);
 
   // Helper function to update a single vehicle by ID
   const updateVehicle = (id: number, updatedVehicle: any) => {
@@ -54,15 +53,15 @@ export const FleetProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <FleetContext.Provider value={{ vehicles, loading, setVehicles, updateVehicle }}>
+    <AdminFleetContext.Provider value={{ vehicles, loading, setVehicles, updateVehicle }}>
       {children}
-    </FleetContext.Provider>
+    </AdminFleetContext.Provider>
   );
 };
 
 // Custom hook for easy access
-export const useFleet = () => {
-  const context = useContext(FleetContext);
-  if (!context) throw new Error("useFleet must be used within a FleetProvider");
+export const useAdminFleet = () => {
+  const context = useContext(AdminFleetContext);
+  if (!context) throw new Error("useAdminFleet must be used within a AdminFleetProvider");
   return context;
 };
