@@ -13,6 +13,7 @@ import { useFleet } from '@/context/FleetContext';
 import { useRouter } from 'next/navigation';
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined"
 import dayjs from 'dayjs';
+import { DefaultCategories } from '../categories';
 
 
 interface SearchParams {
@@ -58,12 +59,9 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
   }
 
   const allYards = tenant.yards.map(y => y.title);
-  const fallBackCategories = [
-    'Economy', 'Hatchback', 'SUV'
-  ];
 
 
-  const categories = [...new Set([...allCategories, ...fallBackCategories])];
+  const categories = [...new Set([...allCategories, ...DefaultCategories])];
   const makes = [...new Set(allMakes)];
 
   const searchQuery = new URLSearchParams(searchParams as any).toString();

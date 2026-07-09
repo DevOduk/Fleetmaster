@@ -33,6 +33,7 @@ import { useModal } from '@/hooks/useModal';
 import { ArrowRightIcon } from '@/icons';
 import Alert from '@/components/ui/alert/Alert';
 import { createPayment } from '@/app/actions/payments';
+import DeliveryBanner from '@/components/client-components/DeliveryBanner';
 
 
 dayjs.extend(isBetween);
@@ -110,7 +111,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
 
     // Prefer the secure payload parameters, fallback to finding it inside the local collections arrays
     const VehicleDetails = decodedData?.VehicleDetails || vehicles.find(v => v.id === parseInt(vehicleID));
-    const [pickupOption, setPickupOption] = useState(VehicleDetails?.location || ''); // 'default' | 'nairobi' | 'airport' | 'outside'
+    const [pickupOption, setPickupOption] = useState(VehicleDetails?.location || ''); // 'default' | 'nairobi' | 'airport' | 'Outside Major Yards'
 
     // Date Parsing Logic
     const startDay = dayjs(start);
@@ -130,9 +131,10 @@ const BookingPage = ({ params }: VehiclePageProps) => {
     const baseRateTotal = totalDays * VehicleDetails.daily_rate;
 
     const getPickupFee = () => {
-        if (pickupOption === 'nairobi') return 1000;
-        if (pickupOption === 'airport') return 1500;
-        if (pickupOption === 'outside') return 2000;
+        if (pickupOption === 'Nairobi') return 1000;
+        if (pickupOption === 'Airport (JKIA - NBO)') return 1500;
+        if (pickupOption === 'Airport (Wilson Airport - WIL)') return 1500;
+        if (pickupOption === 'Outside Major Yards') return 2000;
         return 0; // default branch
     };
     const getDropOffFee = () => {
@@ -520,14 +522,8 @@ const BookingPage = ({ params }: VehiclePageProps) => {
     return (
         <main className="p-6 container m-auto">
             {/* Dynamic Header Promo Banner */}
-            <div className="col-span-full bg-gray-100 dark:bg-gray-800 items-center flex gap-4 border border-gray-200 dark:border-gray-700 rounded-xl mb-6 p-4">
-                <img className="w-32 object-contain hidden md:block" src={'https://indigocarhire.co.uk/wp-content/uploads/header_22-768x281.png'} alt="Delivery Banner" />
-                <div>
-                    <h5 className="text-gray-900 dark:text-white font-semibold">Flexible Logistics Available</h5>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">Choose between picking up at our station or request seamless localized direct doorstep delivery services.</p>
-                    <p className="text-brand-500 font-medium text-xs mt-1">📍 1,000 Ksh Within Nairobi | 1,500 Ksh Airport Dropoffs | 2,000 Ksh Outside Nairobi (&lt;100km)</p>
-                </div>
-            </div>
+            <DeliveryBanner />
+
             {
                 paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='                                    Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.' />
             }
@@ -605,20 +601,20 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                             <FormControlLabel value={VehicleDetails?.location} control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Station Handover ({VehicleDetails?.location})</span>} />
                                             <span className="text-xs font-semibold text-gray-500">Free</span>
                                         </div>
-                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'nairobi' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
-                                            <FormControlLabel value="nairobi" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Door Delivery within Nairobi</span>} />
+                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'Nairobi' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
+                                            <FormControlLabel value="Nairobi" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Door Delivery within Nairobib (Work, Home, Office)</span>} />
                                             <span className="text-xs font-semibold text-brand-500">+ Ksh 1,000</span>
                                         </div>
-                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'JKIA - NBO' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
-                                            <FormControlLabel value="JKIA - NBO" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Airport Dropoff (JKIA - NBO)</span>} />
+                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'Airport (JKIA - NBO)' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
+                                            <FormControlLabel value="Airport (JKIA - NBO)" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Airport Dropoff (JKIA - NBO)</span>} />
                                             <span className="text-xs font-semibold text-brand-500">+ Ksh 1,500</span>
                                         </div>
-                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'Wilson Airport - WIL' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
-                                            <FormControlLabel value="Wilson Airport - WIL" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Airport Dropoff (JKIA - NBO, Wilson Airport - WIL)</span>} />
+                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'Airport (Wilson Airport - WIL)' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
+                                            <FormControlLabel value="Airport (Wilson Airport - WIL)" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Airport Dropoff (JKIA - NBO, Wilson Airport - WIL)</span>} />
                                             <span className="text-xs font-semibold text-brand-500">+ Ksh 1,500</span>
                                         </div>
-                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'outside' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
-                                            <FormControlLabel value="outside" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Outside Major Yards (Distances max 100km out)</span>} />
+                                        <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'Outside Major Yards' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
+                                            <FormControlLabel value="Outside Major Yards" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Outside Major Yards (Distances max 100km out)</span>} />
                                             <span className="text-xs font-semibold text-brand-500">+ Ksh 2,000</span>
                                         </div>
                                     </RadioGroup>
@@ -640,29 +636,39 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                             </div>
                         </div>
 
-                        list of our yards
                         {
-                            dropoffOption === 'elsewhere' && (
-                                <>other yards you can return to
+                            dropoffOption === 'elsewhere' ? (
+                                <>
+                                    <p className='text-gray-500 text-sm mb-3 mt-3'>Other yards you can return to:</p>
                                     {
                                         tenant ? (
                                             <FormControl component="fieldset" className="w-full">
                                                 <RadioGroup value={dropoffLocation} onChange={(e) => setDropoffLocation(e.target.value)} className="space-y-2">
                                                     {
-                                                        tenant?.yards.filter(y => y.title !== VehicleDetails?.location).map((y) => (
+                                                        tenant?.yards.filter(y => y.title !== VehicleDetails?.location).length > 0 ? tenant?.yards.filter(y => y.title !== VehicleDetails?.location).map((y) => (
                                                             <div key={y.title} className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${dropoffLocation === y.title ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
                                                                 <FormControlLabel value={y.title} control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">{y.title}</span>} />
                                                                 <span className="text-xs font-semibold text-brand-500">+ Ksh 200</span>
                                                             </div>
-                                                        ))
+                                                        )) :
+                                                            <p className='text-red-500 mt-4 text-sm mb-3 nt-3 border-red-500 text-center ring-1 ring-red-500 flex-1 flex items-center justify-center border rounded-lg px-3 py-7 bg-white dark:bg-gray-900 '>
+                                                                No other yards found!
+                                                            </p>
                                                     }
                                                 </RadioGroup>
                                             </FormControl>
-                                        ) : <div>No other locations!</div>
+                                        ) :
+                                            <p className='text-red-500 mt-4 text-sm mb-3 nt-3 border-red-500 text-center ring-1 ring-red-500 flex-1 flex items-center justify-center border rounded-lg px-3 py-7 bg-white dark:bg-gray-900 '>
+                                                No other locations!
+                                            </p>
                                     }
 
                                 </>
-                            )
+                            ) : <>
+                                <p className='text-gray-500 dark:text-white mt-4 text-sm mb-3 nt-3 border-green-500 ring-1 ring-green-500 flex-1 flex items-center border rounded-lg px-3 py-3 bg-white dark:bg-gray-900 '>
+                                    Dropoff at {pickupOption}
+                                </p>
+                            </>
                         }
 
                         {/* Explicit Modal Checkpoint Anchor */}

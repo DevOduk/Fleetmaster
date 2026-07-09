@@ -18,7 +18,13 @@ export default function HeroSlider() {
     const [resetToken, setResetToken] = useState(0);
 
 
-    const allImageUrls = vehicles.length > 0 ? vehicles.map(v => v?.image_url).filter(Boolean) : defaultVehicleImages
+    const allImageUrls = vehicles.length > 3 ?
+        vehicles.map(v => v?.image_url).filter(Boolean) :
+        vehicles.length === 0 ? defaultVehicleImages :
+            [
+                ...vehicles.map(v => v?.image_url).filter(Boolean),
+                ...defaultVehicleImages
+            ]
 
     const triggerUserInteraction = () => {
         setResetToken((prev) => prev + 1);

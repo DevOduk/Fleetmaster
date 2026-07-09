@@ -133,7 +133,7 @@ export default function VehiclesTable() {
                       <TableCell className="px-5 py-4 sm:px-6 text-start">
                         <div className="flex items-center gap-3">
                           <img
-                            className="w-20 bg-white object-fit-cover object-center"
+                            className="w-20 bg-white rounded object-fit-cover object-center"
                             style={{ objectFit: 'cover', objectPosition: 'center' }}
                             // src={vehicle.image}
                             src={vehicle.image_url}
@@ -159,7 +159,7 @@ export default function VehiclesTable() {
                         {vehicle.next_service_due}
                       </TableCell>
                       <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                        {vehicle.daily_rate} Ksh.
+                        {vehicle.daily_rate?.toLocaleString()} Ksh.
                       </TableCell>
                       <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                         {vehicle.min_rental_days} {vehicle.min_rental_days > 1 ? 'Days' : 'Day'}

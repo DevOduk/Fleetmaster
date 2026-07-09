@@ -47,9 +47,11 @@ export default function UserDocumentsCard() {
             </p>
             <p className="text-sm flex items-center gap-3 justify-between font-medium text-gray-800 dark:text-white/90">
               <span className="flex items-center gap-2">
-                <DownloadIcon style={{ width: 28, height: 28 }} />{profile?.national_id_number || "Loading ..."}
+                <DownloadIcon style={{ width: 28, height: 28 }} />{profile?.national_id_number || "Not uploaded"}
               </span>
-              <TaskAltOutlinedIcon className="text-green-500 mt-1" />
+              {
+                profile.verification_status?.national_id ? <TaskAltOutlinedIcon className="text-green-500 mt-1" /> : <CancelOutlinedIcon className="text-red-500 mt-1" />
+              }
             </p>
           </div>
 
@@ -59,10 +61,12 @@ export default function UserDocumentsCard() {
             </p>
             <p className="text-sm flex items-center gap-3 justify-between font-medium text-gray-800 dark:text-white/90">
               <span className="flex items-center gap-2">
-                <DownloadIcon style={{ width: 28, height: 28 }} />{profile?.dl_number || "Loading ..."}
+                <DownloadIcon style={{ width: 28, height: 28 }} />{profile?.dl_number || "Not uploaded"}
               </span>
-              <CancelOutlinedIcon className="text-red-500 mt-1" />
 
+              {
+                profile.verification_status?.driving_license ? <TaskAltOutlinedIcon className="text-green-500 mt-1" /> : <CancelOutlinedIcon className="text-red-500 mt-1" />
+              }
             </p>
           </div>
 
@@ -73,9 +77,12 @@ export default function UserDocumentsCard() {
             <p className="text-sm flex items-center gap-3 justify-between font-medium text-gray-800 dark:text-white/90">
               <span className="flex items-center gap-2">
                 <DownloadIcon style={{ width: 28, height: 28 }} />
-                {profile?.kra_pin_number || "Loading ..."}
+                {profile?.kra_pin_number || "Not uploaded"}
               </span>
-              <TaskAltOutlinedIcon className="text-green-500 mt-1" />
+
+              {
+                profile.verification_status?.kra_pin ? <TaskAltOutlinedIcon className="text-green-500 mt-1" /> : <CancelOutlinedIcon className="text-red-500 mt-1" />
+              }
             </p>
           </div>
         </div>

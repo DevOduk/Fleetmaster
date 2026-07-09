@@ -5,7 +5,8 @@ export async function getAllTenants() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('fleetmaster_tenants')
-    .select('id, slug, name, phone, about, email, country, county, yards, timezone, tenant_logo, subscription_status, created_at, expiry_date');
+    .select('id, slug, name, phone, about, email, country, county, yards, timezone, tenant_logo, subscription_status, created_at, expiry_date')
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.error("Supabase Error:", error.message);

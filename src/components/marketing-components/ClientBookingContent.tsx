@@ -11,33 +11,34 @@ import { useUser } from "@/context/UserContext";
 import { createClient } from "@/utils/supabase/client";
 import Badge from "../ui/badge/Badge";
 import Link from "next/link";
+import { fetchBookingsForClient } from "@/app/actions/bookings";
+import { CircularProgress } from "@mui/material";
+import SearchOffOutlinedIcon from "@mui/icons-material/SearchOffOutlined"
+
+
 
 interface TermSection {
   id: string;
   title: string;
   icon: React.ComponentType<{ className?: string }>;
 }
-interface InitialBookings {
-  initialBookings?: any[];
-}
 
-function ClientBookingContent({ initialBookings }: InitialBookings) {
+function ClientBookingContent() {
   const { profile, loading } = useUser();
-  const [bookings, setBookings] = useState<any[]>(initialBookings || []);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+  const [bookings, setBookings] = useState<any[]>([]);
   const [activeSection, setActiveSection] = useState<string>("All");
   const supabase = createClient();
 
   useEffect(() => {
     const fetchUserBookings = async () => {
+      setLoadingBookings(true);
       if (profile?.id) {
-        const { data, error } = await supabase
-          .from('fleetmaster_bookings')
-          .select(`*, vehicleDetails:fleetmaster_vehicles!inner(*)`)
-          .eq('user_id', profile.id);
-
-        if (!error && data) {
-          setBookings(data as any[]);
+        const res = await fetchBookingsForClient(profile?.id);
+        if (res.success) {
+          setBookings(res.data as any[]);
         }
+        setLoadingBookings(false);
       }
     };
 
@@ -88,10 +89,10 @@ function ClientBookingContent({ initialBookings }: InitialBookings) {
                     }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`!w-4 !h-4 ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500"}`} />
+                    <Icon className={`w-4! h-4! ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500"}`} />
                     <span>{section.title}</span>
                   </div>
-                  <ChevronRightIcon className={`!w-4 !h-4 opacity-70 transition-transform ${isActive ? "translate-x-0.5" : ""}`} />
+                  <ChevronRightIcon className={`w-4! h-4! opacity-70 transition-transform ${isActive ? "translate-x-0.5" : ""}`} />
                 </button>
               );
             })}
@@ -101,15 +102,16 @@ function ClientBookingContent({ initialBookings }: InitialBookings) {
 
       <div className="space-y-10 text-sm leading-7 text-slate-700 dark:text-slate-300 col-span-12 lg:col-span-8">
         <section id="acceptance" className="space-y-4 scroll-mt-12">
-          {loading ?
-            <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl text-[11px] text-slate-400 uppercase tracking-widest">
+          {(loading || loadingBookings) ?
+            <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl text-[11px] flex flex-col items-center justify-center gap-3 text-brand-400 uppercase tracking-widest h-[70vh]">
+              <CircularProgress color="inherit" size={20} />
               Preparing your profile ...
             </div> : filteredBookings.length > 0 ? (
               filteredBookings.map((b) => (
                 <Link href={'/bookings/' + b.id} className="border border-slate-100 dark:border-slate-800 p-4 dark:hover:bg-gray-800 hover:bg-gray-200 rounded-2xl flex gap-6 bg-white dark:bg-slate-900/20 items-center transition-all hover:border-amber-500/30"
                   key={b.id}
                 >
-                  <div className="w-45 flex-shrink-0">
+                  <div className="w-45 shrink-0">
                     <img
                       className="w-full aspect-video object-cover rounded-xl shadow-sm"
                       src={b.vehicleDetails.image_url}
@@ -142,7 +144,8 @@ function ClientBookingContent({ initialBookings }: InitialBookings) {
                 </Link>
               ))
             ) : (
-              <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl text-[11px] text-slate-400 uppercase tracking-widest">
+              <div className="p-8 text-center border border-dashed border-red-200 rounded-2xl text-[11px] flex flex-col items-center justify-center gap-3 text-red-400 uppercase tracking-widest h-[70vh]">
+                <SearchOffOutlinedIcon fontSize={'large'} />
                 No bookings found in this category!
               </div>
             )}

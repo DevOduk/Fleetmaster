@@ -53,7 +53,19 @@ export async function fetchBookingsForTenant(tenantId: string) {
   const { data, error } = await supabase
     .from("fleetmaster_bookings")
     .select(`*, vehicleDetails:fleetmaster_vehicles(*)`)
-    .eq("tenant_id", tenantId);
+    .eq("tenant_id", tenantId)
+    .order('created_at', { ascending: false });
+
+  return { data, success: !error, error };
+}
+
+export async function fetchBookingsForClient(userId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('fleetmaster_bookings')
+    .select(`*, vehicleDetails:fleetmaster_vehicles!inner(*)`)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
 
   return { data, success: !error, error };
 }

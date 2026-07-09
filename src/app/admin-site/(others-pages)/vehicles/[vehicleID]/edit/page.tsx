@@ -393,11 +393,11 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
                 <Input
                   id='license_plate'
                   className='mt-3' step={100}
-                  value={VehicleDetails?.license_plate}
+                  value={VehicleDetails?.license_plate.toUpperCase()}
                   type='text'
                   onChange={(e) => setVehicleDetails((prev: any) => ({
                     ...prev,
-                    license_plate: (e.target.value)
+                    license_plate: (e.target.value).toUpperCase()
                   }))}
                 />
               </div>
@@ -407,11 +407,11 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
                 <Input
                   id='vin'
                   className='mt-3' step={100}
-                  value={VehicleDetails?.vin}
+                  value={VehicleDetails?.vin.toUpperCase()}
                   type='text'
                   onChange={(e) => setVehicleDetails((prev: any) => ({
                     ...prev,
-                    vin: (e.target.value)
+                    vin: (e.target.value).toUpperCase()
                   }))}
                 />
               </div>

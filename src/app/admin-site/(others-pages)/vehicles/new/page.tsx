@@ -35,42 +35,42 @@ const NewVehiclePage = ({ params }: VehiclePageProps) => {
   const [disableButton, setDisableButton] = useState(false);
   const [VehicleDetails, setVehicleDetails] = useState<any>({ driver_type: 'Self Drive', transmission: 'Automatic' });
 
-const validateVehicleDetails = (details) => {
-  const fields = [
-    { key: 'make', label: 'Make' },
-    { key: 'model', label: 'Model' },
-    { key: 'year', label: 'Year', validate: (v) => v > 0 },
-    { key: 'license_plate', label: 'License Plate' },
-    { key: 'category', label: 'Category' },
-    { key: 'description', label: 'Description' },
-    { key: 'transmission', label: 'Transmission' },
-    { key: 'fuel_type', label: 'Fuel Type' },
-    { key: 'driver_type', label: 'Driver Type' },
-    { key: 'location', label: 'Location' },
-    { key: 'next_service_due', label: 'Service Due Date' },
-    { key: 'seats', label: 'Seats', validate: (v) => v > 0 },
-    { key: 'image_url', label: 'Image' },
-    { key: 'body_type', label: 'Body Type' }
-  ];
+  const validateVehicleDetails = (details) => {
+    const fields = [
+      { key: 'make', label: 'Make' },
+      { key: 'model', label: 'Model' },
+      { key: 'year', label: 'Year', validate: (v) => v > 0 },
+      { key: 'license_plate', label: 'License Plate' },
+      { key: 'category', label: 'Category' },
+      { key: 'description', label: 'Description' },
+      { key: 'transmission', label: 'Transmission' },
+      { key: 'fuel_type', label: 'Fuel Type' },
+      { key: 'driver_type', label: 'Driver Type' },
+      { key: 'location', label: 'Location' },
+      { key: 'next_service_due', label: 'Service Due Date' },
+      { key: 'seats', label: 'Seats', validate: (v) => v > 0 },
+      { key: 'image_url', label: 'Image' },
+      { key: 'body_type', label: 'Body Type' }
+    ];
 
-  for (const field of fields) {
-    const value = details?.[field.key];
-    const isInvalid = field.validate ? !field.validate(value) : !value?.toString().trim();
-    
-    if (isInvalid) {
-      showToast(`${field.label} is missing or invalid!`, 'error');
-      return false;
+    for (const field of fields) {
+      const value = details?.[field.key];
+      const isInvalid = field.validate ? !field.validate(value) : !value?.toString().trim();
+
+      if (isInvalid) {
+        showToast(`${field.label} is missing or invalid!`, 'error');
+        return false;
+      }
     }
-  }
-  return true;
-};
+    return true;
+  };
 
   const breadcrumbItems = [
     { label: "Vehicles", href: "/vehicles" },
   ];
 
 
-  const updateVehicles = async () => {
+  const handleCreateVehicle = async () => {
     // if any of these key items are missing return and showerror toast tenant_id, make, model, year, license_place
     if (!validateVehicleDetails(VehicleDetails)) return;
 
@@ -78,23 +78,16 @@ const validateVehicleDetails = (details) => {
     setBackDrop(true);
 
 
-    const res = await createVehicleForTenant({...VehicleDetails, tenant_id: profile?.tenant_id, owner: profile?.fleetmaster_tenants?.name});
+    const res = await createVehicleForTenant({ ...VehicleDetails, tenant_id: profile?.tenant_id, owner: profile?.fleetmaster_tenants?.name });
 
     if (res.success) {
-      // Use .map to replace ONLY the vehicle that matches the ID
-      setVehicles((prevVehicles) =>
-        prevVehicles.map((v) =>
-          v.id === parseInt(vehicleID) ? { ...VehicleDetails } : v
-        )
-      );
-
-      setVehicleDetails(VehicleDetails);
+      setVehicles((prevVehicles) => [...prevVehicles, res.data]);
 
       setTimeout(() => {
         showToast('New Vehicle has been created successfully', 'success')
         setDisableButton(false);
         setBackDrop(false);
-        setVehicleDetails(null)
+        setVehicleDetails(null);
       }, 3000);
     } else {
       setTimeout(() => {
@@ -113,7 +106,7 @@ const validateVehicleDetails = (details) => {
       return;
     }
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-console.log(VehicleDetails)
+    console.log(VehicleDetails)
     // Validate file type
     if (!allowedTypes.includes(file.type)) {
       showToast('Please select a valid image file (PNG, WEBP, JPEG)!', 'error');
@@ -284,7 +277,7 @@ console.log(VehicleDetails)
                   <option value="Electric Vehicle (EV)" />
                 </datalist>
               </div>
-              
+
               <div className='p-2'>
                 <p className="text-gray-400">Body Type</p>
                 <Input
@@ -314,7 +307,7 @@ console.log(VehicleDetails)
                 <p className="text-gray-400">Fuel Type</p>
                 <div className="font-sm mt-2 mb-1 dark:text-white flex flex-wrap gap-3">
                   {
-                    ["Petrol/Gasoline" , "Diesel" , "Hybrid" , "Electric" , "Petrol/Hybrid"].map((t) => <span className={`py-2 text-sm px-4 rounded-lg cursor-pointer ${t === VehicleDetails?.fuel_type ? 'bg-brand-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
+                    ["Petrol/Gasoline", "Diesel", "Hybrid", "Electric", "Petrol/Hybrid"].map((t) => <span className={`py-2 text-sm px-4 rounded-lg cursor-pointer ${t === VehicleDetails?.fuel_type ? 'bg-brand-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
                       onClick={() => setVehicleDetails((prev: any) => ({
                         ...prev,
                         fuel_type: t
@@ -410,11 +403,11 @@ console.log(VehicleDetails)
                   id='license_plate'
                   className='mt-3' step={100}
                   placeholder='e.g KAA 123A'
-                  value={VehicleDetails?.license_plate}
+                  value={VehicleDetails?.license_plate?.toUpperCase()}
                   type='text'
                   onChange={(e) => setVehicleDetails((prev: any) => ({
                     ...prev,
-                    license_plate: (e.target.value)
+                    license_plate: (e.target.value)?.toUpperCase()
                   }))}
                 />
               </div>
@@ -425,11 +418,11 @@ console.log(VehicleDetails)
                   id='vin'
                   className='mt-3' step={100}
                   placeholder='e.g 1HGCR2F8XHA000001'
-                  value={VehicleDetails?.vin}
+                  value={VehicleDetails?.vin?.toUpperCase()}
                   type='text'
                   onChange={(e) => setVehicleDetails((prev: any) => ({
                     ...prev,
-                    vin: (e.target.value)
+                    vin: (e.target.value)?.toUpperCase()
                   }))}
                 />
               </div>
@@ -494,7 +487,7 @@ console.log(VehicleDetails)
                     min_rental_days: Number(e.target.value)
                   }))}
                 />
-                </div>
+              </div>
 
               <div className='p-2 hidden'>
                 <p className="text-gray-400">Tracking Provider</p>
@@ -520,7 +513,7 @@ console.log(VehicleDetails)
                   }))}
                   className="dark:bg-dark-900 mt-3"
                 />
-                </div>
+              </div>
             </div>
 
             <div className={'mt-3 ' + (!VehicleDetails?.tracker?.provider?.trim() ? 'hidden' : 'block')}>
@@ -540,7 +533,7 @@ console.log(VehicleDetails)
                 }))}
               />
             </div>
-            
+
             <div className='p-2'>
               <p className="text-gray-400">Description</p>
               <TextArea value={VehicleDetails?.description} className='mt-3'
@@ -550,7 +543,7 @@ console.log(VehicleDetails)
                 }))} rows={4} />
             </div>
 
-            <Button onClick={updateVehicles} disabled={disableButton} className='w-full mt-5' size='sm'>Update Vehicle</Button>
+            <Button onClick={handleCreateVehicle} disabled={disableButton} className='w-full mt-5' size='sm'>Update Vehicle</Button>
           </div>
         </div>
       </div>

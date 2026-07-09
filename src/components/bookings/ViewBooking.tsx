@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
-import { CalenderIcon, ChevronDownIcon, CloseIcon, CloseLineIcon, DownloadIcon, PencilIcon, PlusIcon, TimeIcon } from "@/icons";
+import { CalenderIcon, DownloadIcon, PencilIcon, PlusIcon, TimeIcon } from "@/icons";
 import Link from "next/link";
 import { CircularProgress } from "@mui/material";
 import Badge from "../ui/badge/Badge";
@@ -206,7 +206,7 @@ useEffect(() => {
                 />
               </div>
             </div>
-            <div className="mt-6">
+            {profile.role !== 'Client' && <div className="mt-6">
               <label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
                 Booking Priority
               </label>
@@ -243,6 +243,7 @@ useEffect(() => {
                 ))}
               </div>
             </div>
+            }
 
             <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2 mt-6">
               <div>

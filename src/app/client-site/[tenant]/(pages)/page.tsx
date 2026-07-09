@@ -41,10 +41,12 @@ export default function ClientHomePage() {
           {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}
           <p className="text-sm mb-4 text-gray-500 dark:text-gray-400 max-w-175">
             {
-              tenantData?.description ? tenantData?.description : <>            At {tenantData?.name}, we are passionate about providing exceptional car rental services that exceed our customers' expectations. With a commitment to quality, reliability, and customer satisfaction, we strive to be the preferred choice for all your car rental needs. Our extensive fleet of well-maintained vehicles, competitive pricing, and personalized service make us the go-to destination for travelers seeking convenience and comfort on the road.</>
+              tenantData?.about ? tenantData?.about : <>
+                At {tenantData?.name}, we are passionate about providing exceptional car rental services that exceed our customers' expectations. With a commitment to quality, reliability, and customer satisfaction, we strive to be the preferred choice for all your car rental needs.
+              </>
             }
           </p>
-          
+
           <Button variant="primary" size="sm" className="px-8! py-2! ml-auto">Read More <ChevronRightIcon /> </Button>
         </div>
 

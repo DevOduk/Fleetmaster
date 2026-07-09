@@ -29,7 +29,7 @@ export default function ViewAllSnapshots({ tenant }: Tenant) {
                 Array.from({ length: 8 }).map((_, index) => (
                     <VehicleSkeleton animate key={`skeleton-${index}`} />
                 ))
-            ) : vehicles.length > 1 ? vehicles.slice(0, 12).map((VehicleDetails) => (
+            ) : vehicles.length > 0 ? vehicles.slice(0, 12).map((VehicleDetails) => (
                 <VehicleItem isBooked={false} key={VehicleDetails.id} VehicleDetails={VehicleDetails} filters={resetFiltersStates} />
             )) : (
                 <>

@@ -41,7 +41,8 @@ export async function fetchExpensesForAdmin(tenantId: string) {
   const { data, error } = await supabase
     .from("fleetmaster_expenses")
     .select(`*`)
-    .eq("tenant_id", tenantId);
+    .eq("tenant_id", tenantId)
+    .order('created_at', { ascending: false });
 
   return { data, success: !error, error };
 }

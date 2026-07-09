@@ -19,7 +19,6 @@ export const AdminFleetProvider = ({ children }: { children: ReactNode }) => {
   const { profile: adminProfile } = useUser();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
-  // const { bookings } = useBooking();
 
 
   useEffect(() => {

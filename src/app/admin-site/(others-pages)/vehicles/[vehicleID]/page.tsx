@@ -85,7 +85,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
 
             <div className='relative'>
               <Box className='flex gap-2' sx={{ position: 'absolute', top: 10, right: 10 }}>
-                <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<LocalGasStationOutlinedIcon fontSize='small' />} label={VehicleDetails.fuelType} />
+                <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<LocalGasStationOutlinedIcon fontSize='small' />} label={VehicleDetails.fuel_type} />
                 <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<PeopleAltOutlinedIcon fontSize='small' />} label={VehicleDetails.seats + ' Seats'} />
 
               </Box>
@@ -121,7 +121,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
               </div>
               <div>
                 <p className="text-gray-400">License Plate</p>
-                <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.license_plate}</p>
+                <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.license_plate.toUpperCase()}</p>
               </div>
               <div>
                 <p className="text-gray-400">VIN</p>

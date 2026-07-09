@@ -98,7 +98,10 @@ export default function AboutPageContent() {
                     <h2 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white">Welcome to {tenantData?.name || "CarHire"}</h2>
                     {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}
                     <p className="text-sm text-gray-500 dark:text-gray-400 max-w-175">
-                        At {tenantData?.name}, we are passionate about providing exceptional car rental services that exceed our customers' expectations. With a commitment to quality, reliability, and customer satisfaction, we strive to be the preferred choice for all your car rental needs. Our extensive fleet of well-maintained vehicles, competitive pricing, and personalized service make us the go-to destination for travelers seeking convenience and comfort on the road.
+                        {tenantData.description?.trim() ? tenantData.description : <>
+                            At {tenantData?.name}, we are passionate about providing exceptional car rental services that exceed our customers' expectations. With a commitment to quality, reliability, and customer satisfaction, we strive to be the preferred choice for all your car rental needs. Our extensive fleet of well-maintained vehicles, competitive pricing, and personalized service make us the go-to destination for travelers seeking convenience and comfort on the road.
+                        </>
+                        }
                     </p>
 
                     <div className="flex gap-3 mt-5">
