@@ -51,7 +51,7 @@ export default function GlobalNotFound() {
             onClick={() => router.refresh()} endIcon={<ReplayOutlinedIcon fontSize="small" />}
             className="font-small text-sm w-full mb-5"
           >
-            Try that Again
+            Retry Connection
           </Button>
 
         {/* Button Group */}
@@ -60,7 +60,7 @@ export default function GlobalNotFound() {
             href="/"
             className="inline-flex w-full sm:w-auto items-center justify-center px-8 py-3 text-sm font-semibold text-white transition-all bg-blue-600 rounded-xl hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 active:scale-95"
           >
-            Return to Console
+            Return to Earth
           </Link>
           <Button variant="outline" size="sm"
             onClick={() => router.back()} startIcon={<ArrowRightIcon className='rotate-180' />}

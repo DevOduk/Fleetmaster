@@ -5,7 +5,7 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
+import { useSidebar } from "@/context/SidebarContext";
 import { SettingsProvider } from '@/context/SettingsContext';
 
 import AppHeader from "@/layout/(dashboard-layout)/AppHeader";
@@ -14,7 +14,7 @@ import AppFooter from "@/layout/(admin-layout)/AppFooter";
 import AppSidebar from "@/layout/(dashboard-layout)/AppSidebar";
 import { AdminProvider, useAdmin } from "@/context/AdminContext";
 import { UserProvider } from "@/context/UserContext";
-import { FleetProvider } from "@/context/FleetContext";
+import { ManagerFleetProvider } from "@/context/ManagerFleetContext";
 
 // 1. THE INNER COMPONENT: Safe to call hooks because its parent provides context
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
@@ -22,7 +22,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   const { adminProfile, loading } = useAdmin(); // 🌟 Safe to call now!
 
-  
+
   useEffect(() => {
     if (loading) return;
     if (!adminProfile) {
@@ -73,9 +73,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <AdminProvider>
         <AdminProvider>
           <UserProvider>
-            <FleetProvider>
+            <ManagerFleetProvider>
               <AdminLayoutContent>{children}</AdminLayoutContent>
-            </FleetProvider>
+            </ManagerFleetProvider>
           </UserProvider>
         </AdminProvider>
       </AdminProvider>

@@ -53,10 +53,10 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
   const { tenant } = useTenant();
   const { bookings } = useBooking();
 
-const fallbackStart = dayjs().add(1, 'day').format('YYYY-MM-DD[T]HH:mm'); 
+  const fallbackStart = dayjs().add(1, 'day').format('YYYY-MM-DD[T]HH:mm');
 
-// 2 days after tomorrow (3 days total) at the exact same hour and minute
-const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
+  // 2 days after tomorrow (3 days total) at the exact same hour and minute
+  const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
 
   const [start, setStart] = useState(searchParams.get('start') ? searchParams.get('start') : fallbackStart);
   const [end, setEnd] = useState(searchParams.get('end') ? searchParams.get('end') : fallbackEnd);
@@ -64,7 +64,6 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
 
   const vehicleID = resolvedParams.vehicleID;
   const VehicleDetails = vehicles.find(v => v.id === parseInt(vehicleID));
-  const allVehicleBookings = bookings?.filter((booking) => booking.vehicleId === parseInt(vehicleID)) || [];
 
 
   // Calculate all booked date strings for this vehicle
@@ -72,7 +71,7 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
     if (loading) return;
 
     const vehicleBookings = bookings?.filter((b) => b.vehicleId === Number(vehicleID));
-    const vehicleBookedDates = vehicleBookings.filter((b) => b.bookingStatus === "Booked");
+    const vehicleBookedDates = vehicleBookings.filter((b) => b.booking_status === "Booked");
 
     return vehicleBookedDates.flatMap((booking) => {
       const start = dayjs(booking.rentalStart);
@@ -90,13 +89,15 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
 
 
 
-  const startDay = dayjs(start);
-  const endDay = dayjs(end);
 
-  const dayGap = startDay.isValid() && endDay.isValid() ? endDay.diff(start, "day") : 0;
+  const totalDays = useMemo(() => {
+    const startDay = dayjs(start);
+    const endDay = dayjs(end);
 
-  // 2. Ensure it defaults to at least 1 Day if they select the same day or a short window
-  const totalDays = dayGap <= 0 ? 0 : dayGap;
+    const dayGap = startDay.isValid() && endDay.isValid() ? endDay.diff(start, "day") : 0;
+
+    return dayGap <= 0 ? 1 : dayGap;
+  }, [start, end]);
 
   if (loading) {
     return (
@@ -184,7 +185,7 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
 
   // --- DYNAMIC FINANCIAL CALCULATIONS ---
   const dynamicDays = totalDays <= 0 ? 1 : totalDays;
-  const baseRateTotal = dynamicDays * VehicleDetails.dailyRate;
+  const baseRateTotal = dynamicDays * VehicleDetails.daily_rate;
   const rescuePlanFee = 200;
   const subTotalBeforeVat = baseRateTotal + rescuePlanFee;
   const vatAmount = Math.round(subTotalBeforeVat * 0.16);
@@ -236,7 +237,7 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
               <div className="text-left text-gray-500 dark:text-gray-400">Daily Rate</div>
               <div className="w-px h-4 bg-gray-200 dark:bg-gray-800" />
               <div className="text-right font-medium text-gray-800 dark:text-gray-200">
-                Ksh. {VehicleDetails.dailyRate.toLocaleString()}
+                Ksh. {VehicleDetails.daily_rate.toLocaleString()}
               </div>
 
               {/* Row 3 */}
@@ -360,11 +361,11 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
 
             <div className='relative'>
               <Box className='flex gap-2' sx={{ position: 'absolute', top: 10, right: 10 }}>
-                <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<LocalGasStationOutlinedIcon fontSize='small' />} label={VehicleDetails.fuelType} />
+                <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<LocalGasStationOutlinedIcon fontSize='small' />} label={VehicleDetails.fuel_type} />
                 <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<PeopleAltOutlinedIcon fontSize='small' />} label={VehicleDetails.seats + ' Seats'} />
 
               </Box>
-              <img src={VehicleDetails.imageUrl} alt={`${VehicleDetails.make} ${VehicleDetails.model}`} className="w-full object-cover object-center rounded-xl mb-8 aspect-video" />
+              <img src={VehicleDetails.image_url} alt={''} className="w-full object-cover object-center rounded-xl mb-8 aspect-video" />
             </div>
 
             <div>
@@ -395,7 +396,7 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
               </div>
               <div>
                 <p className="text-gray-400">Daily Rate</p>
-                <p className="font-sm mt-2 mb-1 text-blue-600">Ksh. {VehicleDetails.dailyRate.toLocaleString()}</p>
+                <p className="font-sm mt-2 mb-1 text-blue-600">Ksh. {VehicleDetails.daily_rate.toLocaleString()}</p>
               </div>
               <div>
                 <p className="text-gray-400">Location</p>
@@ -404,12 +405,17 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
 
               <div>
                 <p className="text-gray-400">Minimum Rental Days</p>
-                <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.minRentalDays} days</p>
+                <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.min_rental_days} days</p>
               </div>
 
               <div>
                 <p className="text-gray-400">Luggages/Carry-on</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">{2} carry-ons</p>
+              </div>
+
+              <div>
+                <p className="text-gray-400">Baby Seats</p>
+                <p className="font-sm mt-2 mb-1 dark:text-white">Available on request</p>
               </div>
             </div>
             {
@@ -430,8 +436,8 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
                       return;
                     }
 
-                    if (totalDaysCalculated < Number(VehicleDetails?.minRentalDays)) {
-                      showToast('Please select a minimum of ' + VehicleDetails?.minRentalDays + ' days!', 'error');
+                    if (totalDaysCalculated < Number(VehicleDetails?.min_rental_days)) {
+                      showToast('Please select a minimum of ' + VehicleDetails?.min_rental_days + ' days!', 'error');
                       return;
                     }
 
@@ -459,7 +465,7 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
 
                     // Compute token-specific metrics to match current selection
                     const tokenDays = totalDaysCalculated <= 0 ? 1 : totalDaysCalculated;
-                    const tokenBaseRate = tokenDays * VehicleDetails.dailyRate;
+                    const tokenBaseRate = tokenDays * VehicleDetails.daily_rate;
                     const tokenVat = Math.round((tokenBaseRate + 200) * 0.16);
                     const tokenTotal = tokenBaseRate + 200 + tokenVat;
 
@@ -468,15 +474,15 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
                       vehicleID: vehicleID,
                       VehicleDetails: VehicleDetails,
                       bookingInformation: {
-                        start: start,
-                        end: end,
+                        start: dayjs(start).format('YYYY-MM-DDTHH:mm'),
+                        end: dayjs(end).format('YYYY-MM-DDTHH:mm'),
                         totalDays: tokenDays,
                         vat: tokenVat,
                         rescue: 200,
                         total: tokenTotal
                       }
                     };
-
+                    // console.log('encoding',stateToEncode)
                     try {
                       // Convert to JSON, then encode to Base64
                       const jsonString = JSON.stringify(stateToEncode);
@@ -489,14 +495,18 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
                     }
                   }}
                 >
-                  <Button className='w-full mt-5' size='sm'>Continue to Book</Button>
+                  <Button disabled={!profile || VehicleDetails.status === 'Not Available'} className='w-full mt-5' size='sm'>Continue to Book</Button>
                 </div> :
                 <Link target='_blank' href={'/signin'}>
-                  <Button className='w-full mt-5' size='sm'>Continue to Book</Button>
+                  <Button className='w-full mt-5' size='sm'>Sigin to Book</Button>
                 </Link>
             }
+            <div className='flex mt-3 text-gray-500 gap-3 items-center text-sm w-1/2 mx-auto'>
+              <div className='w-full h-0.5 bg-gray-600'></div>
+              OR
+              <div className='w-full h-0.5 bg-gray-600'></div>
+            </div>
             <div className='flex items-center gap-3'>
-
               <Link className='w-full' href={'tel:+254768927617'}>
                 <Button className='w-full mt-5' size='sm' variant='danger'>Call to Book <PhoneOutlinedIcon fontSize='small' /> </Button>
               </Link>

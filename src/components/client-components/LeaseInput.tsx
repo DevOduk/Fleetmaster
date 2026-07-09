@@ -69,7 +69,7 @@ function LeaseInput() {
 
     return (
         <div className="mt-12 mb-16 container mx-auto">
-            <h3 className="text-amber-500 text-center font-bold">IS YOUR VEHICLE ELIGIBLE?</h3>
+            <h3 className="text-amber-500 text-center">IS YOUR VEHICLE ELIGIBLE?</h3>
             <h2 className="text-3xl mt-4 mb-3 font-bold text-black text-center dark:text-white">Check your Vehicle's Eligibility</h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mt-8 border border-gray-200 dark:border-gray-700 p-6 rounded-xl bg-gray-50 dark:bg-gray-800">

@@ -118,7 +118,7 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
               {initialTenants.length} Tenants
             </span>
           </div>
-          <Link href="/register">
+          <Link target="_blank" href="/register">
             <Button variant="success" size="sm"
               className="flex items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
             >
@@ -149,7 +149,7 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
                     Phone
                   </TableCell>
                   <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                    No. of Yards
+                    Yards
                   </TableCell>
                   <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                     Date Created

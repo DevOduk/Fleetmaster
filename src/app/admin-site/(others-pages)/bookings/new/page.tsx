@@ -15,22 +15,18 @@ export default function NewBooking() {
   return (
     <div>
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
-      {/* this breadcrumb should show home / bookings / create new booking */}
+        <div className="flex gap-3 items-center mb-4">
 
-            <PageBreadcrumb pageTitle="Create New Booking" />
-
-      <div className="flex gap-3 items-center mb-4">
-
-       <Link href="/bookings" className="mr-2">
-                <Button size="sm" variant="danger-outline">
-                  <ChevronLeftIcon />
-                  Back to Bookings
-                </Button>
-              </Link>
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Create New Booking
-        </h3>
-      </div>
+          <Link href="/bookings" className="mr-2">
+            <Button size="sm" variant="danger-outline">
+              <ChevronLeftIcon />
+              Back to Bookings
+            </Button>
+          </Link>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+            Create Booking
+          </h3>
+        </div>
         <div className="space-y-6">
           <CreateNewBookingForm />
         </div>

@@ -1,5 +1,5 @@
 "use client";
-import EditBookingForm from '@/components/bookings/EditBooking';
+import EditBookingForm from '@/components/client-components/EditBooking';
 import BookingNotFound from '@/components/bookings/NotFound';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';

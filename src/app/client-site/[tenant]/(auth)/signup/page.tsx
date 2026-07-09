@@ -11,25 +11,11 @@ async function getTenantData(slug: string) {
 
 
 export const metadata: Metadata = {
-  title: "Next.js SignUp Page | TailAdmin - Next.js Dashboard Template",
+  title: "SignUp | TailAdmin - Next.js Dashboard Template",
   description: "This is Next.js SignUp Page TailAdmin Dashboard Template",
   // other metadata
 };
 
-export default async function SignUp({
-  params,
-}: {
-  params: Promise<{ tenant: string }>;
-}) {
-  const { tenant } = await params;
-
-  const tenantData = await getTenantData(tenant);
-
-  if (tenant) {
-    // If the subdomain doesn't exist in our list, trigger the 404
-    if (!tenantData) {
-      notFound();
-    }
-  }
-  return <SignUpForm tenant={tenant} />;
+export default async function SignUp() {
+  return <SignUpForm />;
 }

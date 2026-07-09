@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -17,6 +17,7 @@ import Button from "../ui/button/Button";
 import { useUser } from "@/context/UserContext";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { getTenantAdmins } from "@/app/actions/admin";
 
 // 1. Explicitly type your User structure
 export interface AdminUser {
@@ -37,11 +38,29 @@ interface SystemUsersProps {
 }
 
 // 2. Fixed the parameter mapping here
-const SystemUsers = ({ initialUsers, loading }: SystemUsersProps) => {
+const SystemUsers = () => {
+  const [initialUsers, setIinitialUsers] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
   const isDarkMode = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { profile } = useUser();
+
+  useEffect(() => {
+    if (!profile?.tenant_id) return;
+
+    const getAdmins = async () => {
+      const res = await getTenantAdmins(profile?.tenant_id);
+      if (res.success) {
+        setIinitialUsers(res.data);
+      }
+      setLoading(false)
+    }
+    
+    getAdmins();
+  }, [profile])
+
 
   // Apply dark mode styles to leaflet
   useEffect(() => {
@@ -67,13 +86,6 @@ const SystemUsers = ({ initialUsers, loading }: SystemUsersProps) => {
     return () => observer.disconnect();
   }, [isDarkMode]);
 
-  if (!initialUsers || initialUsers.length === 0) {
-    return (
-      <div className="p-5 text-center text-gray-500 dark:text-gray-400">
-        No users found.
-      </div>
-    );
-  }
   const urlPage = parseInt(searchParams.get("page") || "1", 10);
 
   // --- 3. PAGINATION MATH MATRICS ---

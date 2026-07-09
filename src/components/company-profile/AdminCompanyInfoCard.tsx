@@ -82,10 +82,10 @@ export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string })
   }
   if (!company) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 min-h-[70vh]">
+      <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl min-h-[70vh]">
         <div className="text-4xl mb-4">🏢</div>
         <h3 className="text-lg font-semibold text-red-600">Company Not Found</h3>
-        <p className="text-gray-500 max-w-sm mt-2">
+        <p className="text-gray-500 max-w-m mt-2">
           We couldn't locate a profile associated with your account. If you believe this is an error, please contact support.
         </p>
         <button

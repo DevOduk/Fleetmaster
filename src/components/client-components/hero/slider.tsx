@@ -5,20 +5,20 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import { clearTimeout } from 'timers'
 
+export const defaultVehicleImages = [
+    'https://www.toyotawalton.com/wp-content/uploads/2025/01/Toyota-Land-Cruiser-Prado-used-vehicle-Toyota-walton.webp',
+    'https://images.kobemotor.com/images/v70245-yi003.jpeg',
+    'https://www.autocraftjapan.com/adminPanel/uploads/avis/veh_images/17170579389image_2.JPG',
+];
+
 export default function HeroSlider() {
     const { vehicles, loading: loadingVehicles } = useFleet();
     const sliderRef = useRef<HTMLDivElement>(null);
     const [activeIndex, setActiveIndex] = useState(0);
     const [resetToken, setResetToken] = useState(0);
 
-    // if (!vehicles || vehicles.length === 0) return null;
 
-    const allImageUrls = vehicles.length > 0 ? vehicles.map(v => v?.imageUrl).filter(Boolean) : [
-        'https://www.toyotawalton.com/wp-content/uploads/2025/01/Toyota-Land-Cruiser-Prado-used-vehicle-Toyota-walton.webp', 
-        'https://images.kobemotor.com/images/v70245-yi003.jpeg',
-        'https://www.autocraftjapan.com/adminPanel/uploads/avis/veh_images/17170579389image_2.JPG',
-    ];
-    // const allImageUrls = ['https://www.pigiame.co.ke/discover/wp-content/uploads/2025/06/Car-Hire-Nairobi.jpg', 'https://images.kobemotor.com/images/v70245-yi003.jpeg']; 
+    const allImageUrls = vehicles.length > 0 ? vehicles.map(v => v?.image_url).filter(Boolean) : defaultVehicleImages
 
     const triggerUserInteraction = () => {
         setResetToken((prev) => prev + 1);

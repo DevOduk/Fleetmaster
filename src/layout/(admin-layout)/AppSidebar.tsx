@@ -25,6 +25,7 @@ import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined"
 import EmojiTransportationOutlinedIcon from "@mui/icons-material/EmojiTransportationOutlined"
 import { useAdminFleet } from "@/context/AdminFleetContext";
 import { useAdminBooking } from "@/context/AdminBookingContext";
+import { useUser } from "@/context/UserContext";
 
 
 type NavItem = {
@@ -216,7 +217,7 @@ export const accountItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
-
+  const { profile } = useUser();
   const { bookings } = useAdminBooking();
   const { vehicles } = useAdminFleet();
 
@@ -236,7 +237,7 @@ const AppSidebar: React.FC = () => {
         updatedNav.subItems = updatedNav.subItems.map((sub) => {
           const updatedSub = { ...sub };
           if (updatedSub.path === "/bookings") {
-            updatedSub.count = [true, bookings.length];
+            updatedSub.count = [true, bookings.filter(b => b.booking_status !== 'Reserved').length];
           }
           return updatedSub;
         });
@@ -480,20 +481,62 @@ const AppSidebar: React.FC = () => {
         <Link href="/">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
-              <Image
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              <Image
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
+              {
+                profile?.fleetmaster_tenants?.subscription_plan === "Expert" ? (
+                  <>
+                    <Image
+                      width={154}
+                      height={32}
+                      className="dark:hidden"
+                      src="./images/logo/logo_expert.svg"
+                      alt="Logo"
+                    />
+                    <Image
+                      width={154}
+                      height={32}
+                      className="hidden dark:block"
+                      src="./images/logo/logo_expert_dark.svg"
+                      alt="Logo"
+                    />
+                  </>
+                ) :
+                  profile?.fleetmaster_tenants?.subscription_plan === "Pro" ? (
+                    <>
+
+                      <Image
+                        width={154}
+                        height={32}
+                        className="dark:hidden"
+                        src="./images/logo/logo_pro.svg"
+                        alt="Logo"
+                      />
+                      <Image
+                        width={154}
+                        height={32}
+                        className="hidden dark:block"
+                        src="./images/logo/logo_pro_dark.svg"
+                        alt="Logo"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Image
+                        width={154}
+                        height={32}
+                        className="dark:hidden"
+                        src="./images/logo/logo.svg"
+                        alt="Logo"
+                      />
+                      <Image
+                        width={154}
+                        height={32}
+                        className="hidden dark:block"
+                        src="./images/logo/logo-dark.svg"
+                        alt="Logo"
+                      />
+                    </>
+                  )
+              }
             </>
           ) : (
             <Image
@@ -557,7 +600,7 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
+        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget plan={profile?.fleetmaster_tenants?.subscription_plan} /> : null}
       </div>
     </aside>
   );

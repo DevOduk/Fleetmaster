@@ -12,7 +12,7 @@ import { useTenant } from "@/context/TenantContext";
 
 export default function ClientHomePage() {
   const { tenant: tenantData } = useTenant();
-  console.log(tenantData)
+
   return (
     <div>
       <div className="container m-auto grid grid-cols-1 xl:grid-cols-2 mt-3">
@@ -23,7 +23,7 @@ export default function ClientHomePage() {
       <br />
       <br />
 
-      <StatisticsBanner />
+      <StatisticsBanner tenant={tenantData} />
       <br />
 
 
@@ -39,11 +39,13 @@ export default function ClientHomePage() {
           <h3 className="text-amber-500">ABOUT US</h3>
           <h2 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white">Welcome to {tenantData?.name}</h2>
           {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-175">
+          <p className="text-sm mb-4 text-gray-500 dark:text-gray-400 max-w-175">
             {
               tenantData?.description ? tenantData?.description : <>            At {tenantData?.name}, we are passionate about providing exceptional car rental services that exceed our customers' expectations. With a commitment to quality, reliability, and customer satisfaction, we strive to be the preferred choice for all your car rental needs. Our extensive fleet of well-maintained vehicles, competitive pricing, and personalized service make us the go-to destination for travelers seeking convenience and comfort on the road.</>
             }
           </p>
+          
+          <Button variant="primary" size="sm" className="px-8! py-2! ml-auto">Read More <ChevronRightIcon /> </Button>
         </div>
 
       </div>
@@ -59,7 +61,7 @@ export default function ClientHomePage() {
 
           <div className="flex items-center">
             <p className="text-gray-500 dark:text-gray-500">View our fleet across the country ...</p>
-            <Button variant="primary" size="sm" className="px-8 ml-auto">View All <ChevronRightIcon /> </Button>
+            <Button variant="primary" size="sm" className="px-8! py-2! ml-auto">View All <ChevronRightIcon /> </Button>
           </div>
         </div>
       </div>

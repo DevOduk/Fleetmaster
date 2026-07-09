@@ -23,7 +23,7 @@ export const AdminFleetProvider = ({ children }: { children: ReactNode }) => {
 
 
   useEffect(() => {
-    if(!adminProfile) return;
+    if (!adminProfile) return;
 
     async function fetchAllVehicles() {
       try {
@@ -37,7 +37,9 @@ export const AdminFleetProvider = ({ children }: { children: ReactNode }) => {
       } catch (err) {
         console.error("Network connection failure:", err);
       } finally {
-        setLoading(false);
+        setTimeout(() => {
+          setLoading(false);
+        }, 1500);
       }
     }
 

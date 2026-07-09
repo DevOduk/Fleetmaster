@@ -6,15 +6,51 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useUser } from "@/context/UserContext";
+import { monthToStr } from "flatpickr/dist/utils/formatting";
+import { parseISO, getMonth, getYear, isSameMonth } from 'date-fns';
+
+const revenueExpenses = ({ bookings, expenses }: any) => {
+  const now = new Date();
+  const currentYear = getYear(now);
+  const currentMonthIndex = getMonth(now); // 0-based index
+
+  // 1. Generate array of months from Jan to Current Month
+  const allMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const categories = allMonths.slice(0, currentMonthIndex + 1);
+
+  // 2. Helper to sum values for a specific month index
+  const getSumForMonth = (data: any[], targetMonthIndex: number) => {
+    return data
+      .filter((item) => {
+        const date = parseISO(item.created_at);
+        // Match only items in the current year and the specific month
+        return getYear(date) === currentYear && getMonth(date) === targetMonthIndex && item.status !== 'Reserved';
+      })
+      .reduce((sum, item) => sum + (Number(item.total) || 0), 0);
+  };
+
+  // 3. Map to get data arrays
+  const revenueData = categories.map((_, index) => getSumForMonth(bookings, index));
+  const expensesData = categories.map((_, index) => getSumForMonth(expenses, index));
+
+  return {
+    categories,
+    series: [
+      { name: "Revenue", data: revenueData },
+      { name: "Expenses", data: expensesData },
+    ]
+  };
+};
 
 // Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
-export default function MonthlySalesChart() {
+export default function MonthlySalesChart({bookings, expenses}: {bookings: any, expenses: any}) {
+
   const options: ApexOptions = {
-    colors: ["#465fff"],
+    colors: ["var(--color-brand-500)", "var(--color-brand-400)"],
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "bar",
@@ -40,20 +76,7 @@ export default function MonthlySalesChart() {
       colors: ["transparent"],
     },
     xaxis: {
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
+      categories: revenueExpenses({bookings, expenses}).categories,
       axisBorder: {
         show: false,
       },
@@ -92,16 +115,7 @@ export default function MonthlySalesChart() {
       },
     },
   };
-  const series = [
-    {
-      name: "Revenue",
-      data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112],
-    },
-    {
-      name: "Expenses",
-      data: [8, 35, 21, 98, 18, 15, 29, 110, 25, 39, 0, 2],
-    },
-  ];
+  const series = revenueExpenses({bookings, expenses}).series;
   const [isOpen, setIsOpen] = useState(false);
   const { loading } = useUser()
 

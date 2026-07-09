@@ -20,11 +20,11 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import Button from "../ui/button/Button";
 import { toast, Toaster } from "sonner";
-import { CalendarWrapper } from "./CalendarWrapper";
 import dayjs from "dayjs";
 import Link from "next/link";
 import { useAdminFleet } from "@/context/AdminFleetContext";
 import { useAdminBooking } from "@/context/AdminBookingContext";
+import { AdminCalendarWrapper } from "./AdminCalendarWrapper";
 
 const BUFFER_HOURS = 2;
 
@@ -68,10 +68,9 @@ const extractBookingOnly = (booking: any) => ({
 
 
 const Calendar: React.FC = () => {
-  const { bookings, loading: loadingBookings } = useAdminBooking();
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(    null  );
+  const { bookings } = useAdminBooking();
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const { vehicles, loading } = useAdminFleet();
-  const [allBookings, setAllBookings] = useState<any[]>([]);
   const [bookingName, setBookingName] = useState("");
   const [bookingID, setBookingID] = useState(0);
   const [eventStartDate, setEventStartDate] = useState("");
@@ -96,10 +95,10 @@ const Calendar: React.FC = () => {
     const vehicle = vehicles.find((b) => b.id === id);
 
     return {
-      dailyRate: vehicle?.dailyRate || 0,
+      dailyRate: vehicle?.daily_rate || 0,
       vehicleID: vehicle?.id,
       status: vehicle?.status,
-      minDays: vehicle?.minRentalDays || 1,
+      minDays: vehicle?.minRental_days || 1,
     };
   };
 
@@ -107,31 +106,27 @@ const Calendar: React.FC = () => {
   const getTotalAmount = (vehicleId: number, endDate: string, startDate: string) => {
     const days = getNumberOfDays(startDate, endDate);
     const vehicle = vehicles.find((v) => v.id === vehicleId);
-    const Total = (days * (vehicle ? vehicle.dailyRate : 0));
+    const Total = (days * (vehicle ? vehicle.daily_rate : 0));
 
     return Number(Total);
   };
 
   const getBookingDetails = (id: number) => {
     // Search by 'id', not 'vehicleId'
-    const booking = allBookings.find((b) => b.id === id);
+    const booking = bookings.find((b) => b.id === id);
 
     // Use the vehicleId found inside that booking to get vehicle rates
     const vehicle = vehicles.find((v) => v.id === booking?.vehicleId);
 
     return {
-      days: booking?.rentalDays || 0,
-      dailyRate: vehicle?.dailyRate || 0,
+      days: booking?.rental_days || 0,
+      dailyRate: vehicle?.daily_rate || 0,
       totalAmount: Number(booking?.total || 0),
       vehicleID: booking?.vehicleId,
     };
   };
 
-  useEffect(() => {
-    if(loadingBookings) return;
-    setAllBookings(bookings)
-  }, [bookings])
-  
+
 
   useEffect(() => {
     const days = Math.ceil((new Date(eventEndDate).getTime() - new Date(eventStartDate).getTime()) / (1000 * 3600 * 24));
@@ -165,52 +160,43 @@ const Calendar: React.FC = () => {
   };
 
 
-  const handleDateSelect = (selectInfo: DateSelectArg) => {
-    resetModalFields();
-    setEventStartDate(selectInfo.startStr);
-    setEventEndDate(selectInfo.endStr || selectInfo.startStr);
-    setEventStartTime("10:00");
-    setEventEndTime("10:00");
-    openModal();
-  };
 
+  // const handleEventClick = (clickInfo: EventClickArg) => {
+  //   const event = clickInfo.event;
 
-  const handleEventClick = (clickInfo: EventClickArg) => {
-    const event = clickInfo.event;
+  //   // Helper to format Date object to YYYY-MM-DD (Local Time)
+  //   const formatDateToLocal = (dateStr: any) => {
+  //     if (!dateStr) return '';
 
-    // Helper to format Date object to YYYY-MM-DD (Local Time)
-    const formatDateToLocal = (dateStr: any) => {
-      if (!dateStr) return '';
+  //     // Create a date object. If it's all day, we treat it as local midnight.
+  //     // FullCalendar often passes '2026-05-13' which might be parsed as UTC.
+  //     // We force it to be interpreted as local time by appending 'T00:00:00' 
+  //     // and then extracting the local parts.
+  //     const date = new Date(dateStr);
 
-      // Create a date object. If it's all day, we treat it as local midnight.
-      // FullCalendar often passes '2026-05-13' which might be parsed as UTC.
-      // We force it to be interpreted as local time by appending 'T00:00:00' 
-      // and then extracting the local parts.
-      const date = new Date(dateStr);
+  //     // If the date is invalid, return empty
+  //     if (isNaN(date.getTime())) return '';
 
-      // If the date is invalid, return empty
-      if (isNaN(date.getTime())) return '';
+  //     const year = date.getFullYear();
+  //     const month = String(date.getMonth() + 1).padStart(2, '0');
+  //     const day = String(date.getDate()).padStart(2, '0');
 
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+  //     return `${year}-${month}-${day}`;
+  //   };
 
-      return `${year}-${month}-${day}`;
-    };
-
-    setSelectedEvent(event as unknown as CalendarEvent);
-    setBookingID(parseInt(event.id));
-    setBookingName(event.title);
-    setEventStartDate(formatDateToLocal(event.start));
-    setEventEndDate(formatDateToLocal(event.end));
-    setEventStartTime(event.extendedProps.rentalTime);
-    setEventEndTime(event.extendedProps.rentalTime);
-    setEventLevel(event.extendedProps.calendar);
-    setRenterName(event.extendedProps.renter);
-    setRenterPhone(event.extendedProps.renterPhone);
-    setRenterID(event.extendedProps.renterID);
-    openModal();
-  };
+  //   setSelectedEvent(event as unknown as CalendarEvent);
+  //   setBookingID(parseInt(event.id));
+  //   setBookingName(event.title);
+  //   setEventStartDate(formatDateToLocal(event.start));
+  //   setEventEndDate(formatDateToLocal(event.end));
+  //   setEventStartTime(event.extendedProps.rentalTime);
+  //   setEventEndTime(event.extendedProps.rentalTime);
+  //   setEventLevel(event.extendedProps.calendar);
+  //   setRenterName(event.extendedProps.renter);
+  //   setRenterPhone(event.extendedProps.renterPhone);
+  //   setRenterID(event.extendedProps.renterID);
+  //   openModal();
+  // };
 
   const handleAddOrUpdateEvent = () => {
     if (selectedEvent) {
@@ -233,20 +219,7 @@ const Calendar: React.FC = () => {
           setProcessingPayment(false);
           setPaymentSuccess(true)
           // update bookings data with new end date and total amount 
-          setAllBookings((prevData) => prevData.map((booking) => {
-            if (booking.id === bookingID) {
-              return {
-                ...booking,
-                rentalStart: eventStartDate,
-                rentalEnd: eventEndDate,
-                priority: eventLevel,
-                renterPhone: renterPhone,
-                rentalDays: getNumberOfDays(eventStartDate, eventEndDate),
-                total: getTotalAmount(getBookingDetails(bookingID)?.vehicleID, eventEndDate, eventStartDate)
-              };
-            }
-            return booking;
-          }));
+
 
 
 
@@ -260,15 +233,8 @@ const Calendar: React.FC = () => {
       } else {
         setTimeout(() => {
 
-          setAllBookings((prevData) => prevData.map((booking) => {
-            if (booking.id === bookingID) {
-              return {
-                ...booking,
-                priority: eventLevel,
-              };
-            }
-            return booking;
-          }));
+          // update all bookings 
+
 
           closeModal();
           resetModalFields();
@@ -297,7 +263,7 @@ const Calendar: React.FC = () => {
         status: "Reserved",
         priority: eventLevel,
       };
-      setAllBookings((prevData) => [...prevData, { ...newBooking, ...vehicles.find(v => v.id === bookingID), vehicleId: bookingID, id: newBooking.id }]);
+      // update all bookings 
 
 
       setTimeout(() => {
@@ -317,7 +283,6 @@ const Calendar: React.FC = () => {
       }, 5000);
     }
   };
-  console.log(bookings)
 
   const resetModalFields = () => {
     setBookingID(0);
@@ -390,9 +355,6 @@ const Calendar: React.FC = () => {
     });
   }, [currentSelectionInterval, existingBookingsIntervals, bookingID]);
 
-if(loading){
-  <>Loading vehicles!</>
-}
   return (
     <div className="rounded-2xl border  border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
 
@@ -406,21 +368,21 @@ if(loading){
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay",
           }}
-          events={bookings?.map((booking) => ({
+          events={bookings?.filter(b => b.booking_status !== 'Reserved').map((booking) => ({
             id: booking.id.toString(),
             title: booking.vehicleDetails.year + ' ' + booking.vehicleDetails.make + ' ' + booking.vehicleDetails.model,
-            start: booking.rentalStart,
-            end: booking.rentalEnd,
-            extendedProps: { calendar: booking.priority, registration: booking.vehicleDetails.license_plate, renter: booking.renterName, renterID: booking.renterID, renterPhone: booking.renterPhone, bookingDbId: booking.id, rentalTime: booking.rentalTime },
+            start: booking.rental_start,
+            end: booking.rental_end,
+            extendedProps: { calendar: booking.priority, registration: booking.vehicleDetails.license_plate, renter: booking.renter_name, renterID: booking.renter_id, renterPhone: booking.renter_phone, bookingDbId: booking.id, rentalTime: booking.rental_time },
           }))}
           selectable={true}
-          select={handleDateSelect}
-          eventClick={handleEventClick}
+          select={(() => window.open('/bookings/new'))}
+          eventClick={((e) => window.open(`/bookings/${e.event.id}/edit`))}
           eventContent={renderEventContent}
           customButtons={{
             addEventButton: {
               text: "Create New Booking",
-              click: openModal,
+              click: (() => window.location.href = '/bookings/new'),
             },
           }}
         />
@@ -530,7 +492,7 @@ if(loading){
             {/* Calendar Section: col-span-5 */}
             <div className="mt-7 bg-white dark:bg-gray-900 shadow-sm">
               <h3 className="font-semibold text-gray-800 dark:text-white">Service Schedule</h3>
-              <CalendarWrapper isMarkedUnavailable={getVehicleDetails(bookingID)?.status === "Not Available"} dateString={new Date().toISOString().split('T')[0]} vehicleId={(bookingID)} />
+              <AdminCalendarWrapper isMarkedUnavailable={getVehicleDetails(bookingID)?.status === "Not Available"} dateString={new Date().toISOString().split('T')[0]} vehicleId={(bookingID)} />
             </div>
 
 

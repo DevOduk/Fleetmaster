@@ -25,11 +25,11 @@ export async function fetchBookingDetails(id: number) {
   return { data, error };
 }
 
-export async function updateBookingDetails(id: number, vehicleDetails) {
+export async function updateBookingDetails(id: number, bookingDetails) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_bookings")
-    .update(vehicleDetails)
+    .update(bookingDetails)
     .eq("id", id)
     .single();
 
@@ -37,6 +37,18 @@ export async function updateBookingDetails(id: number, vehicleDetails) {
 }
 
 export async function fetchBookingsForAdmin(tenantId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("fleetmaster_bookings")
+    .select(`*, vehicleDetails:fleetmaster_vehicles(*)`)
+    .eq("tenant_id", tenantId)
+    .order('created_at', { ascending: false });
+
+  return { data, success: !error, error };
+}
+
+
+export async function fetchBookingsForTenant(tenantId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_bookings")

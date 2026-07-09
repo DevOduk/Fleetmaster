@@ -42,6 +42,7 @@ export default function ViewAllVehicles({ tenant, filters, loading = true }: Vie
     const pathname = usePathname();
 
     
+    console.log('tenant fleet: ', vehicles)
 
     const [isOpen, setIsOpen] = useState(false);
     const [sortBy, setSortBy] = useState('Recommended');
@@ -69,7 +70,7 @@ export default function ViewAllVehicles({ tenant, filters, loading = true }: Vie
 
         // If driverType filter is set to "All" or not specified, show all. Otherwise, match the type strictly.
         const matchesDriverType = (filters.driverType && filters.driverType !== "All")
-            ? vehicle.driverType === filters.driverType
+            ? vehicle.driver_type === filters.driverType
             : true;
 
         const matchesCategory = filters.category ? vehicle.category === filters.category : true;
@@ -77,8 +78,8 @@ export default function ViewAllVehicles({ tenant, filters, loading = true }: Vie
         const matchesModel = filters.model ? vehicle.model === filters.model : true;
         const matchesYear = (filters.minYear ? vehicle.year >= filters.minYear : true) &&
             (filters.maxYear ? vehicle.year <= filters.maxYear : true);
-        const matchesPrice = (filters.minPrice ? vehicle.dailyRate >= filters.minPrice : true) &&
-            (filters.maxPrice ? vehicle.dailyRate <= filters.maxPrice : true);
+        const matchesPrice = (filters.minPrice ? vehicle.daily_rate >= filters.minPrice : true) &&
+            (filters.maxPrice ? vehicle.daily_rate <= filters.maxPrice : true);
 
         return matchesLocation && matchesDriverType && matchesCategory && matchesMake && matchesModel && matchesYear && matchesPrice;
     });
@@ -87,9 +88,9 @@ export default function ViewAllVehicles({ tenant, filters, loading = true }: Vie
     const sortedVehicles = [...filteredVehicles].sort((a, b) => {
         switch (sortBy) {
             case 'Price: Low to High':
-                return a.dailyRate - b.dailyRate;
+                return a.daily_rate - b.daily_rate;
             case 'Price: High to Low':
-                return b.dailyRate - a.dailyRate;
+                return b.daily_rate - a.daily_rate;
             case 'Year: Newest First':
                 return b.year - a.year;
             case 'Year: Oldest First':
@@ -159,11 +160,11 @@ export default function ViewAllVehicles({ tenant, filters, loading = true }: Vie
 
 
     const bookedDates = (id: number) => {
-        const vehicleBookings = bookings.filter((b) => b.vehicleId === id);
+        const vehicleBookings = bookings.filter((b) => b.vehicle_id === id);
 
         return vehicleBookings.flatMap((booking) => {
-            const start = dayjs(booking.rentalStart);
-            const end = dayjs(booking.rentalEnd);
+            const start = dayjs(booking.rental_start);
+            const end = dayjs(booking.rental_end);
             const days = [];
             let current = start;
 
@@ -266,15 +267,15 @@ export default function ViewAllVehicles({ tenant, filters, loading = true }: Vie
                         <div className="relative mb-6">
                             <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-2xl animate-pulse" />
                             <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                                <DoNotDisturbAltOutlinedIcon color='error' sx={{ fontSize: '4rem' }} />
+                                <DoNotDisturbAltOutlinedIcon color='error' sx={{ fontSize: '3rem' }} />
                             </div>
                         </div>
 
                         {/* Text Content */}
-                        <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-                            No Matches Found
+                        <h1 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
+                            No matches found
                         </h1>
-                        <p className="mb-8 max-w-sm text-gray-500 dark:text-gray-400">
+                        <p className="mb-8 max-w-sm text-gray-500 dark:text-gray-500 text-sm">
                             No vehicles matched the selected criteria.
                         </p>
 

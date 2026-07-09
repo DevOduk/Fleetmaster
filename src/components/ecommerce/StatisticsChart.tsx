@@ -13,7 +13,7 @@ import "flatpickr/dist/flatpickr.min.css";
 // FIX 2: Added a clean loading skeleton block to prevent layout shifts or hydration snaps
 const Chart = dynamic(() => import("react-apexcharts"), { 
   ssr: false,
-  loading: () => <div className="h-[310px] w-full animate-pulse bg-gray-100 dark:bg-gray-800 rounded-xl" />
+  loading: () => <div className="h-77.5 w-full animate-pulse bg-gray-100 dark:bg-gray-800 rounded-xl" />
 });
 
 export default function StatisticsChart() {
@@ -170,7 +170,7 @@ export default function StatisticsChart() {
       </div>
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">
-        <div className="min-w-[1000px] xl:min-w-full">
+        <div className="min-w-250 xl:min-w-full">
           {/* Unified type properties across the board */}
           <Chart options={options} series={series} type="area" height={310} />
         </div>

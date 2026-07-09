@@ -7,7 +7,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import { CircularProgress } from "@mui/material";
-import { useAdminBooking } from "@/context/AdminBookingContext";
+import { useBooking } from "@/context/BookingContext";
 
 export const CalendarWrapper = ({
   isMarkedUnavailable,
@@ -19,7 +19,7 @@ export const CalendarWrapper = ({
   vehicleId: number;
 }) => {
   const [isDark, setIsDark] = useState(false);
-  const { bookings, loading } = useAdminBooking();
+  const { bookings, loading } = useBooking();
 
   // Theme observer for dark mode sync
   useEffect(() => {
@@ -37,13 +37,13 @@ export const CalendarWrapper = ({
   // Calculate all booked date strings for this vehicle
   const bookedDates = useMemo(() => {
     if (loading) return;
-
-    const vehicleBookings = bookings?.filter((b) => b.vehicleId === vehicleId);
-    const vehicleBookedDates = vehicleBookings.filter((b) => b.bookingStatus === "Booked");
+console.log(bookings)
+    const vehicleBookings = bookings?.filter((b) => b.vehicle_id === vehicleId);
+    const vehicleBookedDates = vehicleBookings.filter((b) => b.booking_status === "Booked");
 
     return vehicleBookedDates.flatMap((booking) => {
-      const start = dayjs(booking.rentalStart);
-      const end = dayjs(booking.rentalEnd);
+      const start = dayjs(booking.rental_start);
+      const end = dayjs(booking.rental_end);
       const days = [];
       let current = start;
 

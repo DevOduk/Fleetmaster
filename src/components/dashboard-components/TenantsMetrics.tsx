@@ -2,13 +2,12 @@
 import React from "react";
 import Badge from "../ui/badge/Badge";
 import { ArrowDownIcon, ArrowUpIcon, BoxIconLine, GroupIcon } from "@/icons";
-import { useFleet } from "@/context/FleetContext";
-import DirectionsCarFilledOutlinedIcon from '@mui/icons-material/DirectionsCarFilledOutlined';
 import GppBadOutlinedIcon from "@mui/icons-material/GppBadOutlined"
 import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined"
 import { useAdmin } from "@/context/AdminContext";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined"
+import { useManagerFleet } from "@/context/ManagerFleetContext";
 
 
 
@@ -37,7 +36,7 @@ interface SystemUsersProps {
 
 export const TenantsMetrics = ({ tenants }: SystemUsersProps) => {
   const { adminProfile, loading } = useAdmin();
-  const { vehicles, loading: loadingVehicles } = useFleet();
+  const { vehicles, loading: loadingVehicles } = useManagerFleet();
 
   const allTenants = tenants?.length || 0;
   const active = tenants?.filter(tenant => tenant.subscription_status === 'Active').length;

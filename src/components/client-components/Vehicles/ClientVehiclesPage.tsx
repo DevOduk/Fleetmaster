@@ -8,7 +8,7 @@ import { Box } from "@mui/material";
 import Button from "@/components/ui/button/Button";
 import { useFleet } from "@/context/FleetContext";
 import Input from "@/components/form/input/InputField";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useModal } from "@/hooks/useModal";
 import { Modal } from "@/components/ui/modal";
@@ -52,7 +52,7 @@ const resetFiltersStates = {
 
 
 
-const syncTimeToDateString = (dateTarget: string, sourceDateTime: string): string => {
+export const syncTimeToDateString = (dateTarget: string, sourceDateTime: string): string => {
     if (!sourceDateTime || !dateTarget) return dateTarget;
 
     // Extract the time portion (everything after the 'T')
@@ -98,13 +98,15 @@ export default function ClientVehiclesPage() {
 
 
 
-    const startDay = dayjs(filters.start);
-    const endDay = dayjs(filters.end);
+    const totalDays = useMemo(() => {
+        const startDay = dayjs(filters.start);
+        const endDay = dayjs(filters.end);
 
-    const dayGap = startDay.isValid() && endDay.isValid() ? endDay.diff(filters.start, "day") : 0;
+        const dayGap = startDay.isValid() && endDay.isValid() ? endDay.diff(filters.start, "day") : 0;
 
-    // 2. Ensure it defaults to at least 1 Day if they select the same day or a short window
-    const totalDays = dayGap <= 0 ? 0 : dayGap;
+        return dayGap <= 0 ? 1 : dayGap;
+    }, [filters]);
+
 
     // 3. User Trigger: Handle Explicit Apply Filter Submission delays
     const handleApplyFilters = (useFilters = filters) => {
@@ -119,9 +121,9 @@ export default function ClientVehiclesPage() {
             : 0;
 
         if (totalDays < 1 || endDay.isBefore(startDay) || startDay.isBefore(today)) {
-            showToast('Please select a valid date!', 'warning');
-            setLoading(false); // Turn off loaders, reveal vehicles list
-            return;
+            showToast('Please select a valid date!', 'info');
+            // setLoading(false); // Turn off loaders, reveal vehicles list
+            // return;
         }
 
         // Simulate 1.2 second processing latency
@@ -223,7 +225,7 @@ export default function ClientVehiclesPage() {
                                         end: updatedEnd,
                                     });
                                 }}
-                                name="end_date"
+                                name="start_date"
                             />
 
                             <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -292,7 +294,8 @@ export default function ClientVehiclesPage() {
                             <Box className='flex gap-2 text-white bg-blend-darken font-bold items-end p-4 w-full h-full rounded-xl' sx={{ position: 'absolute', bottom: 0, right: 0, background: 'linear-gradient(to top, black, transparent)' }}>
                                 {locations?.find(l => l.title === filters.location)?.title || 'Countrywide'
                                 }
-                                <Box onClick={openModal} className='flex gap-2 text-red-500 text-sm bg-blend-darken items-end p-1 cursor-pointer rounded-xl' sx={{ position: 'absolute', top: 10, right: 10, }} ><PencilIcon /> Change</Box>
+                                <Box onClick={openModal} className='flex gap-2 font-medium text-green-400 text-sm bg-blend-darken px-2 items-end p-1 cursor-pointer rounded-lg bg-gray-900/40' sx={{ position: 'absolute', top: 10, right: 10, }} >
+                                    <PencilIcon /> Change</Box>
                             </Box>
                             <img src={
                                 locations?.find(l => l.title === filters.location)?.imageUrl || 'https://images.goway.com/production/hero_image/Amboseli_AdobeStock_568345335.jpeg?VersionId=sEzQrGblBaQDhMGlcsN_UCovnYeM0tUf'
@@ -315,10 +318,12 @@ export default function ClientVehiclesPage() {
                             </h4>
                             <div className="max-h-125 overflow-auto custom-scrollbar flex flex-col gap-3">
                                 {locations.map((l, i) => (
-                                    <div key={i} className={`relative border-2 rounded-2xl ${l.title === selectedLocation ? "border-red-500" : "border-transparent"}`}>
+                                    <div key={i} className={`relative border-2 rounded-2xl ${l.title === selectedLocation ? "border-green-500" : "border-transparent"}`}>
                                         <Box onClick={() => setSelectedLocation(l?.title)} className='flex cursor-pointer gap-2 text-white z-9 bg-blend-darken font-medium items-end p-4 w-full h-full rounded-xl' sx={{ position: 'absolute', bottom: 0, right: 0, background: 'linear-gradient(to top, black, transparent)' }}>
                                             {l?.title}
-                                            <Box className='flex gap-2 text-gray-100 text-sm bg-blend-darken items-end p-1 cursor-pointer rounded-xl' sx={{ position: 'absolute', top: 10, right: 10, }} >{selectedLocation === l?.title ? <span className="text-red-500"><DoneAllOutlinedIcon fontSize="small" /> Selected</span> : <>Select</>}</Box>
+                                            <Box className='flex gap-2 text-gray-100 text-sm bg-blend-darken px-3 items-end p-1 cursor-pointer rounded-lg bg-gray-900/40' sx={{ position: 'absolute', top: 10, right: 10, }} >
+                                                {selectedLocation === l?.title ? <span className="text-green-400"><DoneAllOutlinedIcon fontSize="small" /> Selected</span> : <>Select</>}
+                                            </Box>
                                         </Box>
                                         <img src={l?.imageUrl} alt={l.title} className="w-full object-cover rounded-xl h-35" />
                                     </div>

@@ -1,5 +1,4 @@
 "use client"
-import { CalendarWrapper } from '@/components/calendar/CalendarWrapper';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import TextArea from '@/components/form/input/TextArea';
 import Button from '@/components/ui/button/Button';
@@ -14,6 +13,7 @@ import LocalGasStationOutlinedIcon from '@mui/icons-material/LocalGasStationOutl
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import { useAdminFleet } from '@/context/AdminFleetContext';
 import { useAdminBooking } from '@/context/AdminBookingContext';
+import { AdminCalendarWrapper } from '@/components/calendar/AdminCalendarWrapper';
 
 
 interface VehiclePageProps {
@@ -59,7 +59,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
         {/* Calendar Section: col-span-5 */}
         <div className="col-span-12 lg:col-span-5">
           <div className="rounded-2xl border border-gray-200 bg-white p-2 dark:border-gray-800 dark:bg-gray-900 shadow-sm">
-            <CalendarWrapper isMarkedUnavailable={VehicleDetails.status === "Not Available"} vehicleId={parseInt(vehicleID)} dateString={new Date().toISOString().split('T')[0]} />
+            <AdminCalendarWrapper isMarkedUnavailable={VehicleDetails.status === "Not Available"} vehicleId={parseInt(vehicleID)} dateString={new Date().toISOString().split('T')[0]} />
           </div>
         </div>
 
@@ -71,7 +71,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                 <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
                   {VehicleDetails.make} {VehicleDetails.model}
                 </h2>
-                <p className="text-gray-500">Body Type: {VehicleDetails.category} </p>
+                <p className="text-gray-500">Body Type: {VehicleDetails.body_type} </p>
               </div>
               <div>
                 <span className={`px-3 py-1 rounded-full text-xs font-sm mt-2 mb-1 ${VehicleDetails.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
@@ -89,7 +89,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                 <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<PeopleAltOutlinedIcon fontSize='small' />} label={VehicleDetails.seats + ' Seats'} />
 
               </Box>
-              <img src={VehicleDetails.imageUrl} alt={`${VehicleDetails.make} ${VehicleDetails.model}`} className="w-full object-cover rounded-xl mb-8 aspect-video" />
+              <img src={VehicleDetails.image_url} alt={`${VehicleDetails.make} ${VehicleDetails.model}`} className="w-full object-cover rounded-xl mb-8 aspect-video" />
             </div>
 
             <div>
@@ -121,7 +121,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
               </div>
               <div>
                 <p className="text-gray-400">License Plate</p>
-                <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.licensePlate}</p>
+                <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.license_plate}</p>
               </div>
               <div>
                 <p className="text-gray-400">VIN</p>
@@ -129,7 +129,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
               </div>
               <div>
                 <p className="text-gray-400">Daily Rate</p>
-                <p className="font-sm mt-2 mb-1 text-blue-600">Ksh. {VehicleDetails.dailyRate.toLocaleString()}</p>
+                <p className="font-sm mt-2 mb-1 text-blue-600">Ksh. {VehicleDetails.daily_rate.toLocaleString()}</p>
               </div>
               <div>
                 <p className="text-gray-400">Location</p>
@@ -138,11 +138,11 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
 
               <div>
                 <p className="text-gray-400">Next Service Due</p>
-                <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.nextServiceDue}</p>
+                <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.next_service_due}</p>
               </div>
               <div>
                 <p className="text-gray-400">Minimum Rental Days</p>
-                <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.minRentalDays} days</p>
+                <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.min_rental_days} days</p>
               </div>
             </div>
             <Link href={'/vehicles/' + vehicleID + '/edit'}>

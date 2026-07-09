@@ -1,10 +1,4 @@
 "use client";
-import React from "react";
-import { useModal } from "../../hooks/useModal";
-import { Modal } from "../ui/modal";
-import Button from "../ui/button/Button";
-import Input from "../form/input/InputField";
-import Label from "../form/Label";
 import Link from "next/link";
 import { CheckCircleIcon, DownloadIcon } from "@/icons";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined"
@@ -14,6 +8,7 @@ import { useUser } from "@/context/UserContext";
 
 export default function UserDocumentsCard() {
   const { profile } = useUser();
+
   return (
     <>
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">

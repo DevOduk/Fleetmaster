@@ -14,9 +14,6 @@ import { useRouter } from 'next/navigation';
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined"
 import dayjs from 'dayjs';
 
-interface SearchFormProps {
-  tenant: any;
-}
 
 interface SearchParams {
   location: string;
@@ -41,28 +38,33 @@ const syncTimeToDateString = (dateTarget: string, sourceDateTime: string): strin
   return `${dateComponent}T${timeComponent}`;
 };
 
-export default function SearchForm({ tenant }: SearchFormProps) {
+export default function SearchForm({ tenant }: { tenant: any; }) {
   const router = useRouter();
   const [search, setSearch] = useState<number>(0);
 
-  const fallbackStart = dayjs().add(1, 'day').format('YYYY-MM-DD[T]HH:mm'); 
+  const fallbackStart = dayjs().add(1, 'day').format('YYYY-MM-DD[T]HH:mm');
 
-// 2 days after tomorrow (3 days total) at the exact same hour and minute
-const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
+  // 2 days after tomorrow (3 days total) at the exact same hour and minute
+  const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
   const [searchParams, setSearchParams] = useState<SearchParams>({ location: '', category: '', make: '', model: '', start: fallbackStart, end: fallbackEnd });
   const { vehicles } = useFleet();
 
   const allCategories = vehicles.map(v => v.category);
   const allMakes = vehicles.map(v => v.make);
-  const allLocations = vehicles.map(v => v.location);
   const modelsForMake = (make: string) => {
     const vehicleModels = vehicles.filter(v => v.make === make);
+    
     return vehicleModels.map(v => v.model);
   }
 
-  const categories = [...new Set(allCategories)];
+  const allYards = tenant.yards.map(y => y.title);
+  const fallBackCategories = [
+    'Economy', 'Hatchback', 'SUV'
+  ];
+
+
+  const categories = [...new Set([...allCategories, ...fallBackCategories])];
   const makes = [...new Set(allMakes)];
-  const locations = [...new Set(allLocations)];
 
   const searchQuery = new URLSearchParams(searchParams as any).toString();
 
@@ -98,7 +100,7 @@ const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
           <Label>Location</Label>
           <div className="relative">
             <Select
-              options={locations.map((c) => ({ value: c, label: c }))}
+              options={allYards.map((c) => ({ value: c, label: c }))}
               placeholder="Select Location"
               value={searchParams.location}
               className="pl-15.5"

@@ -20,7 +20,7 @@ export default function RootLayout({
       <ThemeProvider>
         <SidebarProvider>
               <html lang="en">
-                <body className={`${outfit.className} client-theme dark:bg-gray-900 min-h-screen`}>
+                <body suppressHydrationWarning className={`${outfit.className} client-theme dark:bg-gray-900 min-h-screen`}>
                   {children}
                 </body>
               </html>

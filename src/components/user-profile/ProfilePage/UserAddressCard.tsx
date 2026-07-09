@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 
 export default function UserAddressCard() {
+
   const { profile } = useUser();
 
   const hex = (id: string): string => {

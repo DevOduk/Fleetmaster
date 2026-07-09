@@ -1,17 +1,16 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { Booking } from "@/data/mockFleetData";
 import { useAdminFleet } from "./AdminFleetContext";
 import { useUser } from "./UserContext";
 import { fetchBookingsForAdmin } from "@/app/actions/bookings";
 
 interface AdminBookingContextType {
-  bookings: Booking[];
+  bookings: any[];
   loading: boolean;
-  setBookings: React.Dispatch<React.SetStateAction<Booking[]>>;
-  updateBooking: (id: number, updatedBooking: Partial<Booking>) => void;
-  newBooking: (booking: Omit<Booking, "id" | "date">) => Promise<boolean>; // Returns success flag to forms
+  setBookings: React.Dispatch<React.SetStateAction<any[]>>;
+  updateBooking: (id: number, updatedBooking: Partial<any>) => void;
+  newBooking: (booking: Omit<any, "id" | "date">) => Promise<boolean>; // Returns success flag to forms
 }
 
 const AdminBookingContext = createContext<AdminBookingContextType | undefined>(undefined);
@@ -45,14 +44,14 @@ export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
   }, [adminProfile]);
 
   // 2. Update existing fields cleanly by ID
-  const updateBooking = (id: number, updatedFields: Partial<Booking>) => {
+  const updateBooking = (id: number, updatedFields: Partial<any>) => {
     setBookings((prev) =>
       prev.map((b) => (b.id === id ? { ...b, ...updatedFields } : b))
     );
   };
 
   // 3. Create a clean, async POST implementation that hooks nicely into UI form states
-  const newBooking = async (bookingPayload: Omit<Booking, "id" | "date">) => {
+  const newBooking = async (bookingPayload: Omit<any, "id" | "date">) => {
     try {
       const response = await fetch("/api/bookings", {
         method: "POST",
@@ -93,6 +92,6 @@ export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAdminBooking = () => {
   const context = useContext(AdminBookingContext);
-  if (!context) throw new Error("useBooking must be used within an Admin BookingProvider");
+  if (!context) throw new Error("useAdminBooking must be used within an Admin BookingProvider");
   return context;
 };

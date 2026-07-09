@@ -5,66 +5,99 @@ import { ApexOptions } from "apexcharts";
 import dynamic from "next/dynamic";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { MoreDotIcon } from "@/icons";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useUser } from "@/context/UserContext";
+
+
 // Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
-export default function MonthlyTarget() {
-  const series = [85.0];
-  const options: ApexOptions = {
-    colors: ["#465FFF"],
-    chart: {
-      fontFamily: "Outfit, sans-serif",
-      type: "radialBar",
-      height: 330,
-      sparkline: {
-        enabled: true,
+
+export const formatedValue = (value: number) => {
+  const formatter = new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    compactDisplay: 'short',
+    maximumFractionDigits: 1, // Optional: adjust for precision
+  });
+
+  return `${formatter.format(value)}`
+}
+
+
+export default function MonthlyTarget({ bookings, loadingBookings, target }: { bookings: any, loadingBookings: boolean, target: number }) {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const totalRevenue = bookings?.filter(booking => {
+    const bookingDate = new Date(booking.created_at);
+    return bookingDate.getMonth() === currentMonth &&
+      bookingDate.getFullYear() === currentYear;
+  })
+    .reduce((sum, booking) => sum + (Number(booking.total) || 0), 0) || 0;
+
+
+  const series = useMemo(() => {
+    return [Number(((totalRevenue / target) * 100).toPrecision(3))];
+  }, [totalRevenue, target]);
+
+  const options: ApexOptions = useMemo(() => {
+    return {
+      colors: ["var(--color-green-500)"],
+      chart: {
+        fontFamily: "Outfit, sans-serif",
+        type: "radialBar",
+        height: 330,
+        sparkline: {
+          enabled: true,
+        },
       },
-    },
-    plotOptions: {
-      radialBar: {
-        startAngle: -85,
-        endAngle: 85,
-        hollow: {
-          size: "80%",
-        },
-        track: {
-          background: "#E4E7EC",
-          strokeWidth: "100%",
-          margin: 5, // margin is in pixels
-        },
-        dataLabels: {
-          name: {
-            show: false,
+      plotOptions: {
+        radialBar: {
+          startAngle: -85,
+          endAngle: 85,
+          hollow: {
+            size: "80%",
           },
-          value: {
-            fontSize: "36px",
-            fontWeight: "600",
-            offsetY: -40,
-            color: "#1D2939",
-            formatter: function (val) {
-              return val + "%";
+          track: {
+            background: "var(--color-brand-100)",
+            strokeWidth: "100%",
+            margin: 5, // margin is in pixels
+          },
+          dataLabels: {
+            name: {
+              show: false,
+            },
+            value: {
+              fontSize: "36px",
+              fontWeight: "600",
+              offsetY: -40,
+              color: "#1D2939",
+              formatter: function (val) {
+                return val + "%";
+              },
             },
           },
         },
       },
-    },
-    fill: {
-      type: "solid",
-      colors: ["#465FFF"],
-    },
-    stroke: {
-      lineCap: "round",
-    },
-    labels: ["Progress"],
-  };
+      fill: {
+        type: "solid",
+        colors: ["var(--color-green-500)"],
+      },
+      stroke: {
+        lineCap: "round",
+      },
+      labels: ["Progress"],
+    }
+  }, []);
 
   const [isOpen, setIsOpen] = useState(false);
   const { loading } = useUser()
+
+
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -133,8 +166,8 @@ export default function MonthlyTarget() {
                   </Dropdown>
                 </div>
               </div>
-              <div className="relative ">
-                <div className="max-h-82.5">
+              <div className="relative text-center">
+                <div className="max-h-80">
                   <ReactApexChart
                     options={options}
                     series={series}
@@ -143,11 +176,11 @@ export default function MonthlyTarget() {
                   />
                 </div>
 
-                <span className="absolute left-1/2 top-full -trangray-x-1/2 -trangray-y-[95%] rounded-full bg-success-50 px-3 py-1 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+                <span className="rounded-full bg-success-50 px-3 py-1 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
                   +10%
                 </span>
               </div>
-              <p className="mx-auto mt-10 w-full max-w-95 text-center text-sm text-gray-500 sm:text-base">
+              <p className="mx-auto mt-7 w-full max-w-95 text-center text-sm text-gray-500 sm:text-base">
                 You earn $3287 today, it&apos;s higher than last month. Keep up your
                 good work!
               </p>
@@ -159,8 +192,8 @@ export default function MonthlyTarget() {
                   Target
                 </p>
                 <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-800 dark:text-white/90 sm:text-lg">
-                  $20K
-                  <svg
+                  ${formatedValue(target)}
+                  {/* <svg
                     width="16"
                     height="16"
                     viewBox="0 0 16 16"
@@ -173,7 +206,7 @@ export default function MonthlyTarget() {
                       d="M7.26816 13.6632C7.4056 13.8192 7.60686 13.9176 7.8311 13.9176C7.83148 13.9176 7.83187 13.9176 7.83226 13.9176C8.02445 13.9178 8.21671 13.8447 8.36339 13.6981L12.3635 9.70076C12.6565 9.40797 12.6567 8.9331 12.3639 8.6401C12.0711 8.34711 11.5962 8.34694 11.3032 8.63973L8.5811 11.36L8.5811 2.5C8.5811 2.08579 8.24531 1.75 7.8311 1.75C7.41688 1.75 7.0811 2.08579 7.0811 2.5L7.0811 11.3556L4.36354 8.63975C4.07055 8.34695 3.59568 8.3471 3.30288 8.64009C3.01008 8.93307 3.01023 9.40794 3.30321 9.70075L7.26816 13.6632Z"
                       fill="#D92D20"
                     />
-                  </svg>
+                  </svg> */}
                 </p>
               </div>
 
@@ -184,8 +217,7 @@ export default function MonthlyTarget() {
                   Revenue
                 </p>
                 <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-800 dark:text-white/90 sm:text-lg">
-                  $20K
-                  <svg
+                  ${formatedValue(totalRevenue)}                  <svg
                     width="16"
                     height="16"
                     viewBox="0 0 16 16"

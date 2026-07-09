@@ -8,6 +8,7 @@ import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined"
 import LuggageOutlinedIcon from "@mui/icons-material/LuggageOutlined"
 import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined"
 import Button from "../ui/button/Button";
+import { defaultVehicleImages } from "./hero/slider";
 
 
 interface Tenant {
@@ -35,10 +36,10 @@ const allYards = [
 ];
 
 export default function ViewAllLocations({ tenantData }: Tenant) {
-    console.log('tenant.yards: ',tenantData?.yards)
+
     return (
         <div key={tenantData?.id} datatype={tenantData?.slug} className="grid mt-5 grid-cols-2 lg:grid-cols-3 m-auto gap-3 container mb-5">
-            {tenantData?.yards.length > 1 ? tenantData?.yards.slice(0, 6).map((VehicleDetails) => (
+            {tenantData?.yards?.length > 0 ? tenantData?.yards?.slice(0, 6).map((VehicleDetails) => (
                 <div key={VehicleDetails.title} className="mb-3 dark:bg-gray-500/10 bg-gray-500/3 shadow rounded-2xl">
                     <div className='relative'>
                         <Box className='flex gap-2 text-white bg-blend-darken font-bold items-end p-3 w-full h-full rounded-xl' sx={{ position: 'absolute', bottom: 0, right: 0, background: 'linear-gradient(to top, black, transparent)' }}>
@@ -48,14 +49,11 @@ export default function ViewAllLocations({ tenantData }: Tenant) {
                     </div>
                 </div>
             )) : (
-                <>
-                    {
-                        [...Array(3)].map((_, i) => (
-                            <div key={i} className="bg-gray-300 dark:bg-gray-700 animate-pulse shadow rounded-2xl mb-3 aspect-video">
-                            </div>
-                        ))
-                    }
-                </>
+                defaultVehicleImages.map((_, i) => (
+                    <div key={i} className="bg-gray-300 dark:bg-gray-700 shadow rounded-2xl mb-3 aspect-video overflow-hidden">
+                        <img src={_} alt="" className="w-full h-full object-cover object-center" />
+                    </div>
+                ))
             )
             }
         </div>

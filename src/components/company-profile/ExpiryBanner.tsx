@@ -44,7 +44,7 @@ function ExpiryBanner({ plan, expiryDate }: { plan: string, expiryDate: string }
   }, [expiryDate]);
 
   // Don't render anything if it's already expired or loading
-  if (!timeLeft || timeLeft.includes('month') || timeLeft === "Expired") return null;
+  if (!timeLeft || timeLeft.includes('week') || timeLeft.includes('month') || timeLeft === "Expired") return null;
 
   return (
     <div className="flex gap-2 justify-end p-6 items-center">

@@ -58,7 +58,7 @@ function formatDuration(ms: number): string {
 export default function ViewBooking({ BookingID }: { BookingID: number; }) {
   const { loading, profile } = useUser();
   const [eventStartDate, setEventStartDate] = useState(new Date().toISOString().split("T")[0]);
-  const [loadingBooking, setLoadingBooking] = useState(false);
+  const [loadingBooking, setLoadingBooking] = useState(true);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
   const [timerString, setTimerString] = useState<string>('');
 

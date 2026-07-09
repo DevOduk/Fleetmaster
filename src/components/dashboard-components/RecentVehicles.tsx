@@ -8,11 +8,12 @@ import {
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 import Link from "next/link";
-import { useFleet } from "@/context/FleetContext";
+import { useManagerFleet } from "@/context/ManagerFleetContext";
+import { formatedValue } from "../ecommerce/MonthlyTarget";
 
 
 export default function RecentVehiscles() {
-  const { vehicles, loading } = useFleet();
+  const { vehicles, loading } = useManagerFleet();
 
 
   return (
@@ -118,8 +119,8 @@ export default function RecentVehiscles() {
                     <TableCell className="py-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={product.imageUrl}
-                          className="h-[45px] w-[70px] object-cover rounded"
+                          src={product.image_url}
+                          className="h-11.25 w-17.5 object-cover rounded"
                           alt={product.make}
                         />
                         <div>
@@ -127,7 +128,7 @@ export default function RecentVehiscles() {
                             {product.make} {product.model} {product.year}
                           </p>
                           <span className="text-gray-500 text-theme-xs dark:text-gray-400">
-                            {product.licensePlate} | {product.rentalDays} Days
+                            {product.license_plate} | Min {product.min_rental_days} Days
                           </span>
                         </div>
                       </div>
@@ -136,7 +137,7 @@ export default function RecentVehiscles() {
                       {product.category}
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {product.total} Ksh.
+                      {formatedValue(product.daily_rate)} Ksh.
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       <Badge

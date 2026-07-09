@@ -3,7 +3,7 @@ import EditCompanyInfoCard from "@/components/company-profile/EditCompanyInfoCar
 import Button from "@/components/ui/button/Button";
 import EditUserAddressCard from "@/components/user-profile/EditUserAddressCard";
 import EditUserInfoCard from "@/components/user-profile/EditUserInfoCard";
-import UserMetaCard from "@/components/user-profile/UserMetaCard";
+import UserMetaCard from "@/components/user-profile/ProfilePage/UserMetaCard";
 import { ChevronLeftIcon } from "@/icons";
 import { Metadata } from "next";
 import Link from "next/link";

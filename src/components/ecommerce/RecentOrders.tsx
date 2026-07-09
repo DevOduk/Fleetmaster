@@ -95,6 +95,12 @@ export default function RecentOrders({ bookings, loading }: {  bookings: any, lo
                 isHeader
                 className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
+                Time
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
                 Status
               </TableCell>
             </TableRow>
@@ -111,7 +117,7 @@ export default function RecentOrders({ bookings, loading }: {  bookings: any, lo
                   </TableRow>)}
                 </>
               ) :
-                bookings.length > 0 ? bookings?.map((product, index) => (
+                bookings.length > 0 ? bookings?.slice(0,10).map((product, index) => (
                   <TableRow key={index} className="">
                     <TableCell className="py-3">
                       <div className="flex items-center gap-3">
@@ -134,18 +140,22 @@ export default function RecentOrders({ bookings, loading }: {  bookings: any, lo
                       {product.vehicleDetails?.category}
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {product.total} Ksh.
+                      {product.total?.toLocaleString()} Ksh.
+                    </TableCell>
+                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {new Date(product.created_at)?.toLocaleDateString()}
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       <Badge
                         size="sm"
                         color={
-                          product.bookingStatus === "Active"
-                            ? "primary" : product.bookingStatus === "Completed"
-                              ? "success" : product.bookingStatus === "Cancelled" ? "error" : "warning"
+                          product.booking_status === "Active"
+                            ? "primary" : product.booking_status === "Reserved"
+                            ? "info" : product.booking_status === "Completed"
+                              ? "success" : product.booking_status === "Cancelled" ? "error" : "warning"
                         }
                       >
-                        {product.bookingStatus}
+                        {product.booking_status}
                       </Badge>
                     </TableCell>
                   </TableRow>

@@ -5,13 +5,18 @@ import Pagination from "../tables/Pagination";
 import BookingsTable from "../tables/BookingsTable";
 import Link from "next/link";
 import { useAdminBooking } from "@/context/AdminBookingContext";
+import { ArrowUpIcon } from "@/icons";
+import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
+import Badge from "../ui/badge/Badge";
+
 
 const Bookings: React.FC = () => {
   const { bookings } = useAdminBooking();
   const isDarkMode =
     typeof window !== "undefined" &&
     document.documentElement.classList.contains("dark");
-console.log('client side ready ',bookings)
+
+
   // Apply dark mode styles to leaflet
   useEffect(() => {
     const handleModeChange = () => {
@@ -36,6 +41,37 @@ console.log('client side ready ',bookings)
     return () => observer.disconnect();
   }, [isDarkMode]);
 
+const now = new Date();
+const currentMonth = now.getMonth();
+const currentYear = now.getFullYear();
+const today = now.getDate(); // 1-31
+
+// 1. Daily Bookings (Today)
+const totalCountToday = bookings?.filter(b => {
+  const d = new Date(b.created_at);
+  return d.getDate() === today && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+}).length || 0;
+
+// 2. Weekly Bookings (Current week, assuming Monday start)
+const startOfWeek = new Date(now);
+startOfWeek.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
+startOfWeek.setHours(0, 0, 0, 0);
+
+const totalCountThisWeek = bookings?.filter(b => {
+  const d = new Date(b.created_at);
+  return d >= startOfWeek;
+}).length || 0;
+
+// 3. Monthly Bookings
+const totalCountThisMonth = bookings?.filter(b => {
+  const d = new Date(b.created_at);
+  return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+}).length || 0;
+
+// 4. Average Daily Bookings (This month)
+// Formula: Total monthly bookings / Days passed so far this month
+const averageDailyThisMonth = today > 0 ? (totalCountThisMonth / today).toFixed(1) : 0;
+
   return (
     <div>
       <div className="space-y-6">
@@ -44,37 +80,65 @@ console.log('client side ready ',bookings)
             {
               title: 'Daily Bookings',
               currency: 'Ksh',
-              value: 55,
+              value: totalCountToday,
               description: 'Total Bookings today',
+              icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
+              badge: { text: "9.05%", color: "success" as const, icon: <ArrowUpIcon className="text-success-500" /> },
             },
             {
               title: 'Weekly Bookings',
               currency: 'Ksh',
-              value: 125,
+              value: totalCountThisWeek,
               description: 'Total Bookings this week',
+              icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
+              badge: { text: "9.05%", color: "success" as const, icon: <ArrowUpIcon className="text-success-500" /> },
             },
             {
               title: 'Monthly  Bookings',
               currency: 'Ksh',
-              value: 700,
+              value: totalCountThisMonth,
               description: 'Total Bookings this Month',
+              icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
+              badge: { text: "9.05%", color: "success" as const, icon: <ArrowUpIcon className="text-success-500" /> },
             },
             {
               title: 'Average Bookings (This Month)',
               currency: 'Ksh',
-              value: 93,
+              value: averageDailyThisMonth,
               description: 'Average Daily Bookings for This Month',
+              icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
+              badge: { text: "9.05%", color: "success" as const, icon: <ArrowUpIcon className="text-success-500" /> },
             },
           ].map((p, i) => (
-            <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6" key={i}>
-              <h4 className="text-md text-black dark:text-white">
-                {p?.title}
-              </h4>
-              <h2 className="text-2xl mt-3 mb-2 dark:text-gray-300 text-gray-600 font-bold">{p?.value ? Number(p.value).toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : "0"}</h2>
-              <p className="text-gray-500 text-sm">
-                {p?.description}
-              </p>
-            </div>
+            <>
+              {/* <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6" key={i}>
+                <h4 className="text-md text-black dark:text-white">
+                  {p?.title}
+                </h4>
+                <h2 className="text-2xl mt-3 mb-2 dark:text-gray-300 text-gray-600 font-bold">{p?.value ? Number(p.value).toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : "0"}</h2>
+                <p className="text-gray-500 text-sm">
+                  {p?.description}
+                </p>
+              </div> */}
+
+              <div key={i} className="rounded-2xl border border-gray-200 px-5 py-3 dark:border-gray-800 bg-brand-500/5 space-y-3">
+                <span className="text-lg font-bold text-gray-800 dark:text-gray-300">
+                  {p.title}
+                </span>
+                <div className="flex mt-2 items-center justify-between">
+                  <h4 className="font-bold text-gray-800 text-2xl dark:text-white/90">
+                    {p.value} +
+                  </h4>
+                  <Badge color={p.badge.color}>
+                    {p.badge.icon}
+                    {p.badge.text}
+                  </Badge>
+                </div>
+                <div className="text-xs truncate text-gray-500 dark:text-gray-400">
+                  {p.description}
+                </div>
+              </div>
+            </>
           ))}
         </div>
         <div className="flex justify-between py-3 items-center">

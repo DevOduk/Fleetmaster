@@ -4,10 +4,11 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Button from "@/components/ui/button/Button";
 import { useTenant } from "@/context/TenantContext";
 import PhoneEnabledOutlinedIcon from "@mui/icons-material/PhoneEnabledOutlined"
-import { EnvelopeIcon } from "@/icons";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import ViewAllLocations from "@/components/client-components/locations";
 import SecondaryHero from "@/components/marketing-components/SecondaryHero";
 import { ImageList, ImageListItem } from "@mui/material";
+import Link from "next/link";
 
 
 const itemData = [
@@ -101,14 +102,18 @@ export default function AboutPageContent() {
                     </p>
 
                     <div className="flex gap-3 mt-5">
-                        <Button variant="success" size="sm" className="py-1 small px-4" >Enquire  <PhoneEnabledOutlinedIcon fontSize="small" /></Button>
-                        <Button variant="primary" size="sm" className="py-1 small px-4">Send an Email  <EnvelopeIcon fontSize="small" /></Button>
+                        <Link href={`tel:${tenantData.phone || '#'}`}>
+                            <Button variant="success" size="sm">Enquire <PhoneEnabledOutlinedIcon fontSize="small" /></Button>
+                        </Link>
+                        <Link href={`mailto:${tenantData.email || '#'}`}>
+                            <Button variant="primary" size="sm">Send an Email <EmailOutlinedIcon fontSize="small" /></Button>
+                        </Link>
                     </div>
                 </div>
 
             </div>
             <div className="p-2 mt-5 mb-5 max-w-6xl m-auto">
-                
+
                 <h3 className="text-amber-500 uppercase text-center">Photo Gallery</h3>
                 <h2 className="text-3xl mt-4 mb-10 font-bold text-black text-center dark:text-white">View Our Photo Gallery</h2>
                 <ImageList variant="masonry" cols={4} gap={8}>

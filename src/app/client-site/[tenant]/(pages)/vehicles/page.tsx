@@ -1,5 +1,5 @@
 // src/app/(client)/[tenant]/(pages)/vehicles/page.tsx
-import ClientVehiclesPage from "@/components/client-components/Vehicles/Vehicles";
+import ClientVehiclesPage from "@/components/client-components/Vehicles/ClientVehiclesPage";
 import { getCachedTenant } from "@/utils/tenant-cache";
 import { Metadata } from "next";
 

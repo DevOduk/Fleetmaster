@@ -1,11 +1,10 @@
 "use client";
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import { createClient } from '@/utils/supabase/client';
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import VehicleNotFound from '@/components/vehicles/NotFound';
 import Label from '@/components/form/Label';
@@ -33,6 +32,7 @@ import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal';
 import { ArrowRightIcon } from '@/icons';
 import Alert from '@/components/ui/alert/Alert';
+import { createPayment } from '@/app/actions/payments';
 
 
 dayjs.extend(isBetween);
@@ -82,10 +82,14 @@ const BookingPage = ({ params }: VehiclePageProps) => {
         if (!profile?.phone) return;
         setMpesaNumber((profile?.phone).replace('+254', '').replace(' ', ''))
     }, [profile?.phone])
+    console.log(decodedData?.bookingInformation)
+    const start = useMemo(() => {
+        return decodedData?.bookingInformation?.start || searchParams.get('start');
+    }, [decodedData]);
+    const end = useMemo(() => {
+        return decodedData?.bookingInformation?.end || searchParams.get('end');
+    }, [decodedData]);
 
-    // Basic Setup & State (Extract defaults from token payload fallback to search parameters)
-    const [start, setStart] = useState(decodedData?.bookingInformation?.start || searchParams.get('start') || '');
-    const [end, setEnd] = useState(decodedData?.bookingInformation?.end || searchParams.get('end') || '');
     const [expandBreakdown, setExpandBreakdown] = useState(true);
     const [openPolicyModal, setOpenPolicyModal] = useState(false);
     const [policiesAccepted, setPoliciesAccepted] = useState(localStorage.getItem('policiesAccepted') ? JSON.parse(localStorage.getItem('policiesAccepted')) : false);
@@ -123,7 +127,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
 
 
     // Cost Computations
-    const baseRateTotal = totalDays * VehicleDetails.dailyRate;
+    const baseRateTotal = totalDays * VehicleDetails.daily_rate;
 
     const getPickupFee = () => {
         if (pickupOption === 'nairobi') return 1000;
@@ -164,6 +168,10 @@ const BookingPage = ({ params }: VehiclePageProps) => {
         }
         if (dropoffOption === 'elsewhere' && dropoffLocation === '') {
             showToast('Please select a dropoff location to proceed!', 'error');
+            return;
+        }
+        if (VehicleDetails.status === 'Not Available') {
+            showToast('This vehicle is not available for booking at the moment!', 'error');
             return;
         }
 
@@ -290,7 +298,32 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                         payment_ref: mpesaRef
                                     })
                                 });
-                                // console.log("Database update response:", response.status, response.ok);
+
+                                const newPayment = {
+                                    tenant_id: profile.tenant_id,
+                                    intasend_invoice_id: statusData.data.invoice.invoice_id,
+                                    provider: statusData.data.invoice.provider,
+                                    provider_reference: statusData.data.invoice.provider_ref,
+                                    amount: Number(grandTotalAmount),
+                                    currency: statusData.data.invoice.currency,
+                                    account_number: statusData.data.invoice.account,
+                                    payment_ref: statusData.data.invoice.invoice_id,
+                                    user_id: profile.id,
+                                    status: 'Success',
+                                    message: statusData.data.invoice.failed_reason,
+                                };
+
+                                const res = await createPayment(newPayment);
+
+                                if (res.success) {
+                                    // success good
+                                }
+                                console.log("Database payment update response:", res);
+
+
+                                if (response.ok) {
+                                    //
+                                }
                             }
 
                         } else if (statusData.state === 'FAILED') {
@@ -326,7 +359,27 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                         payment_ref: mpesaRef
                                     })
                                 });
-                                console.log("Database update response:", response.status, response.ok);
+
+                                const newPayment = {
+                                    tenant_id: profile.tenant_id,
+                                    intasend_invoice_id: statusData.data.invoice.invoice_id,
+                                    provider: statusData.data.invoice.provider,
+                                    provider_reference: statusData.data.invoice.provider_ref,
+                                    amount: Number(grandTotalAmount),
+                                    currency: statusData.data.invoice.currency,
+                                    account_number: statusData.data.invoice.account,
+                                    payment_ref: statusData.data.invoice.invoice_id,
+                                    user_id: profile.id,
+                                    status: 'Failed',
+                                    message: statusData.data.invoice.failed_reason,
+                                };
+
+                                const res = await createPayment(newPayment);
+
+                                if (res.success) {
+                                    // success good
+                                }
+                                console.log("Database payment update response:", res);
                             }
                         }
                     } catch (pollErr) {
@@ -505,10 +558,10 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                         {/* Media Presentation Display Canvas */}
                         <div className='relative rounded-xl overflow-hidden mb-6 bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-gray-800'>
                             <Box className='flex gap-2' sx={{ position: 'absolute', top: 12, right: 12, zIndex: 10 }}>
-                                <Chip size="small" sx={{ px: 0.5, bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', backdropFilter: 'blur(4px)' }} icon={<LocalGasStationOutlinedIcon fontSize='small' style={{ color: '#fff' }} />} label={VehicleDetails.fuelType} />
+                                <Chip size="small" sx={{ px: 0.5, bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', backdropFilter: 'blur(4px)' }} icon={<LocalGasStationOutlinedIcon fontSize='small' style={{ color: '#fff' }} />} label={VehicleDetails.fuel_type} />
                                 <Chip size="small" sx={{ px: 0.5, bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', backdropFilter: 'blur(4px)' }} icon={<PeopleAltOutlinedIcon fontSize='small' style={{ color: '#fff' }} />} label={`${VehicleDetails.seats} Seats`} />
                             </Box>
-                            <img src={VehicleDetails.imageUrl} alt={`${VehicleDetails.make}`} className="w-full object-cover object-center aspect-video" />
+                            <img src={VehicleDetails.image_url} alt={''} className="w-full object-cover object-center aspect-video" />
                         </div>
 
                         {/* Core Specs Information Grid */}
@@ -524,7 +577,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                             </div>
                             <div>
                                 <p className="text-gray-400 text-xs">Fuel Category</p>
-                                <p className="font-medium mt-1 text-gray-900 dark:text-gray-200">{VehicleDetails.fuelType}</p>
+                                <p className="font-medium mt-1 text-gray-900 dark:text-gray-200">{VehicleDetails.fuel_type}</p>
                             </div>
                             <div>
                                 <p className="text-gray-400 text-xs">Luggage Allowance</p>
@@ -536,7 +589,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                             </div>
                             <div>
                                 <p className="text-gray-400 text-xs">Daily Base Rental Rate</p>
-                                <p className="font-semibold mt-1 text-brand-500">Ksh. {VehicleDetails.dailyRate.toLocaleString()}</p>
+                                <p className="font-semibold mt-1 text-brand-500">Ksh. {VehicleDetails.daily_rate.toLocaleString()}</p>
                             </div>
                         </div>
 
@@ -674,7 +727,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                     <span className="font-medium text-gray-800 dark:text-gray-200">{totalDays} Days</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 dark:text-gray-400">Base Subtotal ({totalDays}d × Ksh {VehicleDetails.dailyRate.toLocaleString()})</span>
+                                    <span className="text-gray-500 dark:text-gray-400">Base Subtotal ({totalDays}d × Ksh {VehicleDetails.daily_rate.toLocaleString()})</span>
                                     <span className="font-medium text-gray-800 dark:text-gray-200">Ksh. {baseRateTotal.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
@@ -757,7 +810,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                             </RadioGroup>
                         </FormControl>
 
-                        <div className="mt-4 transition-all duration-200">
+                        <div className="mt-4 mb-4 transition-all duration-200">
                             {paymentMethod === 'm-pesa' && (
                                 <div className="space-y-2">
                                     <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
@@ -767,12 +820,12 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                         <Input
                                             type="tel"
                                             placeholder="e.g., 0712345678"
-                                            className="pl-[62px]"
+                                            className="pl-15.5"
                                             value={mpesaNumber}
                                             onChange={(e) => setMpesaNumber(e.target.value)}
                                             disabled={isPaying}
                                         />
-                                        <span className="absolute left-0 top-1/2 flex text-sm h-11 w-[55px] dark:text-white -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                                        <span className="absolute left-0 top-1/2 flex text-sm h-11 w-13.75 dark:text-white -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
                                             +254
                                         </span>
                                     </div>
@@ -790,11 +843,11 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                             <Input
                                                 type="text"
                                                 placeholder="Card number"
-                                                className="pl-[62px]"
+                                                className="pl-15.5"
                                             // value={cardNumber}
                                             // onChange={(e) => setCardNumber(e.target.value)}
                                             />
-                                            <span className="absolute left-0 top-1/2 flex h-11 w-[46px] -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                                            <span className="absolute left-0 top-1/2 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
                                                 <svg
                                                     width="20"
                                                     height="20"
@@ -912,6 +965,9 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                             </div>
                         </Modal>
 
+                        {
+                            paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='                                    Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.' />
+                        }
                         {/* Dynamic Call-To-Action Operations Routing Grid */}
                         <div className="space-y-3 mt-4">
                             <Button onClick={handleCheckoutSubmit} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md' disabled={isPaying || paymentSuccess}>
@@ -963,7 +1019,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
 
                         {/* Dedicated Scroll Container holding your exact layout text content */}
                         <div id="policy-modal-description" className="flex-1 overflow-y-auto px-6 py-2 space-y-4 text-sm text-gray-600 dark:text-gray-300 custom-scrollbar leading-6">
-                            <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-1 inline-block items-center"><GppGoodOutlinedIcon fontSize='small' />  Handover Documentation Verification</h4>
+                            <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-1"><GppGoodOutlinedIcon fontSize='small' />  Handover Documentation Verification</h4>
                             <section className='border border-gray-300 dark:border-gray-600 rounded-2xl p-3'>
                                 <p className="mt-1 text-xs leading-6">When picking up your rental, you will need:</p>
                                 <ul className="list-disc list-inside pl-2 text-xs mt-1 space-y-2 text-gray-500 dark:text-gray-400">
