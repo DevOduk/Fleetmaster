@@ -156,7 +156,7 @@ export default function ClientHeader() {
                         />
                     </svg>
                     <p className="text-sm w-full text-gray-500 dark:text-gray-400">
-                        Your account is not verified. Some features may not work. <Link className="text-brand-500" href={'/profile'}>Verify Now</Link>
+                        Your account is not verified. Some features may not work. <Link className="text-brand-500" href={'/profile/edit#documents'}>Verify Now</Link>
                     </p>
                     <CloseOutlinedIcon fontSize="small" className='text-red-500 cursor-pointer' onClick={() => setShowVerificationMessage(false)} />
                 </div>

@@ -1,26 +1,52 @@
 "use client";
 import { useUser } from "@/context/UserContext";
 import { Avatar } from "@mui/material";
+import { useEffect, useState } from "react";
+import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined"
+import { handleImageFileUpload } from "@/utils/uploads/imageUpload";
+import { useToast } from "@/context/ToastContext";
 
 
-export default function UserMetaCard() {
-  const { profile } = useUser();
+export default function EditUserMetaCard() {
+  const { profile, loading } = useUser();
+  const [profileDetails, setProfileDetails] = useState(profile || null);
+    const { showToast } = useToast();
+
+  useEffect(() => {
+    if (profile && !loading) {
+      setProfileDetails(profile)
+    }
+  }, [profile])
+
+  useEffect(() => {
+    if (!profileDetails) return;
+    if (profileDetails === profile) return;
+console.log('profile changed updating now ...')
+    // proceed to update user profile details 
+  }, [profileDetails])
+
+
 
   return (
     <>
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
-            <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
+            <label className="w-fit p-2 relative cursor-pointer h-fit overflow-hidden border border-gray-200 dark:border-gray-800">
               <Avatar
                 sx={{
                   width: 80,
                   height: 80
                 }}
-                src={profile?.profile_pic}
-                alt="user"
+                src={profileDetails?.profile_pic || 'U'}
+                alt="User"
               />
-            </div>
+              <input  className="hidden" type="file" accept="image/*" onChange={async (e) => {
+                const image = await handleImageFileUpload(e, showToast);
+                setProfileDetails((prev) => ({ ...prev, profile_pic: image }))
+              }} />
+              <BorderColorOutlinedIcon color="primary" className="absolute right-0 bottom-0" />
+            </label>
             <div className="order-3 xl:order-2">
               <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
                 {profile?.first_name || "N/A ..."} {profile?.last_name || "N/A"}

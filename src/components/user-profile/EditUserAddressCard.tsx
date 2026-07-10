@@ -4,15 +4,24 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useToast } from "@/context/ToastContext";
 
 export default function EditUserAddressCard() {
-  const { profile } = useUser();
-  const [updatedProfile, setUpdatedProfile] = useState(null)
+  const { profile, loading } = useUser();
+  const [profileDetails, setProfileDetails] = useState(profile || null);
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    if (profile && !loading) {
+      setProfileDetails(profile)
+    }
+  }, [profile])
 
   const handleSave = () => {
     // Handle save logic here
   };
+
   return (
     <>
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
@@ -31,22 +40,22 @@ export default function EditUserAddressCard() {
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                 <div>
                   <Label>Country</Label>
-                  <Input type="text" value={profile?.country} placeholder="United States" />
+                  <Input type="text" value={profileDetails?.country} placeholder="United States" />
                 </div>
 
                 <div>
                   <Label>City/State</Label>
-                  <Input type="text"value={profile?.city} placeholder="Arizona, United States." />
+                  <Input type="text" value={profileDetails?.city} placeholder="Austin, TX." />
                 </div>
 
                 <div>
                   <Label>Postal Code</Label>
-                  <Input type="text"value={profile?.postal_code} placeholder="ERT 2489" />
+                  <Input type="text" value={profileDetails?.postal_code} placeholder="ERT 2489" />
                 </div>
 
                 <div>
                   <Label>TAX ID</Label>
-                  <Input type="text"value={profile?.tax_id} placeholder="AS4568384" />
+                  <Input type="text" value={profileDetails?.tax_id} placeholder="AS4568384" />
                 </div>
               </div>
             </div>
@@ -56,7 +65,7 @@ export default function EditUserAddressCard() {
                   Cancel
                 </Button>
               </Link>
-              <Button size="sm" onClick={handleSave}>
+              <Button disabled={profile === profileDetails} size="sm" onClick={handleSave}>
                 Save Changes
               </Button>
             </div>

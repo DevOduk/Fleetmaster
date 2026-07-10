@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
@@ -9,11 +9,33 @@ import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 
 export default function EditUserInfoCard() {
-  const { profile } = useUser();
+  const { profile, loading } = useUser();
+  const [profileDetails, setProfileDetails] = useState(profile || null);
+
+  useEffect(() => {
+    if (profile && !loading) {
+      setProfileDetails(profile)
+    }
+  }, [profile])
 
   const handleSave = () => {
     // Handle save logic here
   };
+
+
+  const handleInputChange = (field: string, value: string) => {
+    setProfileDetails((prev: any) => ({ ...prev, [field]: value }));
+  };
+  const handleSocialsInputChange = (field: string, value: string) => {
+    setProfileDetails((prev: any) => ({
+      ...prev,
+      socials: {
+        ...(prev?.socials || {}),
+        [field]: value,
+      },
+    }));
+  };
+
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
 
@@ -27,77 +49,34 @@ export default function EditUserInfoCard() {
           </p>
         </div>
         <form className="flex flex-col">
-          <div className="px-2 pb-3">
+
+          <div className="mt-7">
+            <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
+              Personal Information
+            </h5>
+
+            <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+              <EditableInput placeholder="John" type="text" label="First Name" value={profileDetails?.first_name} onChange={(v) => handleInputChange("first_name", v)} />
+              <EditableInput placeholder="Doe" type="text" label="Last Name" value={profileDetails?.last_name} onChange={(v) => handleInputChange("last_name", v)} />
+              <EditableInput placeholder="example@email.com" type="email" label="Email Address" value={profileDetails?.email} onChange={(v) => handleInputChange("email", v)} />
+              <EditableInput type="tel" label="Phone" value={profileDetails?.phone} onChange={(v) => handleInputChange("phone", v)} />
+              <EditableInput placeholder="Write a short bio about yourself" type="text" label="Bio" value={profileDetails?.bio} onChange={(v) => handleInputChange("bio", v)} />
+
+            </div>
+          </div>
+
+          <div className="px-2 pt-3">
             <div>
               <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
                 Social Links
               </h5>
 
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <div>
-                  <Label>Facebook</Label>
-                  <Input
-                    type="text"
-                    value={profile.socials?.facebook}
-                    placeholder="https://www.facebook.com/"
-                  />
-                </div>
+                <EditableInput placeholder="https://www.facebook.com/" type="text" label="Facebook" value={profileDetails?.socials?.facebook} onChange={(v) => handleSocialsInputChange("facebook", v)} />
+                <EditableInput placeholder="https://www.x.com/" type="text" label="x.com" value={profileDetails?.socials?.x} onChange={(v) => handleSocialsInputChange("x", v)} />
+                <EditableInput placeholder="https://www.linkedin.com/" type="text" label="Linkedin" value={profileDetails?.socials?.linkedin} onChange={(v) => handleSocialsInputChange("linkedin", v)} />
+                <EditableInput placeholder="https://www.instagram.com/" type="text" label="Instagram" value={profileDetails?.socials?.instagram} onChange={(v) => handleSocialsInputChange("instagram", v)} />
 
-                <div>
-                  <Label>X.com</Label>
-                  <Input type="text"
-                    value={profile.socials?.x} placeholder="https://x.com/" />
-                </div>
-
-                <div>
-                  <Label>Linkedin</Label>
-                  <Input
-                    type="text"
-                    value={profile.socials?.linkedin}
-                    placeholder="https://www.linkedin.com/company/"
-                  />
-                </div>
-
-                <div>
-                  <Label>Instagram</Label>
-                  <Input
-                    type="text"
-                    value={profile.socials?.instagram}
-                    placeholder="https://instagram.com/"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="mt-7">
-              <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-                Personal Information
-              </h5>
-
-              <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <div className="col-span-2 lg:col-span-1">
-                  <Label>First Name</Label>
-                  <Input type="text" placeholder="John" />
-                </div>
-
-                <div className="col-span-2 lg:col-span-1">
-                  <Label>Last Name</Label>
-                  <Input type="text" placeholder="Doe" />
-                </div>
-
-                <div className="col-span-2 lg:col-span-1">
-                  <Label>Email Address</Label>
-                  <Input type="text" placeholder="example@email.com" />
-                </div>
-
-                <div className="col-span-2 lg:col-span-1">
-                  <Label>Phone</Label>
-                  <Input type="text" placeholder="+1 093 633 9846" />
-                </div>
-
-                <div className="col-span-2">
-                  <Label>Bio</Label>
-                  <Input type="text" placeholder="Team Manager & Operations Supretendant" />
-                </div>
               </div>
             </div>
           </div>
@@ -107,12 +86,23 @@ export default function EditUserInfoCard() {
                 Cancel
               </Button>
             </Link>
-            <Button size="sm" onClick={handleSave}>
+            <Button disabled={profile === profileDetails} size="sm" onClick={handleSave}>
               Save Changes
             </Button>
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+
+
+function EditableInput({ label, value, onChange, type = "text", disabled, placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean; placeholder?: string; }) {
+  return (
+    <div className="col-span-2 lg:col-span-1 space-y-1 flex flex-col">
+      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">{label}</Label>
+      <Input placeholder={placeholder} disabled={disabled} type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="h-9" />
     </div>
   );
 }
