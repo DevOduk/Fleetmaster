@@ -57,7 +57,7 @@ const SystemUsers = () => {
       }
       setLoading(false)
     }
-    
+
     getAdmins();
   }, [profile])
 
@@ -135,8 +135,8 @@ const SystemUsers = () => {
         </div>
 
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
-          <div className="max-w-full overflow-x-auto">
-            <div className="min-w-275">
+          <div className="max-w-full overflow-x-auto custom-scrollbar">
+            <div className="min-w-275 min-h-100">
               <Table>
                 {/* Table Header */}
                 <TableHeader className="border-b border-gray-100 dark:border-white/5">

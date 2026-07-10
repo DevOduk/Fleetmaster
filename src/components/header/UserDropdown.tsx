@@ -9,6 +9,7 @@ import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined"
 import Badge from "../ui/badge/Badge";
+import userVerified from "@/utils/clients/checkverification";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -66,7 +67,7 @@ export default function UserDropdown() {
         className="absolute right-0 top-full mt-2 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"      >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-300">
-            {profile?.first_name} {profile?.last_name} ● <Badge size="sm" color="error">Not Verified</Badge>
+            {profile?.first_name} {profile?.last_name} ● {userVerified(profile) ? <Badge size="sm" color="success">Verified</Badge> : <Badge size="sm" color="error">Not Verified</Badge>}
 
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">

@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useModal } from "../../hooks/useModal";
 import Button from "../ui/button/Button";
 import Label from "../form/Label";
 import Select from "../form/Select";
@@ -11,7 +10,6 @@ import { toast } from 'sonner';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { useSettings } from "@/context/SettingsContext";
 import { useTheme } from "@/context/ThemeContext";
-import Input from "../form/input/InputField";
 import { useUser } from "@/context/UserContext";
 import Checkbox from "../form/input/Checkbox";
 

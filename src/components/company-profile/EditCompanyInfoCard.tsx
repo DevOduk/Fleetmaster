@@ -14,6 +14,8 @@ import Button from "../ui/button/Button";
 import { useToast } from "@/context/ToastContext";
 import { CircularProgress } from "@mui/material";
 import UpdateYardsModal from "../yards/UpdateYardsModal";
+import { applyThemeVariables } from "../ThemeInitializer";
+import { createClient } from "@/utils/supabase/client";
 
 
 
@@ -24,6 +26,7 @@ export default function EditCompanyInfoCard() {
   const [updatingCompany, setUpdatingCompany] = useState<boolean>(false);
   const [companyFormData, setCompanyFormData] = useState<any>(null);
   const { showToast } = useToast();
+  const supabase = createClient();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -82,22 +85,43 @@ export default function EditCompanyInfoCard() {
   const handleInputChange = (field: string, value: string) => {
     setCompanyFormData((prev: any) => ({ ...prev, [field]: value }));
   };
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    if ((file.size / (1024 * 1024)) > 20) {
+      showToast('Image file (PNG, WEBP, JPEG) must be 20MB or below!', 'error');
+      return;
+    }
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    // Validate file type
+    if (!allowedTypes.includes(file.type)) {
+      showToast('Please select a valid image file (PNG, WEBP, JPEG)!', 'error');
+      return;
+    }
 
-    if (file) {
-      // Optional: Add a size check (e.g., max 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        alert("File is too large. Please select an image under 2MB.");
-        return;
-      }
+    try {
+      // 1. Upload file to Supabase bucket (replace 'your-bucket-name' with yours)
+      const fileExt = file.name.split('.').pop();
+      const fileName = `Images/${Math.random()}.${fileExt}`;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        handleInputChange("tenant_logo", base64String);
-      };
-      reader.readAsDataURL(file);
+      const { data, error } = await supabase.storage
+        .from('fleetmaster_files')
+        .upload(fileName, file);
+      if (error) throw error;
+
+      // 2. Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('fleetmaster_files')
+        .getPublicUrl(fileName);
+
+      console.log(publicUrl)
+              handleInputChange("tenant_logo", publicUrl);
+
+
+    } catch (error) {
+      showToast(error.message, 'error')
+      console.error('Error uploading image:', error.message);
     }
   };
 
@@ -111,6 +135,12 @@ export default function EditCompanyInfoCard() {
       showToast("Company details updated successfully!", "success");
       setCompany(companyFormData); // Update the local state with the new data
       setUpdatingCompany(false);
+
+      if (companyFormData?.color?.trim()) {
+        applyThemeVariables(companyFormData?.color?.trim());
+
+        localStorage.setItem("brand-color", companyFormData?.color?.trim());
+      }
     } else {
       showToast(res.error.message || "Failed to update company details. Please try again.", "error");
       setUpdatingCompany(false);
@@ -218,7 +248,7 @@ export default function EditCompanyInfoCard() {
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
             {companyFormData.tenant_logo ? (
-              <img src={companyFormData.tenant_logo} alt="Company Logo" className="h-full w-full object-contain p-1 bg-white" />
+              <img src={companyFormData.tenant_logo} alt="" className="h-full w-full object-contain p-1 bg-white" />
             ) : (
               <span className="text-xl font-bold text-gray-400">{company.name?.charAt(0)}</span>
             )}
@@ -237,16 +267,15 @@ export default function EditCompanyInfoCard() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <EditableInput label="Slug (e.g., mycompanyslug.fleetmaster.co.ke)" value={companyFormData.slug} onChange={(v) => handleInputChange("slug", v.replace(' ', ''))} />
             <EditableInput label="Company Name" value={companyFormData.name} onChange={(v) => handleInputChange("name", v)} />
-            {/* replace with an image input field for company logo  */}
 
             {/* <EditableInput type="file" label="Company Logo" value={companyFormData.tenant_logo} onChange={(v) => handleInputChange("tenant_logo", v)} /> */}
             <div className="flex flex-col space-y-1">
               <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Company Logo (PNG, JPG, WEBP, TIFF up to 2MB)</Label>
               <div className="flex items-center gap-4">
-                <img src={companyFormData.tenant_logo} alt="Company Logo" className="h-11 w-[30%] object-contain rounded p-1 px-2 bg-white" />
+                <img src={companyFormData.tenant_logo} alt="" className="h-11 w-[30%] object-contain rounded p-1 px-2 bg-white" />
 
                 <input type="file" accept="image/*"
-                  onChange={handleFileChange}
+                  onChange={handleFileUpload}
                   className="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 dark:border-gray-600"
                 />
               </div>
@@ -262,7 +291,8 @@ export default function EditCompanyInfoCard() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <EditableInput disabled={updatingCompany} type="email" label="Email Address" value={companyFormData.email} onChange={(v) => handleInputChange("email", v)} />
             <EditableInput disabled={updatingCompany} type="tel" label="Primary Phone Number" value={companyFormData.phone} onChange={(v) => handleInputChange("phone", v)} />
-            <EditableInput disabled={updatingCompany} label="Location" value={`${companyFormData.county}, ${companyFormData.country}`} onChange={(v) => handleInputChange("location", v)} />
+            <EditableInput disabled={updatingCompany} label="State/County" value={companyFormData.county} onChange={(v) => handleInputChange("county", v)} />
+            <EditableInput disabled={updatingCompany} label="Country" value={companyFormData.country} onChange={(v) => handleInputChange("country", v)} />
             <EditableInput disabled={updatingCompany} label="City" value={companyFormData.city} onChange={(v) => handleInputChange("city", v)} />
             <EditableInput disabled={updatingCompany} label="Zip Code" value={companyFormData.zip_code} onChange={(v) => handleInputChange("zip_code", v)} />
             <EditableInput disabled={updatingCompany} label="Address" value={companyFormData.address} onChange={(v) => handleInputChange("address", v)} />
@@ -275,6 +305,8 @@ export default function EditCompanyInfoCard() {
             <EditableInput disabled={updatingCompany} label="Language" value={companyFormData.language} onChange={(v) => handleInputChange("language", v)} />
             <EditableInput disabled={updatingCompany} label="Currency" value={companyFormData.currency} onChange={(v) => handleInputChange("currency", v)} />
             <EditableInput disabled={updatingCompany} type="number" label="Buffer (Hours)" value={companyFormData.buffer} onChange={(v) => handleInputChange("buffer", v)} />
+            <EditableInput disabled={updatingCompany} type="number" label="Monthly Target" value={companyFormData.monthly_target} onChange={(v) => handleInputChange("monthly_target", v)} />
+            <EditableInput disabled={updatingCompany} type="color" label="Color Preference" value={companyFormData.color} onChange={(v) => handleInputChange("color", v)} />
           </div>
         </ComponentCard>
 

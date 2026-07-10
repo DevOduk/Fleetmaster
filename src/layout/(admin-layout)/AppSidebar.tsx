@@ -237,7 +237,7 @@ const AppSidebar: React.FC = () => {
         updatedNav.subItems = updatedNav.subItems.map((sub) => {
           const updatedSub = { ...sub };
           if (updatedSub.path === "/bookings") {
-            updatedSub.count = [true, bookings.filter(b => b.booking_status !== 'Reserved').length];
+            updatedSub.count = [true, bookings.length];
           }
           return updatedSub;
         });

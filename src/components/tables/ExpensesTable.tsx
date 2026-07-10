@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
-import { PencilIcon, TrashBinIcon } from "@/icons";
+import { ArrowRightIcon, PencilIcon, TrashBinIcon } from "@/icons";
 import Button from "../ui/button/Button";
 import Link from "next/link";
 import { CircularProgress } from "@mui/material";
@@ -21,7 +21,7 @@ export default function ExpensesTable() {
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
       <div className="max-w-full overflow-x-auto">
-        <div className="min-w-275.5">
+        <div className="min-w-275.5 min-h-100">
           <Table>
             {/* Table Header */}
             <TableHeader className="border-b border-gray-100 dark:border-white/5">
@@ -146,26 +146,27 @@ export default function ExpensesTable() {
                             }
                           >
                             {booking.bookingStatus === "Active"
-                                ? "Failed"
-                                : booking.bookingStatus === "Reserved"
-                                  ? "Processing"
-                                  : "Success"}
+                              ? "Failed"
+                              : booking.bookingStatus === "Reserved"
+                                ? "Processing"
+                                : "Success"}
                           </Badge>
                         </TableCell>
                         <TableCell className="px-4 flex gap-3 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                           <Link href={'/bookings/' + booking.id + '/edit'}>
-                            <Button size="sm" variant="danger-outline"
+                            <button
+                              className="flex text-nowrap items-center justify-center p-2 px-3 font-medium rounded-lg bg-gray-200 dark:bg-gray-800 text-red-500 text-theme-sm hover:bg-red-600"
                             >
                               Delete <TrashBinIcon className="ml-1" />
-                            </Button>
+                            </button>
                           </Link>
                           <Link href={'/bookings/' + booking.id}>
 
-                            <Button
-                              className="flex text-nowrap items-center justify-center font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+                            <button
+                                className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
                             >
-                              View Expense
-                            </Button>
+                              View <ArrowRightIcon className="ml-1" />
+                            </button>
                           </Link>
                         </TableCell>
                       </TableRow>

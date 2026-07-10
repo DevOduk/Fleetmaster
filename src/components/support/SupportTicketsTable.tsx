@@ -109,7 +109,7 @@ const Support: React.FC = () => {
       {/* 1. Ticket Form Section */}
       {
         mode === "New Ticket" &&
-        <ComponentCard title="Contact Support Request">
+        <ComponentCard className="mx-auto max-w-5xl" title="Contact Support Request">
           <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90 mb-4">
             Are you experiencing any issues? Please let us know:
           </p>
@@ -164,6 +164,7 @@ const Support: React.FC = () => {
                 value={messageTwo}
                 onChange={(value) => setMessageTwo(value)}
                 hint="Please enter a detailed message."
+                className="text-black! dark:text-white!"
               />
             </div>
 

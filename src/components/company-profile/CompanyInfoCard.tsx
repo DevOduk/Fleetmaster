@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import ComponentCard from "../common/ComponentCard";
 import ExpiryBanner from "./ExpiryBanner";
+import { formatedValue } from "../ecommerce/MonthlyTarget";
 
 
 export default function CompanyInfoCard() {
@@ -143,7 +144,7 @@ export default function CompanyInfoCard() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <DataPoint label="Email Address" value={company.email} />
             <DataPoint label="Primary Phone Number" value={company.phone} />
-            <DataPoint label="Location" value={`${company.county}, ${company.country}`} />
+            <DataPoint label="Location" value={`${company.county || 'N/A'}, ${company.country}`} />
             <DataPoint label="City" value={`${company.city || "N/A"}`} />
             <DataPoint label="Zip Code" value={`${company.zip_code || "N/A"}`} />
             <DataPoint label="Address" value={`${company.address || "N/A"}`} />
@@ -158,6 +159,7 @@ export default function CompanyInfoCard() {
             <DataPoint label="Currency" value={company.currency} />
             <DataPoint label="Buffer (Hours)" value={`${company.buffer || "N/A"} hrs`} />
             <DataPoint label="Color Preference" value={`${company.color || "Default"}`} />
+            <DataPoint label="Monthly Target" value={formatedValue(company?.monthly_target)} />
           </div>
         </ComponentCard>
 
@@ -195,8 +197,14 @@ function DataPoint({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800/30">
       <span className="mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">{label}</span>
-      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-        {value || <span className="text-gray-300 font-normal italic">N/A</span>}
+      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+{label === 'Color Preference' && (
+  <span 
+    className="w-4 h-4 rounded-full inline-block mr-2" 
+    style={{ backgroundColor: value }}
+  >
+  </span>
+)}        {value || <span className="text-gray-300 font-normal italic">N/A</span>}
       </span>
     </div>
   );

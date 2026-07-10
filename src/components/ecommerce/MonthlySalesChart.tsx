@@ -50,7 +50,7 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
 export default function MonthlySalesChart({bookings, expenses}: {bookings: any, expenses: any}) {
 
   const options: ApexOptions = {
-    colors: ["var(--color-brand-500)", "var(--color-brand-400)"],
+    colors: ["var(--color-brand-500)", "var(--color-red-500)"],
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "bar",

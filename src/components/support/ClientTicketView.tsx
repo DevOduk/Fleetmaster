@@ -150,7 +150,7 @@ export default function ClientTicketView() {
                         Ticket {ticket.ticket_number}
                     </h1>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Support conversation thread
+                        Support conversation thread | <span className="text-gray-600 dark:text-gray-400">Typically responds within 6 to 12 hrs</span>
                     </p>
 
                     <div className="mt-5">

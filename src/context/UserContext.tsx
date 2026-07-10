@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useToast } from "./ToastContext";
+import { applyThemeVariables } from "@/components/ThemeInitializer";
 
 interface UserContextType {
   profile: any | null;
@@ -50,6 +51,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         setProfile(data.user);
+        applyThemeVariables(data.user?.fleetmaster_tenants?.color);
+        
         return { success: true };
       } else {
         return { success: false, error: data.error };

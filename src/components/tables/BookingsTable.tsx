@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
-import { PencilIcon } from "@/icons";
+import { ArrowRightIcon, PencilIcon } from "@/icons";
 import Button from "../ui/button/Button";
 import Link from "next/link";
 import { CircularProgress } from "@mui/material";
@@ -49,7 +49,7 @@ export default function BookingsTable() {
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
         <div className="max-w-full overflow-x-auto custom-scrollbar">
-          <div className="min-w-275">
+          <div className="min-w-275 min-h-100">
             <Table>
               {/* Table Header */}
               <TableHeader className="border-b border-gray-100 dark:border-white/5">
@@ -140,7 +140,7 @@ export default function BookingsTable() {
                           <TableCell className="px-5 py-4 sm:px-6 text-start">
                             <div className="flex items-center gap-3 min-w-62.5">
                               <img
-                                className="w-20 object-fit-cover object-center"
+                                className="w-20 object-fit-cover rounded-lg object-center"
                                 style={{ objectFit: 'cover', objectPosition: 'center' }}
                                 // src={order.user.image}
                                 src={booking?.vehicleDetails?.image_url}
@@ -203,7 +203,7 @@ export default function BookingsTable() {
                               <button
                                 className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
                               >
-                                View Booking
+                                View <ArrowRightIcon />
                               </button>
                             </Link>
                           </TableCell>

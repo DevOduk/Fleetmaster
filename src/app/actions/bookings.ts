@@ -42,6 +42,7 @@ export async function fetchBookingsForAdmin(tenantId: string) {
     .from("fleetmaster_bookings")
     .select(`*, vehicleDetails:fleetmaster_vehicles(*)`)
     .eq("tenant_id", tenantId)
+    .neq("booking_status", 'Reserved')
     .order('created_at', { ascending: false });
 
   return { data, success: !error, error };
@@ -54,6 +55,7 @@ export async function fetchBookingsForTenant(tenantId: string) {
     .from("fleetmaster_bookings")
     .select(`*, vehicleDetails:fleetmaster_vehicles(*)`)
     .eq("tenant_id", tenantId)
+    .neq("booking_status", 'Reserved')
     .order('created_at', { ascending: false });
 
   return { data, success: !error, error };

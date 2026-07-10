@@ -121,7 +121,7 @@ const averageDailyThisMonth = today > 0 ? (totalCountThisMonth / today).toFixed(
                 </p>
               </div> */}
 
-              <div key={i} className="rounded-2xl border border-gray-200 px-5 py-3 dark:border-gray-800 bg-brand-500/5 space-y-3">
+                    <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6 space-y-3" key={i}>
                 <span className="text-lg font-bold text-gray-800 dark:text-gray-300">
                   {p.title}
                 </span>

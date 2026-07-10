@@ -28,7 +28,7 @@
 //       try {
 //         const hostname = window.location.hostname;
 //         const parts = hostname.split(".");
-        
+
 //         let slug = parts.length > 1 ? parts[0] : null;
 //         if (hostname === "localhost" || parts.includes("fleetmaster")) {
 //            if (parts.length <= 2) slug = null; 
@@ -42,14 +42,14 @@
 //         }
 
 //         const res = await fetch(`/api/tenants/resolve?slug=${slug}`);
-        
+
 //         // 2. Handle 404 cleanly instead of looping infinitely
 //         if (!res.ok) {
 //           console.warn(`Tenant workspace "${slug}" could not be resolved.`);
 //           setTenant(null); 
 //           return;
 //         }
-        
+
 //         const data = await res.json();
 //         setTenant(data.tenant);
 //       } catch (err: any) {
@@ -81,6 +81,7 @@
 
 // src/context/TenantContext.tsx
 "use client";
+import { applyThemeVariables } from "@/components/ThemeInitializer";
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface TenantContextType {
@@ -110,23 +111,23 @@ export function TenantProvider({ children, initialTenant = null }: TenantProvide
         const hostname = window.location.hostname;
         const pathname = window.location.pathname;
         const parts = hostname.split(".");
-        
+
         let slug: string | null = parts.length > 1 ? parts[0] : null;
 
         // --- NEW: VERCEL FLAT ROUTE SUB-FOLDER EXTRACTION ---
         if (hostname.includes("vercel.app")) {
           const pathSegments = pathname.split("/").filter(Boolean);
           const clientSiteIndex = pathSegments.indexOf("client-site");
-          
+
           if (clientSiteIndex !== -1 && pathSegments[clientSiteIndex + 1]) {
             slug = pathSegments[clientSiteIndex + 1];
           } else {
             slug = null; // We are on the root platform domain
           }
-        } 
+        }
         // Localhost and traditional custom domain resolution rules
         else if (hostname === "localhost" || parts.includes("fleetmaster")) {
-          if (parts.length <= 2) slug = null; 
+          if (parts.length <= 2) slug = null;
         }
 
         // If it's a root domain or global management portal (no tenant slug)
@@ -136,20 +137,23 @@ export function TenantProvider({ children, initialTenant = null }: TenantProvide
         }
 
         const res = await fetch(`/api/tenants/resolve?slug=${slug}`);
-        
+
         // 2. Handle errors cleanly and let it fall through to the finally block
         if (!res.ok) {
           console.warn(`Tenant workspace "${slug}" could not be resolved.`);
-          setTenant(null); 
+          setTenant(null);
           return; // Safely lands down inside the finally block
         }
-        
+
         const data = await res.json();
         setTenant(data.tenant);
+
+        applyThemeVariables(data.tenant?.color.trim());
+        localStorage.setItem("brand-color", data.tenant?.color?.trim());
       } catch (err: any) {
         console.error("Tenant Context resolution error:", err);
         setError(err.message || "An error occurred");
-        setTenant(null); 
+        setTenant(null);
       } finally {
         // This is now guaranteed to run on success, 404, or hard runtime catch crashes!
         setLoading(false);

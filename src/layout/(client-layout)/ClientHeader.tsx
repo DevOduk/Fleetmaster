@@ -15,7 +15,8 @@ import { useFleet } from "@/context/FleetContext";
 import { fetchUserTickets } from "@/app/actions/support";
 import { createClient } from "@/utils/supabase/client";
 import SearchModal from "@/components/header/SearchModal";
-    const supabase = createClient();
+import userVerified from "@/utils/clients/checkverification";
+const supabase = createClient();
 
 
 export default function ClientHeader() {
@@ -123,35 +124,72 @@ export default function ClientHeader() {
     }, []);
 
 
+    const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+
+    useEffect(() => {
+        if (!profile) return;
+        const t = setTimeout(() => {
+            const verified = userVerified(profile);
+            if (!verified) setShowVerificationMessage(true);
+        }, 10000);
+        return () => clearTimeout(t);
+    }, [profile]);
+
+
     return (
-    <header className="sticky top-0 flex w-full bg-white border-gray-200 z-99 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
-            {profile?.role === 'Client' && <VerificationBanner profile={profile} />}
-            <div className="flex container m-auto flex-col items-center justify-between grow lg:flex-row lg:px-2">
-                <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
+        <>
 
-                    <Link href="/" className="lg:block">
-                        {tenantLoading ? (
-                            <div className="h-8 w-40 rounded bg-gray-500 animate-pulse"></div>
-                        ) : (
-                            <img
-                                style={{
-                                    width: 154,
-                                    height: 32,
-                                }}
-                                className="w-auto object-contain"
-                                src={tenant.tenant_logo || "http://localhost:3000/images/logo/logo.svg"}
-                                alt={`${tenant.name} Logo`}
-                            />
-                        )}
-                    </Link>
-
-                    <button
-                        onClick={toggleApplicationMenu}
-                        className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg z-99999 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
+            {showVerificationMessage && (
+                <div className="rounded-xl container mx-auto border p-3 flex items-center gap-3 m-2 border-error-500 bg-error-50 dark:border-error-500/30 dark:bg-error-500/15 relative">
+                    <svg
+                        className="fill-current"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
                     >
-                        {isApplicationMenuOpen ? <CloseOutlinedIcon /> : <MenuOutlinedIcon />}
+                        <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M20.3499 12.0004C20.3499 16.612 16.6115 20.3504 11.9999 20.3504C7.38832 20.3504 3.6499 16.612 3.6499 12.0004C3.6499 7.38881 7.38833 3.65039 11.9999 3.65039C16.6115 3.65039 20.3499 7.38881 20.3499 12.0004ZM11.9999 22.1504C17.6056 22.1504 22.1499 17.6061 22.1499 12.0004C22.1499 6.3947 17.6056 1.85039 11.9999 1.85039C6.39421 1.85039 1.8499 6.3947 1.8499 12.0004C1.8499 17.6061 6.39421 22.1504 11.9999 22.1504ZM13.0008 16.4753C13.0008 15.923 12.5531 15.4753 12.0008 15.4753L11.9998 15.4753C11.4475 15.4753 10.9998 15.923 10.9998 16.4753C10.9998 17.0276 11.4475 17.4753 11.9998 17.4753L12.0008 17.4753C12.5531 17.4753 13.0008 17.0276 13.0008 16.4753ZM11.9998 6.62898C12.414 6.62898 12.7498 6.96476 12.7498 7.37898L12.7498 13.0555C12.7498 13.4697 12.414 13.8055 11.9998 13.8055C11.5856 13.8055 11.2498 13.4697 11.2498 13.0555L11.2498 7.37898C11.2498 6.96476 11.5856 6.62898 11.9998 6.62898Z"
+                            fill="#F04438"
+                        />
+                    </svg>
+                    <p className="text-sm w-full text-gray-500 dark:text-gray-400">
+                        Your account is not verified. Some features may not work. <Link className="text-brand-500" href={'/profile'}>Verify Now</Link>
+                    </p>
+                    <CloseOutlinedIcon fontSize="small" className='text-red-500 cursor-pointer' onClick={() => setShowVerificationMessage(false)} />
+                </div>
+            )}
+            <header className="sticky top-0 flex w-full bg-white border-gray-200 z-99 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
+                {profile?.role === 'Client' && <VerificationBanner profile={profile} />}
+                <div className="flex container m-auto flex-col items-center justify-between grow lg:flex-row lg:px-2">
+                    <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
 
-                        {/* <svg
+                        <Link href="/" className="lg:block">
+                            {tenantLoading ? (
+                                <div className="h-8 w-40 rounded bg-gray-500 animate-pulse"></div>
+                            ) : (
+                                <img
+                                    style={{
+                                        width: 154,
+                                        height: 32,
+                                    }}
+                                    className="w-auto object-contain"
+                                    src={tenant.tenant_logo || "http://localhost:3000/images/logo/logo.svg"}
+                                    alt={`${tenant.name} Logo`}
+                                />
+                            )}
+                        </Link>
+
+                        <button
+                            onClick={toggleApplicationMenu}
+                            className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg z-99999 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
+                        >
+                            {isApplicationMenuOpen ? <CloseOutlinedIcon /> : <MenuOutlinedIcon />}
+
+                            {/* <svg
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -165,92 +203,93 @@ export default function ClientHeader() {
                                 fill="currentColor"
                             />
                         </svg> */}
-                    </button>
-                    {navLinks.map((link, index) => {
-                        const isActive = pathname === link.href;
-                        return (
-                            <Link key={index} href={link.href} className={`p-2 hover:text-brand-500 text-nowrap dark:hover:text-brand-500 text-theme-sm ${isActive ? "text-brand-500 dark:text-brand-600 font-semibold" : "text-gray-500 dark:text-gray-400"} hidden lg:block`}>
-                                {link.name}
-                            </Link>
-                        )
-                    })}
-                </div>
-
-                <div
-                    className={`${isApplicationMenuOpen ? "flex w-full" : "hidden"
-                        } ms-auto items-center justify-between gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
-                >
-                    <div className="hidden xl:block">
-                        <div>
-                            <div className="relative">
-                                <span className="absolute -translate-y-1/2 left-4 top-1/2 pointer-events-none">
-                                    <svg
-                                        className="fill-gray-500 dark:fill-gray-400"
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 20 20"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            fillRule="evenodd"
-                                            clipRule="evenodd"
-                                            d="M3.04175 9.37363C3.04175 5.87693 5.87711 3.04199 9.37508 3.04199C12.8731 3.04199 15.7084 5.87693 15.7084 9.37363C15.7084 12.8703 12.8731 15.7053 9.37508 15.7053C5.87711 15.7053 3.04175 12.8703 3.04175 9.37363ZM9.37508 1.54199C5.04902 1.54199 1.54175 5.04817 1.54175 9.37363C1.54175 13.6991 5.04902 17.2053 9.37508 17.2053C11.2674 17.2053 13.003 16.5344 14.357 15.4176L17.177 18.238C17.4699 18.5309 17.9448 18.5309 18.2377 18.238C18.5306 17.9451 18.5306 17.4703 18.2377 17.1774L15.418 14.3573C16.5365 13.0033 17.2084 11.2669 17.2084 9.37363C17.2084 5.04817 13.7011 1.54199 9.37508 1.54199Z"
-                                            fill=""
-                                        />
-                                    </svg>
-                                </span>
-                                <input
-                                    ref={inputRef}
-                                    onClick={() => setIsOpen(true)}
-                                    type="text"
-                                    placeholder="hold ctrl + k to search"
-                                    className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/3 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-107.5"
-                                />
-
-                                <button className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-1.75 py-[4.5px] text-xs tracking-[-0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/3 dark:text-gray-400">
-                                    <span> ⌘ </span>
-                                    <span> K </span>
-                                </button>
-                            </div>
-
-
-
-                            <SearchModal
-                                isOpen={isOpen}
-                                setIsOpen={setIsOpen}
-                                Tickets={cachedTickets}
-                                Bookings={cachedBookings}
-                                Vehicles={tenantVehicles}
-                                PAGES={CLIENT_PAGES}
-                            />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 2xsm:gap-3">
-                        {/* <!-- Dark Mode Toggler --> */}
-                        <ThemeToggleButton />
-                        {/* <!-- Dark Mode Toggler --> */}
-
-                        <NotificationDropdown />
-                        {/* <!-- Notification Menu Area --> */}
-                    </div>
-                    {/* <!-- User Area --> */}
-                    <UserDropdown />
-                </div>
-                {isApplicationMenuOpen && (
-                    <div className="flex p-2 flex-col gap-2 w-full lg:hidden">
+                        </button>
                         {navLinks.map((link, index) => {
                             const isActive = pathname === link.href;
                             return (
-                                <Link onClick={toggleApplicationMenu} key={index} href={link.href} className={`p-2 hover:text-brand-500 dark:hover:text-brand-500 text-theme-sm text-nowrap ${isActive ? "text-brand-500 dark:text-brand-600 font-semibold" : "text-gray-500 dark:text-gray-400"} block lg:hidden`}>
+                                <Link key={index} href={link.href} className={`p-2 hover:text-brand-500 text-nowrap dark:hover:text-brand-500 text-theme-sm ${isActive ? "text-brand-500 dark:text-brand-600 font-semibold" : "text-gray-500 dark:text-gray-400"} hidden lg:block`}>
                                     {link.name}
                                 </Link>
                             )
                         })}
                     </div>
-                )
-                }
-            </div>
-        </header>
+
+                    <div
+                        className={`${isApplicationMenuOpen ? "flex w-full" : "hidden"
+                            } ms-auto items-center justify-between gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
+                    >
+                        <div className="hidden xl:block">
+                            <div>
+                                <div className="relative">
+                                    <span className="absolute -translate-y-1/2 left-4 top-1/2 pointer-events-none">
+                                        <svg
+                                            className="fill-gray-500 dark:fill-gray-400"
+                                            width="20"
+                                            height="20"
+                                            viewBox="0 0 20 20"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                clipRule="evenodd"
+                                                d="M3.04175 9.37363C3.04175 5.87693 5.87711 3.04199 9.37508 3.04199C12.8731 3.04199 15.7084 5.87693 15.7084 9.37363C15.7084 12.8703 12.8731 15.7053 9.37508 15.7053C5.87711 15.7053 3.04175 12.8703 3.04175 9.37363ZM9.37508 1.54199C5.04902 1.54199 1.54175 5.04817 1.54175 9.37363C1.54175 13.6991 5.04902 17.2053 9.37508 17.2053C11.2674 17.2053 13.003 16.5344 14.357 15.4176L17.177 18.238C17.4699 18.5309 17.9448 18.5309 18.2377 18.238C18.5306 17.9451 18.5306 17.4703 18.2377 17.1774L15.418 14.3573C16.5365 13.0033 17.2084 11.2669 17.2084 9.37363C17.2084 5.04817 13.7011 1.54199 9.37508 1.54199Z"
+                                                fill=""
+                                            />
+                                        </svg>
+                                    </span>
+                                    <input
+                                        ref={inputRef}
+                                        onClick={() => setIsOpen(true)}
+                                        type="text"
+                                        placeholder="hold ctrl + k to search"
+                                        className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/3 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-107.5"
+                                    />
+
+                                    <button className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-1.75 py-[4.5px] text-xs tracking-[-0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/3 dark:text-gray-400">
+                                        <span> ⌘ </span>
+                                        <span> K </span>
+                                    </button>
+                                </div>
+
+
+
+                                <SearchModal
+                                    isOpen={isOpen}
+                                    setIsOpen={setIsOpen}
+                                    Tickets={cachedTickets}
+                                    Bookings={cachedBookings}
+                                    Vehicles={tenantVehicles}
+                                    PAGES={CLIENT_PAGES}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 2xsm:gap-3">
+                            {/* <!-- Dark Mode Toggler --> */}
+                            <ThemeToggleButton />
+                            {/* <!-- Dark Mode Toggler --> */}
+
+                            <NotificationDropdown />
+                            {/* <!-- Notification Menu Area --> */}
+                        </div>
+                        {/* <!-- User Area --> */}
+                        <UserDropdown />
+                    </div>
+                    {isApplicationMenuOpen && (
+                        <div className="flex p-2 flex-col gap-2 w-full lg:hidden">
+                            {navLinks.map((link, index) => {
+                                const isActive = pathname === link.href;
+                                return (
+                                    <Link onClick={toggleApplicationMenu} key={index} href={link.href} className={`p-2 hover:text-brand-500 dark:hover:text-brand-500 text-theme-sm text-nowrap ${isActive ? "text-brand-500 dark:text-brand-600 font-semibold" : "text-gray-500 dark:text-gray-400"} block lg:hidden`}>
+                                        {link.name}
+                                    </Link>
+                                )
+                            })}
+                        </div>
+                    )
+                    }
+                </div>
+            </header>
+        </>
     );
 }

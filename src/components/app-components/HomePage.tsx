@@ -34,7 +34,7 @@ function HomePage() {
     async function fetchAllBookings() {
       try {
         const response = await fetchExpensesForAdmin(profile?.tenant_id);
-        console.log('expense db response: ', response)
+
         if (response.success) {
           setExpenses(response.data);
         } else {
@@ -62,7 +62,7 @@ function HomePage() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 md:gap-6">
                 {
                   [...Array(4)].map((_, i) => (
-                    <div key={i} className="rounded-2xl animate-pulse border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-800 md:p-6">
+                    <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6 space-y-3" key={i}>
                       <div className="flex items-center justify-center w-12 h-12 bg-gray-50 rounded-xl dark:bg-gray-700" />
                       <div className="flex items-end justify-between mt-5">
                         <div>
@@ -177,27 +177,27 @@ function HomePage() {
 
                 </div>
               </div>
-                          </div>
-            </> : vehicles.length < 1 ? (
-              <div className="flex w-full flex-col items-center justify-center min-h-[70vh] m-auto p-8 text-center rounded-2xl shadow-sm col-span-12">
-                <div className="flex items-center justify-center w-16 h-16 mb-6 bg-white rounded-full">
-                  <svg className="w-8 h-8 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                  </svg>
-                </div>
-
-                <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Add your first vehicle</h2>
-                <p className="max-w-md mb-8 text-gray-500 text-sm">
-                  You're all set up! Start tracking your fleet by adding your first vehicle to the system. It only takes a minute.
-                </p>
-
-                <Link href="/vehicles/new"
-                  className="inline-flex items-center px-6 py-3 text-sm gap-3 font-semibold text-white transition-all bg-brand-600 rounded-lg shadow-lg hover:bg-blue-700 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
-                  <PlusIcon />
-                  Register New Vehicle
-                </Link>
+            </div>
+          </> : vehicles.length < 1 ? (
+            <div className="flex w-full flex-col items-center justify-center min-h-[70vh] m-auto p-8 text-center rounded-2xl shadow-sm col-span-12">
+              <div className="flex items-center justify-center w-16 h-16 mb-6 bg-white rounded-full">
+                <svg className="w-8 h-8 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
               </div>
-            ) : (
+
+              <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Add your first vehicle</h2>
+              <p className="max-w-md mb-8 text-gray-500 text-sm">
+                You're all set up! Start tracking your fleet by adding your first vehicle to the system. It only takes a minute.
+              </p>
+
+              <Link href="/vehicles/new"
+                className="inline-flex items-center px-6 py-3 text-sm gap-3 font-semibold text-white transition-all bg-brand-600 rounded-lg shadow-lg hover:bg-blue-700 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
+                <PlusIcon />
+                Register New Vehicle
+              </Link>
+            </div>
+          ) : (
             <>
               <div className="col-span-12">
                 <EcommerceMetrics bookings={bookings} loading={LoadingBookings || loading} vehicles={vehicles} loadingVehicles={loadingVehicles} />

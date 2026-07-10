@@ -18,7 +18,7 @@ const Feedback: React.FC = () => {
   const { showToast } = useToast();
 
   // Form input control states
-  const [category, setCategory] = useState("UI/UX");
+  const [category, setCategory] = useState("");
   const [rating, setRating] = useState<number | null>(0);
   const [description, setDescription] = useState("");
 
@@ -102,7 +102,7 @@ const Feedback: React.FC = () => {
 
   return (
     <div>
-      <div className="space-y-6">
+      <div className="space-y-6 mx-auto max-w-6xl">
         <ComponentCard title="Submit Feedback">
           <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90 mb-4">
             Writing review as <span className="text-brand-500 font-semibold">{profile?.first_name} {profile?.last_name}</span> ({profile?.fleetmaster_tenants?.name || "Loading Company..."})
@@ -115,7 +115,7 @@ const Feedback: React.FC = () => {
               <Input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="Enter Feedback/Revie title"
+                placeholder="e.g Excellent customer service"
                 className="w-full mt-1 p-2.5 border rounded-lg bg-transparent border-gray-200 dark:border-white/10 text-theme-sm text-gray-800 dark:text-white/90 outline-none focus:border-brand-500"
               />
             </div>

@@ -54,7 +54,7 @@ export default function VehiclesTable() {
     <div>
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
         <div className="max-w-full overflow-x-auto">
-          <div className="min-w-275.5">
+          <div className="min-w-275.5 min-h-100">
             <Table>
               {/* Table Header */}
               <TableHeader className="border-b border-gray-100 dark:border-white/5">
@@ -133,7 +133,7 @@ export default function VehiclesTable() {
                       <TableCell className="px-5 py-4 sm:px-6 text-start">
                         <div className="flex items-center gap-3">
                           <img
-                            className="w-20 bg-white rounded object-fit-cover object-center"
+                            className="w-20 bg-white rounded-lg object-fit-cover object-center"
                             style={{ objectFit: 'cover', objectPosition: 'center' }}
                             // src={vehicle.image}
                             src={vehicle.image_url}
@@ -183,7 +183,7 @@ export default function VehiclesTable() {
                           <button
                             className="flex items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600 gap-3"
                           >
-                            View <ArrowRightIcon />
+                            View <ArrowRightIcon className="ml-1" />
                           </button></Link>
                       </TableCell>
                     </TableRow>
