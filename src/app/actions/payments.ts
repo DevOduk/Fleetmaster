@@ -19,3 +19,14 @@ export async function createPayment(newPayment: any) {
     return { success: false, error: err.message || "Failed to record payment." };
   }
 }
+
+export async function fetchPaymentsForAdmin(tenantId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("fleetmaster_payments")
+    .select(`*, vehicleDetails:fleetmaster_vehicles(*)`)
+    .eq("tenant_id", tenantId)
+    .order('created_at', { ascending: false });
+
+  return { data, success: !error, error };
+}

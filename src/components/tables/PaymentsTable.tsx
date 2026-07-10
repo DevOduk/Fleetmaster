@@ -8,7 +8,6 @@ import {
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 import { ArrowRightIcon, PencilIcon, TrashBinIcon } from "@/icons";
-import Button from "../ui/button/Button";
 import Link from "next/link";
 import { CircularProgress } from "@mui/material";
 import { useAdminBooking } from "@/context/AdminBookingContext";

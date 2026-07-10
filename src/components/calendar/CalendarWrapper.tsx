@@ -102,13 +102,13 @@ console.log(bookings)
               ...bookedDates?.reduce((acc, date) => ({
                 ...acc,
                 [`& button[data-date="${date}"]`]: {
-                  backgroundColor: "green !important",
+                  backgroundColor: "red !important",
                   color: "#ffffff !important",
                   borderRadius: "50%",
                   fontWeight: "bold",
                   opacity: "1 !important",
                   "&:hover": {
-                    backgroundColor: "green !important",
+                    backgroundColor: "red !important",
                   },
                 },
               }), {}),

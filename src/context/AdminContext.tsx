@@ -1,5 +1,6 @@
 "use client";
 
+import { applyThemeVariables } from "@/components/ThemeInitializer";
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 interface AdminContextType {
@@ -15,6 +16,15 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const [adminProfile, setAdminProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+    // Apply when profile is loaded
+    if (adminProfile?.fleetmaster_tenants?.color) {
+      applyThemeVariables(adminProfile?.fleetmaster_tenants?.color);
+      localStorage.setItem("brand-color", adminProfile?.fleetmaster_tenants?.color);
+    }
+  }, [adminProfile]);
 
   // On initial load, verify if the user has an active session cookie
   useEffect(() => {

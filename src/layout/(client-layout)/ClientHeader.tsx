@@ -123,7 +123,6 @@ export default function ClientHeader() {
         };
     }, []);
 
-
     const [showVerificationMessage, setShowVerificationMessage] = useState(false);
 
     useEffect(() => {
@@ -176,7 +175,7 @@ export default function ClientHeader() {
                                         width: 154,
                                         height: 32,
                                     }}
-                                    className="w-auto object-contain"
+                                    className="w-auto object-cover rounded"
                                     src={tenant.tenant_logo || "http://localhost:3000/images/logo/logo.svg"}
                                     alt={`${tenant.name} Logo`}
                                 />

@@ -34,6 +34,7 @@ import { ArrowRightIcon } from '@/icons';
 import Alert from '@/components/ui/alert/Alert';
 import { createPayment } from '@/app/actions/payments';
 import DeliveryBanner from '@/components/client-components/DeliveryBanner';
+import userVerified from '@/utils/clients/checkverification';
 
 
 dayjs.extend(isBetween);
@@ -976,13 +977,18 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                         }
                         {/* Dynamic Call-To-Action Operations Routing Grid */}
                         <div className="space-y-3 mt-4">
-                            <Button onClick={handleCheckoutSubmit} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md' disabled={isPaying || paymentSuccess}>
-                                {isPaying
+                            <Button onClick={handleCheckoutSubmit} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md' disabled={isPaying || paymentSuccess || !userVerified(profile)}>
+                                {!userVerified(profile) ? 'Verify account to book' : isPaying
                                     ? "Processing Transaction..."
                                     : `Pay Now (Ksh. ${grandTotalAmount.toLocaleString()})`
                                 }
                             </Button>
 
+                            <div className='flex mt-3 text-gray-500 gap-3 items-center text-sm w-1/2 mx-auto'>
+                                <div className='w-full h-0.5 bg-gray-600'></div>
+                                OR
+                                <div className='w-full h-0.5 bg-gray-600'></div>
+                            </div>
                             <div className='flex items-center gap-3'>
                                 <Link className='w-full' href={'tel:+254768927617'}>
                                     <Button className='w-full' size='sm' variant='outline'>

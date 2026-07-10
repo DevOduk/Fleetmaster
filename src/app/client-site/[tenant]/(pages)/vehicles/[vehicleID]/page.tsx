@@ -24,6 +24,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/context/ToastContext';
 import { useBooking } from '@/context/BookingContext';
 import DeliveryBanner from '@/components/client-components/DeliveryBanner';
+import userVerified from '@/utils/clients/checkverification';
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string }>;
@@ -53,6 +54,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
   const { profile } = useUser();
   const { tenant } = useTenant();
   const { bookings } = useBooking();
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   const fallbackStart = dayjs().add(1, 'day').format('YYYY-MM-DD[T]HH:mm');
 
@@ -456,6 +458,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                       showToast('This vehicle is already booked for some of your selected dates!', 'error');
                       return; // Stop execution: blocks router.push entirely
                     }
+                    setIsRedirecting(true)
                     // ----------------------------------------
 
                     // Compute token-specific metrics to match current selection
@@ -490,10 +493,10 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                     }
                   }}
                 >
-                  <Button disabled={!profile || VehicleDetails.status === 'Not Available'} className='w-full mt-5' size='sm'>Continue to Book</Button>
+                  <Button disabled={!profile || VehicleDetails.status === 'Not Available' || !userVerified(profile || isRedirecting)} className='w-full mt-5' size='sm'>{isRedirecting ? "Redirecting ..." : !userVerified(profile) ? "Verify your account to book" : "Continue to Book"}</Button>
                 </div> :
                 <Link target='_blank' href={'/signin'}>
-                  <Button className='w-full mt-5' size='sm'>Sigin to Book</Button>
+                  <Button className='w-full mt-5' size='sm'>Signin to Book</Button>
                 </Link>
             }
             <div className='flex mt-3 text-gray-500 gap-3 items-center text-sm w-1/2 mx-auto'>
