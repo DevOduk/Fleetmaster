@@ -12,16 +12,16 @@ export async function createTenantClient(newTenantClient: any) {
 
     const { error, data } = await supabase
       .from("fleetmaster_clients")
-      .insert({ 
-        ...newTenantClient, 
-        password: hashedPassword 
+      .insert({
+        ...newTenantClient,
+        password: hashedPassword
       })
       .select('*')
       .single();
-      
+
     if (error) {
       console.error("Supabase insert error:", error);
-      
+
       let friendlyMessage = "An unexpected error occurred while creating the account. Please try again.";
 
       if (error.code === '23505') {
@@ -35,21 +35,32 @@ export async function createTenantClient(newTenantClient: any) {
       }
 
       // Return consistent error structure
-      return { 
-        data: null, 
-        success: false, 
+      return {
+        data: null,
+        success: false,
         error: { message: friendlyMessage } // Now error has a .message property
       };
     }
 
     return { data, success: true, error: null };
-    
+
   } catch (err: any) {
     console.error("New Tenant Admin Creation failure:", err);
-    return { 
-      data: null, 
-      success: false, 
-      error: { message: err.message || "A system connection error occurred." } 
+    return {
+      data: null,
+      success: false,
+      error: { message: err.message || "A system connection error occurred." }
     };
   }
+}
+
+export async function updateProfileDetails({ id, profileDetails }: { id: string; profileDetails: any; }) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("fleetmaster_clients")
+    .update({...profileDetails, updated_at: new Date()})
+    .eq("id", id)
+    .single();
+
+  return { data, error, success: !error };
 }

@@ -1,16 +1,20 @@
 "use client";
 import { useUser } from "@/context/UserContext";
-import { Avatar } from "@mui/material";
+import { Avatar, Backdrop, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
 import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined"
 import { handleImageFileUpload } from "@/utils/uploads/imageUpload";
 import { useToast } from "@/context/ToastContext";
+import handleProfileUpdate from "@/utils/clients/handleProfileUpdate";
 
 
 export default function EditUserMetaCard() {
-  const { profile, loading } = useUser();
+  const { profile, loading, setProfile } = useUser();
   const [profileDetails, setProfileDetails] = useState(profile || null);
-    const { showToast } = useToast();
+  const { showToast } = useToast();
+  const [backDrop, setBackDrop] = useState(false);
+
+
 
   useEffect(() => {
     if (profile && !loading) {
@@ -21,14 +25,28 @@ export default function EditUserMetaCard() {
   useEffect(() => {
     if (!profileDetails) return;
     if (profileDetails === profile) return;
-console.log('profile changed updating now ...')
+
     // proceed to update user profile details 
+    handleProfileUpdate(profile?.id, profileDetails, setBackDrop, showToast, setProfile);
+
   }, [profileDetails])
 
-
-
+  if (loading) {
+    return <div className="container min-h-[80vh] mx-auto p-5 text-gray-400">Loading profile ...</div>
+  } else if (!profile) {
+    window.location.href = '/signin';
+    return <div className="container min-h-[80vh] mx-auto p-5 text-gray-400">Redirecting to signin ...</div>
+  }
   return (
     <>
+      <Backdrop
+        sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+        open={backDrop}
+        onClick={() => null}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
@@ -41,7 +59,7 @@ console.log('profile changed updating now ...')
                 src={profileDetails?.profile_pic || 'U'}
                 alt="User"
               />
-              <input  className="hidden" type="file" accept="image/*" onChange={async (e) => {
+              <input className="hidden" type="file" accept="image/*" onChange={async (e) => {
                 const image = await handleImageFileUpload(e, showToast);
                 setProfileDetails((prev) => ({ ...prev, profile_pic: image }))
               }} />
@@ -68,7 +86,7 @@ console.log('profile changed updating now ...')
             <div className="flex items-center order-2 gap-2 grow xl:order-3 xl:justify-end">
               <a
                 target="_blank"
-                rel="noreferrer" href='https://www.facebook.com/PimjoHQ' className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+                rel="noreferrer" href={profile?.socials?.facebook || 'https://www.facebook.com/'} className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
                 <svg
                   className="fill-current"
                   width="20"
@@ -84,7 +102,7 @@ console.log('profile changed updating now ...')
                 </svg>
               </a>
 
-              <a href='https://x.com/PimjoHQ' target="_blank"
+              <a href={profile?.socials?.x || 'https://x.com/'} target="_blank"
                 rel="noreferrer" className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
                 <svg
                   className="fill-current"
@@ -101,7 +119,7 @@ console.log('profile changed updating now ...')
                 </svg>
               </a>
 
-              <a href="https://www.linkedin.com/company/pimjo" target="_blank"
+              <a href={profile?.socials?.linkedin || "https://www.linkedin.com/company/"} target="_blank"
                 rel="noreferrer" className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
                 <svg
                   className="fill-current"
@@ -118,7 +136,7 @@ console.log('profile changed updating now ...')
                 </svg>
               </a>
 
-              <a href='https://instagram.com/PimjoHQ' target="_blank"
+              <a href={profile?.socials?.instagram || 'https://instagram.com/'} target="_blank"
                 rel="noreferrer" className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
                 <svg
                   className="fill-current"

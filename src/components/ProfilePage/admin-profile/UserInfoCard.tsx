@@ -86,7 +86,7 @@ export default function UserInfoCard() {
             </p>
             <p className="text-sm flex items-center gap-5 justify-between font-medium text-gray-800 dark:text-white/90">
               {profile?.phone || "N/A"}
-              
+
               {
                 profile.verification_status?.phone ? <TaskAltOutlinedIcon fontSize="small" className="text-green-500 mt-1" /> : <CancelOutlinedIcon fontSize="small" className="text-red-500 mt-1" />
               }

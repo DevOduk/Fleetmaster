@@ -1,7 +1,7 @@
 import Button from "@/components/ui/button/Button";
-import EditUserAddressCard from "@/components/user-profile/EditUserAddressCard";
-import EditUserInfoCard from "@/components/user-profile/EditUserInfoCard";
-import UserMetaCard from "@/components/user-profile/ProfilePage/UserMetaCard";
+import EditUserAddressCard from "@/components/user-profile/ProfilePage/edit-client-profile/EditUserAddressCard";
+import EditUserInfoCard from "@/components/user-profile/ProfilePage/edit-client-profile/EditUserInfoCard";
+import UserMetaCard from "@/components/user-profile/ProfilePage/client-profile/UserMetaCard";
 import { ChevronLeftIcon } from "@/icons";
 import { Metadata } from "next";
 import Link from "next/link";

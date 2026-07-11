@@ -1,16 +1,24 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useModal } from "../../hooks/useModal";
-import { Modal } from "../ui/modal";
-import Button from "../ui/button/Button";
-import Input from "../form/input/InputField";
-import Label from "../form/Label";
+import { useModal } from "../../../hooks/useModal";
+import { Modal } from "../../ui/modal";
+import Button from "../../ui/button/Button";
+import Input from "../../form/input/InputField";
+import Label from "../../form/Label";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
+import handleProfileUpdate from "@/utils/clients/handleProfileUpdate";
+import { useToast } from "@/context/ToastContext";
+import { Backdrop, CircularProgress } from "@mui/material";
+
 
 export default function EditUserInfoCard() {
-  const { profile, loading } = useUser();
+
+  const { profile, loading, setProfile } = useUser();
   const [profileDetails, setProfileDetails] = useState(profile || null);
+  const { showToast } = useToast();
+  const [backDrop, setBackDrop] = useState(false);
+
 
   useEffect(() => {
     if (profile && !loading) {
@@ -19,7 +27,8 @@ export default function EditUserInfoCard() {
   }, [profile])
 
   const handleSave = () => {
-    // Handle save logic here
+    // proceed to update user profile details 
+    handleProfileUpdate(profile?.id, profileDetails, setBackDrop, showToast, setProfile);
   };
 
 
@@ -35,9 +44,22 @@ export default function EditUserInfoCard() {
       },
     }));
   };
-
+  if (loading) {
+    return <div className="container min-h-[80vh] mx-auto p-5 text-gray-400">Loading profile ...</div>
+  } else if (!profile) {
+    window.location.href = '/signin';
+    return <div className="container min-h-[80vh] mx-auto p-5 text-gray-400">Redirecting to signin ...</div>
+  }
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+      <Backdrop
+        sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+        open={backDrop}
+        onClick={() => null}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
 
       <div className="no-scrollbar relative w-full overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
         <div className="px-2 pr-14">

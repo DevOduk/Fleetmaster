@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useAdmin } from "@/context/AdminContext";
 
 export default function AdminAddressCard() {
-    const {adminProfile: profile} = useAdmin();
+  const { adminProfile: profile } = useAdmin();
 
   const hex = (id: string): string => {
     // 1. Cross-runtime conversion to standard hex format

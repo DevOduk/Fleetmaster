@@ -1,13 +1,8 @@
-import Button from "@/components/ui/button/Button";
-import EditUserAddressCard from "@/components/user-profile/EditUserAddressCard";
-import EditUserDocumentsCard from "@/components/user-profile/EditUserDocumentsCard";
-import EditUserInfoCard from "@/components/user-profile/EditUserInfoCard";
-import EditUserMetaCard from "@/components/user-profile/EditUserMetaCard";
-import UserMetaCard from "@/components/user-profile/ProfilePage/UserMetaCard";
-import { ChevronLeftIcon } from "@/icons";
+import EditUserAddressCard from "@/components/ProfilePage/edit-client-profile/EditUserAddressCard";
+import EditUserDocumentsCard from "@/components/ProfilePage/edit-client-profile/EditUserDocumentsCard";
+import EditUserInfoCard from "@/components/ProfilePage/edit-client-profile/EditUserInfoCard";
+import EditUserMetaCard from "@/components/ProfilePage/edit-client-profile/EditUserMetaCard";
 import { Metadata } from "next";
-import Link from "next/link";
-import React from "react";
 
 export const metadata: Metadata = {
   title:
@@ -20,13 +15,6 @@ export default function Profile() {
     <div className="container m-auto min-h-screen">
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
         <div className="flex gap-3 items-center mb-4">
-
-          {/* <Link href="/profile" className="mr-2">
-            <Button size="sm" variant="danger-outline">
-              <ChevronLeftIcon />
-              Back to Profile
-            </Button>
-          </Link> */}
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
             Edit Profile
           </h3>

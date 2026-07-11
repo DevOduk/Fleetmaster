@@ -3,24 +3,28 @@ import React from "react";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 
+
+export const hex = (id: string): string => {
+  // 1. Cross-runtime conversion to standard hex format
+  const encoder = new TextEncoder();
+  const byteArray = encoder.encode(id);
+  const rawHex = Array.from(byteArray)
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('');
+
+  // 2. Enforce exactly 8 characters (pad if too short, slice if too long)
+  const standardizedHex = rawHex.padEnd(12, '0').slice(0, 12);
+
+  // 3. Append the commercial FM suffix (e.g., FleetMaster telemetry flag)
+  return `FM${standardizedHex}`;
+};
+
 export default function UserAddressCard() {
 
   const { profile } = useUser();
 
-  const hex = (id: string): string => {
-    // 1. Cross-runtime conversion to standard hex format
-    const encoder = new TextEncoder();
-    const byteArray = encoder.encode(id);
-    const rawHex = Array.from(byteArray)
-      .map(byte => byte.toString(16).padStart(2, '0'))
-      .join('');
 
-    // 2. Enforce exactly 8 characters (pad if too short, slice if too long)
-    const standardizedHex = rawHex.padEnd(12, '0').slice(0, 12);
 
-    // 3. Append the commercial FM suffix (e.g., FleetMaster telemetry flag)
-    return `FM-${standardizedHex}`;
-  };
   return (
     <>
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">

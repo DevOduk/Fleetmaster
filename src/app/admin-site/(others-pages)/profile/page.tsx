@@ -1,6 +1,6 @@
-import UserAddressCard from "@/components/user-profile/ProfilePage/UserAddressCard";
-import UserInfoCard from "@/components/user-profile/ProfilePage/UserInfoCard";
-import UserMetaCard from "@/components/user-profile/ProfilePage/UserMetaCard";
+import UserAddressCard from "@/components/ProfilePage/client-profile/UserAddressCard";
+import UserInfoCard from "@/components/ProfilePage/client-profile/UserInfoCard";
+import UserMetaCard from "@/components/ProfilePage/client-profile/UserMetaCard";
 import { Metadata } from "next";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 

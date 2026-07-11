@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import ProfilePage from "@/components/user-profile/ProfilePage/ProfilePage";
+import ProfilePage from "@/components/user-profile/ProfilePage/client-profile/ProfilePage";
 
 export const metadata: Metadata = {
   title:

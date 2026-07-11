@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import AdminInfoCard from "@/components/user-profile/Tenant-Manager/UserInfoCard";
-import AdminMetaCard from "@/components/user-profile/Tenant-Manager/UserMetaCard";
-import AdminAddressCard from "@/components/user-profile/Tenant-Manager/UserAddressCard";
+import AdminInfoCard from "@/components/user-profile/ProfilePage/tenant-manager-profile/UserInfoCard";
+import AdminMetaCard from "@/components/user-profile/ProfilePage/tenant-manager-profile/UserMetaCard";
+import AdminAddressCard from "@/components/user-profile/ProfilePage/tenant-manager-profile/UserAddressCard";
 
 export const metadata: Metadata = {
   title:

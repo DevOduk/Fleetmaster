@@ -1,17 +1,21 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Button from "../ui/button/Button";
-import Input from "../form/input/InputField";
-import Label from "../form/Label";
+import Button from "../../ui/button/Button";
+import Input from "../../form/input/InputField";
+import Label from "../../form/Label";
 import Link from "next/link";
-import DropzoneComponent from "../form/form-elements/DropZone";
+import DropzoneComponent from "../../form/form-elements/DropZone";
 import { useToast } from "@/context/ToastContext";
 import { useUser } from "@/context/UserContext";
+import handleProfileUpdate from "@/utils/clients/handleProfileUpdate";
+import { Backdrop, CircularProgress } from "@mui/material";
 
 export default function EditUserDocumentsCard() {
-  const { profile, loading } = useUser();
+  const { profile, loading, setProfile } = useUser();
   const [profileDetails, setProfileDetails] = useState(profile || null);
   const { showToast } = useToast();
+  const [backDrop, setBackDrop] = useState(false);
+
 
   useEffect(() => {
     if (profile && !loading) {
@@ -20,10 +24,26 @@ export default function EditUserDocumentsCard() {
   }, [profile])
 
   const handleSave = () => {
-    // Handle save logic here
+    // proceed to update user profile details 
+    handleProfileUpdate(profile?.id, profileDetails, setBackDrop, showToast, setProfile);
   };
+
+  if (loading) {
+    return <div className="container min-h-[80vh] mx-auto p-5 text-gray-400">Loading profile ...</div>
+  } else if (!profile) {
+    window.location.href = '/signin';
+    return <div className="container min-h-[80vh] mx-auto p-5 text-gray-400">Redirecting to signin ...</div>
+  }
   return (
     <>
+      <Backdrop
+        sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+        open={backDrop}
+        onClick={() => null}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
       <div id="documents" className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
 
         <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
@@ -40,19 +60,19 @@ export default function EditUserDocumentsCard() {
             <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
               <div>
                 <Label>National ID/Passport</Label>
-                <Input className="mb-3" type="text" placeholder="21345678" value={profileDetails?.national_id_number} onChange={(e)=> setProfileDetails((prev)=> ({...prev, national_id_number: e}))} />
+                <Input className="mb-3" type="text" placeholder="21345678" value={profileDetails?.national_id_number} onChange={(e) => setProfileDetails((prev) => ({ ...prev, national_id_number: e.target.value }))} />
                 <DropzoneComponent title="Upload ID Document" />
               </div>
 
               <div>
                 <Label>Driving License</Label>
-                <Input className="mb-3" type="text" placeholder="621345678" value={profileDetails?.dl_number} onChange={(e)=> setProfileDetails((prev)=> ({...prev, dl_number: e}))} />
+                <Input className="mb-3" type="text" placeholder="621345678" value={profileDetails?.dl_number} onChange={(e) => setProfileDetails((prev) => ({ ...prev, dl_number: e.target.value }))} />
                 <DropzoneComponent title="Upload Driving License" />
               </div>
 
               <div>
                 <Label>KRA PIN (Kenyan Nationals)</Label>
-                <Input className="mb-3" type="text" placeholder="A10621345678" value={profileDetails?.kra_pin_number} onChange={(e)=> setProfileDetails((prev)=> ({...prev, kra_pin_number: e}))} />
+                <Input className="mb-3" type="text" placeholder="A10621345678" value={profileDetails?.kra_pin_number} onChange={(e) => setProfileDetails((prev) => ({ ...prev, kra_pin_number: e.target.value }))} />
 
                 <DropzoneComponent accept={{ "application/pdf": [".pdf"] }} title="Upload KRA PIN" />
               </div>
