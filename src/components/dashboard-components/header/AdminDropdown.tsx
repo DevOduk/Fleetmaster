@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+
 import Link from "next/link";
 import React, { useState } from "react";
 import { Avatar } from "@mui/material";
@@ -7,6 +7,7 @@ import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { useAdmin } from "@/context/AdminContext";
 import { useRouter } from "next/navigation";
+import Badge from "@/components/ui/badge/Badge";
 
 export default function AdminDropdown() {
   const router = useRouter();
@@ -32,11 +33,10 @@ export default function AdminDropdown() {
             className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
           >
             <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-              <Image
-                width={44}
-                height={44}
-                src={profile.profile_pic || "/images/user/owner.jpg"}
-                alt="User"
+              <Avatar
+                src={profile?.profile_pic}
+                alt={profile.first_name}
+                className="w-10 h-10"
               />
             </span>
 
@@ -68,7 +68,7 @@ export default function AdminDropdown() {
         className="absolute right-0 top-full mt-2 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"      >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-300">
-            {profile?.first_name} {profile?.last_name}
+            {profile?.first_name} {profile?.last_name} ● <Badge size="sm" color="success">ACTIVE</Badge>
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
             {profile?.email}
@@ -125,7 +125,7 @@ export default function AdminDropdown() {
               </svg>
               Account settings
             </DropdownItem>
-          </li>          
+          </li>
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
@@ -148,15 +148,15 @@ export default function AdminDropdown() {
                   fill=""
                 />
               </svg>
-              Support
+              Open Support
             </DropdownItem>
           </li>
         </ul>
         <div
-        onClick={()=>{
-          logout();
-          router.push('signin')
-        }}
+          onClick={() => {
+            logout();
+            router.push('signin')
+          }}
           className="flex cursor-pointer items-center gap-3 px-3 py-2 mt-3 font-medium text-red-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-red-500 dark:hover:bg-white/5 dark:hover:text-red-300"
         >
           <svg

@@ -5,6 +5,16 @@ import { hash } from "bcrypt-ts";
 // SALT_ROUNDS should be a number (e.g., 10 or 12)
 const SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT || "12");
 
+export async function getAllAdmins() {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from('fleetmaster_main_admins')
+      .select('id, phone, email, bio, first_name, last_name, role, profile_pic, created_at');
+
+    return {data, success: !error, error} ;
+}
+
 export async function createTenantAdmin(newTenantAdmin: any) {
   try {
     const supabase = await createClient();
@@ -44,7 +54,7 @@ export async function getTenantAdmins(id: string) {
 export async function updateProfileDetails({ id, profileDetails }: { id: string; profileDetails: any; }) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("fleetmaster_admins")
+    .from("fleetmaster_main_admins")
     .update({...profileDetails, updated_at: new Date()})
     .eq("id", id)
     .single();

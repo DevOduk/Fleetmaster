@@ -1,4 +1,5 @@
 "use client";
+import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 
 export const getExpiryString = (expiryDate: string) => {
@@ -24,8 +25,9 @@ export const getExpiryString = (expiryDate: string) => {
 
   if (months > 0) return `${months} month${months > 1 ? 's' : ''} ${days} day${days !== 1 ? 's' : ''}`;
   if (weeks > 0) return `${weeks} week${weeks > 1 ? 's' : ''} ${days} day${days !== 1 ? 's' : ''}`;
-  if (days > 0) return `${days} day${days !== 1 ? 's' : ''} ${hours}h ${minutes}m`;
-  return `${hours}h ${minutes}m ${seconds}s`;
+  if (days > 0) return `${days} day${days !== 1 ? 's' : ''} ${hours} hour${hours !== 1 ? 's' : ''}`;
+  if (hours > 0) return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} min${minutes !== 1 ? 's' : ''}`;
+  return `${minutes} min${minutes !== 1 ? 's' : ''} ${seconds} sec${seconds !== 1 ? 's' : ''}`;
 };
 
 function ExpiryBanner({ plan, expiryDate }: { plan: string, expiryDate: string }) {
@@ -51,9 +53,9 @@ function ExpiryBanner({ plan, expiryDate }: { plan: string, expiryDate: string }
       <span className="text-black italic text-sm dark:text-white">
         It is advisable to renew plan before expiry!
       </span>
-      <div className="p-2 w-auto px-5 bg-red-500 text-white rounded-lg border-red-700">
+      <Link href='/company-profile/subscription' className="p-2 w-auto px-5 bg-red-500 text-white rounded-lg border-red-700">
         {plan} Plan Expires in {timeLeft}
-      </div>
+      </Link>
     </div>
   );
 }

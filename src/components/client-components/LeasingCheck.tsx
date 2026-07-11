@@ -51,10 +51,11 @@ export default function LeasingCheck() {
     const pages = [{ label: 'Home', href: '/' }, { label: 'Lease with Us', href: '/lease' }];
     const { tenant } = useTenant();
 
+    console.log(tenant)
     return (
         <div className="min-h-screen py-8">
             {
-                tenant.leasing_accepted ? (
+                tenant?.leasing_accepted ? (
                     <>
                         <SecondaryHero
                             pages={pages}

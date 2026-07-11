@@ -3,15 +3,15 @@ import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import Link from "next/link";
-import { useUser } from "@/context/UserContext";
 import { useEffect, useState } from "react";
 import { useToast } from "@/context/ToastContext";
-import handleProfileUpdate from "@/utils/clients/handleProfileUpdate";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { hex } from "../client-profile/UserAddressCard";
+import { useAdmin } from "@/context/AdminContext";
+import handleProfileUpdate from "@/utils/managers/handleProfileUpdate";
 
 export default function EditUserAddressCard() {
-  const { profile, loading, setProfile } = useUser();
+  const { adminProfile: profile, loading, setAdminProfile: setProfile } = useAdmin();
   const [profileDetails, setProfileDetails] = useState(profile || null);
   const { showToast } = useToast();
   const [backDrop, setBackDrop] = useState(false);

@@ -16,6 +16,7 @@ import { CircularProgress } from "@mui/material";
 import UpdateYardsModal from "../yards/UpdateYardsModal";
 import { applyThemeVariables } from "../ThemeInitializer";
 import { createClient } from "@/utils/supabase/client";
+import Checkbox from "../form/input/Checkbox";
 
 
 
@@ -82,10 +83,10 @@ export default function EditCompanyInfoCard() {
     getTenantDetails();
   }, [profile?.tenant_id]);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setCompanyFormData((prev: any) => ({ ...prev, [field]: value }));
   };
-  
+
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -116,7 +117,7 @@ export default function EditCompanyInfoCard() {
         .getPublicUrl(fileName);
 
       console.log(publicUrl)
-              handleInputChange("tenant_logo", publicUrl);
+      handleInputChange("tenant_logo", publicUrl);
 
 
     } catch (error) {
@@ -308,6 +309,14 @@ export default function EditCompanyInfoCard() {
             <EditableInput disabled={updatingCompany} type="number" label="Monthly Target" value={companyFormData.monthly_target} onChange={(v) => handleInputChange("monthly_target", v)} />
             <EditableInput disabled={updatingCompany} type="color" label="Color Preference" value={companyFormData.color} onChange={(v) => handleInputChange("color", v)} />
           </div>
+        </ComponentCard>
+
+
+        <ComponentCard title="Leasing Options">
+          <div className="mt-auto p-6 flex flex-col sm:flex-row gap-3 items-center justify-between bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
+            <Checkbox label='Allow leasing options?' checked={companyFormData?.leasing_accepted} onChange={(v) => handleInputChange("leasing_accepted", v)} />
+          </div>
+          <div className="text-red-600 text-sm mt-3">Changes may take up to a day to reflect across all devices!</div>
         </ComponentCard>
 
         {companyFormData.yards && companyFormData.yards.length > 0 && (

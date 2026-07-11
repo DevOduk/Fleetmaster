@@ -137,9 +137,8 @@ export default function ClientHeader() {
 
     return (
         <>
-
             {showVerificationMessage && (
-                <div className="rounded-xl container mx-auto border p-3 flex items-center gap-3 m-2 border-error-500 bg-error-50 dark:border-error-500/30 dark:bg-error-500/15 relative">
+                <div className="rounded-xl z-40 container mx-auto border p-3 flex items-center gap-3 m-2 border-error-500 bg-error-50 dark:border-error-500/30 dark:bg-error-500/15 relative">
                     <svg
                         className="fill-current"
                         width="24"
@@ -161,7 +160,7 @@ export default function ClientHeader() {
                     <CloseOutlinedIcon fontSize="small" className='text-red-500 cursor-pointer' onClick={() => setShowVerificationMessage(false)} />
                 </div>
             )}
-            <header className="sticky top-0 flex w-full bg-white border-gray-200 z-99 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
+            <header className="sticky z-40 top-0 flex w-full bg-white border-gray-200 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
                 {profile?.role === 'Client' && <VerificationBanner profile={profile} />}
                 <div className="flex container m-auto flex-col items-center justify-between grow lg:flex-row lg:px-2">
                     <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
@@ -184,7 +183,7 @@ export default function ClientHeader() {
 
                         <button
                             onClick={toggleApplicationMenu}
-                            className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg z-99999 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
+                            className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
                         >
                             {isApplicationMenuOpen ? <CloseOutlinedIcon /> : <MenuOutlinedIcon />}
 

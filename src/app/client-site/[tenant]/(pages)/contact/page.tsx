@@ -106,16 +106,6 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Support Hours Card */}
-            {/* <div className="bg-slate-900 dark:bg-zinc-900 text-slate-100 rounded-2xl p-6 shadow-sm border border-slate-800 space-y-4">
-              <div className="flex items-center gap-2 text-amber-400">
-                <AccessTimeIcon className="w-5 h-5" />
-                <h3 className="font-semibold">24/7 Enterprise Support</h3>
-              </div>
-              <p className="text-sm text-slate-400 leading-relaxed">
-                Already a FleetMaster Enterprise customer? Your dedicated account managers and emergency infrastructure support lines are available 24/7/365 via your custom dashboard portal.
-              </p>
-            </div> */}
 
             {/* Interactive Map Placeholder */}
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">Our Location</h3>
@@ -124,7 +114,6 @@ export default function Page() {
               <div className="absolute w-full h-full">
                 <iframe className="w-full h-full" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.810367892287!2d36.8198217!3d-1.2879239999999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f10d9f83340e1%3A0xe968a48f77fd41de!2sParliament%20Road%2C%20Nairobi!5e0!3m2!1sen!2ske!4v1781904695362!5m2!1sen!2ske" allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
               </div>
-              {/* <span className="text-sm text-slate-500 font-medium z-10">Interactive Office Map Loading...</span> */}
             </div>
 
             <Link className="text-brand-500" href='/yards'>View all locations?</Link>

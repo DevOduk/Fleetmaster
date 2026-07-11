@@ -493,7 +493,9 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                     }
                   }}
                 >
-                  <Button disabled={!profile || VehicleDetails.status === 'Not Available' || !userVerified(profile || isRedirecting)} className='w-full mt-5' size='sm'>{isRedirecting ? "Redirecting ..." : !userVerified(profile) ? "Verify your account to book" : "Continue to Book"}</Button>
+                  <Button
+                    disabled={!profile || VehicleDetails.status === 'Not Available' || !userVerified(profile || isRedirecting)}
+                    className='w-full mt-5' size='sm'>{isRedirecting ? "Redirecting ..." : !userVerified(profile) ? "Verify your account to book" : "Continue to Book"}</Button>
                 </div> :
                 <Link target='_blank' href={'/signin'}>
                   <Button className='w-full mt-5' size='sm'>Signin to Book</Button>

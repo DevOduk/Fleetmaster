@@ -1,11 +1,10 @@
+import EditUserAddressCard from "@/components/ProfilePage/edit-tenant-manager-profile/EditUserAddressCard";
+import EditUserInfoCard from "@/components/ProfilePage/edit-tenant-manager-profile/EditUserInfoCard";
+import EditAdminMetaCard from "@/components/ProfilePage/edit-tenant-manager-profile/EditUserMetaCard";
 import Button from "@/components/ui/button/Button";
-import EditUserAddressCard from "@/components/user-profile/ProfilePage/edit-client-profile/EditUserAddressCard";
-import EditUserInfoCard from "@/components/user-profile/ProfilePage/edit-client-profile/EditUserInfoCard";
-import UserMetaCard from "@/components/user-profile/ProfilePage/client-profile/UserMetaCard";
 import { ChevronLeftIcon } from "@/icons";
 import { Metadata } from "next";
 import Link from "next/link";
-import React from "react";
 
 export const metadata: Metadata = {
   title:
@@ -30,7 +29,7 @@ export default function Profile() {
           </h3>
         </div>
         <div className="space-y-6">
-          <UserMetaCard />
+          <EditAdminMetaCard />
           <EditUserInfoCard />
           <EditUserAddressCard />
         </div>

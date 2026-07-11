@@ -7,9 +7,9 @@ import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
-import handleProfileUpdate from "@/utils/clients/handleProfileUpdate";
 import { useToast } from "@/context/ToastContext";
 import { Backdrop, CircularProgress } from "@mui/material";
+import handleProfileUpdate from "@/utils/admins/handleProfileUpdate";
 
 
 export default function EditUserInfoCard() {

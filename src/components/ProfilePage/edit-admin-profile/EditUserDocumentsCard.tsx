@@ -7,8 +7,8 @@ import Link from "next/link";
 import DropzoneComponent from "../../form/form-elements/DropZone";
 import { useToast } from "@/context/ToastContext";
 import { useUser } from "@/context/UserContext";
-import handleProfileUpdate from "@/utils/clients/handleProfileUpdate";
 import { Backdrop, CircularProgress } from "@mui/material";
+import handleProfileUpdate from "@/utils/admins/handleProfileUpdate";
 
 export default function EditUserDocumentsCard() {
   const { profile, loading, setProfile } = useUser();

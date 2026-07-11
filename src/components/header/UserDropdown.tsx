@@ -3,12 +3,10 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import Button from "../ui/button/Button";
 import { Avatar } from "@mui/material";
+import Badge from "@/components/ui/badge/Badge";
 import { useUser } from "@/context/UserContext";
-import { useRouter } from "next/navigation";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined"
-import Badge from "../ui/badge/Badge";
 import userVerified from "@/utils/clients/checkverification";
 
 export default function UserDropdown() {

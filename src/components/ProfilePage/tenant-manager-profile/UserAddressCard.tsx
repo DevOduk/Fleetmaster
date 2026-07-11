@@ -28,7 +28,7 @@ export default function AdminAddressCard() {
             Address
           </h4>
 
-          <Link href="/profile/edit" className=''>
+          <Link href="/account/edit" className=''>
             <button
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-theme-xs hover:bg-gray-50 hover:text-blue-800 dark:border-gray-700 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-white/3 dark:hover:text-blue-200 lg:inline-flex lg:w-auto"
             >

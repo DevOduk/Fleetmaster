@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import ComponentCard from "../common/ComponentCard";
 import ExpiryBanner from "./ExpiryBanner";
 import { formatedValue } from "../ecommerce/MonthlyTarget";
+import Checkbox from "../form/input/Checkbox";
 
 
 export default function CompanyInfoCard() {
@@ -100,9 +101,11 @@ export default function CompanyInfoCard() {
       </div>
     );
   }
-  
+
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+      <ExpiryBanner plan={company.subscription_plan} expiryDate={company.expiry_date} />
+
       {/* Header Section */}
       <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5 dark:border-gray-800">
         <div className="flex items-center gap-4">
@@ -134,7 +137,6 @@ export default function CompanyInfoCard() {
           Edit Profile
         </Link>
       </div>
-      <ExpiryBanner plan={company.subscription_plan} expiryDate={company.expiry_date} />
 
       <div className="p-6 space-y-8">
         <p className="text-sm text-gray-600 dark:text-gray-300">{company.description || 'No description available.'}</p>
@@ -163,17 +165,23 @@ export default function CompanyInfoCard() {
           </div>
         </ComponentCard>
 
+        <ComponentCard title="Leasing Options">
+          <div className="mt-auto p-6 flex flex-col sm:flex-row gap-3 items-center justify-between bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
+            <Checkbox label='Allow leasing options?' checked={company?.leasing_accepted} onChange={() => { }} />
+          </div>
+        </ComponentCard>
+
         {/* Yards Section */}
         {company.yards && company.yards.length > 0 && (
           <ComponentCard title="Yards & Depots">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {company.yards.map((yard: any, idx: number) => (
                 <div key={idx} className="rounded-xl border border-gray-100 p-4 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
-<img
-                  src={yard.imageUrl || "/images/brand/default-yard.png"}
-                  alt={yard.title || "Yard"}
-                  className="mb-2 h-auto aspect-video w-full rounded-lg object-cover"
-                />                  <p className="text-sm font-bold text-gray-900 dark:text-white">{yard.title}</p>
+                  <img
+                    src={yard.imageUrl || "/images/brand/default-yard.png"}
+                    alt={yard.title || "Yard"}
+                    className="mb-2 h-auto aspect-video w-full rounded-lg object-cover"
+                  />                  <p className="text-sm font-bold text-gray-900 dark:text-white">{yard.title}</p>
                   <p className="mt-1 text-xs text-gray-500 line-clamp-2">{yard.description}</p>
                 </div>
               ))}
@@ -198,13 +206,13 @@ function DataPoint({ label, value }: { label: string; value: string | null }) {
     <div className="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800/30">
       <span className="mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">{label}</span>
       <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center">
-{label === 'Color Preference' && (
-  <span 
-    className="w-4 h-4 rounded-full inline-block mr-2" 
-    style={{ backgroundColor: value }}
-  >
-  </span>
-)}        {value || <span className="text-gray-300 font-normal italic">N/A</span>}
+        {label === 'Color Preference' && (
+          <span
+            className="w-4 h-4 rounded-full inline-block mr-2"
+            style={{ backgroundColor: value }}
+          >
+          </span>
+        )}        {value || <span className="text-gray-300 font-normal italic">N/A</span>}
       </span>
     </div>
   );

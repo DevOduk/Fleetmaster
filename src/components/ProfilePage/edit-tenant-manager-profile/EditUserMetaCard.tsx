@@ -1,19 +1,18 @@
 "use client";
-import { useUser } from "@/context/UserContext";
 import { Avatar, Backdrop, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
 import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined"
 import { handleImageFileUpload } from "@/utils/uploads/imageUpload";
 import { useToast } from "@/context/ToastContext";
-import handleProfileUpdate from "@/utils/clients/handleProfileUpdate";
+import { useAdmin } from "@/context/AdminContext";
+import handleProfileUpdate from "@/utils/managers/handleProfileUpdate";
 
 
-export default function EditUserMetaCard() {
-  const { profile, loading, setProfile } = useUser();
+export default function EditAdminMetaCard() {
+  const { adminProfile: profile, loading, setAdminProfile: setProfile } = useAdmin();
   const [profileDetails, setProfileDetails] = useState(profile || null);
   const { showToast } = useToast();
   const [backDrop, setBackDrop] = useState(false);
-
 
 
   useEffect(() => {
@@ -57,7 +56,7 @@ export default function EditUserMetaCard() {
                   height: 80
                 }}
                 src={profileDetails?.profile_pic || 'U'}
-                alt="User"
+                alt={profileDetails?.first_name}
               />
               <input className="hidden" type="file" accept="image/*" onChange={async (e) => {
                 const image = await handleImageFileUpload(e, showToast);

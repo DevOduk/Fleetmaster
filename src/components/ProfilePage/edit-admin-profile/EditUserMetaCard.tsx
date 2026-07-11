@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined"
 import { handleImageFileUpload } from "@/utils/uploads/imageUpload";
 import { useToast } from "@/context/ToastContext";
-import handleProfileUpdate from "@/utils/clients/handleProfileUpdate";
+import handleProfileUpdate from "@/utils/admins/handleProfileUpdate";
 
 
 export default function EditUserMetaCard() {
@@ -57,7 +57,7 @@ export default function EditUserMetaCard() {
                   height: 80
                 }}
                 src={profileDetails?.profile_pic || 'U'}
-                alt="User"
+                alt={profileDetails?.first_name}
               />
               <input className="hidden" type="file" accept="image/*" onChange={async (e) => {
                 const image = await handleImageFileUpload(e, showToast);

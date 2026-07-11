@@ -554,11 +554,11 @@ const BookingPage = ({ params }: VehiclePageProps) => {
 
                         {/* Media Presentation Display Canvas */}
                         <div className='relative rounded-xl overflow-hidden mb-6 bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-gray-800'>
-                            <Box className='flex gap-2' sx={{ position: 'absolute', top: 12, right: 12, zIndex: 10 }}>
-                                <Chip size="small" sx={{ px: 0.5, bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', backdropFilter: 'blur(4px)' }} icon={<LocalGasStationOutlinedIcon fontSize='small' style={{ color: '#fff' }} />} label={VehicleDetails.fuel_type} />
-                                <Chip size="small" sx={{ px: 0.5, bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', backdropFilter: 'blur(4px)' }} icon={<PeopleAltOutlinedIcon fontSize='small' style={{ color: '#fff' }} />} label={`${VehicleDetails.seats} Seats`} />
+                            <img src={VehicleDetails.image_url} alt={''} className="w-full object-cover relative object-center aspect-video" />
+                            <Box className='flex gap-2' sx={{ position: 'absolute', top: 12, right: 12 }}>
+                                <Chip size="small" className='' sx={{ px: 0.5, py: 1.5, bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', backdropFilter: 'blur(4px)' }} icon={<LocalGasStationOutlinedIcon fontSize='small' style={{ color: '#fff' }} />} label={VehicleDetails.fuel_type} />
+                                <Chip size="small" className='' sx={{ px: 0.5, py: 1.5, bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', backdropFilter: 'blur(4px)' }} icon={<PeopleAltOutlinedIcon fontSize='small' style={{ color: '#fff' }} />} label={`${VehicleDetails.seats} Seats`} />
                             </Box>
-                            <img src={VehicleDetails.image_url} alt={''} className="w-full object-cover object-center aspect-video" />
                         </div>
 
                         {/* Core Specs Information Grid */}
@@ -702,7 +702,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
 
                 {/* ================= RIGHT SIDE: INVOICE & INTASEND GATEWAY (col-span-5) ================= */}
                 <div className="col-span-12 lg:col-span-5 space-y-6">
-                    <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 shadow-sm sticky top-6">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 shadow-sm">
 
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-100 dark:border-gray-800">
                             Invoice Summary
@@ -911,12 +911,13 @@ const BookingPage = ({ params }: VehiclePageProps) => {
 
 
                         <Modal
+                            // isOpen
                             isOpen={successModal.isOpen}
                             onClose={successModal.closeModal}
-                            className="max-w-150 p-5 lg:p-10 z-99999"
+                            className="max-w-150 p-5 lg:p-10"
                         >
                             <div className="text-center">
-                                <div className="relative flex items-center justify-center z-1 mb-7">
+                                <div className="relative flex items-center justify-center mb-7">
                                     <svg
                                         className="fill-success-50 dark:fill-success-500/15"
                                         width="90"
@@ -977,7 +978,9 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                         }
                         {/* Dynamic Call-To-Action Operations Routing Grid */}
                         <div className="space-y-3 mt-4">
-                            <Button onClick={handleCheckoutSubmit} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md' disabled={isPaying || paymentSuccess || !userVerified(profile)}>
+                            <Button onClick={handleCheckoutSubmit} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md'
+                                disabled={isPaying || paymentSuccess || !userVerified(profile)}
+                            >
                                 {!userVerified(profile) ? 'Verify account to book' : isPaying
                                     ? "Processing Transaction..."
                                     : `Pay Now (Ksh. ${grandTotalAmount.toLocaleString()})`

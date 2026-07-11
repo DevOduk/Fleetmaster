@@ -7,17 +7,15 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import Badge from "../ui/badge/Badge";
-import { PencilIcon } from "@/icons";
 import { Avatar, CircularProgress } from "@mui/material";
 import "leaflet/dist/leaflet.css";
 import Pagination from "../tables/Pagination";
 import Link from "next/link";
 import Button from "../ui/button/Button";
-import { useUser } from "@/context/UserContext";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { getTenantAdmins } from "@/app/actions/admin";
+import { getAllAdmins } from "@/app/actions/main-admin";
+import { useAdmin } from "@/context/AdminContext";
 
 // 1. Explicitly type your User structure
 export interface AdminUser {
@@ -38,28 +36,27 @@ interface SystemUsersProps {
 }
 
 // 2. Fixed the parameter mapping here
-const SystemUsers = () => {
+const SystemManagers = () => {
   const [initialUsers, setIinitialUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const isDarkMode = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const { profile } = useUser();
+  const { adminProfile: profile } = useAdmin();
 
   useEffect(() => {
-    if (!profile?.tenant_id) return;
-
     const getAdmins = async () => {
-      const res = await getTenantAdmins(profile?.tenant_id);
-      if (res.success) {
+      const res = await getAllAdmins();
+
+      if (res) {
         setIinitialUsers(res.data);
+        setLoading(false);
       }
-      setLoading(false)
     }
 
     getAdmins();
-  }, [profile])
+  }, [])
 
 
   // Apply dark mode styles to leaflet
@@ -261,4 +258,4 @@ const SystemUsers = () => {
   );
 };
 
-export default SystemUsers;
+export default SystemManagers;
