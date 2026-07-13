@@ -6,6 +6,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import ComponentCard from "../common/ComponentCard";
 import ExpiryBanner, { getExpiryString } from "./ExpiryBanner";
+import Input from "../form/input/InputField";
+import { FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material";
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import MobileScreenShareOutlinedIcon from "@mui/icons-material/MobileScreenShareOutlined"
+import Button from "../ui/button/Button";
+
+
 
 
 export interface PricingFeature {
@@ -81,7 +88,7 @@ export const subscriptionPlans: PricingPlan[] = [
   {
     name: "Expert",
     tagline: "Established SME, 5 to 10 staff, no limits",
-    price: "1,299",
+    price: "1299",
     currency: "Ksh",
     popular: false,
     ctaText: "Get started now",
@@ -107,7 +114,12 @@ export default function CompanySubscriptionsCard() {
   const { profile } = useUser();
   const [company, setCompany] = useState<any>(null);
   const [loadingCompany, setLoadingCompany] = useState<boolean>(true);
-  const [selectedIndex, setSelectedIndex] = useState(1)
+  const [selectedIndex, setSelectedIndex] = useState(1);
+  const [mpesaNumber, setMpesaNumber] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('m-pesa');
+  const [isPaying, setIsPaying] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
   useEffect(() => {
     const getTenantDetails = async () => {
       if (!profile?.tenant_id) {
@@ -126,6 +138,10 @@ export default function CompanySubscriptionsCard() {
     getTenantDetails();
   }, [profile?.tenant_id]);
 
+  const handleCheckoutSubmit = async () => {
+    // implement ptment and expense, pyment, company profile update here; start with payment, then expenses then update profile 
+    
+  };
 
   if (!profile || !profile.tenant_id || loadingCompany) {
     return (
@@ -228,12 +244,6 @@ export default function CompanySubscriptionsCard() {
           </div>
         </div>
 
-        <Link
-          href="/company-profile/edit"
-          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
-        >
-          Edit Profile
-        </Link>
       </div>
 
       <div className="p-6 space-y-8">
@@ -279,6 +289,162 @@ export default function CompanySubscriptionsCard() {
                 </div>
               ))
             }
+          </div>
+
+
+          {/* Billing Gateway Gateway Interface Config */}
+          <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">3. Choose Payment Method</h4>
+          <FormControl component="fieldset" className="w-full mb-6">
+            {/* Use ONE RadioGroup mapped directly to your state variable */}
+            <RadioGroup
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="space-y-3"
+            >
+              {/* M-Pesa Option Layout Box */}
+              <div
+                onClick={() => setPaymentMethod('m-pesa')}
+                className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'm-pesa'
+                  ? 'border-brand-500 bg-brand-50/5'
+                  : 'border-gray-200 dark:border-gray-800'
+                  }`}
+              >
+                <FormControlLabel
+                  value="m-pesa"
+                  control={<Radio size="small" />}
+                  label={
+                    <div className="flex items-center gap-2">
+                      <MobileScreenShareOutlinedIcon className="text-brand-500" fontSize="small" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">M-Pesa Instant PayBill</span>
+                    </div>
+                  }
+                />
+              </div>
+
+              {/* Card Option Layout Box */}
+              <div
+                onClick={() => setPaymentMethod('card')}
+                className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'card'
+                  ? 'border-brand-500 bg-brand-50/5'
+                  : 'border-gray-200 dark:border-gray-800'
+                  }`}
+              >
+                <FormControlLabel
+                  value="card"
+                  control={<Radio size="small" />}
+                  label={
+                    <div className="flex items-center gap-2">
+                      <CreditCardIcon className="text-brand-500" fontSize="small" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Bank Instant Checkout (VISA/MASTER Card)</span>
+                    </div>
+                  }
+                />
+              </div>
+            </RadioGroup>
+          </FormControl>
+
+          <div className="mt-4 mb-4 transition-all duration-200">
+            {paymentMethod === 'm-pesa' && (
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                  M-Pesa Mobile Number
+                </label>
+                <div className="relative mt-2">
+                  <Input
+                    type="tel"
+                    placeholder="e.g., 0712345678"
+                    className="pl-15.5"
+                    defaultValue={company?.phone}
+                    value={mpesaNumber || company?.phone}
+                    onChange={(e) => setMpesaNumber(e.target.value)}
+                    disabled={isPaying}
+                  />
+                  <span className="absolute left-0 top-1/2 flex text-sm h-11 w-13.75 dark:text-white -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                    +254
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {paymentMethod === 'card' && (
+              <div className="space-y-4">
+                {/* Card Number Row */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                    Card Details
+                  </label>
+                  <div className="relative mt-2">
+                    <Input
+                      type="text"
+                      placeholder="Card number"
+                      className="pl-15.5"
+                    // value={cardNumber}
+                    // onChange={(e) => setCardNumber(e.target.value)}
+                    />
+                    <span className="absolute left-0 top-1/2 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
+                        <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
+                        <path
+                          d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
+                          fill="#FC6020"
+                        />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Expiry and CVV Side-by-Side Row */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Expiry Field */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      Expiry Date
+                    </label>
+                    <Input
+                      type="text"
+                      max={'5'}
+                      placeholder="MM/YY"
+                      className="w-full text-center mt-2"
+                    // value={expiry}
+                    // onChange={(e) => handleExpiryChange(e.target.value)}
+                    />
+                  </div>
+
+                  {/* CVV/CVC Field */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      Secure Code (CVV)
+                    </label>
+                    <Input
+                      type="password"
+                      max={'4'}
+                      placeholder="•••"
+                      className="w-full text-center tracking-widest mt-2"
+                    // value={cvv}
+                    // onChange={(e) => setCvv(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+
+          {/* Dynamic Call-To-Action Operations Routing Grid */}
+          <div className="space-y-3 mt-4">
+            <Button onClick={handleCheckoutSubmit} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md' disabled={isPaying || paymentSuccess}>
+              {isPaying
+                ? "Processing Transaction..."
+                : `Pay Now (Ksh. ${(parseInt(subscriptionPlans[selectedIndex].price)).toLocaleString()})`
+              }
+            </Button>
           </div>
         </ComponentCard>
 

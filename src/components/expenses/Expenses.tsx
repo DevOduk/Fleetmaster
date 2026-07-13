@@ -15,19 +15,19 @@ const Expenses: React.FC = () => {
                 {
                     [
                         {
-                            title: 'Daily Expenses',
+                            title: 'Today',
                             currency: 'Ksh',
                             value: 950.00,
                             description: 'Total Expenses today',
                         },
                         {
-                            title: 'Weekly Expenses',
+                            title: 'Last 7 days',
                             currency: 'Ksh',
                             value: 5950.00,
                             description: 'Total Expenses this week',
                         },
                         {
-                            title: 'Monthly  Expenses',
+                            title: 'This Month',
                             currency: 'Ksh',
                             value: 73450.00,
                             description: 'Total Expenses this Month',

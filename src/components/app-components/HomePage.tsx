@@ -38,7 +38,7 @@ function HomePage() {
         if (response.success) {
           setExpenses(response.data);
         } else {
-          console.error("API Error fetching bookings:", response.error);
+          console.error("API Error fetching expenses:", response.error);
         }
       } catch (err) {
         console.error("Network connection failure:", err);

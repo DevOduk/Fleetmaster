@@ -63,7 +63,7 @@ export default function MonthlyTarget({ bookings, loadingBookings, target }: { b
             size: "80%",
           },
           track: {
-            background: "var(--color-brand-100)",
+            // background: "rgb(0,255,0, 0.1)",
             strokeWidth: "100%",
             margin: 5, // margin is in pixels
           },

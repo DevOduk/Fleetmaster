@@ -28,10 +28,19 @@ const revenueExpenses = ({ bookings, expenses }: any) => {
       })
       .reduce((sum, item) => sum + (Number(item.total) || 0), 0);
   };
+  const getESumForMonth = (data: any[], targetMonthIndex: number) => {
+    return data
+      .filter((item) => {
+        const date = parseISO(item.created_at);
+        // Match only items in the current year and the specific month
+        return getYear(date) === currentYear && getMonth(date) === targetMonthIndex;
+      })
+      .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  };
 
   // 3. Map to get data arrays
   const revenueData = categories.map((_, index) => getSumForMonth(bookings, index));
-  const expensesData = categories.map((_, index) => getSumForMonth(expenses, index));
+  const expensesData = categories.map((_, index) => getESumForMonth(expenses, index));
 
   return {
     categories,

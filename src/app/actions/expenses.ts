@@ -25,12 +25,11 @@ export async function fetchExpenseDetails(id: number) {
   return { data, error };
 }
 
-export async function updateExpensegDetails(id: number, expenseDetails) {
+export async function createExpense(expenseDetails: any) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_expenses")
-    .update(expenseDetails)
-    .eq("id", id)
+    .insert(expenseDetails)
     .single();
 
   return { data, error, success: !error };

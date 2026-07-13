@@ -14,13 +14,9 @@ import Alert from "../ui/alert/Alert";
 import dayjs from "dayjs";
 import { syncTimeToDateString } from "./Vehicles/ClientVehiclesPage";
 import { useModal } from "@/hooks/useModal";
-import GppGoodOutlinedIcon from "@mui/icons-material/GppGoodOutlined"
 import MobileScreenShareOutlinedIcon from "@mui/icons-material/MobileScreenShareOutlined"
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import LocalGasStationOutlinedIcon from '@mui/icons-material/LocalGasStationOutlined';
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
-import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { Modal } from "../ui/modal";
@@ -979,7 +975,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
               </Modal>
 
               {
-                paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='                                    Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.' />
+                paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.' />
               }
               {/* Dynamic Call-To-Action Operations Routing Grid */}
               <div className="space-y-3 mt-4">

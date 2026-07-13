@@ -209,7 +209,7 @@ export default function SignInForm({ tenant }: Tenant) {
                       href="/register"
                       className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
                     >
-                      Register a new account with free 2 week trial!
+                      Register a new company!
                     </Link>
                 }
               </p>

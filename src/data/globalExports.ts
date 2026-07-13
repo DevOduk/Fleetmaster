@@ -5,6 +5,41 @@ export const currencies = [
 export const languages = [
 
 ]
+export const expenseCategories = [
+  {
+    value: 'hardware',
+    label: 'Hardware purchases and equipment'
+  },
+  {
+    value: 'subscription',
+    label: 'Subscription purchases and license'
+  },
+  {
+    value: 'bandwidth',
+    label: 'Internet and data connectivity costs'
+  },
+  {
+    value: 'salaries',
+    label: 'Payment of employee salaries'
+  },
+  {
+    value: 'marketing',
+    label: 'Marketing and advertising expenses'
+  },
+  {
+    value: 'rent',
+    label: 'Office or yard rental fees'
+  },
+  {
+    value: 'utilities',
+    label: 'Utility bills (electricity, water, etc.)'
+  },
+  {
+    value: 'other',
+    label: 'Miscellaneous expenses'
+  }
+];
+
 export const timezones = [
   { "timezone": "GMT-11:00", "regions": ["Samoa Standard Time", "Niue Time", "Midway Islands"] },
   { "timezone": "GMT-10:00", "regions": ["Hawaii-Aleutian Standard Time", "Tahiti Time", "Cook Islands"] },

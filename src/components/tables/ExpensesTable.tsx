@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,15 +8,36 @@ import {
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 import { ArrowRightIcon, PencilIcon, TrashBinIcon } from "@/icons";
-import Button from "../ui/button/Button";
 import Link from "next/link";
 import { CircularProgress } from "@mui/material";
-import { useAdminBooking } from "@/context/AdminBookingContext";
+import { useUser } from "@/context/UserContext";
+import { fetchExpensesForAdmin } from "@/app/actions/expenses";
 
 
 
 export default function ExpensesTable() {
-  const { bookings: allBookings, loading } = useAdminBooking();
+  const { profile } = useUser();
+  const [loading, setLoading] = useState(true);
+  const [expenses, setExpenses] = useState([])
+
+  useEffect(() => {
+    if (!profile?.tenant_id) return;
+    const fetchExpenses = async () => {
+      setLoading(true);
+
+      const res = await fetchExpensesForAdmin(profile?.tenant_id)
+      console.log(res)
+      if (res.success) {
+        setExpenses(res.data);
+
+        setLoading(false);
+      } else {
+
+        setLoading(false);
+      }
+    }
+    fetchExpenses();
+  }, [profile])
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
@@ -30,7 +51,7 @@ export default function ExpensesTable() {
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  User Details
+                  Expense Details
                 </TableCell>
                 <TableCell
                   isHeader
@@ -91,79 +112,62 @@ export default function ExpensesTable() {
                     <TableCell colSpan={9} className="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
                       <div className="flex flex-col py-4 items-center justify-center gap-3 w-full text-gray-500 text-theme-sm dark:text-gray-400">
                         <CircularProgress color="secondary" size="small" />
-                        <span>Loading bookings...</span>
+                        <span>Loading expenses ...</span>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  allBookings.length > 0 ? (
-                    allBookings.map((booking: any) => (
-                      <TableRow key={booking.id}>
+                  expenses.length > 0 ? (
+                    expenses.map((expense: any) => (
+                      <TableRow key={expense.id}>
                         <TableCell className="px-5 py-4 sm:px-6 text-start">
                           <div className="flex items-center gap-3 min-w-37.5">
-                            {/* <img
-                              className="w-20 object-fit-cover object-center"
-                              style={{ objectFit: 'cover', objectPosition: 'center' }}
-                              // src={order.user.image}
-                              src={booking?.vehicleDetails?.imageUrl}
-                              alt={booking.id.toString()}
-                            /> */}
                             <div>
                               <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                {booking.vehicleDetails?.year} {booking.vehicleDetails?.make} {booking.vehicleDetails?.model}
+                                {expense.description}
                               </span>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell className="px-4 min-w-50 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          {booking.renterName}
+                          {expense.category}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          {booking.renterPhone}
+                          {expense.paid_by || 'Company'}
                         </TableCell>
                         <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                           {/* {order.nextService} */}
-                          {booking.rentalStart} | {booking.rentalDays} Days
+                          {new Date(expense.created_at).toLocaleString()}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
-                          {booking.vehicleDetails?.daily_rate.toLocaleString()} Ksh
+                          {expense.method}
                         </TableCell>
-                        <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                          {'JHG4589GJKRG'}
+                        <TableCell className="px-4 py-3 uppercase text-gray-500 text-theme-sm dark:text-gray-400">
+                          {expense.payment_ref}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
-                          {booking.total.toLocaleString()} Ksh
+                          {expense.amount.toLocaleString()} Ksh
                         </TableCell>
                         <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                           <Badge
                             size="sm"
-                            color={
-                              booking.bookingStatus === "Active"
-                                ? "error"
-                                : booking.bookingStatus === "Reserved"
-                                  ? "primary"
-                                  : "success"
-                            }
+                            color={"success"}
                           >
-                            {booking.bookingStatus === "Active"
-                              ? "Failed"
-                              : booking.bookingStatus === "Reserved"
-                                ? "Processing"
-                                : "Success"}
+                            {"Success"}
                           </Badge>
                         </TableCell>
                         <TableCell className="px-4 flex gap-3 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          <Link href={'/bookings/' + booking.id + '/edit'}>
+                          <Link href={'/bookings/' + expense.id + '/edit'}>
                             <button
                               className="flex text-nowrap items-center justify-center p-2 px-3 font-medium rounded-lg bg-gray-200 dark:bg-gray-800 text-red-500 text-theme-sm hover:bg-red-600"
                             >
                               Delete <TrashBinIcon className="ml-1" />
                             </button>
                           </Link>
-                          <Link href={'/bookings/' + booking.id}>
+                          <Link href={'/bookings/' + expense.id}>
 
                             <button
-                                className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+                              className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
                             >
                               View <ArrowRightIcon className="ml-1" />
                             </button>
