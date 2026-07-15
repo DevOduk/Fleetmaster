@@ -7,7 +7,7 @@ export const getExpiryString = (expiryDate: string) => {
   const expiry = new Date(expiryDate);
   const diff = expiry.getTime() - now.getTime();
 
-  if (diff <= 0) return "Expired";
+  if (diff <= 0) return "Has Expired (Click to renew)";
 
   const msPerSecond = 1000;
   const msPerMinute = msPerSecond * 60;
@@ -23,11 +23,11 @@ export const getExpiryString = (expiryDate: string) => {
   const minutes = Math.floor((diff % msPerHour) / msPerMinute);
   const seconds = Math.floor((diff % msPerMinute) / msPerSecond);
 
-  if (months > 0) return `${months} month${months > 1 ? 's' : ''} ${days} day${days !== 1 ? 's' : ''}`;
-  if (weeks > 0) return `${weeks} week${weeks > 1 ? 's' : ''} ${days} day${days !== 1 ? 's' : ''}`;
-  if (days > 0) return `${days} day${days !== 1 ? 's' : ''} ${hours} hour${hours !== 1 ? 's' : ''}`;
-  if (hours > 0) return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} min${minutes !== 1 ? 's' : ''}`;
-  return `${minutes} min${minutes !== 1 ? 's' : ''} ${seconds} sec${seconds !== 1 ? 's' : ''}`;
+  if (months > 0) return `Expires in ${months} month${months > 1 ? 's' : ''} ${days} day${days !== 1 ? 's' : ''}`;
+  if (weeks > 0) return `Expires in ${weeks} week${weeks > 1 ? 's' : ''} ${days} day${days !== 1 ? 's' : ''}`;
+  if (days > 0) return `Expires in ${days} day${days !== 1 ? 's' : ''} ${hours} hour${hours !== 1 ? 's' : ''}`;
+  if (hours > 0) return `Expires in ${hours} hour${hours !== 1 ? 's' : ''} ${minutes} min${minutes !== 1 ? 's' : ''}`;
+  return `Expires in ${minutes} min${minutes !== 1 ? 's' : ''} ${seconds} sec${seconds !== 1 ? 's' : ''}`;
 };
 
 function ExpiryBanner({ plan, expiryDate }: { plan: string, expiryDate: string }) {
@@ -46,7 +46,7 @@ function ExpiryBanner({ plan, expiryDate }: { plan: string, expiryDate: string }
   }, [expiryDate]);
 
   // Don't render anything if it's already expired or loading
-  if (!timeLeft || timeLeft.includes('week') || timeLeft.includes('month') || timeLeft === "Expired") return null;
+  if (!timeLeft || timeLeft.includes('week') || timeLeft.includes('month')) return null;
 
   return (
     <div className="flex gap-2 justify-end p-6 items-center">
@@ -54,7 +54,7 @@ function ExpiryBanner({ plan, expiryDate }: { plan: string, expiryDate: string }
         It is advisable to renew plan before expiry!
       </span>
       <Link href='/company-profile/subscription' className="p-2 w-auto px-5 bg-red-500 text-white rounded-lg border-red-700">
-        {plan} Plan Expires in {timeLeft}
+        {plan} Plan {timeLeft}
       </Link>
     </div>
   );

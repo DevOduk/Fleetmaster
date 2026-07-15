@@ -4,7 +4,7 @@ import Button from "@/components/ui/button/Button";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Metadata } from "next";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined"
-import { subscriptionPlans } from "@/components/company-profile/CompanySubscriptionsCard";
+import { subscriptionPlans } from "@/data/globalExports";
 
 
 export const metadata: Metadata = {
@@ -18,7 +18,6 @@ export const metadata: Metadata = {
 const UNIFIED_MATRIX_CONFIG = [
   { label: "User Accounts", matchKeywords: ["user account", "user"] },
   { label: "Vehicle Listings", matchKeywords: ["vehicle", "listings"] },
-  { label: "Monthly Bookings", matchKeywords: ["bookings", "booking"] },
   { label: "Driver Vetting", matchKeywords: ["vetting", "verification"] },
   { label: "Expense Tracking", matchKeywords: ["expense tracking", "expenses"] },
   { label: "Custom Domain Options", matchKeywords: ["custom domain"] },
