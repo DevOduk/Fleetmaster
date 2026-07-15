@@ -1,6 +1,5 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { Metadata } from "next";
-import Feedback from "@/components/feedback/Feedback";
 import SystemLogs from "@/components/system/SystemLogs";
 
 export const metadata: Metadata = {

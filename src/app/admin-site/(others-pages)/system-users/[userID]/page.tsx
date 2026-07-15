@@ -1,5 +1,4 @@
 "use client";
-import BookingNotFound from '@/components/bookings/NotFound';
 import ViewBooking from '@/components/bookings/ViewBooking';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { use } from 'react';

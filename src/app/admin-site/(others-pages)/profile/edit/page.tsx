@@ -1,4 +1,3 @@
-import UserMetaCard from "@/components/ProfilePage/admin-profile/UserMetaCard";
 import EditUserAddressCard from "@/components/ProfilePage/edit-admin-profile/EditUserAddressCard";
 import EditUserInfoCard from "@/components/ProfilePage/edit-admin-profile/EditUserInfoCard";
 import EditUserMetaCard from "@/components/ProfilePage/edit-admin-profile/EditUserMetaCard";

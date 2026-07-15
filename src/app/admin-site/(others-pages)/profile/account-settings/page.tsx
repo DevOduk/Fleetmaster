@@ -1,4 +1,3 @@
-import React from "react";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import AccountSettings from "@/components/account/AccountSettings";
 
