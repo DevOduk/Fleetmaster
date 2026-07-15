@@ -3,7 +3,14 @@ export const currencies = [
 
 ]
 export const languages = [
-
+  {
+    value: "english-us",
+    label: "English (US)"
+  },
+  {
+    value: "english-uk",
+    label: "English (UK)"
+  },
 ]
 export const expenseCategories = [
   {
@@ -38,6 +45,17 @@ export const expenseCategories = [
     value: 'other',
     label: 'Miscellaneous expenses'
   }
+];
+
+export const paymentsCategories = [
+  {
+    value: 'hardware sale',
+    label: 'Hardware and equipment sales'
+  },
+  {
+    value: 'rental income',
+    label: 'Income from rentals from company'
+  },
 ];
 
 export const timezones = [

@@ -113,6 +113,30 @@ const SystemUsers = () => {
     router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
   };
 
+
+  const plan = profile?.fleetmaster_tenants?.subscription_plan;
+  const userCount = initialUsers.length;
+
+  let actionContent;
+
+  if (plan === "Trial" || plan === "Starter") {
+    actionContent = <div className="text-red-500 text-sm">This plan only enables 1 user. Upgrade to Pro to add more users!</div>;
+  } else if (plan === "Pro" && userCount >= 3) {
+    actionContent = <div className="text-red-500 text-sm">Upgrade to expert to add unlimitted users!</div>;
+  } else {
+    actionContent = (
+      <Link href="/system-users/new">
+        <Button
+          variant="success"
+          size="sm"
+          className="flex items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+        >
+          Create New Admin
+        </Button>
+      </Link>
+    );
+  }
+
   return (
     <div>
       <div className="space-y-6">
@@ -125,13 +149,7 @@ const SystemUsers = () => {
               {initialUsers.length} Users
             </span>
           </div>
-          <Link href="/bookings/new">
-            <Button variant="success" size="sm"
-              className="flex items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
-            >
-              Create New Admin
-            </Button>
-          </Link>
+          {actionContent}
         </div>
 
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
@@ -189,7 +207,7 @@ const SystemUsers = () => {
                             />
                             <div>
                               <span className="block font-medium uppercase text-gray-800 text-theme-sm dark:text-white/90">
-                                {user.first_name || "N/A"}
+                                {user.first_name || "N/A"} ({user.id === profile.id && 'You'})
                               </span>
                               <span className="block text-gray-500 text-theme-xs pt-2 dark:text-gray-400">
                                 {user.first_name} {user.last_name}
@@ -221,12 +239,12 @@ const SystemUsers = () => {
                           {user.created_at ? new Date(user.created_at).toLocaleString() : "—"}
                         </TableCell>
                         <TableCell className="px-4 flex gap-3 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          <Link href={`/bookings/${user.id}/edit`}>
+                          <Link href={user.id === profile.id ? '/profile/edit' : `/system-users/${user.id}/edit`}>
                             <Button size="sm" variant="success-outline" endIcon={<EditOutlinedIcon fontSize="small" className="m-0" />}>
                               Update
                             </Button>
                           </Link>
-                          <Link href={`/bookings/${user.id}`}>
+                          <Link target={user.id === profile.id ? '_blank' : '_self'} href={user.id === profile.id ? '/profile' : `/system-users/${user.id}`}>
                             <Button variant="primary" size="sm"
                               className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
                             >

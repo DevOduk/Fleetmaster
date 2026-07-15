@@ -84,7 +84,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
         if (!profile?.phone) return;
         setMpesaNumber((profile?.phone).replace('+254', '').replace(' ', ''))
     }, [profile?.phone])
-    console.log(decodedData?.bookingInformation)
+
     const start = useMemo(() => {
         return decodedData?.bookingInformation?.start || searchParams.get('start');
     }, [decodedData]);
@@ -239,7 +239,6 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                 }
 
                 showToast(`STK Push Sent! Enter your M-Pesa PIN on your phone to complete payment.`, 'success');
-                console.log("Tracking Invoice State Details:", data);
 
                 const targetInvoiceId = data.invoice?.invoice_id || data.id;
 
@@ -258,8 +257,8 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                         });
 
                         const statusData = await statusRes.json();
-                        console.log("Data Response: statusData.data ", statusData);
 
+                        
                         // Dig into statusData.data.invoice first
                         const mpesaRef = statusData.data?.invoice?.mpesa_reference ||
                             statusData.data?.invoice?.provider_ref ||
@@ -321,7 +320,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                 if (res.success) {
                                     // success good
                                 }
-                                console.log("Database payment update response:", res);
+                                // console.log("Database payment update response:", res);
 
 
                                 if (response.ok) {
@@ -382,7 +381,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                 if (res.success) {
                                     // success good
                                 }
-                                console.log("Database payment update response:", res);
+                                // console.log("Database payment update response:", res);
                             }
                         }
                     } catch (pollErr) {
@@ -452,7 +451,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                             console.error("Failed to commit post-payment card reservation:", cardBookingError);
                             showToast('Payment caught, but local row registration failed. Contact administration with reference.', 'error');
                         } else {
-                            console.log("Card Booking Successfully Registered ID:", cardBooking?.id);
+                            // console.log("Card Booking Successfully Registered ID:", cardBooking?.id);
                         }
                     } catch (dbErr) {
                         console.error("Unhandled error updating database ledger:", dbErr);
@@ -667,7 +666,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                 </>
                             ) : <>
                                 <p className='text-gray-500 dark:text-white mt-4 text-sm mb-3 nt-3 border-green-500 ring-1 ring-green-500 flex-1 flex items-center border rounded-lg px-3 py-3 bg-white dark:bg-gray-900 '>
-                                    Dropoff at {pickupOption}
+                                    Dropoff at smae location picked up at ({pickupOption})
                                 </p>
                             </>
                         }

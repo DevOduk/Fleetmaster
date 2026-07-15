@@ -37,7 +37,8 @@ export const CalendarWrapper = ({
   // Calculate all booked date strings for this vehicle
   const bookedDates = useMemo(() => {
     if (loading) return;
-console.log(bookings)
+
+    console.log(bookings)
     const vehicleBookings = bookings?.filter((b) => b.vehicle_id === vehicleId);
     const vehicleBookedDates = vehicleBookings.filter((b) => b.booking_status === "Booked");
 

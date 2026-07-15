@@ -14,7 +14,7 @@ export async function fetchAllExpenses() {
   return { success: true, data };
 }
 
-export async function fetchExpenseDetails(id: number) {
+export async function fetchExpenseDetails(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_expenses")
@@ -22,7 +22,7 @@ export async function fetchExpenseDetails(id: number) {
     .eq("id", id)
     .single();
 
-  return { data, error };
+  return { data, error, success: !error };
 }
 
 export async function createExpense(expenseDetails: any) {

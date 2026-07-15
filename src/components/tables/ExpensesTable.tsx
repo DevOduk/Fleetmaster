@@ -39,6 +39,8 @@ export default function ExpensesTable() {
     fetchExpenses();
   }, [profile])
 
+  
+  
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
       <div className="max-w-full overflow-x-auto">
@@ -129,8 +131,15 @@ export default function ExpensesTable() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="px-4 min-w-50 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          {expense.category}
+                        <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                          <Badge
+                            size="sm"
+                            color={"info"}
+                          >
+                            <span className="capitalize">
+                              {expense.category}
+                            </span>
+                          </Badge>
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
                           {expense.paid_by || 'Company'}
@@ -153,19 +162,16 @@ export default function ExpensesTable() {
                             size="sm"
                             color={"success"}
                           >
-                            {"Success"}
+                            {"Disbursed"}
                           </Badge>
                         </TableCell>
                         <TableCell className="px-4 flex gap-3 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          <Link href={'/bookings/' + expense.id + '/edit'}>
-                            <button
-                              className="flex text-nowrap items-center justify-center p-2 px-3 font-medium rounded-lg bg-gray-200 dark:bg-gray-800 text-red-500 text-theme-sm hover:bg-red-600"
-                            >
-                              Delete <TrashBinIcon className="ml-1" />
-                            </button>
-                          </Link>
-                          <Link href={'/bookings/' + expense.id}>
-
+                          <button
+                            className="flex text-nowrap items-center justify-center p-2 px-3 font-medium rounded-lg bg-gray-200 dark:bg-gray-800 text-red-500 text-theme-sm hover:bg-red-600"
+                          >
+                            Delete <TrashBinIcon className="ml-1" />
+                          </button>
+                          <Link href={'/expenses/' + expense.id}>
                             <button
                               className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
                             >

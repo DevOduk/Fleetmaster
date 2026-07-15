@@ -57,7 +57,7 @@ const Select: React.FC<SelectProps> = ({
       </option>
       {options.map((option) => (
         <option
-          key={option.value}
+          key={option.label}
           value={option.value}
           className="text-gray-700 dark:bg-gray-900 dark:text-gray-400"
         >

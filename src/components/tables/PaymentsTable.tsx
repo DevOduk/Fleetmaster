@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -11,11 +11,34 @@ import { ArrowRightIcon, PencilIcon, TrashBinIcon } from "@/icons";
 import Link from "next/link";
 import { CircularProgress } from "@mui/material";
 import { useAdminBooking } from "@/context/AdminBookingContext";
+import { fetchPaymentsForAdmin } from "@/app/actions/payments";
+import { useUser } from "@/context/UserContext";
 
 
 
 export default function PaymentsTable() {
-  const { bookings: allBookings, loading } = useAdminBooking();
+  const { profile } = useUser();
+  const [loading, setLoading] = useState(true);
+  const [expenses, setExpenses] = useState([])
+
+  useEffect(() => {
+    if (!profile?.tenant_id) return;
+    const fetchPayments = async () => {
+      setLoading(true);
+
+      const res = await fetchPaymentsForAdmin(profile?.tenant_id)
+      console.log(res)
+      if (res.success) {
+        setExpenses(res.data);
+
+        setLoading(false);
+      } else {
+
+        setLoading(false);
+      }
+    }
+    fetchPayments();
+  }, [profile])
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
@@ -25,6 +48,13 @@ export default function PaymentsTable() {
             {/* Table Header */}
             <TableHeader className="border-b border-gray-100 dark:border-white/5">
               <TableRow>
+
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  No.
+                </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -35,13 +65,7 @@ export default function PaymentsTable() {
                   isHeader
                   className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  Purpose
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Paid By
+                  Payment Ref
                 </TableCell>
                 <TableCell
                   isHeader
@@ -59,13 +83,13 @@ export default function PaymentsTable() {
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  Receipt No.
+                  Amount
                 </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  Amount
+                  Nessage
                 </TableCell>
                 <TableCell
                   isHeader
@@ -95,75 +119,60 @@ export default function PaymentsTable() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  allBookings.length > 0 ? (
-                    allBookings.map((booking: any) => (
-                      <TableRow key={booking.id}>
+                  expenses.length > 0 ? (
+                    expenses.map((payment: any, i) => (
+                      <TableRow key={payment?.id}>
+                        <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                          {i + 1}
+                        </TableCell>
                         <TableCell className="px-5 py-4 sm:px-6 text-start">
                           <div className="flex items-center gap-3 min-w-37.5">
-                            {/* <img
-                              className="w-20 object-fit-cover object-center"
-                              style={{ objectFit: 'cover', objectPosition: 'center' }}
-                              // src={order.user.image}
-                              src={booking?.vehicleDetails?.imageUrl}
-                              alt={booking.id.toString()}
-                            /> */}
                             <div>
                               <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                {booking.vehicleDetails?.year} {booking.vehicleDetails?.make} {booking.vehicleDetails?.model}
+                                {payment?.account_number}
                               </span>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell className="px-4 min-w-50 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          {booking.renter_name}
-                        </TableCell>
-                        <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          {booking.renter_phone}
+                          {payment?.intasend_invoice_id}
                         </TableCell>
                         <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          {/* {order.nextService} */}
-                          {booking.rentalStart} | {booking.rentalDays} Days
+                          {new Date(payment?.created_at).toLocaleString()}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
-                          {booking.vehicleDetails?.daily_rate.toLocaleString()} Ksh
-                        </TableCell>
-                        <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                          {booking.discount}
+                          {payment?.provider}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
-                          {booking.total.toLocaleString()} Ksh
+                          {payment?.amount.toLocaleString()} {payment?.currency}
+                        </TableCell>
+
+                        <TableCell className="px-4 max-w-lg py-3 text-wrap cursor-pointer text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                          {payment?.message || '-'}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                           <Badge
                             size="sm"
                             color={
-                              booking.bookingStatus === "Active"
+                              payment?.status === "Failed"
                                 ? "error"
-                                : booking.bookingStatus === "Reserved"
-                                  ? "primary"
-                                  : "success"
+                                : "success"
                             }
                           >
-                            {booking.bookingStatus === "Active"
-                              ? "Failed"
-                              : booking.bookingStatus === "Reserved"
-                                ? "Processing"
-                                : "Success"}
+                            {payment?.status}
                           </Badge>
                         </TableCell>
                         <TableCell className="px-4 flex gap-3 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          <Link href={'/bookings/' + booking.id + '/edit'}>
-                            <button
-                              className="flex text-nowrap items-center justify-center p-2 px-3 font-medium rounded-lg bg-gray-200 dark:bg-gray-800 text-red-500 text-theme-sm hover:bg-red-600"
-                            >
-                              Delete <TrashBinIcon className="ml-1" />
-                            </button>
-                          </Link>
-                          <Link href={'/bookings/' + booking.id}>
+                          <button
+                            className="flex text-nowrap items-center justify-center p-2 px-3 font-medium rounded-lg bg-gray-200 dark:bg-gray-800 text-red-500 text-theme-sm hover:bg-red-600"
+                          >
+                            Delete <TrashBinIcon className="ml-1" />
+                          </button>
+                          <Link href={'/payments/' + payment?.id}>
                             <button
                               className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
                             >
-                              View <ArrowRightIcon className="ml-1"  />
+                              View <ArrowRightIcon className="ml-1" />
                             </button>
                           </Link>
                         </TableCell>

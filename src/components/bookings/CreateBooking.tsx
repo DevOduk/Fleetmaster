@@ -1234,7 +1234,7 @@ const CreateNewBookingForm = () => {
             </Modal>
 
             {
-              paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='                                    Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.' />
+              paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.' />
             }
             {/* Dynamic Call-To-Action Operations Routing Grid */}
             <div className="space-y-3 mt-4">

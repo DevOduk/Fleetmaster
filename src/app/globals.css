@@ -18,6 +18,12 @@
   100% {background-position: 100% 0,100% 100%,0 100%,0 0}
 }
 
+.apexcharts-tooltip-y-group {
+    margin: 4px 10px !important;
+    border-radius: 15px !important;
+    color: white !important;
+    font-weight: bold !important;
+}
 @theme {
   --font-*: initial;
   --font-outfit: Outfit, sans-serif;

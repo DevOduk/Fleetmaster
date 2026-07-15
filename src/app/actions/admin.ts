@@ -40,6 +40,18 @@ export async function getTenantAdmins(id: string) {
   return { data, success: !error, error };
 }
 
+export async function getTenantAdminDetails(id: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('fleetmaster_admins')
+    .select('id, phone, email, bio, first_name, last_name, role, profile_pic, created_at')
+    .eq('id', id)
+    .single(); // Filter logic here
+
+  return { data, success: !error, error };
+}
+
 
 export async function updateProfileDetails({ id, profileDetails }: { id: string; profileDetails: any; }) {
   const supabase = await createClient();

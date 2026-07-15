@@ -68,27 +68,30 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
   const vehicleID = resolvedParams.vehicleID;
   const VehicleDetails = vehicles.find(v => v.id === parseInt(vehicleID));
 
+const bookedDates = useMemo(() => {
+  if (loading || !bookings) return [];
 
-  // Calculate all booked date strings for this vehicle
-  const bookedDates = useMemo(() => {
-    if (loading) return;
+  const vehicleBookings = bookings.filter((b) => b.vehicle_id === Number(vehicleID));
+  const activeBookings = vehicleBookings.filter((b) => 
+    ["Booked", "In Progress"].includes(b.booking_status)
+  );
 
-    const vehicleBookings = bookings?.filter((b) => b.vehicleId === Number(vehicleID));
-    const vehicleBookedDates = vehicleBookings.filter((b) => b.booking_status === "Booked");
+  return activeBookings.flatMap((booking) => {
+    const start = dayjs(booking.rental_start);
+    const end = dayjs(booking.rental_end); // Fixed the typo here
 
-    return vehicleBookedDates.flatMap((booking) => {
-      const start = dayjs(booking.rentalStart);
-      const end = dayjs(booking.rentalEnd);
-      const days = [];
-      let current = start;
+    if (!start.isValid() || !end.isValid()) return [];
 
-      while (current.isBefore(end) || current.isSame(end, "day")) {
-        days.push(current.format("YYYY-MM-DD"));
-        current = current.add(1, "day");
-      }
-      return days;
-    });
-  }, [vehicleID, bookings]);
+    const days = [];
+    let current = start;
+
+    while (current.isBefore(end) || current.isSame(end, "day")) {
+      days.push(current.format("YYYY-MM-DD"));
+      current = current.add(1, "day");
+    }
+    return days;
+  });
+}, [vehicleID, bookings, loading]);
 
 
 
@@ -437,6 +440,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                       showToast('Please select a minimum of ' + VehicleDetails?.min_rental_days + ' days!', 'error');
                       return;
                     }
+                    console.log('booked vs booking', bookedDates, 'start: ', start, 'end: ', end)
 
                     // --- 2. NEW OVERLAP CHECK INTERCEPTION ---
                     let isOverlapping = false;
@@ -458,6 +462,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                       showToast('This vehicle is already booked for some of your selected dates!', 'error');
                       return; // Stop execution: blocks router.push entirely
                     }
+
                     setIsRedirecting(true)
                     // ----------------------------------------
 
@@ -480,7 +485,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                         total: tokenTotal
                       }
                     };
-                    // console.log('encoding',stateToEncode)
+
                     try {
                       // Convert to JSON, then encode to Base64
                       const jsonString = JSON.stringify(stateToEncode);
@@ -494,8 +499,12 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                   }}
                 >
                   <Button
-                    disabled={!profile || VehicleDetails.status === 'Not Available' || !userVerified(profile || isRedirecting)}
-                    className='w-full mt-5' size='sm'>{isRedirecting ? "Redirecting ..." : !userVerified(profile) ? "Verify your account to book" : "Continue to Book"}</Button>
+                    disabled={
+                      isRedirecting || // <--- Disable immediately when true
+                      !profile ||
+                      VehicleDetails.status === 'Not Available' ||
+                      !userVerified(profile)
+                    } className='w-full mt-5' size='sm'>{isRedirecting ? "Redirecting ..." : !userVerified(profile) ? "Verify your account to book" : "Continue to Book"}</Button>
                 </div> :
                 <Link target='_blank' href={'/signin'}>
                   <Button className='w-full mt-5' size='sm'>Signin to Book</Button>

@@ -29,6 +29,7 @@ export const formatedValue = (value: number) => {
 
 export default function MonthlyTarget({ bookings, loadingBookings, target }: { bookings: any, loadingBookings: boolean, target: number }) {
   const now = new Date();
+  const today = now.getDate();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
@@ -38,6 +39,11 @@ export default function MonthlyTarget({ bookings, loadingBookings, target }: { b
       bookingDate.getFullYear() === currentYear;
   })
     .reduce((sum, booking) => sum + (Number(booking.total) || 0), 0) || 0;
+
+  const totalToday = bookings?.filter(b => {
+    const d = new Date(b.created_at);
+    return d.getDate() === today && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  }).reduce((sum, payment) => sum + (Number(payment.total) || 0), 0) || 0;
 
 
   const series = useMemo(() => {
@@ -217,7 +223,8 @@ export default function MonthlyTarget({ bookings, loadingBookings, target }: { b
                   Revenue
                 </p>
                 <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-800 dark:text-white/90 sm:text-lg">
-                  ${formatedValue(totalRevenue)}                  <svg
+                  ${formatedValue(totalRevenue)}
+                  <svg
                     width="16"
                     height="16"
                     viewBox="0 0 16 16"
@@ -241,7 +248,7 @@ export default function MonthlyTarget({ bookings, loadingBookings, target }: { b
                   Today
                 </p>
                 <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-800 dark:text-white/90 sm:text-lg">
-                  $20K
+                  ${formatedValue(totalToday)}
                   <svg
                     width="16"
                     height="16"

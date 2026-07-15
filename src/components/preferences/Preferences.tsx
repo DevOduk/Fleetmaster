@@ -12,6 +12,7 @@ import { useSettings } from "@/context/SettingsContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import Checkbox from "../form/input/Checkbox";
+import { languages } from "@/data/globalExports";
 
 
 
@@ -99,11 +100,7 @@ export default function Preferences() {
                 {formData.language}
               </p> */}
               <Select
-                options={[
-                  { value: "english-us", label: "English (US)" },
-                  { value: "english-uk", label: "English (UK)" },
-                ]}
-                // Keep the select UI synced with the active theme state
+                options={languages}
                 defaultValue={formData?.language}
                 placeholder="Select an option"
                 onChange={(e) => setFormData((prev) => ({ ...prev, language: e }))}
