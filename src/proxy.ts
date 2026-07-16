@@ -199,9 +199,10 @@ export async function proxy(req: NextRequest) {
 
   // 7. UNIFORM CLIENT GROUP HANDLER (tenant-slug.yourdomain.com)
   else {
-    targetPathname = `/client-site/${subdomain}${pathname}`;
+    const cleanPathname = pathname === '/' ? '' : pathname;
+    targetPathname = `/client-site/${subdomain}${cleanPathname}`;
   }
-// ========================================================================
+  // ========================================================================
   // CORE AUTH SECURITY INTERCEPTOR LAYER
   // ========================================================================
   const isSignInPage = pathname.startsWith('/signin') || targetPathname.includes('/signin') || pathname.startsWith('/signup');

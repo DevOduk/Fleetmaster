@@ -665,8 +665,8 @@ const BookingPage = ({ params }: VehiclePageProps) => {
 
                                 </>
                             ) : <>
-                                <p className='text-gray-500 dark:text-white mt-4 text-sm mb-3 nt-3 border-green-500 ring-1 ring-green-500 flex-1 flex items-center border rounded-lg px-3 py-3 bg-white dark:bg-gray-900 '>
-                                    Dropoff at smae location picked up at ({pickupOption})
+                                <p className='text-gray-500 dark:text-gray-400 mt-4 text-sm mb-3 nt-3 border-gray-500 ring-1 ring-gray-500 flex-1 flex items-center border rounded-lg px-3 py-3 bg-white dark:bg-gray-900 '>
+                                    Dropoff at same location picked up ({pickupOption} - {end.replace('T', ', ')})
                                 </p>
                             </>
                         }

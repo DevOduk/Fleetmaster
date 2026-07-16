@@ -6,6 +6,7 @@ import StatisticsChart from "@/components/ecommerce/StatisticsChart";
 import DemographicCard from "@/components/ecommerce/DemographicCard";
 import { EcommerceMetrics } from "@/components/dashboard-components/EcommerceMetrics";
 import RecentVehiscles from "@/components/dashboard-components/RecentVehicles";
+import { getAllTenants } from "@/app/actions/tenant";
 
 export const metadata: Metadata = {
   title:
@@ -13,20 +14,13 @@ export const metadata: Metadata = {
   description: "FleetManager is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
 };
 
-export default function Home() {
+export default async function Home() {
+
+  const tenants = await getAllTenants();
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
       <div className="col-span-12">
-        <EcommerceMetrics />
-
-      </div>
-      <div className="col-span-12 xl:col-span-7">
-        {/* <MonthlySalesChart /> */}
-      </div>
-
-
-      <div className="col-span-12 xl:col-span-5">
-        {/* <MonthlyTarget /> */}
+        <EcommerceMetrics tenants={tenants} />
       </div>
 
       <div className="col-span-12">
@@ -34,7 +28,7 @@ export default function Home() {
       </div>
 
       <div className="col-span-12 xl:col-span-5">
-        <DemographicCard />
+        <DemographicCard tenants={tenants}/>
       </div>
 
       <div className="col-span-12 xl:col-span-7">

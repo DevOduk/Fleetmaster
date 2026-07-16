@@ -1,14 +1,24 @@
-// [tenant]/(auth)/signin/page.tsx
+// src/app/client-site/[tenant]/(auth)/signin/page.tsx
 
-"use client"
+import { headers } from "next/headers";
 import SignInForm from "@/components/auth/SignInForm";
 
-export default function SignIn() {
-  const hostname = window.location.hostname;
-  const parts = hostname.split(".");
+export default async function SignIn({ 
+  params 
+}: { 
+  params: Promise<{ tenant: string }> 
+}) {
+  const resolvedParams = await params;
+  let tenant = resolvedParams.tenant;
 
-  // Handle local testing environments safely
-  let slug = parts.length > 1 ? parts[0] : null;
+  if (!tenant) {
+    const headersList = await headers(); // headers() is also async now
+    const host = headersList.get("host") || "";
+    const parts = host.split(".");
+    if (parts.length > 2) {
+       tenant = parts[0];
+    }
+  }
 
-  return <SignInForm tenant={slug} />;
+  return <SignInForm tenant={tenant} />;
 }

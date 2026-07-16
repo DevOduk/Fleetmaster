@@ -10,55 +10,54 @@ import { useAdmin } from "@/context/AdminContext";
 import { useManagerFleet } from "@/context/ManagerFleetContext";
 import { formatedValue } from "../ecommerce/MonthlyTarget";
 
-export const EcommerceMetrics = () => {
-  const { adminProfile, loading } = useAdmin();
+export const EcommerceMetrics = ({tenants}: { tenants: any;}) => {
+  const { loading } = useAdmin();
   const { vehicles, loading: loadingVehicles } = useManagerFleet();
-console.log(adminProfile)
+
 
   const totalRevenue = 750000;
-  const completed = 70;
 
-    const metrics = [
-      {
-        id: "revenue",
-        title: "Total Revenue",
-        value: formatedValue(totalRevenue) + ' /=',
-        description: "Your total earned Revenue for this month",
-        icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
-        badge: { text: "9.05%", color: "success" as const, icon: <ArrowUpIcon className="text-success-500" /> },
-        isReady: !loading
-      },
-      {
-        id: "vehicles",
-        title: "Vehicles",
-        value: `${vehicles?.length || 0} +`,
-        description: "Active operational vehicles in the system fleet",
-        icon: <DirectionsCarFilledOutlinedIcon className="text-gray-800 size-6 dark:text-white/90" />,
-        badge: { text: "11.01%", color: "success" as const, icon: <ArrowUpIcon /> },
-        isReady: !loadingVehicles
-      },
-      {
-        id: "tenants",
-        title: "Active Tenants",
-        value: `${completed} +`,
-        description: "Total finalized deployment runs",
-        icon: <ScheduleOutlinedIcon className="text-gray-800 dark:text-white/90" />,
-        badge: { text: "9.05%", color: "error" as const, icon: <ArrowDownIcon className="text-error-500" /> },
-        isReady: !loading
-      },
-      {
-        id: "rate",
-        title: "Booking Rate",
-        value: `${formatedValue(calculateFleetBookingRate())} %`,
-        description: "Average utility utilization metrics",
-        icon: <TrendingUpOutlinedIcon className="text-gray-800 dark:text-white/90" />,
-        badge: { text: "9.05%", color: "error" as const, icon: <ArrowDownIcon className="text-error-500" /> },
-        isReady: !loading && !loadingVehicles
-      }
-    ];
+  const metrics = [
+    {
+      id: "revenue",
+      title: "Total Revenue",
+      value: formatedValue(totalRevenue) + ' /=',
+      description: "Your total earned Revenue for this month",
+      icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
+      badge: { text: "9.05%", color: "success" as const, icon: <ArrowUpIcon className="text-success-500" /> },
+      isReady: !loading
+    },
+    {
+      id: "vehicles",
+      title: "Vehicles",
+      value: `${vehicles?.length || 0} +`,
+      description: "Active operational vehicles in the system fleet",
+      icon: <DirectionsCarFilledOutlinedIcon className="text-gray-800 size-6 dark:text-white/90" />,
+      badge: { text: "11.01%", color: "success" as const, icon: <ArrowUpIcon /> },
+      isReady: !loadingVehicles
+    },
+    {
+      id: "tenants",
+      title: "Active Tenants",
+      value: `${tenants.length} +`,
+      description: "Total finalized deployment runs",
+      icon: <ScheduleOutlinedIcon className="text-gray-800 dark:text-white/90" />,
+      badge: { text: "9.05%", color: "error" as const, icon: <ArrowDownIcon className="text-error-500" /> },
+      isReady: !loading
+    },
+    {
+      id: "rate",
+      title: "Booking Rate",
+      value: `${formatedValue(calculateFleetBookingRate())} %`,
+      description: "Average utility utilization metrics",
+      icon: <TrendingUpOutlinedIcon className="text-gray-800 dark:text-white/90" />,
+      badge: { text: "9.05%", color: "error" as const, icon: <ArrowDownIcon className="text-error-500" /> },
+      isReady: !loading && !loadingVehicles
+    }
+  ];
 
   return (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 md:gap-6">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 md:gap-6">
       {metrics.map((card) => (
         card.isReady ? (
           <div key={card.id} className="rounded-2xl border border-gray-200 px-5 py-3 dark:border-gray-800 bg-brand-500/5 space-y-3">

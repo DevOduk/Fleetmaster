@@ -7,11 +7,13 @@ import { MoreDotIcon } from "@/icons";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useUser } from "@/context/UserContext";
+import { set } from "date-fns";
+import { allCountriesDB } from "@/data/globalExports";
 
-export default function DemographicCard() {
+export default function DemographicCard({ tenants }: { tenants: any[]; }) {
   const [isOpen, setIsOpen] = useState(false);
   const { loading } = useUser()
-
+  const countries = [...new Set(tenants?.flatMap(t => t.country))];
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -96,35 +98,41 @@ export default function DemographicCard() {
               </div>
             ))}
           </> :
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="items-center w-full rounded-full max-w-8">
-                  <img
-                    width={44}
-                    height={44}
-                    src="/images/country/country-04.svg"
-                    alt="usa"
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800 text-theme-sm dark:text-white/90">
-                    Kenya
-                  </p>
-                  <span className="block w-fit text-nowrap text-gray-500 text-theme-xs dark:text-gray-400">
-                    2,379 Clients
-                  </span>
-                </div>
-              </div>
+            <div className="flex flex-col gap-4">
+              {countries.map((c, i) => {
+                const percentage = ((tenants?.filter(m => m.country === c).length) / tenants.length) * 100;
+                const country = allCountriesDB.find(b => b.country === c);
 
-              <div className="flex w-full max-w-35 items-center gap-3">
-                <div className="relative block h-2 w-full max-w-25 rounded-sm bg-gray-200 dark:bg-gray-800">
-                  <div className="absolute left-0 top-0 flex h-full w-[100%] items-center justify-center rounded-sm bg-brand-500 text-xs font-medium text-white"></div>
-                </div>
-                <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                  100%
-                </p>
-              </div>
+                return (
+                  <div key={i} className="flex items-center justify-between p-3 bg-gray-200 dark:bg-gray-900 rounded-2xl">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={`https://flagsapi.com/${country.code}/flat/64.png`}
+                        alt={c}
+                        className="w-10 h-10 border rounded-full object-contain"
+                      />
+
+                      <div>
+                        <p className="font-semibold text-gray-800 text-theme-sm dark:text-white/90">
+                          {c}
+                        </p>
+                        <span className="block w-fit text-nowrap text-gray-500 text-theme-xs dark:text-gray-400">
+                          {(tenants?.filter(m => m.country === c).length.toLocaleString() || 0)} Clients
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex w-full max-w-35 items-center gap-3">
+                      <div className="relative block h-2 w-full max-w-25 rounded-sm bg-gray-200 dark:bg-gray-800">
+                        <div style={{ width: `${percentage}%` }} className={`absolute left-0 top-0 flex h-full items-center justify-center rounded-sm bg-brand-500 text-xs font-medium text-white`}></div>
+                      </div>
+                      <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                        {percentage}%
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
         }
 

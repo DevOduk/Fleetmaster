@@ -17,23 +17,40 @@ import { useUser } from '@/context/UserContext';
 import AddPhotoAlternateOutlinedIcon from "@mui/icons-material/AddPhotoAlternateOutlined"
 import CarModelsByBrand from '@/data/carMakeModels';
 import { createClient } from '@/utils/supabase/client';
+import Alert from '@/components/ui/alert/Alert';
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string }>;
 }
 
+const defaultVehicleD = { driver_type: 'Self Drive', transmission: 'Automatic', fuel_type: 'Petrol/Gasoline' };
 
-
-const NewVehiclePage = ({ params }: VehiclePageProps) => {
+const NewVehiclePage = () => {
   const supabase = createClient();
   const { setVehicles } = useAdminFleet();
   const { showToast } = useToast();
-  const resolvedParams = use(params);
-  const vehicleID = resolvedParams.vehicleID;
   const { profile } = useUser();
   const [backDrop, setBackDrop] = useState(false);
+  const [sessionAlert, setSessionAlert] = useState(false);
   const [disableButton, setDisableButton] = useState(false);
-  const [VehicleDetails, setVehicleDetails] = useState<any>({ driver_type: 'Self Drive', transmission: 'Automatic' });
+  const [VehicleDetails, setVehicleDetails] = useState<any>(defaultVehicleD);
+
+  useEffect(() => {
+    const lastProgress = localStorage.getItem('new_vehicle_progress');
+    if (!lastProgress) return;
+
+    try {
+      const parsedProgress = JSON.parse(lastProgress);
+
+      if (JSON.stringify(parsedProgress) !== JSON.stringify(VehicleDetails)) {
+        setSessionAlert(true);
+        setVehicleDetails((prev) => ({ ...prev, ...parsedProgress }));
+      }
+    } catch (error) {
+      console.error("Failed to parse vehicle progress from localStorage", error);
+    }
+  }, []); 
+
 
   const validateVehicleDetails = (details) => {
     const fields = [
@@ -87,7 +104,10 @@ const NewVehiclePage = ({ params }: VehiclePageProps) => {
         showToast('New Vehicle has been created successfully', 'success')
         setDisableButton(false);
         setBackDrop(false);
-        setVehicleDetails(null);
+        setVehicleDetails(defaultVehicleD);
+
+        setSessionAlert(false)
+        localStorage.removeItem('new_vehicle_progress')
       }, 3000);
     } else {
       setTimeout(() => {
@@ -138,6 +158,13 @@ const NewVehiclePage = ({ params }: VehiclePageProps) => {
     }
   };
 
+
+  useEffect(() => {
+    if (VehicleDetails === defaultVehicleD) return;
+
+    localStorage.setItem('new_vehicle_progress', JSON.stringify(VehicleDetails))
+  }, [VehicleDetails])
+
   return (
     <main className="space-y-6 p-6">
       <Backdrop
@@ -165,6 +192,9 @@ const NewVehiclePage = ({ params }: VehiclePageProps) => {
 
         {/* Details Section: col-span-7 */}
         <div className="max-w-5xl mx-auto lg:col-span-7 space-y-6">
+          {
+            sessionAlert && <Alert variant='info' title='Continue where you left!' message='We noticed you did not complete you previous listing. You can take it from here ...' />
+          }
           <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 shadow-sm">
             <div className="flex justify-between items-start mb-6">
               <div>
@@ -307,7 +337,7 @@ const NewVehiclePage = ({ params }: VehiclePageProps) => {
                 <p className="text-gray-400">Fuel Type</p>
                 <div className="font-sm mt-2 mb-1 dark:text-white flex flex-wrap gap-3">
                   {
-                    ["Petrol/Gasoline", "Diesel", "Hybrid", "Electric", "Petrol/Hybrid"].map((t) => <span className={`py-2 text-sm px-4 rounded-lg cursor-pointer ${t === VehicleDetails?.fuel_type ? 'bg-brand-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
+                    ["Petrol/Gasoline", "Diesel", "Hybrid", "Electric", "Petrol/Hybrid"].map((t) => <span key={t} className={`py-2 text-sm px-4 rounded-lg cursor-pointer ${t === VehicleDetails?.fuel_type ? 'bg-brand-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
                       onClick={() => setVehicleDetails((prev: any) => ({
                         ...prev,
                         fuel_type: t
@@ -375,7 +405,7 @@ const NewVehiclePage = ({ params }: VehiclePageProps) => {
                 <p className="text-gray-400">Transmission</p>
                 <div className="font-sm mt-2 mb-1 dark:text-white flex gap-3">
                   {
-                    ['Automatic', 'Manual', 'Automatic/Manual'].map((t) => <span className={`py-2 text-sm px-4 rounded-lg cursor-pointer ${t === VehicleDetails?.transmission ? 'bg-brand-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
+                    ['Automatic', 'Manual', 'Automatic/Manual'].map((t) => <span key={t} className={`py-2 text-sm px-4 rounded-lg cursor-pointer ${t === VehicleDetails?.transmission ? 'bg-brand-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
                       onClick={() => setVehicleDetails((prev: any) => ({
                         ...prev,
                         transmission: t
@@ -388,7 +418,7 @@ const NewVehiclePage = ({ params }: VehiclePageProps) => {
                 <p className="text-gray-400">Driver Type</p>
                 <div className="font-sm mt-2 mb-1 dark:text-white flex gap-3">
                   {
-                    ["Self Drive", "Chauffeured"].map((t) => <span className={`py-2 text-sm px-4 rounded-lg cursor-pointer ${t === VehicleDetails?.driver_type ? 'bg-brand-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
+                    ["Self Drive", "Chauffeured"].map((t) => <span key={t} className={`py-2 text-sm px-4 rounded-lg cursor-pointer ${t === VehicleDetails?.driver_type ? 'bg-brand-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
                       onClick={() => setVehicleDetails((prev: any) => ({
                         ...prev,
                         driver_type: t

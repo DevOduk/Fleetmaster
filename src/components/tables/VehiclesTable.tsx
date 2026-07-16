@@ -26,6 +26,7 @@ export default function VehiclesTable() {
   const router = useRouter();
   const pathname = usePathname();
   const urlPage = parseInt(searchParams.get("page") || "1", 10);
+
   const allVehicles = vehicles.map(vehicle => {
     const booking = bookings.find(v => v.id === vehicle.id);
     return { ...vehicle, booking };
@@ -53,7 +54,7 @@ export default function VehiclesTable() {
   return (
     <div>
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
-        <div className="max-w-full overflow-x-auto">
+        <div className="max-w-full overflow-x-auto custom-scrollbar">
           <div className="min-w-275.5 min-h-100">
             <Table>
               {/* Table Header */}
@@ -64,6 +65,12 @@ export default function VehiclesTable() {
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Vehicle Details
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Location
                   </TableCell>
                   <TableCell
                     isHeader
@@ -91,9 +98,9 @@ export default function VehiclesTable() {
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                   >
-                    Min Rental Period
+                    Min Days
                   </TableCell>
                   <TableCell
                     isHeader
@@ -130,7 +137,7 @@ export default function VehiclesTable() {
                     </TableRow>
                   ) : allVehicles.slice(startIndex - 1, endIndex).map((vehicle, i) => (
                     <TableRow key={i}>
-                      <TableCell className="px-5 py-4 sm:px-6 text-start">
+                      <TableCell className="px-5 py-4 sm:px-6 text-start min-w-100">
                         <div className="flex items-center gap-3">
                           <img
                             className="w-20 bg-white rounded-lg object-fit-cover object-center"
@@ -143,11 +150,14 @@ export default function VehiclesTable() {
                             <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                               {vehicle.year} {vehicle.make} {vehicle.model}
                             </span>
-                            <span className="block text-gray-500 text-theme-xs py-2 dark:text-gray-400">
-                              {vehicle.license_plate} | VIN: {vehicle.vin} |  {vehicle.location}
+                            <span className="block text-gray-500  text-nowrap  text-theme-xs py-2 dark:text-gray-400">
+                              {vehicle.license_plate} | VIN: {vehicle.vin}
                             </span>
                           </div>
                         </div>
+                      </TableCell>
+                      <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {vehicle.location}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         {vehicle.category}
@@ -161,7 +171,7 @@ export default function VehiclesTable() {
                       <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                         {vehicle.daily_rate?.toLocaleString()} Ksh.
                       </TableCell>
-                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
                         {vehicle.min_rental_days} {vehicle.min_rental_days > 1 ? 'Days' : 'Day'}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">

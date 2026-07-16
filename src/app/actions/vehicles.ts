@@ -7,11 +7,15 @@ export async function fetchAllVehicles() {
 
   const { data, error } = await supabase
     .from("fleetmaster_vehicles")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .select(`*, tenant:fleetmaster_tenants(name)`)
+    .order('created_at', { ascending: false });
 
-  if (error) return { success: false, error: error.message };
-  return { success: true, data };
+  const formattedData = data?.map((vehicle) => ({
+    ...vehicle,
+    owner: vehicle.tenant?.name || vehicle.owner
+  }));
+
+  return { data: formattedData, success: !error, error };
 }
 
 export async function fetchVehicleDetails(id: number) {
@@ -40,11 +44,16 @@ export async function fetchVehiclesForAdmin(tenantId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_vehicles")
-    .select("*")
+    .select(`*, tenant:fleetmaster_tenants(name)`)
     .eq("tenant_id", tenantId)
     .order('created_at', { ascending: false });
 
-  return { data, success: !error, error };
+  const formattedData = data?.map((vehicle) => ({
+    ...vehicle,
+    owner: vehicle.tenant?.name || vehicle.owner
+  }));
+
+  return { data: formattedData, success: !error, error };
 }
 
 export async function fetchVehiclesForTenant(tenantId: string) {

@@ -1,4 +1,5 @@
 "use client";
+
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
@@ -20,14 +21,13 @@ export default function SignInForm({ tenant }: Tenant) {
   const { login } = useUser();
   const { login: adminLogin } = useAdmin();
   const { showToast } = useToast();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-
+console.log('tenant: ', tenant)
   const handleSubmit = async () => {
     setIsLoggingIn(true);
 
@@ -37,17 +37,9 @@ export default function SignInForm({ tenant }: Tenant) {
       return;
     }
 
-    let result;
-    const isDashboard = typeof window !== "undefined" && (
-      window.location.hostname.startsWith("dashboard.") ||
-      window.location.hostname.includes("fleetmaster-lemon.vercel.app")
-    );
-
-    if (isDashboard) {
-      result = await adminLogin(email, password);
-    } else {
-      result = await login(tenant ? 'client' : 'admin', email, password, tenant);
-    }
+    const result = tenant ?
+      await login(tenant ? 'client' : 'admin', email, password, tenant) : 
+      await adminLogin(email, password);
 
     if (result.success) {
       setIsLoggingIn(false);
@@ -68,15 +60,6 @@ export default function SignInForm({ tenant }: Tenant) {
 
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full">
-      {/* <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
-        <Link
-          href="/"
-          className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-        >
-          <ChevronLeftIcon />
-          Back to {tenant ? 'homepage' : 'dashboard'}
-        </Link>
-      </div> */}
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div>
           <div className="mb-5 sm:mb-8">
