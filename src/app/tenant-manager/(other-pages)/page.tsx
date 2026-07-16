@@ -1,12 +1,10 @@
 // app/(admin)/page.tsx
 import type { Metadata } from "next";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
-import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
 import StatisticsChart from "@/components/ecommerce/StatisticsChart";
-import DemographicCard from "@/components/ecommerce/DemographicCard";
 import { EcommerceMetrics } from "@/components/dashboard-components/EcommerceMetrics";
 import RecentVehiscles from "@/components/dashboard-components/RecentVehicles";
 import { getAllTenants } from "@/app/actions/tenant";
+import DemographicCard from "@/components/dashboard-components/ecommerce/DemographicCard";
 
 export const metadata: Metadata = {
   title:
@@ -28,7 +26,7 @@ export default async function Home() {
       </div>
 
       <div className="col-span-12 xl:col-span-5">
-        <DemographicCard tenants={tenants}/>
+        <DemographicCard tenants={tenants} />
       </div>
 
       <div className="col-span-12 xl:col-span-7">

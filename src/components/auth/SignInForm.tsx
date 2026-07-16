@@ -27,6 +27,7 @@ export default function SignInForm({ tenant }: Tenant) {
   const [isChecked, setIsChecked] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  
 console.log('tenant: ', tenant)
   const handleSubmit = async () => {
     setIsLoggingIn(true);

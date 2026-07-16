@@ -1,19 +1,17 @@
 "use client";
-import Image from "next/image";
 
-import CountryMap from "./CountryMap";
+import CountryMap from "../ecommerce/CountryMap";
 import { useState } from "react";
 import { MoreDotIcon } from "@/icons";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useUser } from "@/context/UserContext";
-import { set } from "date-fns";
 import { allCountriesDB } from "@/data/globalExports";
 
-export default function DemographicCard({ tenants }: { tenants: any[]; }) {
+export default function DemographicCard({ clients }: { clients: any[]; }) {
   const [isOpen, setIsOpen] = useState(false);
   const { loading } = useUser()
-  const countries = [...new Set(tenants?.flatMap(t => t.country))];
+  const countries = [...new Set(clients?.flatMap(t => t.country))];
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -100,14 +98,14 @@ export default function DemographicCard({ tenants }: { tenants: any[]; }) {
           </> :
             <div className="flex flex-col gap-4">
               {countries.map((c, i) => {
-                const percentage = ((tenants?.filter(m => m.country === c).length) / tenants.length) * 100;
+                const percentage = ((clients?.filter(m => m.country === c).length) / clients.length) * 100;
                 const country = allCountriesDB.find(b => b.country === c);
 
                 return (
                   <div key={i} className="flex items-center justify-between p-3 bg-gray-200 dark:bg-gray-900 rounded-2xl">
                     <div className="flex items-center gap-3">
                       <img
-                        src={`https://flagsapi.com/${country.code}/flat/64.png`}
+                        src={`https://flagsapi.com/${country?.code || 'US'}/flat/64.png`}
                         alt={c}
                         className="w-10 h-10 border rounded-full object-contain"
                       />
@@ -117,7 +115,7 @@ export default function DemographicCard({ tenants }: { tenants: any[]; }) {
                           {c}
                         </p>
                         <span className="block w-fit text-nowrap text-gray-500 text-theme-xs dark:text-gray-400">
-                          {(tenants?.filter(m => m.country === c).length.toLocaleString() || 0)} Clients
+                          {(clients?.filter(m => m.country === c).length.toLocaleString() || 0)} Clients
                         </span>
                       </div>
                     </div>

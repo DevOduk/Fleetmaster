@@ -64,3 +64,14 @@ export async function updateProfileDetails({ id, profileDetails }: { id: string;
 
   return { data, error, success: !error };
 }
+
+export async function fetchClientsForTenant(tenantId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("fleetmaster_clients")
+    .select(`id, first_name, last_name, country, created_at`)
+    .eq("tenant_id", tenantId)
+    .order('created_at', { ascending: false });
+
+  return { data, success: !error, error };
+}
