@@ -136,6 +136,10 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
+  if (req.nextUrl.pathname.startsWith('/_next') || req.headers.get('x-nextjs-data')) {
+    return NextResponse.next();
+  }
+  
   // ========================================================================
   // NEW VERCEL TRIAL ROUTING CHECKERER
   // ========================================================================
