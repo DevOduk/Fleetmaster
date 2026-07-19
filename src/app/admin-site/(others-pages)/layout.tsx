@@ -1,3 +1,4 @@
+// admin-site/(other-pages)/layout 
 "use client";
 
 import React, { useEffect } from "react";
@@ -63,7 +64,7 @@ export default function OthersPagesLayout({
       executeAbsoluteAuthRedirect();
     }
   }, [profile, router, loading]);
-console.log('admin profile before redirection: ',profile)
+console.log('admin profile before redirection: ',profile?.role)
   // 1. Phase A: App is actively pulling session context over the network
   if (loading) {
     return (
