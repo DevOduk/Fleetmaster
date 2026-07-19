@@ -10,6 +10,7 @@ import AppFooter from "@/layout/(admin-layout)/AppFooter";
 import { Toaster } from 'sonner';
 import { useSettings } from "@/context/SettingsContext";
 import { useUser } from "@/context/UserContext";
+import CompanySubscriptionsCard from "@/components/company-profile/CompanySubscriptionsCard";
 
 function ToasterWrapper() {
   const { position } = useSettings();
@@ -77,6 +78,12 @@ export default function OthersPagesLayout({
   if (!profile) {
     return null;
   }
+  if (profile?.role === 'Client') {
+    // Standard absolute fallback string execution path
+
+    router.replace('/signin');
+    return null;
+  }
 
   const mainContentMargin = isMobileOpen
     ? "ml-0"
@@ -85,6 +92,7 @@ export default function OthersPagesLayout({
       : "lg:ml-[90px]";
 
   // 3. Phase C: Full Authorization Success
+
   return (
     <>
       <ToasterWrapper />
@@ -100,7 +108,9 @@ export default function OthersPagesLayout({
 
           {/* Page Content */}
           <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
-            {children}
+            {
+              profile?.fleetmaster_tenants?.subscription_status === 'Expired' ? <CompanySubscriptionsCard /> : (children)
+            }
           </div>
 
           {/* Footer */}

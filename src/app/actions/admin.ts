@@ -3,7 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { hash } from "bcrypt-ts";
 
 // SALT_ROUNDS should be a number (e.g., 10 or 12)
-const SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT || "12");
+const SALT_ROUNDS = Number(process.env.BCRYPT_SALT || "12");
 
 export async function createTenantAdmin(newTenantAdmin: any) {
   try {

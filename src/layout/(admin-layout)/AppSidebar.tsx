@@ -26,6 +26,8 @@ import EmojiTransportationOutlinedIcon from "@mui/icons-material/EmojiTransporta
 import { useAdminFleet } from "@/context/AdminFleetContext";
 import { useAdminBooking } from "@/context/AdminBookingContext";
 import { useUser } from "@/context/UserContext";
+import SidebarExpiryWidget from "./SidebarExpiryWidget";
+import { getExpiryString } from "@/components/company-profile/ExpiryBanner";
 
 
 type NavItem = {
@@ -600,6 +602,9 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
+
+        {profile?.fleetmaster_tenants?.subscription_status === 'Expired' || isExpanded || isHovered || isMobileOpen ? <SidebarExpiryWidget plan={profile?.fleetmaster_tenants?.subscription_plan} expiry={getExpiryString(profile?.fleetmaster_tenants?.expiry_date)} /> : null}
+
         {isExpanded || isHovered || isMobileOpen ? <SidebarWidget plan={profile?.fleetmaster_tenants?.subscription_plan} /> : null}
       </div>
     </aside>

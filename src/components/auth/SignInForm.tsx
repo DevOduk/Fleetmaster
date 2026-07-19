@@ -18,6 +18,7 @@ interface Tenant {
 
 export default function SignInForm({ tenant }: Tenant) {
   const router = useRouter();
+  const pathname = usePathname();
   const { login } = useUser();
   const { login: adminLogin } = useAdmin();
   const { showToast } = useToast();
@@ -27,8 +28,13 @@ export default function SignInForm({ tenant }: Tenant) {
   const [isChecked, setIsChecked] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  
-console.log('tenant: ', tenant)
+
+  let host: string;
+  if (window) {
+    const path = window.location
+    host = (path.host)
+
+  }
   const handleSubmit = async () => {
     setIsLoggingIn(true);
 
@@ -38,8 +44,8 @@ console.log('tenant: ', tenant)
       return;
     }
 
-    const result = tenant ?
-      await login(tenant ? 'client' : 'admin', email, password, tenant) : 
+    const result = (tenant || host.includes('app.') || host.includes('/admin-site')) ?
+      await login(tenant ? 'client' : 'admin', email, password, tenant) :
       await adminLogin(email, password);
 
     if (result.success) {

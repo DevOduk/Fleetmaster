@@ -1,6 +1,7 @@
 import EditUserAddressCard from "@/components/ProfilePage/edit-admin-profile/EditUserAddressCard";
 import EditUserInfoCard from "@/components/ProfilePage/edit-admin-profile/EditUserInfoCard";
 import EditUserMetaCard from "@/components/ProfilePage/edit-admin-profile/EditUserMetaCard";
+import EditSystemUserCard from "@/components/ProfilePage/new-admin-profile/EditSystemUserCard";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon } from "@/icons";
 import { Metadata } from "next";
@@ -29,9 +30,7 @@ export default function Profile() {
           </h3>
         </div>
         <div className="space-y-6">
-          <EditUserMetaCard />
-          <EditUserInfoCard />
-          <EditUserAddressCard />
+          <EditSystemUserCard />
         </div>
       </div>
     </div>
