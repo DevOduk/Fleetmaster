@@ -7,7 +7,7 @@ import Button from "@/components/ui/button/Button";
 import { useUser } from "@/context/UserContext";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { useToast } from "@/context/ToastContext";
@@ -28,13 +28,15 @@ export default function SignInForm({ tenant }: Tenant) {
   const [isChecked, setIsChecked] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [host, setHost] = useState('');
 
-  let host: string;
-  if (window) {
-    const path = window.location
-    host = (path.host)
+  useEffect(() => {
+    // This code only runs in the browser
+    if (typeof window !== 'undefined') {
+      setHost(window.location.host);
+    }
+  }, []);
 
-  }
   const handleSubmit = async () => {
     setIsLoggingIn(true);
 
