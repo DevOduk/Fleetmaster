@@ -46,7 +46,9 @@ export default function SignInForm({ tenant }: Tenant) {
       return;
     }
 
-    const result = (tenant || host.includes('app.') || host.includes('/admin-site')) ?
+    const result = (tenant
+      //  || host.includes('app.') || host.includes('/admin-site')
+      ) ?
       await login(tenant ? 'client' : 'admin', email, password, tenant) :
       await adminLogin(email, password);
 
