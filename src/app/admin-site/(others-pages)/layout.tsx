@@ -63,7 +63,7 @@ export default function OthersPagesLayout({
       executeAbsoluteAuthRedirect();
     }
   }, [profile, router, loading]);
-
+console.log('admin profile before redirection: ',profile)
   // 1. Phase A: App is actively pulling session context over the network
   if (loading) {
     return (
@@ -79,8 +79,6 @@ export default function OthersPagesLayout({
     return null;
   }
   if (profile?.role === 'Client') {
-    // Standard absolute fallback string execution path
-
     router.replace('/signin');
     return null;
   }
