@@ -26,14 +26,14 @@ export async function POST(request: Request) {
             .maybeSingle();
         // 3. Check if user wasn't found in the targeted pool
         if (!adminAccount) {
-            return NextResponse.json({ error: "Invalid email! Admin Account Does Not exist." }, { status: 401 });
+            return NextResponse.json({ error: "Wrong email! This admin account does NOT exist." }, { status: 401 });
         }
 
         // 4. Validate password using secure micro-hashing execution
         const isMatch = await compare(password, adminAccount.password || "");
 
         if (!isMatch) {
-            return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+            return NextResponse.json({ error: "Wrong email or password!" }, { status: 401 });
         }
 
         // 5. Build consistent JWT payload claims (supports me.ts fallback)

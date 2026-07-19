@@ -8,7 +8,7 @@ import { useUser } from "@/context/UserContext";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { useToast } from "@/context/ToastContext";
 
@@ -18,7 +18,6 @@ interface Tenant {
 
 export default function SignInForm({ tenant }: Tenant) {
   const router = useRouter();
-  const pathname = usePathname();
   const { login } = useUser();
   const { login: adminLogin } = useAdmin();
   const { showToast } = useToast();
@@ -46,11 +45,32 @@ export default function SignInForm({ tenant }: Tenant) {
       return;
     }
 
-    const result = (tenant
-      //  || host.includes('app.') || host.includes('/admin-site')
-      ) ?
-      await login(tenant ? 'client' : 'admin', email, password, tenant) :
-      await adminLogin(email, password);
+    const isClient = () => {
+      if (tenant?.trim()) return true;
+      return false;
+    }
+    
+    const isAdmin = () => {
+      if (typeof window === 'undefined') return false;
+      const host = window?.location?.host || '';
+      const pathname = window?.location?.pathname || '';
+      if (host.includes('app.') || pathname.includes('/admin-site')) return true;
+      return false;
+    }
+
+    const isTenantManager = () => {
+      if (typeof window === 'undefined') return false;
+      const host = window?.location?.host || '';
+      const pathname = window?.location?.pathname || '';
+      if (host.includes('dashboard.') || pathname.includes('/tenant-manager')) return true;
+      return false;
+    }
+
+    console.log('is tenant manager: ', isTenantManager(), 'is admin: ', isAdmin(), 'is client: ', isClient())
+
+    const result = isTenantManager() ?
+      await adminLogin(email, password) :
+      await login(isClient() ? 'client' : 'admin', email, password, tenant)
 
     if (result.success) {
       setIsLoggingIn(false);
