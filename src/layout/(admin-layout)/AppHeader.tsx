@@ -316,6 +316,12 @@ const AppHeader: React.FC = () => {
               } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
           >
             <div className="flex items-center gap-2 2xsm:gap-3">
+              {
+                profile?.fleetmaster_tenants?.name && <>
+                  <p className="text-black text-sm dark:text-white">{profile?.fleetmaster_tenants?.name || ''}</p>
+                  <div className="w-0.5 rounded bg-gray-400 h-10 dark:bg-gray-600"></div>
+                </>
+              }
               {/* <!-- Dark Mode Toggler --> */}
               <ThemeToggleButton />
               {/* <!-- Dark Mode Toggler --> */}

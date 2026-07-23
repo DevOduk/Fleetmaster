@@ -29,7 +29,7 @@ export async function updateBookingDetails(id: number, bookingDetails) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_bookings")
-    .update(bookingDetails)
+    .update({ ...bookingDetails, updated_at: new Date() })
     .eq("id", id)
     .single();
 

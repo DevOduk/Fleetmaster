@@ -22,15 +22,82 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
   })
     .reduce((sum, booking) => sum + (Number(booking.total) || 0), 0) || 0;
 
-  const completed = bookings?.filter((b) => b.booking_status === 'Completed') || [];
+  const lastMonth = (currentMonth - 1 + 12) % 12;
+  const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-  const calculateFleetBookingRate = () => {
-    const daysInMonth = 30;
+
+  const totalRevenueLastMonth = bookings?.filter(booking => {
+    const bookingDate = new Date(booking.created_at);
+    return bookingDate.getMonth() === lastMonth &&
+      bookingDate.getFullYear() === lastMonthYear;
+  })
+    .reduce((sum, booking) => sum + (Number(booking.total) || 0), 0) || 0;
+
+  // 1. Get vehicle counts
+  const vehiclesCountThisMonth = vehicles?.length || 0;
+
+  const vehiclesCountLastMonth = vehicles?.filter(v => {
+    const date = new Date(v.created_at);
+    return date.getMonth() === lastMonth &&
+      date.getFullYear() === lastMonthYear;
+  }).length || 0;
+
+  // 1. All completed bookings up to now (no date restriction)
+  const totalCompletedNow = bookings?.filter((b) => b.booking_status === 'Completed').length || 0;
+
+  // 2. All completed bookings as at the end of last month 
+  // (created on or before the last day of lastMonthYear / lastMonth)
+  const lastDayOfLastMonth = new Date(lastMonthYear, lastMonth + 1, 0, 23, 59, 59, 999);
+
+  const totalCompletedLastMonth = bookings?.filter((b) => {
+    if (b.booking_status !== 'Completed') return false;
+    const bookingDate = new Date(b.created_at);
+    return bookingDate <= lastDayOfLastMonth;
+  }).length || 0;
+
+
+
+  // 1. Helper to calculate booking rate for a specific month and year
+  const getBookingRateForPeriod = (targetMonth, targetYear, targetDaysInMonth) => {
     const totalVehicles = vehicles?.length || 0;
     if (totalVehicles === 0) return 0;
-    const totalOccupiedDays = bookings?.reduce((sum, b) => sum + (b.rental_days || 0), 0) || 0;
-    return (totalOccupiedDays / (totalVehicles * daysInMonth)) * 100;
+
+    // Filter bookings that overlap or were created/active in that specific month
+    const occupiedDays = bookings?.reduce((sum, b) => {
+      const bookingDate = new Date(b.created_at);
+      // Checking if booking belongs to the target month/year
+      if (bookingDate.getMonth() === targetMonth && bookingDate.getFullYear() === targetYear) {
+        return sum + (b.rental_days || 0);
+      }
+      return sum;
+    }, 0) || 0;
+
+    return (occupiedDays / (totalVehicles * targetDaysInMonth)) * 100;
   };
+
+  // Get days in the current month dynamically
+  const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  // Get days in last month dynamically
+  const daysInLastMonth = new Date(lastMonthYear, lastMonth + 1, 0).getDate();
+
+  // 2. Calculate rates
+  const rateThisMonth = getBookingRateForPeriod(currentMonth, currentYear, daysInCurrentMonth);
+  const rateLastMonth = getBookingRateForPeriod(lastMonth, lastMonthYear, daysInLastMonth);
+
+  // | ---------------------    CHANGES CALCULATORS --------------------| 
+  const totalRevenueChange = totalRevenueLastMonth === 0
+    ? (totalRevenue > 0 ? 100 : 0)
+    : ((totalRevenue - totalRevenueLastMonth) / totalRevenueLastMonth) * 100;
+  const vehiclesChange = vehiclesCountLastMonth === 0
+    ? (vehiclesCountThisMonth > 0 ? 100 : 0)
+    : ((vehiclesCountThisMonth - vehiclesCountLastMonth) / vehiclesCountLastMonth) * 100;
+  const completedPercentageChange = totalCompletedLastMonth === 0
+    ? (totalCompletedNow > 0 ? 100 : 0)
+    : ((totalCompletedNow - totalCompletedLastMonth) / totalCompletedLastMonth) * 100;
+  const rateChange = rateLastMonth === 0
+    ? (rateThisMonth > 0 ? 100 : 0)
+    : ((rateThisMonth - rateLastMonth) / rateLastMonth) * 100;
+
 
   const metrics = [
     {
@@ -39,7 +106,11 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
       value: formatedValue(totalRevenue) + ' /=',
       description: "Your total earned Revenue for this month",
       icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
-      badge: { text: "9.05%", color: "success" as const, icon: <ArrowUpIcon className="text-success-500" /> },
+      badge: {
+        text: totalRevenueChange.toFixed(2) + "%",
+        color: totalRevenueChange > 0 ? "success" as const : "error" as const,
+        icon: totalRevenueChange > 0 ? <ArrowUpIcon className="text-success-500" /> : <ArrowDownIcon className="text-error-500" />
+      },
       isReady: !loading
     },
     {
@@ -48,25 +119,37 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
       value: `${vehicles?.length || 0} +`,
       description: "Active operational vehicles in your fleet",
       icon: <DirectionsCarFilledOutlinedIcon className="text-gray-800 size-6 dark:text-white/90" />,
-      badge: { text: "11.01%", color: "success" as const, icon: <ArrowUpIcon /> },
+      badge: {
+        text: vehiclesChange.toFixed(2) + "%",
+        color: vehiclesChange > 0 ? "success" as const : "error" as const,
+        icon: vehiclesChange > 0 ? <ArrowUpIcon className="text-success-500" /> : <ArrowDownIcon className="text-error-500" />
+      },
       isReady: !loadingVehicles
     },
     {
       id: "bookings",
       title: "Completed Bookings",
-      value: `${completed.length} +`,
+      value: `${totalCompletedNow} +`,
       description: "Total finalized deployment runs",
       icon: <ScheduleOutlinedIcon className="text-gray-800 dark:text-white/90" />,
-      badge: { text: "9.05%", color: "error" as const, icon: <ArrowDownIcon className="text-error-500" /> },
+      badge: {
+        text: completedPercentageChange.toFixed(2) + "%",
+        color: completedPercentageChange > 0 ? "success" as const : "error" as const,
+        icon: completedPercentageChange > 0 ? <ArrowUpIcon className="text-success-500" /> : <ArrowDownIcon className="text-error-500" />
+      },
       isReady: !loading
     },
     {
       id: "rate",
       title: "Booking Rate",
-      value: `${formatedValue(calculateFleetBookingRate())} %`,
+      value: `${formatedValue(rateThisMonth)} %`,
       description: "Average utility utilization metrics",
       icon: <TrendingUpOutlinedIcon className="text-gray-800 dark:text-white/90" />,
-      badge: { text: "9.05%", color: "error" as const, icon: <ArrowDownIcon className="text-error-500" /> },
+      badge: {
+        text: rateChange.toFixed(2) + "%",
+        color: rateChange > 0 ? "success" as const : "error" as const,
+        icon: rateChange > 0 ? <ArrowUpIcon className="text-success-500" /> : <ArrowDownIcon className="text-error-500" />
+      },
       isReady: !loading && !loadingVehicles
     }
   ];

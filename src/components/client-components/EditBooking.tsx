@@ -16,8 +16,6 @@ import MobileScreenShareOutlinedIcon from "@mui/icons-material/MobileScreenShare
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import TextArea from "../form/input/TextArea";
 import CreditCardIcon from '@mui/icons-material/CreditCard';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { Modal } from "../ui/modal";
 import { useToast } from "@/context/ToastContext";
 import { updateBookingDetails } from "@/app/actions/bookings";
 import { createPayment } from "@/app/actions/payments";
@@ -25,10 +23,34 @@ import { mpesaPollingIterval } from "../company-profile/CompanySubscriptionsCard
 import ComponentCard from "../common/ComponentCard";
 import Rating from '@mui/material/Rating';
 import { submitUserFeedback } from "@/app/actions/feedback";
+import { Modal } from "../ui/modal";
+import Select from "../form/Select";
 
 
 
+const clientReasons = [
+  "Change of plans or preferences",
+  "Schedule conflict",
+  "Extenuating circumstances: Severe illness, death, or hospitalization",
+  "Service no longer needed"
+].map((r) => {
+  return {
+    value: r,
+    label: r
+  };
+});
 
+const hostReasons = [
+  "Safety and Security Concerns",
+  "Client no show / late",
+  "Missing required verification documentation",
+  "Administrative rescheduling"
+].map((r) => {
+  return {
+    value: r,
+    label: r
+  };
+});
 
 const calendarsEvents = {
   'High Priority': "success",
@@ -48,6 +70,12 @@ export function getTimeRemaining(status: string, start: string, end: string, tim
     return 'Reserved (Awaiting Payment)';
   }
 
+  if (status.toLowerCase() === 'cancelled') {
+    return 'Booking Cancelled (View Details)';
+  }
+  if (status.toLowerCase() === 'completed') {
+    return 'Booking has been Completed';
+  }
   if (now > endDate) {
     return `Rental ended on ${endDate.toLocaleDateString()}`;
   }
@@ -94,11 +122,19 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { isOpen, openModal: openCancelModal, closeModal } = useModal();
+  const [cancellation_reason, setCancellation_reason] = useState("");
+  const [cancelEmail, setCancelEmail] = useState("");
 
 
 
 
 
+  const handleSave = () => {
+    // Handle save logic here
+    console.log("Saving changes...");
+    closeModal();
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -305,6 +341,12 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
     const status = bookingDetails?.booking_status;
 
     return date.isAfter(end) && status === 'Completed';
+  })();
+
+  const isCancelled = (() => {
+    const status = bookingDetails?.booking_status;
+
+    return status === 'Cancelled';
   })();
 
 
@@ -529,8 +571,50 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
     }
   };
 
+  const handleCancellation = async () => {
+    if (!profile) return;
+    if (profile?.email !== cancelEmail.trim()) {
+      showToast('Wrong email! Check your email and try again.', 'error')
+      return;
+    }
 
-  console.log(isCompleted)
+    if (!cancellation_reason.trim()) {
+      showToast('Please select a reason for cancellation to proceed!', 'error')
+      return;
+    }
+    const { vehicle, ...bookingWithoutVehicles } = newBookingDetails;
+
+    const response = await updateBookingDetails(BookingID, {
+      ...bookingWithoutVehicles,
+      cancellation_reason,
+      booking_status: "Cancelled"
+    });
+
+    if (response.success) {
+      showToast(`Booking #${BookingID} has been cancelled successfully! Check your email for further instructions.`, 'success');
+      setBookingDetails((prev) => ({
+        ...prev,
+        cancellation_reason,
+        booking_status: "Cancelled"
+      }))
+      setNewBookingDetails((prev) => ({
+        ...prev,
+        cancellation_reason,
+        booking_status: "Cancelled"
+      }));
+
+      closeModal(); // Optional: Close modal on success
+    } else {
+      showToast('Could not cancel booking. Try again later!', 'error');
+    }
+  }
+
+  const isPastStartTime = new Date() >= new Date(bookingDetails?.rental_start);
+
+  const isClient = profile?.role === 'Client';
+  const canCancel = !isCancelled && !isEnded && !isStarted;
+
+
   // Helper to format Date object to YYYY-MM-DD (Local Time)
   if (loading || loadingBooking) {
     return (
@@ -556,6 +640,60 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
 
   return (
     <div className="p-5 border-gray-200 rounded-2xl dark:border-gray-800">
+
+      {/* cancel booking */}
+      <Modal
+        isOpen={isOpen}
+        onClose={closeModal}
+        className="max-w-146 p-5 lg:p-10"
+      >
+        <form className="" onSubmit={(e) => { e.preventDefault(); handleCancellation(); }}>
+          <h4 className="mb-6 text-lg font-medium text-gray-800 dark:text-white/90">
+            Cancel Booking #{BookingID}
+          </h4>
+
+          <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+
+            {/* Cancellation Reason Dropdown */}
+            <div className="col-span-1 sm:col-span-2">
+              <Label>Cancellation Reason</Label>
+              <Select
+                placeholder="Select reason"
+                onChange={(e) => setCancellation_reason(e)}
+                value={cancellation_reason}
+                options={profile?.role === "Client" ? clientReasons : hostReasons}
+              />
+            </div>
+
+            {/* Email Confirmation Field */}
+            <div className="col-span-1 sm:col-span-2">
+              <Label>Type your email to confirm cancellation</Label>
+              <Input
+                type="email"
+                placeholder="Type email to confirm"
+                value={cancelEmail}
+                onChange={(e) => setCancelEmail(e.target.value)}
+              />
+              <span className="text-xs text-gray-500 mt-1 block">
+                Please enter the account email to verify and trigger status update.
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end w-full gap-3 mt-6">
+            <Button size="sm" variant="outline" type="button" onClick={closeModal}>
+              Close
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              type="submit"
+            >
+              Confirm Cancellation
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       <div className='space-y-5 mb-4'>
         {
@@ -781,22 +919,60 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                 />
               </div>
-              {/* if a user is client they can cancel only if not ended or if isstarted
-              if a user is admin they can cancel before it start before it ends but only if status is not active, admin should mark as started */}
-              {
-                profile.role === 'Client' ?
-                  <Button disabled={isEnded || isStarted} className="w-full mt-6" variant="danger" size="sm">{'Cancel Booking'}</Button>
-                  : (
-                    <div>
-                      {/* mark as active but only if start date is "more than"current meaning it should have started then if has started give 2 optionsmark started or cancel with reasons like client no show, client failed to provide documentation etc */}
-                      <Button onClick={(e) => updateBookingStatus(isEnded ? "Completed" : !isStarted ? "Active" : '...')} className={`w-full mt-6 ${isCompleted && 'hidden!'}`} variant="success" size="sm">
-                        {isEnded ? 'Mark as Complete' : !isStarted ? 'Mark as Started' : '...'}
-                      </Button>
-                      <Button disabled={isEnded || isCompleted} className="w-full mt-6" variant="danger" size="sm">{'Cancel Booking'}</Button>
-                    </div>
-                  )
-              }
-              <p className="text-center text-sm py-4 text-gray-500">Cancellations charges may apply. </p>
+
+              {/* 1. Clear Role & State Flags */}
+
+              {isCancelled ? (
+                <div className="w-full mt-6 p-3 text-center">
+                  <p className="text-sm font-medium text-red-600 dark:text-red-500">
+                    This booking has been cancelled!
+                  </p>
+                </div>
+              ) : isClient ? (
+                <Button
+                  onClick={openCancelModal}
+                  disabled={!canCancel}
+                  className="w-full mt-6"
+                  variant="danger"
+                  size="sm"
+                >
+                  Cancel Booking
+                </Button>
+              ) : (
+                <div className="w-full space-y-3 mt-6">
+                  {!isEnded && !isCancelled && (
+<Button
+  onClick={() => {
+    const nextStatus = !isStarted ? "Active" : "Completed";
+    updateBookingStatus(nextStatus);
+  }}
+  disabled={(!isStarted && !isPastStartTime) || (isStarted && !isEnded)}
+  className={`w-full ${(!isStarted && !isPastStartTime) || (isStarted && !isEnded) ? 'hidden!' : ''}`}
+  variant={!isStarted && !isPastStartTime ? "danger" : "success"}
+  size="sm"
+>
+  {!isStarted
+    ? (isPastStartTime ? 'Mark as Started' : 'Cannot start before scheduled time')
+    : (isEnded ? 'Mark as Complete' : 'Rental in progress!')
+  }
+</Button>
+                  )}
+
+                  {canCancel && (
+                    <Button
+                      onClick={openCancelModal}
+                      disabled={!canCancel}
+                      className="w-full"
+                      variant="danger"
+                      size="sm"
+                    >
+                      Cancel Booking
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {!isCancelled && <p className="text-center text-sm py-4 text-gray-500">Cancellations charges may apply. </p>}
             </div>
           </div>
 
@@ -804,10 +980,10 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
           {/* ================= RIGHT SIDE: INVOICE & INTASEND GATEWAY (col-span-5) ================= */}
           <div className="col-span-12 xl:col-span-5 space-y-6">
             {
-              (isCompleted) ?
+              (isCompleted || isCancelled) ?
                 <ComponentCard title="Leave A Review">
                   <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90 mb-4">
-                    This rental ended. How would you recommend this {profile.role === 'Client' ? 'Rental experience' : 'Client'} on a scale of 1 to 10?
+                    This rental ended or was cancelled. How would you recommend this {profile.role === 'Client' ? 'Company' : 'Client'} on a scale of 1 to 10?
                   </p>
 
                   <div className="space-y-4">

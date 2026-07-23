@@ -59,7 +59,7 @@ export default function BookingsTable() {
                     isHeader
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                   >
-                    No.
+                    ID.
                   </TableCell>
                   <TableCell
                     isHeader
@@ -89,7 +89,13 @@ export default function BookingsTable() {
                     isHeader
                     className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                   >
-                    Rate per Day
+                    End Date
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Rate /Day
                   </TableCell>
                   <TableCell
                     isHeader
@@ -135,7 +141,7 @@ export default function BookingsTable() {
                       allBookings.slice(startIndex - 1, endIndex).map((booking: any, i) => (
                         <TableRow key={booking.id}>
                           <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                            {i + 1}
+                            {booking.id}
                           </TableCell>
                           <TableCell className="px-5 py-4 sm:px-6 text-start">
                             <div className="flex items-center gap-3 min-w-62.5">
@@ -164,8 +170,10 @@ export default function BookingsTable() {
                             {booking.renter_phone}
                           </TableCell>
                           <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                            {/* {order.nextService} */}
                             {booking.rental_start} | {booking.rental_days} Days
+                          </TableCell>
+                          <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                            {booking.rental_end} 
                           </TableCell>
                           <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
                             Ksh. {booking.vehicleDetails?.daily_rate?.toLocaleString()}

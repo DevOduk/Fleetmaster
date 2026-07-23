@@ -133,7 +133,7 @@ const Bookings: React.FC = () => {
         <div className="flex justify-between py-3 items-center">
           <div>
             <p className="font-medium text-gray-800 mb-2 text-theme-sm dark:text-white/90">View all bookings and manage them. Click Create New Booking to add a new booking.</p>
-            <span className="text-gray-500 text-start text-theme-sm dark:text-gray-400">{bookings?.length || 0} Bookings | {bookings?.filter((b: any) => b.status === "Active").length || 0} Active | 93 Average per Day</span>
+            <span className="text-gray-500 text-start text-theme-sm dark:text-gray-400">{bookings?.length || 0} Bookings | {bookings?.filter((b: any) => b.booking_status === "Active").length || 0} Active | {averageDailyThisMonth} Average per Day</span>
           </div>
           <div className="flex items-center gap-3">
             

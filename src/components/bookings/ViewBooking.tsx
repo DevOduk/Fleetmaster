@@ -120,12 +120,12 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
 
   const isEnded = (() => {
     const now = new Date();
-
     const end = dayjs(bookingDetails?.rental_end);
     const date = dayjs(now);
-    return date.isBefore(end);
-  });
 
+    return date.isAfter(end); // Changed from isBefore to isAfter
+  })();
+  
   
   // Helper to format Date object to YYYY-MM-DD (Local Time)
   if (loading || loadingBooking) {
@@ -448,7 +448,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
                 variant="primary"
                 size="sm"
               >
-                Edit Booking <PencilIcon />
+                Manage Booking <PencilIcon />
               </Button></Link>
           </div>
         </div> :
