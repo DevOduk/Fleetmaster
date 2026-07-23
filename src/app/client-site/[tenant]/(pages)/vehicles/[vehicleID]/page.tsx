@@ -354,7 +354,7 @@ const bookedDates = useMemo(() => {
                   }`}>
                   {VehicleDetails.status}
                 </span>
-                <span className='px-3 bg-green-100 text-green-700 ms-3 py-1 rounded-full text-xs font-sm mt-2 mb-1 '>Self Driven</span>
+                <span className='px-3 bg-green-100 text-green-700 ms-3 py-1 rounded-full text-xs font-sm mt-2 mb-1 '>Driver: {VehicleDetails?.driver_type}</span>
 
               </div>
             </div>
@@ -362,7 +362,7 @@ const bookedDates = useMemo(() => {
             <div className='relative'>
               <Box className='flex gap-2' sx={{ position: 'absolute', top: 10, right: 10 }}>
                 <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<LocalGasStationOutlinedIcon fontSize='small' />} label={VehicleDetails.fuel_type} />
-                <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<PeopleAltOutlinedIcon fontSize='small' />} label={VehicleDetails.seats + ' Seats'} />
+                <Chip sx={{ px: 1 }} variant='filled' color='success' icon={<PeopleAltOutlinedIcon fontSize='small' />} label={VehicleDetails.seats + ' Seats'} />
 
               </Box>
               <img src={VehicleDetails.image_url} alt={''} className="w-full object-cover object-center rounded-xl mb-8 aspect-video" />
@@ -396,7 +396,7 @@ const bookedDates = useMemo(() => {
               </div>
               <div>
                 <p className="text-gray-400">Daily Rate</p>
-                <p className="font-sm mt-2 mb-1 text-blue-600">Ksh. {VehicleDetails.daily_rate.toLocaleString()}</p>
+                <p className="font-sm mt-2 mb-1 text-brand-600">Ksh. {VehicleDetails.daily_rate.toLocaleString()}</p>
               </div>
               <div>
                 <p className="text-gray-400">Location</p>

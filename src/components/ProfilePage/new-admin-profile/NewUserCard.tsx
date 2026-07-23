@@ -88,7 +88,7 @@ export default function NewUserCard() {
     })
     );
   };
-
+console.log(profileDetails)
 
   return (
     <>
@@ -268,7 +268,7 @@ export default function NewUserCard() {
           <form className="flex flex-col">
             <div className="px-2 overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <EditableInput placeholder="United States" type="select" options={allCountries()} label="Country" value={profileDetails?.country} onChange={(v) => handleInputChange("country", v)} />
+                <EditableInput placeholder="Select Country" type="select" options={allCountries()} label="Country" value={profileDetails?.country} onChange={(v) => handleInputChange("country", v)} />
                 <EditableInput placeholder="Arizona" type="text" label="City/State" value={profileDetails?.city} onChange={(v) => handleInputChange("city", v)} />
                 <EditableInput placeholder="E9108" type="text" label="Postal Address" value={profileDetails?.postal_code} onChange={(v) => handleInputChange("postal_code", v)} />
                 <EditableInput placeholder="Select user timezone" type="select" label="Timezone" options={allTimezones()} value={profileDetails?.timezone} onChange={(v) => handleInputChange("timezone", v)} />
@@ -324,7 +324,7 @@ function EditableInput({ label, value, onChange, type = "text", disabled, placeh
       <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">{label}</Label>
       {
         type === "select" ? <>
-          <Select value={value || ""} placeholder={placeholder} onChange={(e) => onChange(e)} options={(options || [])}></Select>
+          <Select value={value || ""} defaultValue={value || ""} placeholder={placeholder} onChange={(e) => onChange(e)} options={(options || [])} />
         </> :
           <Input placeholder={placeholder} disabled={disabled} type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="h-9" />
       }

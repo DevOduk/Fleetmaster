@@ -1,5 +1,6 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
+import { getCachedVehicles } from "@/utils/vehicles-cache";
 
 
 export async function fetchAllVehicles() {
@@ -57,14 +58,9 @@ export async function fetchVehiclesForAdmin(tenantId: string) {
 }
 
 export async function fetchVehiclesForTenant(tenantId: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("fleetmaster_vehicles")
-    .select("*")
-    .eq("tenant_id", tenantId)
-    .order('created_at', { ascending: false });
+  const { data, error, success } = await getCachedVehicles(tenantId);
 
-  return { data, success: !error, error };
+  return { data, success, error };
 }
 
 export async function createVehicleForTenant(vehicleDetails: any) {

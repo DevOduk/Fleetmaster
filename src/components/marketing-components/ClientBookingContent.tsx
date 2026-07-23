@@ -14,6 +14,7 @@ import Link from "next/link";
 import { fetchBookingsForClient } from "@/app/actions/bookings";
 import { CircularProgress } from "@mui/material";
 import SearchOffOutlinedIcon from "@mui/icons-material/SearchOffOutlined"
+import { getTimeRemaining } from "../client-components/EditBooking";
 
 
 
@@ -102,10 +103,13 @@ function ClientBookingContent() {
 
       <div className="space-y-10 text-sm leading-7 text-slate-700 dark:text-slate-300 col-span-12 lg:col-span-8">
         <section id="acceptance" className="space-y-4 scroll-mt-12">
-          {(loading || loadingBookings) ?
+          {(loading) ?
             <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl text-[11px] flex flex-col items-center justify-center gap-3 text-brand-400 uppercase tracking-widest h-[70vh]">
               <CircularProgress color="inherit" size={20} />
-              Preparing your profile ...
+              Preparing your account profile ...
+            </div> : loadingBookings ? <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl text-[11px] flex flex-col items-center justify-center gap-3 text-brand-400 uppercase tracking-widest h-[70vh]">
+              <CircularProgress color="inherit" size={20} />
+              Consolidating bookings. Almost there ...
             </div> : filteredBookings.length > 0 ? (
               filteredBookings.map((b) => (
                 <Link href={'/bookings/' + b.id} className="border border-slate-100 dark:border-slate-800 p-4 dark:hover:bg-gray-800 hover:bg-gray-200 rounded-2xl flex gap-6 bg-white dark:bg-slate-900/20 items-center transition-all hover:border-amber-500/30"
@@ -130,8 +134,17 @@ function ClientBookingContent() {
                         <Badge size="sm" color={b.booking_status.toLowerCase() === 'reserved' ? "info" : b.booking_status.toLowerCase() === 'booked' ? "primary" : b.booking_status.toLowerCase() === 'active' ? "success" : b.booking_status.toLowerCase() === 'completed' ? "warning" : "error"} >{b.booking_status}</Badge>
                       </p>
                       <p className="mb-3 w-full flex justify-between p-.5 max-w-[80%] px-0"><span className="font-semibold">{b.rental_start}</span> - <span className="font-semibold">{b.rental_end}</span></p>
-                      {/* 30 minutes past creation time  */}
-                      {b.booking_status.toLowerCase() === 'reserved' && (new Date().getTime() > new Date(b.created_at).getTime() + (30 * 60 * 1000)) && <p className="text-sm text-red-500">Reservation expired!</p>}
+                      {b.booking_status.toLowerCase() === 'reserved' ?
+                        (new Date().getTime() > new Date(b.created_at).getTime() + (30 * 60 * 1000)) && <p className="text-sm text-red-500">Reservation expired!</p> :
+                        <p>{
+                          getTimeRemaining(
+                            b.booking_status,
+                            b.rental_start,
+                            b.rental_end,
+                            b.rental_time,
+                            b.created_at,
+                          )}</p>
+                      }
                     </div>
                   </div>
 

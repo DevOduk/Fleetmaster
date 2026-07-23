@@ -25,6 +25,9 @@ import Link from "next/link";
 import { useAdminFleet } from "@/context/AdminFleetContext";
 import { useAdminBooking } from "@/context/AdminBookingContext";
 import { AdminCalendarWrapper } from "./AdminCalendarWrapper";
+import CachedIcon from "@mui/icons-material/Cached"
+
+
 
 const BUFFER_HOURS = 2;
 
@@ -68,7 +71,7 @@ const extractBookingOnly = (booking: any) => ({
 
 
 const Calendar: React.FC = () => {
-  const { bookings } = useAdminBooking();
+  const { bookings, reloadBookings } = useAdminBooking();
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const { vehicles, loading } = useAdminFleet();
   const [bookingName, setBookingName] = useState("");
@@ -356,401 +359,409 @@ const Calendar: React.FC = () => {
   }, [currentSelectionInterval, existingBookingsIntervals, bookingID]);
 
   return (
-    <div className="rounded-2xl border  border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
-
-      <div className="custom-calendar">
-        <FullCalendar
-          ref={calendarRef}
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          headerToolbar={{
-            left: "prev,next addEventButton",
-            center: "title",
-            right: "dayGridMonth,timeGridWeek,timeGridDay",
-          }}
-          events={bookings?.filter(b => b.booking_status !== 'Reserved').map((booking) => ({
-            id: booking.id.toString(),
-            title: booking.vehicleDetails.year + ' ' + booking.vehicleDetails.make + ' ' + booking.vehicleDetails.model,
-            start: booking.rental_start,
-            end: booking.rental_end,
-            extendedProps: { calendar: booking.priority, registration: booking.vehicleDetails.license_plate, renter: booking.renter_name, renterID: booking.renter_id, renterPhone: booking.renter_phone, bookingDbId: booking.id, rentalTime: booking.rental_time },
-          }))}
-          selectable={true}
-          select={(() => window.open('/bookings/new'))}
-          eventClick={((e) => window.open(`/bookings/${e.event.id}/edit`))}
-          eventContent={renderEventContent}
-          customButtons={{
-            addEventButton: {
-              text: "Create New Booking",
-              click: (() => window.location.href = '/bookings/new'),
-            },
-          }}
-        />
-      </div>
-      <Modal
-        isOpen={isOpen}
-        onClose={closeModal}
-        className="max-w-175 p-6 lg:p-10"
+    <>
+      <button onClick={() => reloadBookings()}
+        className="flex ms-auto gap-3 items-center rounded-lg justify-center p-2 px-3 font-medium text-gray-500 bg-gray-800 text-theme-sm hover:bg-gray-800/70 mb-3"
       >
-        <div className="flex flex-col px-2 overflow-y-auto max-h-[calc(100vh-120px)] custom-scrollbar">
-          <div>
-            <h5 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-2xl">
-              {selectedEvent ? "Edit Booking" : "Create Booking"}
-            </h5>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Manage your bookings by adding new ones or editing existing bookings. Click on any date to add a new booking or click on an existing booking to edit it.
-            </p>
-          </div>
+        <CachedIcon /> Sync now
+      </button>
 
+      <div className="rounded-2xl border  border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+        <div className="custom-calendar">
 
-          <h4 className="mb-0 mt-3 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
-            Rental Information
-          </h4>
-
-          <div className="mt-3">
+          <FullCalendar
+            ref={calendarRef}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            headerToolbar={{
+              left: "prev,next addEventButton",
+              center: "title",
+              right: "dayGridMonth,timeGridWeek,timeGridDay",
+            }}
+            events={bookings?.filter(b => b.booking_status !== 'Reserved').map((booking) => ({
+              id: booking.id.toString(),
+              title: booking.vehicleDetails.year + ' ' + booking.vehicleDetails.make + ' ' + booking.vehicleDetails.model,
+              start: booking.rental_start,
+              end: booking.rental_end,
+              extendedProps: { calendar: booking.priority, registration: booking.vehicleDetails.license_plate, renter: booking.renter_name, renterID: booking.renter_id, renterPhone: booking.renter_phone, bookingDbId: booking.id, rentalTime: booking.rental_time },
+            }))}
+            selectable={true}
+            select={(() => window.open('/bookings/new'))}
+            eventClick={((e) => window.open(`/bookings/${e.event.id}/edit`))}
+            eventContent={renderEventContent}
+            customButtons={{
+              addEventButton: {
+                text: "Create New Booking",
+                click: (() => window.location.href = '/bookings/new'),
+              },
+            }}
+          />
+        </div>
+        <Modal
+          isOpen={isOpen}
+          onClose={closeModal}
+          className="max-w-175 p-6 lg:p-10"
+        >
+          <div className="flex flex-col px-2 overflow-y-auto max-h-[calc(100vh-120px)] custom-scrollbar">
             <div>
-              {!selectedEvent && <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Select Vehicle
-                </label>
-                <div className="relative">
-                  <Select
-                    options={selectVehicleOptions}
-                    placeholder="Select an option"
-                    onChange={handleSelectChange}
-                    className="dark:bg-dark-900"
-                  />
-                  <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                    <ChevronDownIcon />
-                  </span>
-                </div>
-              </div>}
-              <div className="hidden">
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Vehicle ID
-                </label>
-                <input
-                  id="event-id"
-                  type="text"
-                  value={bookingID}
-                  disabled
-                  className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                />
-              </div>
-              <div className="">
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Vehicle Name
-                </label>
-                <input
-                  id="event-title"
-                  type="text"
-                  value={bookingName}
-                  disabled
-                  className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                />
-              </div>
+              <h5 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-2xl">
+                {selectedEvent ? "Edit Booking" : "Create Booking"}
+              </h5>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Manage your bookings by adding new ones or editing existing bookings. Click on any date to add a new booking or click on an existing booking to edit it.
+              </p>
             </div>
-            <div className="mt-6">
-              <label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
-                Booking Priority
-              </label>
-              <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-                {Object.entries(calendarsEvents).map(([key, value]) => (
-                  <div key={key} className="n-chk">
-                    <div
-                      className={`form-check form-check-${value} form-check-inline`}
-                    >
-                      <label
-                        className="flex items-center text-sm text-gray-700 form-check-label dark:text-gray-400"
-                        htmlFor={`modal${key}`}
+
+
+            <h4 className="mb-0 mt-3 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
+              Rental Information
+            </h4>
+
+            <div className="mt-3">
+              <div>
+                {!selectedEvent && <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Select Vehicle
+                  </label>
+                  <div className="relative">
+                    <Select
+                      options={selectVehicleOptions}
+                      placeholder="Select an option"
+                      onChange={handleSelectChange}
+                      className="dark:bg-dark-900"
+                    />
+                    <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                      <ChevronDownIcon />
+                    </span>
+                  </div>
+                </div>}
+                <div className="hidden">
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Vehicle ID
+                  </label>
+                  <input
+                    id="event-id"
+                    type="text"
+                    value={bookingID}
+                    disabled
+                    className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                  />
+                </div>
+                <div className="">
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Vehicle Name
+                  </label>
+                  <input
+                    id="event-title"
+                    type="text"
+                    value={bookingName}
+                    disabled
+                    className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                  />
+                </div>
+              </div>
+              <div className="mt-6">
+                <label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
+                  Booking Priority
+                </label>
+                <div className="flex flex-wrap items-center gap-4 sm:gap-5">
+                  {Object.entries(calendarsEvents).map(([key, value]) => (
+                    <div key={key} className="n-chk">
+                      <div
+                        className={`form-check form-check-${value} form-check-inline`}
                       >
-                        <span className="relative">
-                          <input
-                            className="sr-only form-check-input"
-                            type="radio"
-                            name="event-level"
-                            value={key}
-                            id={`modal${key}`}
-                            checked={eventLevel === key}
-                            onChange={() => setEventLevel(key)}
-                          />
-                          <span className="flex items-center justify-center w-5 h-5 mr-2 border border-gray-300 rounded-full box dark:border-gray-700">
-                            <span
-                              className={`h-2 w-2 rounded-full bg-white ${eventLevel === key ? "block" : "hidden"
-                                }`}
-                            ></span>
+                        <label
+                          className="flex items-center text-sm text-gray-700 form-check-label dark:text-gray-400"
+                          htmlFor={`modal${key}`}
+                        >
+                          <span className="relative">
+                            <input
+                              className="sr-only form-check-input"
+                              type="radio"
+                              name="event-level"
+                              value={key}
+                              id={`modal${key}`}
+                              checked={eventLevel === key}
+                              onChange={() => setEventLevel(key)}
+                            />
+                            <span className="flex items-center justify-center w-5 h-5 mr-2 border border-gray-300 rounded-full box dark:border-gray-700">
+                              <span
+                                className={`h-2 w-2 rounded-full bg-white ${eventLevel === key ? "block" : "hidden"
+                                  }`}
+                              ></span>
+                            </span>
                           </span>
-                        </span>
-                        {key}
-                      </label>
+                          {key}
+                        </label>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Calendar Section: col-span-5 */}
-            <div className="mt-7 bg-white dark:bg-gray-900 shadow-sm">
-              <h3 className="font-semibold text-gray-800 dark:text-white">Service Schedule</h3>
-              <AdminCalendarWrapper isMarkedUnavailable={getVehicleDetails(bookingID)?.status === "Not Available"} dateString={new Date().toISOString().split('T')[0]} vehicleId={(bookingID)} />
-            </div>
-
-
-
-            {
-              getVehicleDetails(bookingID)?.status === "Not Available" && (
-
-                <div className="text-sm flex mt-8 gap-2 items-center dark:bg-red-500/12 rounded text-red-500 p-3 border-gray-500 dark:border-red-500">
-                  <ErrorIcon className="w-auto" /> <div className="w-full">
-                    This vehicle is currently not available for renting YET. Go to vehicles and set is as available or inform renter of when it will be available again!
-                  </div>
-                </div>
-              )
-            }
-
-            <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2 mt-6">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Enter Start Date
-                </label>
-                <div className="relative">
-                  <input
-                    id="event-start-date"
-                    disabled={!!selectedEvent}
-                    type="date"
-                    value={eventStartDate}
-                    onChange={(e) => setEventStartDate(e.target.value)}
-                    className="dark:bg-dark-900 col-8 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                  />
-                  <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                    <CalenderIcon />
-                  </span>
-                </div>
-              </div>
-
-
-              <div>
-                <Label htmlFor="start-time">Start Time</Label>
-                <div className="relative">
-                  <Input
-                    type="time"
-                    id="start-time"
-                    value={eventStartTime}
-                    disabled={!!selectedEvent}
-                    onChange={(e) => {
-                      setEventStartTime(e.target.value);
-                      setEventEndTime(e.target.value);
-                    }}
-                    name="start-time"
-                  />
-                  <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                    <TimeIcon />
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2 mt-6">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Enter End Date
-                </label>
-                <div className="relative">
-                  <input
-                    id="event-end-date"
-                    type="date"
-                    value={eventEndDate}
-                    onChange={(e) => setEventEndDate(e.target.value)}
-                    className="dark:bg-dark-900 col-8 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                  />
-                  <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                    <CalenderIcon />
-                  </span>
-                </div>
-              </div>
-
-
-              <div>
-                <Label htmlFor="end-time">End Time</Label>
-                <div className="relative">
-                  <Input
-                    type="time"
-                    id="end-time"
-                    value={eventEndTime}
-                    name="end-time"
-                    disabled={!!selectedEvent}
-                    onChange={(e) => {
-                      setEventStartTime(e.target.value);
-                      setEventEndTime(e.target.value);
-                    }}
-                  />
-                  <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                    <TimeIcon />
-                  </span>
-                </div>
-              </div>
-              {getVehicleDetails(bookingID)?.status !== "Not Available" && (eventDays < getVehicleDetails(bookingID)?.minDays) && (
-                <div className="text-sm text-red-500">
-                  Please select a minimum of {minDays} Days
-                </div>
-              )}
-            </div>
-
-            {isSelectionOverlapping && (
-              <div className="text-sm text-red-500 mt-4">
-                The date and time you entered overlaps with an existing booking. Please check the time ensuring a buffer time of {BUFFER_HOURS} Hrs is allowed before or after a rental <Link className="text-blue-500 underline" href={'/preferences'}>Click Here</Link> to change burrer time.
-              </div>
-            )}
-
-            {selectedEvent && (
-              <div>
-
-                <label className="mb-1.5 mt-3 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Extend Booking
-                </label>
-                <div className="flex items-center gap-2 mt-2">
-                  {[1, 2, 3, 4, 5].map((day) => (
-                    <Button size="sm" variant="success-outline" key={day} onClick={() => {
-                      // add days to end date 
-                      setEventEndDate(new Date(new Date(eventEndDate).getTime() + day * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
-                    }}>
-                      <PlusIcon />
-                      {day} Day{day > 1 ? 's' : ''}
-                    </Button>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
-          <div className="mt-6 border-t rounded-3 border-gray-200 dark:border-gray-700 pt-6">
-            <h4 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
-              Renter Details
-            </h4>
-          </div>
-          <div>
 
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Renter Name
-              </label>
-              <input
-                id="renter-name"
-                type="text"
-                value={renterName}
-                readOnly={!!selectedEvent}
-                onChange={(e) => setRenterName(e.target.value)}
-                className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Renter ID
-              </label>
-              <input
-                id="renter-id"
-                type="text"
-                value={renterID}
-                readOnly={!!selectedEvent}
-                onChange={(e) => setRenterID(e.target.value)}
-                className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Renter Phone
-              </label>
-              <input
-                id="renter-phone"
-                type="text"
-                value={renterPhone}
-                readOnly={!!selectedEvent}
-                onChange={(e) => setRenterPhone(e.target.value)}
-                className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-              />
-            </div>
-            {
-              bookingID && (
-                <div className="flex gap-2 flex-col items-end border-t mt-6">
-                  <h4 className="mt-4 font-semibold text-gray-800 modal-title text-theme-l dark:text-white/90 lg:text-l">
-                    Booking Summary:</h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{selectedEvent && 'Booked'} Days: {selectedEvent ? getBookingDetails(bookingID)?.days : eventDays} Days</p>
-                  {!!selectedEvent && (<p className="text-sm text-gray-500 dark:text-gray-400">Extension: {eventDays - Number(getBookingDetails(bookingID)?.days)} Days</p>)}
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Daily Rate: Ksh. {getBookingDetails(bookingID).dailyRate.toLocaleString()} </p>
-                  {!!selectedEvent && (<p className="text-sm text-gray-500 dark:text-gray-400">
-                    Amount: Ksh. {getBookingDetails(bookingID).totalAmount.toLocaleString()}
-                  </p>)}
-                  <p className="text-sm font-bold text-green-500">
-                    Total Payable: Ksh. {selectedEvent ? ((getTotalAmount(getBookingDetails(bookingID)?.vehicleID, eventEndDate, eventStartDate)) - (getBookingDetails(bookingID)?.totalAmount)).toLocaleString() : getTotalAmount(getBookingDetails(bookingID)?.vehicleID, eventEndDate, eventStartDate).toLocaleString()}
-                  </p>
+              {/* Calendar Section: col-span-5 */}
+              <div className="mt-7 bg-white dark:bg-gray-900 shadow-sm">
+                <h3 className="font-semibold text-gray-800 dark:text-white">Service Schedule</h3>
+                <AdminCalendarWrapper isMarkedUnavailable={getVehicleDetails(bookingID)?.status === "Not Available"} dateString={new Date().toISOString().split('T')[0]} vehicleId={(bookingID)} />
+              </div>
+
+
+
+              {
+                getVehicleDetails(bookingID)?.status === "Not Available" && (
+
+                  <div className="text-sm flex mt-8 gap-2 items-center dark:bg-red-500/12 rounded text-red-500 p-3 border-gray-500 dark:border-red-500">
+                    <ErrorIcon className="w-auto" /> <div className="w-full">
+                      This vehicle is currently not available for renting YET. Go to vehicles and set is as available or inform renter of when it will be available again!
+                    </div>
+                  </div>
+                )
+              }
+
+              <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2 mt-6">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Enter Start Date
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="event-start-date"
+                      disabled={!!selectedEvent}
+                      type="date"
+                      value={eventStartDate}
+                      onChange={(e) => setEventStartDate(e.target.value)}
+                      className="dark:bg-dark-900 col-8 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                    />
+                    <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                      <CalenderIcon />
+                    </span>
+                  </div>
                 </div>
 
-              )
-            }
-          </div>
 
-          <div style={{ minHeight: '8.5rem', position: 'relative' }}>
-            {processingPayment && (<div className="animate-pulse flex items-center gap-3 p-2 py-3 mt-6 border rounded-md border-blue-400 bg-blue-500/10">
-              <div className="p-2">
-                <AccessTimeIcon fontSize="large" color="primary" />
+                <div>
+                  <Label htmlFor="start-time">Start Time</Label>
+                  <div className="relative">
+                    <Input
+                      type="time"
+                      id="start-time"
+                      value={eventStartTime}
+                      disabled={!!selectedEvent}
+                      onChange={(e) => {
+                        setEventStartTime(e.target.value);
+                        setEventEndTime(e.target.value);
+                      }}
+                      name="start-time"
+                    />
+                    <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                      <TimeIcon />
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2 mt-6">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Enter End Date
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="event-end-date"
+                      type="date"
+                      value={eventEndDate}
+                      onChange={(e) => setEventEndDate(e.target.value)}
+                      className="dark:bg-dark-900 col-8 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                    />
+                    <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                      <CalenderIcon />
+                    </span>
+                  </div>
+                </div>
+
+
+                <div>
+                  <Label htmlFor="end-time">End Time</Label>
+                  <div className="relative">
+                    <Input
+                      type="time"
+                      id="end-time"
+                      value={eventEndTime}
+                      name="end-time"
+                      disabled={!!selectedEvent}
+                      onChange={(e) => {
+                        setEventStartTime(e.target.value);
+                        setEventEndTime(e.target.value);
+                      }}
+                    />
+                    <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                      <TimeIcon />
+                    </span>
+                  </div>
+                </div>
+                {getVehicleDetails(bookingID)?.status !== "Not Available" && (eventDays < getVehicleDetails(bookingID)?.minDays) && (
+                  <div className="text-sm text-red-500">
+                    Please select a minimum of {minDays} Days
+                  </div>
+                )}
+              </div>
+
+              {isSelectionOverlapping && (
+                <div className="text-sm text-red-500 mt-4">
+                  The date and time you entered overlaps with an existing booking. Please check the time ensuring a buffer time of {BUFFER_HOURS} Hrs is allowed before or after a rental <Link className="text-blue-500 underline" href={'/preferences'}>Click Here</Link> to change burrer time.
+                </div>
+              )}
+
+              {selectedEvent && (
+                <div>
+
+                  <label className="mb-1.5 mt-3 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Extend Booking
+                  </label>
+                  <div className="flex items-center gap-2 mt-2">
+                    {[1, 2, 3, 4, 5].map((day) => (
+                      <Button size="sm" variant="success-outline" key={day} onClick={() => {
+                        // add days to end date 
+                        setEventEndDate(new Date(new Date(eventEndDate).getTime() + day * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+                      }}>
+                        <PlusIcon />
+                        {day} Day{day > 1 ? 's' : ''}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="mt-6 border-t rounded-3 border-gray-200 dark:border-gray-700 pt-6">
+              <h4 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
+                Renter Details
+              </h4>
+            </div>
+            <div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                  Renter Name
+                </label>
+                <input
+                  id="renter-name"
+                  type="text"
+                  value={renterName}
+                  readOnly={!!selectedEvent}
+                  onChange={(e) => setRenterName(e.target.value)}
+                  className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                />
               </div>
               <div>
-
-                <h5 className="text-blue-500"><strong>Processing Payment!</strong></h5>
-
-                {/* This is where the payment processing component will go. For now, it's just a placeholder. */}
-                <div className="text-sm mt-1 text-blue-300 dark:text-blue-200">
-                  <p> A payment request will be sent to the renter's phone number ({renterPhone}) upon booking confirmation. The booking will be finalized once the payment is successfully processed.
-                  </p></div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                  Renter ID
+                </label>
+                <input
+                  id="renter-id"
+                  type="text"
+                  value={renterID}
+                  readOnly={!!selectedEvent}
+                  onChange={(e) => setRenterID(e.target.value)}
+                  className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                />
               </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                  Renter Phone
+                </label>
+                <input
+                  id="renter-phone"
+                  type="text"
+                  value={renterPhone}
+                  readOnly={!!selectedEvent}
+                  onChange={(e) => setRenterPhone(e.target.value)}
+                  className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                />
+              </div>
+              {
+                bookingID && (
+                  <div className="flex gap-2 flex-col items-end border-t mt-6">
+                    <h4 className="mt-4 font-semibold text-gray-800 modal-title text-theme-l dark:text-white/90 lg:text-l">
+                      Booking Summary:</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{selectedEvent && 'Booked'} Days: {selectedEvent ? getBookingDetails(bookingID)?.days : eventDays} Days</p>
+                    {!!selectedEvent && (<p className="text-sm text-gray-500 dark:text-gray-400">Extension: {eventDays - Number(getBookingDetails(bookingID)?.days)} Days</p>)}
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Daily Rate: Ksh. {getBookingDetails(bookingID).dailyRate.toLocaleString()} </p>
+                    {!!selectedEvent && (<p className="text-sm text-gray-500 dark:text-gray-400">
+                      Amount: Ksh. {getBookingDetails(bookingID).totalAmount.toLocaleString()}
+                    </p>)}
+                    <p className="text-sm font-bold text-green-500">
+                      Total Payable: Ksh. {selectedEvent ? ((getTotalAmount(getBookingDetails(bookingID)?.vehicleID, eventEndDate, eventStartDate)) - (getBookingDetails(bookingID)?.totalAmount)).toLocaleString() : getTotalAmount(getBookingDetails(bookingID)?.vehicleID, eventEndDate, eventStartDate).toLocaleString()}
+                    </p>
+                  </div>
 
-            </div>)}
+                )
+              }
+            </div>
 
-
-            {paymentSuccess && (
-              <div className="flex items-center gap-3 p-2 py-3 mt-6 border rounded-md border-green-400 bg-green-500/10">
-                <div className="p-2 text-green-500">
-                  <TaskAltIcon fontSize="large" />
+            <div style={{ minHeight: '8.5rem', position: 'relative' }}>
+              {processingPayment && (<div className="animate-pulse flex items-center gap-3 p-2 py-3 mt-6 border rounded-md border-blue-400 bg-blue-500/10">
+                <div className="p-2">
+                  <AccessTimeIcon fontSize="large" color="primary" />
                 </div>
                 <div>
 
-                  <h5 className="text-green-500"><strong>Payment Success!</strong></h5>
+                  <h5 className="text-blue-500"><strong>Processing Payment!</strong></h5>
 
                   {/* This is where the payment processing component will go. For now, it's just a placeholder. */}
-                  <div className="text-sm mt-1 text-green-300 dark:text-green-200">
-                    <p>
-                      Payment has been successfully processed. The booking is now confirmed and will appear on the calendar. An SMS confirmation will be sent to the renter's phone number ({renterPhone}) with the booking details and receipt.
+                  <div className="text-sm mt-1 text-blue-300 dark:text-blue-200">
+                    <p> A payment request will be sent to the renter's phone number ({renterPhone}) upon booking confirmation. The booking will be finalized once the payment is successfully processed.
                     </p></div>
                 </div>
 
               </div>)}
 
 
+              {paymentSuccess && (
+                <div className="flex items-center gap-3 p-2 py-3 mt-6 border rounded-md border-green-400 bg-green-500/10">
+                  <div className="p-2 text-green-500">
+                    <TaskAltIcon fontSize="large" />
+                  </div>
+                  <div>
+
+                    <h5 className="text-green-500"><strong>Payment Success!</strong></h5>
+
+                    {/* This is where the payment processing component will go. For now, it's just a placeholder. */}
+                    <div className="text-sm mt-1 text-green-300 dark:text-green-200">
+                      <p>
+                        Payment has been successfully processed. The booking is now confirmed and will appear on the calendar. An SMS confirmation will be sent to the renter's phone number ({renterPhone}) with the booking details and receipt.
+                      </p></div>
+                  </div>
+
+                </div>)}
+
+
+            </div>
+
+
+
+            <div className="flex items-center gap-3 mt-6 modal-footer sm:justify-end">
+              <button
+                onClick={closeModal}
+                type="button"
+                className="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 sm:w-auto"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddOrUpdateEvent}
+                disabled={!bookingName || !eventStartDate || !eventEndDate || !eventLevel || !renterName || !renterID || !renterPhone || (eventDays < minDays || processingPayment || updatingBooking || disableButton || isSelectionOverlapping)}
+                type="button"
+                style={{ cursor: !bookingName || !eventStartDate || !eventEndDate || !eventLevel || !renterName || !renterID || !renterPhone || (eventDays < minDays || processingPayment || updatingBooking || disableButton || isSelectionOverlapping) ? 'not-allowed' : 'pointer' }}
+                className="btn btn-success btn-update-event flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
+              >
+                {selectedEvent ? "Update Booking" : "Create Booking"}
+              </button>
+            </div>
           </div>
-
-
-
-          <div className="flex items-center gap-3 mt-6 modal-footer sm:justify-end">
-            <button
-              onClick={closeModal}
-              type="button"
-              className="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 sm:w-auto"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleAddOrUpdateEvent}
-              disabled={!bookingName || !eventStartDate || !eventEndDate || !eventLevel || !renterName || !renterID || !renterPhone || (eventDays < minDays || processingPayment || updatingBooking || disableButton || isSelectionOverlapping)}
-              type="button"
-              style={{ cursor: !bookingName || !eventStartDate || !eventEndDate || !eventLevel || !renterName || !renterID || !renterPhone || (eventDays < minDays || processingPayment || updatingBooking || disableButton || isSelectionOverlapping) ? 'not-allowed' : 'pointer' }}
-              className="btn btn-success btn-update-event flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
-            >
-              {selectedEvent ? "Update Booking" : "Create Booking"}
-            </button>
-          </div>
-        </div>
-      </Modal>
-    </div>
+        </Modal>
+      </div>
+    </>
   );
 };
 

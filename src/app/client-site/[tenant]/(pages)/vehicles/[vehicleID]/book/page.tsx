@@ -12,11 +12,8 @@ import Input from '@/components/form/input/InputField';
 import { useFleet } from '@/context/FleetContext';
 import { useUser } from '@/context/UserContext';
 import { useTenant } from '@/context/TenantContext';
-import LocalCarWashOutlinedIcon from "@mui/icons-material/LocalCarWashOutlined"
 import GppGoodOutlinedIcon from "@mui/icons-material/GppGoodOutlined"
-import CancelPresentationOutlinedIcon from "@mui/icons-material/CancelPresentationOutlined"
 import MobileScreenShareOutlinedIcon from "@mui/icons-material/MobileScreenShareOutlined"
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import LocalGasStationOutlinedIcon from '@mui/icons-material/LocalGasStationOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
@@ -35,6 +32,8 @@ import Alert from '@/components/ui/alert/Alert';
 import { createPayment } from '@/app/actions/payments';
 import DeliveryBanner from '@/components/client-components/DeliveryBanner';
 import userVerified from '@/utils/clients/checkverification';
+import { mpesaPollingIterval } from '@/components/company-profile/CompanySubscriptionsCard';
+import { createNewBooking } from '@/app/actions/bookings';
 
 
 dayjs.extend(isBetween);
@@ -69,6 +68,9 @@ const BookingPage = ({ params }: VehiclePageProps) => {
     const [error, setError] = useState(null);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const successModal = useModal();
+    const fallbackStart = dayjs().add(1, 'day').format('YYYY-MM-DD[T]HH:mm');
+    // 2 days after tomorrow (3 days total) at the exact same hour and minute
+    const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
 
     const token = searchParams.get('token');
     let decodedData = null;
@@ -86,11 +88,12 @@ const BookingPage = ({ params }: VehiclePageProps) => {
     }, [profile?.phone])
 
     const start = useMemo(() => {
-        return decodedData?.bookingInformation?.start || searchParams.get('start');
-    }, [decodedData]);
+        return decodedData?.bookingInformation?.start || searchParams.get('start') || fallbackStart;
+    }, [decodedData, searchParams, fallbackStart]);
+
     const end = useMemo(() => {
-        return decodedData?.bookingInformation?.end || searchParams.get('end');
-    }, [decodedData]);
+        return decodedData?.bookingInformation?.end || searchParams.get('end') || fallbackEnd;
+    }, [decodedData, searchParams, fallbackEnd]);
 
     const [expandBreakdown, setExpandBreakdown] = useState(true);
     const [openPolicyModal, setOpenPolicyModal] = useState(false);
@@ -150,12 +153,30 @@ const BookingPage = ({ params }: VehiclePageProps) => {
     const vatAmount = Math.round(grossSubTotal * 0.16);
     const grandTotalAmount = grossSubTotal + vatAmount;
 
+    const sanitizeMpesaNo = (mpesaNumber: string) => {
+        let sanitizedNumber = mpesaNumber.replace(/\D/g, '');
 
+        if (sanitizedNumber.startsWith('0')) {
+            sanitizedNumber = `254${sanitizedNumber.substring(1)}`;
+        } else if (sanitizedNumber.startsWith('7') || sanitizedNumber.startsWith('1')) {
+            sanitizedNumber = `254${sanitizedNumber}`;
+        } else if (sanitizedNumber.startsWith('254') && sanitizedNumber.length > 3) {
+            // Already formatted
+        } else {
+            console.warn("Phone formatting fallback pattern encountered:", sanitizedNumber);
+        }
 
+        if (sanitizedNumber.length !== 12) {
+            showToast('Please enter a valid 9 or 10-digit M-Pesa phone number.', 'error');
+            setIsPaying(false);
+            return null;
+        }
 
-
+        return sanitizedNumber;
+    }
     const handleCheckoutSubmit = async () => {
         setError(null);
+        const buffer = Number(profile?.fleetmaster_tenants?.buffer);
 
         if (!profile) {
             showToast('Please sign in to your account to place a booking!', 'error');
@@ -184,307 +205,199 @@ const BookingPage = ({ params }: VehiclePageProps) => {
 
         // --- BRANCH 1: ONE-CLICK DIRECT M-PESA STK PUSH (NO MODAL) ---
         if (paymentMethod === 'm-pesa') {
-            showToast('Processing your security checks...', 'info');
-
             // --- SANITIZE AND NORMALIZE PHONE NUMBER INPUT ---
-            let sanitizedNumber = mpesaNumber.replace(/\D/g, '');
+            let sanitizedNumber = sanitizeMpesaNo(mpesaNumber);
 
-            if (sanitizedNumber.startsWith('0')) {
-                sanitizedNumber = `254${sanitizedNumber.substring(1)}`;
-            } else if (sanitizedNumber.startsWith('7') || sanitizedNumber.startsWith('1')) {
-                sanitizedNumber = `254${sanitizedNumber}`;
-            } else if (sanitizedNumber.startsWith('254') && sanitizedNumber.length > 3) {
-                // Already formatted
-            } else {
-                console.warn("Phone formatting fallback pattern encountered:", sanitizedNumber);
-            }
 
-            if (sanitizedNumber.length !== 12) {
-                showToast('Please enter a valid 9 or 10-digit M-Pesa phone number.', 'error');
-                setIsPaying(false);
-                return;
-            }
+            let intervalId: NodeJS.Timeout | null = null;
+            let safetyTimeoutId: NodeJS.Timeout | null = null;
+            let hasHandledCompletion = false; // <-- Lock flag to prevent duplicate processing
 
-            showToast('Verifying fleet asset availability...', 'info');
+            const clearPollingTimers = () => {
+                if (intervalId) clearInterval(intervalId);
+                if (safetyTimeoutId) clearTimeout(safetyTimeoutId);
+            };
+
 
             try {
-                // --- ATOMIC BACKEND PIPELINE TRIGGER ---
-                const res = await fetch('/api/intasend/stk', {
+                showToast('Checking rental vehicle availability...', 'info');
+
+                const availabilityCheckRes = await fetch('/api/bookings/check-overlap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        vehicleID,
+                        rentalStart: startDayString,    // Format: YYYY-MM-DD
+                        rentalEnd: endDayString,      // Format: YYYY-MM-DD
+                        rentalTime: rentalTimeString,   // Format: HH:MM
+                        tenantID: profile?.tenant_id,
+                        userID: profile?.id,
+                        buffer
+                    })
+                });
+
+                const availabilityCheckResdata = await availabilityCheckRes.json();
+                console.log("❌ Availability check response failed:", {
+                    status: availabilityCheckRes.status,
+                    statusText: availabilityCheckRes.statusText,
+                    data: availabilityCheckResdata
+                });
+
+                if (!availabilityCheckRes.ok || !availabilityCheckResdata.success) {
+                    const errorMessage = availabilityCheckResdata.error || availabilityCheckResdata.message || 'This vehicle is booked for some of the selected days!';
+                    showToast(errorMessage, 'error');
+                    setIsPaying(false);
+                    return;
+                }
+
+                const res = await fetch('/api/mpesa/stk', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         amount: Number(grandTotalAmount),
-                        phone: sanitizedNumber,
-                        email: profile.email,
-                        firstName,
-                        lastName,
-                        vehicleID: Number(vehicleID),
-                        rentalStart: startDayString,       // 'YYYY-MM-DD'
-                        rentalEnd: endDayString,           // 'YYYY-MM-DD'
-                        rentalTime: rentalTimeString,      // 'HH:mm:ss'
-                        rentalDays: Number(totalDays),
-                        tenantID: tenant?.id,
-                        userID: profile?.id,
-                        nationalID: profile.national_id_number || "UNKNOWN",
-                        pickupLocation: pickupOption,
-                        dropoffLocation: dropoffOption === 'elsewhere' ? dropoffLocation : pickupOption
+                        phoneNumber: sanitizedNumber,
                     })
                 });
 
                 const data = await res.json();
+                console.log('Daraja STK Response: ', data);
 
-                // Catch explicit backend conflict errors (e.g., 409 overlapping reservation blocks)
-                if (!res.ok) {
-                    throw new Error(data.error || 'Failed to dispatch payment payload.');
+                if (!res.ok || data.ResponseCode !== "0") {
+                    throw new Error(data.errorMessage || data.ResponseDescription || 'Failed to dispatch M-Pesa push.');
                 }
 
-                showToast(`STK Push Sent! Enter your M-Pesa PIN on your phone to complete payment.`, 'success');
-
-                const targetInvoiceId = data.invoice?.invoice_id || data.id;
-
-                if (!targetInvoiceId) {
-                    throw new Error('No tracking invoice ID returned from billing gateway.');
+                const targetCheckoutId = data.CheckoutRequestID;
+                if (!targetCheckoutId) {
+                    throw new Error('No tracking CheckoutRequestID returned from M-Pesa gateway.');
                 }
 
                 showToast('STK Push Request Sent! Please enter your M-Pesa PIN', 'info');
 
-                const intervalId = setInterval(async () => {
+                intervalId = setInterval(async () => {
+                    // If already handled by a previous tick, skip execution completely
+                    if (hasHandledCompletion) return;
+
                     try {
-                        const statusRes = await fetch('/api/intasend/status', {
+                        const statusRes = await fetch('/api/mpesa/status', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ invoice_id: targetInvoiceId })
+                            body: JSON.stringify({ checkoutRequestID: targetCheckoutId })
                         });
 
                         const statusData = await statusRes.json();
+                        const resultCode = statusData.ResultCode;
+                        const responseCode = statusData.ResponseCode;
+                        console.log('Daraja status check poll: ', resultCode, responseCode, statusData);
 
-                        
-                        // Dig into statusData.data.invoice first
-                        const mpesaRef = statusData.data?.invoice?.mpesa_reference ||
-                            statusData.data?.invoice?.provider_ref ||
-                            `ST-${targetInvoiceId}`;
+                        // Ignore intermediate processing states (e.g. "The service request has been accepted successfully" with no ResultCode yet)
+                        if (!resultCode || resultCode === "PROCESSING") {
+                            return;
+                        }
 
-                        if (statusData.state === 'COMPLETE') {
-                            clearInterval(intervalId);
-                            setIsPaying(false);
+                        // --- LOCK ACQUIRED: Prevent other ticks from running ---
+                        hasHandledCompletion = true;
+                        clearPollingTimers();
+                        setIsPaying(false);
+
+                        const mpesaRef = statusData.MpesaReceiptNumber || targetCheckoutId;
+
+                        const newBooking = {
+                            total: Number(grandTotalAmount),
+                            renter_phone: sanitizedNumber,
+                            renter_name: `${firstName} ${lastName}`.trim(),
+                            vehicle_id: Number(VehicleDetails?.id),
+                            rental_start: startDayString,
+                            rental_end: endDayString,
+                            rental_time: rentalTimeString,
+                            rental_days: Number(totalDays),
+                            tenant_id: profile?.tenant_id,
+                            user_id: profile?.id,
+                            renter_id: profile?.national_id || "UNKNOWN",
+                            pickup_location: pickupOption,
+                            dropoff_location: dropoffOption === 'elsewhere' ? dropoffLocation : pickupOption,
+                            payment_method: 'M-PESA',
+                            payment_status: statusData.state,
+                            intasend_invoice_id: targetCheckoutId,
+                            payment_ref: mpesaRef
+                        };
+
+                        if (resultCode === "0") {
                             showToast('Payment Confirmed! Your booking has been processed successfully.', 'success');
                             successModal.openModal();
                             setPaymentSuccess(true);
 
+                            const newPayment = {
+                                tenant_id: profile?.tenant_id,
+                                intasend_invoice_id: targetCheckoutId,
+                                provider: 'M-PESA',
+                                provider_reference: mpesaRef,
+                                amount: Number(grandTotalAmount),
+                                currency: 'KES',
+                                account_number: sanitizedNumber,
+                                payment_ref: mpesaRef,
+                                user_id: profile?.id || null,
+                                status: 'Success',
+                                message: 'Confirmed! Your booking has been processed successfully.',
+                            };
 
+                            const bookingRes = await createNewBooking({ ...newBooking, booking_status: 'Booked', });
+                            const dbRes = await createPayment(newPayment);
 
-                            if (statusData.state) {
-                                // 1. Corrected 'bookigs' to 'bookings'
-                                const response = await fetch('/api/bookings/update', {
-                                    method: 'POST', // 2. Changed 'UPDATE' to 'POST'
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        amount: Number(grandTotalAmount),
-                                        phone: sanitizedNumber,
-                                        firstName,
-                                        lastName,
-                                        vehicleID: Number(vehicleID),
-                                        rentalStart: startDayString,
-                                        rentalEnd: endDayString,
-                                        rentalTime: rentalTimeString,
-                                        rentalDays: Number(totalDays),
-                                        tenantID: tenant?.id,
-                                        userID: profile?.id,
-                                        nationalID: profile.national_id_number || "UNKNOWN",
-                                        pickupLocation: pickupOption,
-                                        dropoffLocation: dropoffOption === 'elsewhere' ? dropoffLocation : pickupOption,
-                                        payment_method: 'M-PESA',
-                                        booking_status: 'Booked',
-                                        payment_status: statusData.state,
-                                        intasend_invoice_id: targetInvoiceId,
-                                        payment_ref: mpesaRef
-                                    })
-                                });
+                            console.log("Database payment update response:", dbRes);
+                            console.log("Database booking insert response:", bookingRes);
+                        } else {
+                            const failReason = statusData.ResultDesc || 'Transaction was canceled or failed.';
+                            showToast(failReason, 'error');
+                            setError({ message: failReason });
 
-                                const newPayment = {
-                                    tenant_id: profile.tenant_id,
-                                    intasend_invoice_id: statusData.data.invoice.invoice_id,
-                                    provider: statusData.data.invoice.provider,
-                                    provider_reference: statusData.data.invoice.provider_ref,
-                                    amount: Number(grandTotalAmount),
-                                    currency: statusData.data.invoice.currency,
-                                    account_number: statusData.data.invoice.account,
-                                    payment_ref: statusData.data.invoice.invoice_id,
-                                    user_id: profile.id,
-                                    status: 'Success',
-                                    message: statusData.data.invoice.failed_reason,
-                                };
+                            const newPayment = {
+                                tenant_id: profile?.tenant_id,
+                                intasend_invoice_id: targetCheckoutId,
+                                provider: 'M-PESA',
+                                provider_reference: mpesaRef,
+                                amount: Number(grandTotalAmount),
+                                currency: 'KES',
+                                account_number: sanitizedNumber,
+                                payment_ref: mpesaRef,
+                                user_id: null,
+                                status: 'Failed',
+                                message: failReason,
+                            };
 
-                                const res = await createPayment(newPayment);
+                            const bookingRes = await createNewBooking({ ...newBooking, booking_status: 'Reserved' });
+                            const dbRes = await createPayment(newPayment);
 
-                                if (res.success) {
-                                    // success good
-                                }
-                                // console.log("Database payment update response:", res);
-
-
-                                if (response.ok) {
-                                    //
-                                }
-                            }
-
-                        } else if (statusData.state === 'FAILED') {
-                            clearInterval(intervalId);
-                            setIsPaying(false);
-                            showToast(statusData.data.invoice.failed_reason || 'Transaction was declined, canceled, or timed out.', 'error');
-                            setError({ message: statusData.data.invoice.failed_reason || 'Transaction was declined, canceled, or timed out.' })
-
-                            if (statusData.state) {
-                                // 1. Corrected 'bookigs' to 'bookings'
-                                const response = await fetch('/api/bookings/update', {
-                                    method: 'POST', // 2. Changed 'UPDATE' to 'POST'
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        amount: Number(grandTotalAmount),
-                                        phone: sanitizedNumber,
-                                        firstName,
-                                        lastName,
-                                        vehicleID: Number(vehicleID),
-                                        rentalStart: startDayString,
-                                        rentalEnd: endDayString,
-                                        rentalTime: rentalTimeString,
-                                        rentalDays: Number(totalDays),
-                                        tenantID: tenant?.id,
-                                        userID: profile?.id,
-                                        nationalID: profile.national_id_number || "UNKNOWN",
-                                        pickupLocation: pickupOption,
-                                        dropoffLocation: dropoffOption === 'elsewhere' ? dropoffLocation : pickupOption,
-                                        payment_method: 'M-PESA',
-                                        booking_status: 'Reserved',
-                                        payment_status: statusData.state,
-                                        intasend_invoice_id: targetInvoiceId,
-                                        payment_ref: mpesaRef
-                                    })
-                                });
-
-                                const newPayment = {
-                                    tenant_id: profile.tenant_id,
-                                    intasend_invoice_id: statusData.data.invoice.invoice_id,
-                                    provider: statusData.data.invoice.provider,
-                                    provider_reference: statusData.data.invoice.provider_ref,
-                                    amount: Number(grandTotalAmount),
-                                    currency: statusData.data.invoice.currency,
-                                    account_number: statusData.data.invoice.account,
-                                    payment_ref: statusData.data.invoice.invoice_id,
-                                    user_id: profile.id,
-                                    status: 'Failed',
-                                    message: statusData.data.invoice.failed_reason,
-                                };
-
-                                const res = await createPayment(newPayment);
-
-                                if (res.success) {
-                                    // success good
-                                }
-                                // console.log("Database payment update response:", res);
-                            }
+                            console.log("Database payment update response:", dbRes);
+                            console.log("Database booking insert response:", bookingRes);
                         }
                     } catch (pollErr) {
                         console.error("Error during background status poll checking:", pollErr);
                     }
-                }, 3500);
+                }, mpesaPollingIterval);
 
-                // Safety lifecycle fallback boundary loop limit (2 minutes)
-                setTimeout(() => {
-                    clearInterval(intervalId);
-                    setIsPaying(false);
-                }, 120000);
+                safetyTimeoutId = setTimeout(() => {
+                    if (!hasHandledCompletion) {
+                        hasHandledCompletion = true;
+                        clearPollingTimers();
+                        setIsPaying(false);
+                        showToast('Payment verification timed out. Please check your transaction history.', 'error');
+                    }
+                }, 65000);
 
             } catch (err: any) {
-                setError(err)
+                setError(err);
                 console.error("Direct STK Push Failed:", err);
                 showToast(err.message || 'M-Pesa STK verification failed.', 'error');
                 setIsPaying(false);
             }
-
-            // --- BRANCH 2: SECURE CARD CHECKOUT via BACKEND INLINE MODAL ---
         } else {
-            if (!(window as any).IntaSend) {
-                showToast('Card engine failed to initialize. Please refresh.', 'error');
-                setIsPaying(false);
-                return;
-            }
+            showToast('Card payment checkout not available! Consult support.', 'error');
+            setIsPaying(false);
+            setError({ message: 'Card payment checkout not available! Consult support.' })
 
-            showToast('Opening secure card payment gateway...', 'info');
-
-            const intasendInstance = new (window as any).IntaSend({
-                publicAPIKey: process.env.NEXT_PUBLIC_INTASEND_PUBLISHABLE_KEY,
-                live: false,
-            });
-
-            intasendInstance
-                .on("COMPLETE", async (results: any) => {
-                    showToast('Card transaction captured successfully! Finalizing reservation...', 'success');
-
-                    try {
-                        // Save booking directly to database now that transaction funds are captured
-                        const { data: cardBooking, error: cardBookingError } = await supabase
-                            .from('fleetmaster_bookings')
-                            .insert({
-                                user_id: profile?.id,
-                                tenant_id: tenant?.id,
-                                vehicle_id: Number(vehicleID),
-                                renter_name: `${firstName} ${lastName}`.trim(),
-                                renter_phone: profile.phone_number || "CARD_PAYMENT",
-                                renter_id: profile.national_id_number || "UNKNOWN",
-                                rental_start: startDayString,
-                                rental_end: endDayString,
-                                rental_time: rentalTimeString,
-                                rental_days: Number(totalDays),
-                                pickup_location: pickupOption,
-                                dropoff_location: dropoffOption === 'elsewhere' ? dropoffLocation : pickupOption,
-                                total: grandTotalAmount,
-                                payment_method: 'CARD',
-                                booking_status: 'Confirmed', // Automatically confirmed via immediate payment capture
-                                payment_status: 'PAID',
-                                payment_ref: results.invoice_id || `CARD_${Date.now()}`
-                            })
-                            .select('id')
-                            .single();
-
-                        if (cardBookingError) {
-                            console.error("Failed to commit post-payment card reservation:", cardBookingError);
-                            showToast('Payment caught, but local row registration failed. Contact administration with reference.', 'error');
-                        } else {
-                            // console.log("Card Booking Successfully Registered ID:", cardBooking?.id);
-                        }
-                    } catch (dbErr) {
-                        console.error("Unhandled error updating database ledger:", dbErr);
-                    } finally {
-                        setIsPaying(false);
-                        successModal.openModal();
-                        setPaymentSuccess(true);
-                    }
-                })
-                .on("FAILED", () => {
-                    showToast('Card validation failed or modal dismissed.', 'error');
-                    setIsPaying(false);
-                });
-
-            try {
-                await intasendInstance.run({
-                    amount: Number(grandTotalAmount),
-                    currency: "KES",
-                    firstName,
-                    lastName,
-                    email: profile.email,
-                    api_ref: String(vehicleID),
-                    method: "CARD",
-                    comment: `FleetMaster Booking - Vehicle Ref: ${vehicleID}`
-                });
-            } catch (cardErr) {
-                console.error("Card Gateway Launch Failure:", cardErr);
-                setIsPaying(false);
-            }
+            return;
         }
     };
-
-
 
 
 
@@ -524,12 +437,20 @@ const BookingPage = ({ params }: VehiclePageProps) => {
             {/* Dynamic Header Promo Banner */}
             <DeliveryBanner />
 
-            {
-                paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='                                    Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.' />
-            }
-            {
-                error && <Alert title='Booking Error!' variant='error' message={error?.message || 'An error occured. Please try again later!'} />
-            }
+
+            <div className='space-y-5'>
+                {
+                    isPaying && <Alert title='Payment Processing!' variant='info' message='Your payment is being processed. Check your phone.' />
+                }
+                {
+                    paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support.' />
+                }
+
+                {
+                    error && <Alert title='Payment Error!' variant='error' message={error?.message || 'An error occured. Please try again later!'} />
+                }
+            </div>
+
             <div className="grid grid-cols-12 gap-6">
 
                 {/* ================= LEFT SIDE: VEHICLE & LOGISTICS PRODUCTION PANEL (col-span-7) ================= */}
@@ -603,19 +524,19 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                         </div>
                                         <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'Nairobi' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
                                             <FormControlLabel value="Nairobi" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Door Delivery within Nairobib (Work, Home, Office)</span>} />
-                                            <span className="text-xs font-semibold text-brand-500">+ Ksh 1,000</span>
+                                            <span className="text-xs font-semibold text-blue-500">+ Ksh 1,000</span>
                                         </div>
                                         <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'Airport (JKIA - NBO)' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
                                             <FormControlLabel value="Airport (JKIA - NBO)" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Airport Dropoff (JKIA - NBO)</span>} />
-                                            <span className="text-xs font-semibold text-brand-500">+ Ksh 1,500</span>
+                                            <span className="text-xs font-semibold text-blue-500">+ Ksh 1,500</span>
                                         </div>
                                         <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'Airport (Wilson Airport - WIL)' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
                                             <FormControlLabel value="Airport (Wilson Airport - WIL)" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Airport Dropoff (JKIA - NBO, Wilson Airport - WIL)</span>} />
-                                            <span className="text-xs font-semibold text-brand-500">+ Ksh 1,500</span>
+                                            <span className="text-xs font-semibold text-blue-500">+ Ksh 1,500</span>
                                         </div>
                                         <div className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${pickupOption === 'Outside Major Yards' ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
                                             <FormControlLabel value="Outside Major Yards" control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">Outside Major Yards (Distances max 100km out)</span>} />
-                                            <span className="text-xs font-semibold text-brand-500">+ Ksh 2,000</span>
+                                            <span className="text-xs font-semibold text-blue-500">+ Ksh 2,000</span>
                                         </div>
                                     </RadioGroup>
                                 </FormControl>
@@ -680,7 +601,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                 <InfoOutlinedIcon className={`mt-0.5 ${policiesAccepted ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
                                     }`} />
                                 <div>
-                                    <h4 className={`text-sm font-bold text-amber-900 ${policiesAccepted ? 'dark:text-emerald-300' : 'dark:text-red-300'
+                                    <h4 className={`text-sm font-bold text-red-800 ${policiesAccepted ? 'dark:text-emerald-300' : 'dark:text-red-500'
                                         }`}>
                                         Review Legal Rules & Handover Policies
                                     </h4>
@@ -688,7 +609,7 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                                         }`}>
                                         You must review and acknowledge the documentation, liability thresholds, and insurance policies prior to booking fulfillment.
                                     </p>
-                                    <p className="text-xs text-brand-500 mt-2 underline cursor-pointer" onClick={() => setOpenPolicyModal(true)}>
+                                    <p className="text-xs text-blue-500 mt-2 underline cursor-pointer" onClick={() => setOpenPolicyModal(true)}>
                                         Read Key Info & Policies Checklist.
                                     </p>
                                 </div>
@@ -972,9 +893,18 @@ const BookingPage = ({ params }: VehiclePageProps) => {
                             </div>
                         </Modal>
 
-                        {
-                            paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='                                    Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.' />
-                        }
+                        <div className='space-y-5'>
+                            {
+                                isPaying && <Alert title='Payment Processing!' variant='info' message='Your payment is being processed. Check your phone.' />
+                            }
+                            {
+                                paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support.' />
+                            }
+
+                            {
+                                error && <Alert title='Payment Error!' variant='error' message={error?.message || 'An error occured. Please try again later!'} />
+                            }
+                        </div>
                         {/* Dynamic Call-To-Action Operations Routing Grid */}
                         <div className="space-y-3 mt-4">
                             <Button onClick={handleCheckoutSubmit} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md'

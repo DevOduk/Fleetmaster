@@ -64,8 +64,8 @@ export default function OthersPagesLayout({
       executeAbsoluteAuthRedirect();
     }
   }, [profile, router, loading]);
-console.log('admin profile before redirection: ',profile?.role)
-  // 1. Phase A: App is actively pulling session context over the network
+
+
   if (loading) {
     return (
       <div className="w-screen h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">

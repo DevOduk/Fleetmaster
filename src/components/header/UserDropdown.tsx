@@ -8,6 +8,7 @@ import Badge from "@/components/ui/badge/Badge";
 import { useUser } from "@/context/UserContext";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined"
 import userVerified from "@/utils/clients/checkverification";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,10 +22,20 @@ export default function UserDropdown() {
   function closeDropdown() {
     setIsOpen(false);
   }
+
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchString = searchParams.toString();
+
+  // Rebuild the accurate current page URL dynamically
+  const currentPageUrl = encodeURIComponent(
+    searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname)
+  );
+
   return (
     <div className="relative flex items-center">
       {
-        loading ? <div className="flex gap-2 items-center animate-pulse"><div className="w-9 h-9 bg-gray-500 rounded-full"></div> <span className="w-15 h-5 bg-gray-500 rounded"></span></div> : profile ?
+        loading ? <div className="flex gap-2 items-center"><div className="w-9 h-9 bg-gray-500 rounded-full"></div> <span className="w-15 h-5 bg-gray-500 rounded"></span></div> : profile ?
           <button
             onClick={toggleDropdown}
             className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
@@ -56,7 +67,9 @@ export default function UserDropdown() {
                 strokeLinejoin="round"
               />
             </svg>
-          </button> : <Link href="/signin" className="flex text-nowrap items-center gap-2 text-gray-600 dark:text-gray-400"><Avatar src="" /> Sign in</Link>
+          </button> : <Link
+            href={`/signin?url=${currentPageUrl}`}
+            className="flex text-nowrap items-center gap-2 text-gray-600 dark:text-gray-400"><Avatar src="" /> Sign in</Link>
       }
 
       <Dropdown

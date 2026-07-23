@@ -55,9 +55,7 @@ const resetFiltersStates = {
 export const syncTimeToDateString = (dateTarget: string, sourceDateTime: string): string => {
     if (!sourceDateTime || !dateTarget) return dateTarget;
 
-    // Extract the time portion (everything after the 'T')
     const [, timeComponent] = sourceDateTime.split("T");
-    // Extract the date portion of the target string
     const [dateComponent] = dateTarget.split("T");
 
     if (!timeComponent || !dateComponent) return dateTarget;

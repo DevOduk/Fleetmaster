@@ -49,7 +49,7 @@ export default function SignInForm({ tenant }: Tenant) {
       if (tenant?.trim()) return true;
       return false;
     }
-    
+
     const isAdmin = () => {
       if (typeof window === 'undefined') return false;
       const host = window?.location?.host || '';
@@ -66,24 +66,36 @@ export default function SignInForm({ tenant }: Tenant) {
       return false;
     }
 
-    console.log('is tenant manager: ', isTenantManager(), 'is admin: ', isAdmin(), 'is client: ', isClient())
-
     const result = isTenantManager() ?
       await adminLogin(email, password) :
       await login(isClient() ? 'client' : 'admin', email, password, tenant)
 
     if (result.success) {
       setIsLoggingIn(false);
-      showToast("Success! Login successful, redirecting...", "success");
+      showToast("Success! Login successful, redirecting in 5 seconds...", "success");
 
       setIsRedirecting(true);
 
+      const searchParams = new URLSearchParams(window.location.search);
+      const encodedRef = searchParams.get('url');
+
       setTimeout(() => {
+        if (encodedRef) {
+          try {
+            // Decode the URL-encoded path safely
+            const originalUrl = decodeURIComponent(atob(encodedRef));
+            router.push(originalUrl);
+            return; // CRITICAL: Stop execution so it doesn't run the fallback below!
+          } catch (err) {
+            // console.error("Failed to parse redirect URL:", err);
+          }
+        }
+
+        // Fallback only if no encodedRef was found or decoding failed
         router.replace("/");
-      }, 3000);
+      }, 5000);
 
     } else {
-      console.error(result.error);
       showToast(result.error || "Invalid credentials", "error");
       setIsLoggingIn(false);
     }

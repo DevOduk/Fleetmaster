@@ -7,19 +7,15 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import { CircularProgress } from "@mui/material";
-import { useBooking } from "@/context/BookingContext";
 
-export const CalendarWrapper = ({
-  isMarkedUnavailable,
+export const CalendarComponent = ({
   dateString,
-  vehicleId
+  bookedDates
 }: {
-  isMarkedUnavailable: boolean;
   dateString: string;
-  vehicleId: number;
+  bookedDates: any[];
 }) => {
   const [isDark, setIsDark] = useState(false);
-  const { bookings, loading } = useBooking();
 
   // Theme observer for dark mode sync
   useEffect(() => {
@@ -34,28 +30,6 @@ export const CalendarWrapper = ({
     return () => observer.disconnect();
   }, []);
 
-  // Calculate all booked date strings for this vehicle
-  const bookedDates = useMemo(() => {
-    if (loading) return;
-
-    const vehicleBookings = bookings?.filter((b) => b.vehicle_id === vehicleId);
-    const vehicleBookedDates = vehicleBookings.filter((b) => b.booking_status === "Booked");
-
-    return vehicleBookedDates.flatMap((booking) => {
-      const start = dayjs(booking.rental_start);
-      const end = dayjs(booking.rental_end);
-      const days = [];
-      let current = start;
-
-      while (current.isBefore(end) || current.isSame(end, "day")) {
-        days.push(current.format("YYYY-MM-DD"));
-        current = current.add(1, "day");
-      }
-      return days;
-    });
-  }, [vehicleId, bookings]);
-
-
 
   const theme = useMemo(() => createTheme({
     palette: {
@@ -68,9 +42,9 @@ export const CalendarWrapper = ({
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        {loading ? <div className="w-full flex-col h-90 mb-5 gap-3 border-gray-600 rounded-2xl flex items-center justify-center text-green-500 text-center">
+        {!bookedDates ? <div className="w-full flex-col h-90 mb-5 gap-3 border-gray-600 rounded-2xl flex items-center justify-center text-green-500 text-center">
           <CircularProgress size={25} color="success" />
-          Just a moment! Assessing booked dates ...
+          Just a moment!
         </div> :
           <DateCalendar
             defaultValue={dayjs(dateString)}
@@ -86,29 +60,18 @@ export const CalendarWrapper = ({
             sx={{
               width: "100%",
               backgroundColor: "transparent",
-              // MuiButtonBase-root MuiPickerDay-root css-1cqb494-MuiButtonBase-root-MuiPickerDay-root
-              ...(isMarkedUnavailable && {
-                "& .MuiPickerDay-root": {
-                  backgroundColor: "#ff00003f !important", // Tailwind red-500
-                  borderRadius: "50%",
-                  opacity: "1 !important",
-                  "&:hover": {
-                    backgroundColor: "#ff000060 !important", // Tailwind red-600
-                  },
-                },
-              }),
               // Target any button that has a 'data-date' matching our booked list
               // This is the trick: We use a template literal to build a CSS selector
               ...bookedDates?.reduce((acc, date) => ({
                 ...acc,
                 [`& button[data-date="${date}"]`]: {
-                  backgroundColor: "red !important",
+                  backgroundColor: "green !important",
                   color: "#ffffff !important",
                   borderRadius: "50%",
                   fontWeight: "bold",
                   opacity: "1 !important",
                   "&:hover": {
-                    backgroundColor: "red !important",
+                    backgroundColor: "green !important",
                   },
                 },
               }), {}),

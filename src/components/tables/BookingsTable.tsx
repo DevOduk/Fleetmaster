@@ -180,11 +180,10 @@ export default function BookingsTable() {
                             <Badge
                               size="sm"
                               color={
-                                booking.booking_status === "Active"
-                                  ? "error"
-                                  : booking.booking_status === "Reserved"
-                                    ? "primary"
-                                    : "success"
+                                booking.booking_status === "Booked" ? "primary" :
+                                  booking.booking_status === "Active" ? 'success' :
+                                    booking.booking_status === "Completed" ? 'info' :
+                                      "warning"
                               }
                             >
                               {booking.booking_status}
@@ -193,15 +192,14 @@ export default function BookingsTable() {
                           <TableCell className="px-4 flex gap-3 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                             <Link href={'/bookings/' + booking.id + '/edit'}>
                               <button
-                                className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+                                className="flex text-nowrap items-center border justify-center p-2 px-4 font-medium text-green-500 border-green-500 rounded-lg bg-transparent text-theme-sm hover:bg-green-600 hover:text-white"
                               >
                                 Edit <PencilIcon className="ml-1" />
                               </button>
                             </Link>
                             <Link href={'/bookings/' + booking.id}>
-
                               <button
-                                className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+                                className="flex text-nowrap items-center justify-center p-2 px-4 font-medium text-white rounded-lg bg-brand-500 border border-brand-500 text-theme-sm hover:bg-brand-600"
                               >
                                 View <ArrowRightIcon />
                               </button>

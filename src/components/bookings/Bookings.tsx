@@ -8,10 +8,11 @@ import { useAdminBooking } from "@/context/AdminBookingContext";
 import { ArrowUpIcon } from "@/icons";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 import Badge from "../ui/badge/Badge";
+import CachedIcon from "@mui/icons-material/Cached"
 
 
 const Bookings: React.FC = () => {
-  const { bookings } = useAdminBooking();
+  const { bookings, reloadBookings } = useAdminBooking();
   const isDarkMode =
     typeof window !== "undefined" &&
     document.documentElement.classList.contains("dark");
@@ -41,36 +42,36 @@ const Bookings: React.FC = () => {
     return () => observer.disconnect();
   }, [isDarkMode]);
 
-const now = new Date();
-const currentMonth = now.getMonth();
-const currentYear = now.getFullYear();
-const today = now.getDate(); // 1-31
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const today = now.getDate(); // 1-31
 
-// 1. Daily Bookings (Today)
-const totalCountToday = bookings?.filter(b => {
-  const d = new Date(b.created_at);
-  return d.getDate() === today && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-}).length || 0;
+  // 1. Daily Bookings (Today)
+  const totalCountToday = bookings?.filter(b => {
+    const d = new Date(b.created_at);
+    return d.getDate() === today && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  }).length || 0;
 
-// 2. Weekly Bookings (Current week, assuming Monday start)
-const startOfWeek = new Date(now);
-startOfWeek.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
-startOfWeek.setHours(0, 0, 0, 0);
+  // 2. Weekly Bookings (Current week, assuming Monday start)
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
+  startOfWeek.setHours(0, 0, 0, 0);
 
-const totalCountThisWeek = bookings?.filter(b => {
-  const d = new Date(b.created_at);
-  return d >= startOfWeek;
-}).length || 0;
+  const totalCountThisWeek = bookings?.filter(b => {
+    const d = new Date(b.created_at);
+    return d >= startOfWeek;
+  }).length || 0;
 
-// 3. Monthly Bookings
-const totalCountThisMonth = bookings?.filter(b => {
-  const d = new Date(b.created_at);
-  return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-}).length || 0;
+  // 3. Monthly Bookings
+  const totalCountThisMonth = bookings?.filter(b => {
+    const d = new Date(b.created_at);
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  }).length || 0;
 
-// 4. Average Daily Bookings (This month)
-// Formula: Total monthly bookings / Days passed so far this month
-const averageDailyThisMonth = today > 0 ? (totalCountThisMonth / today).toFixed(1) : 0;
+  // 4. Average Daily Bookings (This month)
+  // Formula: Total monthly bookings / Days passed so far this month
+  const averageDailyThisMonth = today > 0 ? (totalCountThisMonth / today).toFixed(1) : 0;
 
   return (
     <div>
@@ -110,18 +111,7 @@ const averageDailyThisMonth = today > 0 ? (totalCountThisMonth / today).toFixed(
               badge: { text: "9.05%", color: "success" as const, icon: <ArrowUpIcon className="text-success-500" /> },
             },
           ].map((p, i) => (
-            <>
-              {/* <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6" key={i}>
-                <h4 className="text-md text-black dark:text-white">
-                  {p?.title}
-                </h4>
-                <h2 className="text-2xl mt-3 mb-2 dark:text-gray-300 text-gray-600 font-bold">{p?.value ? Number(p.value).toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : "0"}</h2>
-                <p className="text-gray-500 text-sm">
-                  {p?.description}
-                </p>
-              </div> */}
-
-                    <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6 space-y-3" key={i}>
+              <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6 space-y-3" key={i}>
                 <span className="text-lg font-bold text-gray-800 dark:text-gray-300">
                   {p.title}
                 </span>
@@ -138,7 +128,6 @@ const averageDailyThisMonth = today > 0 ? (totalCountThisMonth / today).toFixed(
                   {p.description}
                 </div>
               </div>
-            </>
           ))}
         </div>
         <div className="flex justify-between py-3 items-center">
@@ -146,13 +135,22 @@ const averageDailyThisMonth = today > 0 ? (totalCountThisMonth / today).toFixed(
             <p className="font-medium text-gray-800 mb-2 text-theme-sm dark:text-white/90">View all bookings and manage them. Click Create New Booking to add a new booking.</p>
             <span className="text-gray-500 text-start text-theme-sm dark:text-gray-400">{bookings?.length || 0} Bookings | {bookings?.filter((b: any) => b.status === "Active").length || 0} Active | 93 Average per Day</span>
           </div>
-          <Link href="/bookings/new">
-            <button
-              className="flex items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
-            >
-              Create New Booking
-            </button>
-          </Link>
+          <div className="flex items-center gap-3">
+            
+      <button onClick={() => reloadBookings()}
+        className="flex ms-auto gap-3 items-center rounded-lg justify-center p-2 px-3 font-medium text-gray-500 bg-gray-800 text-theme-sm hover:bg-gray-800/70"
+      >
+        <CachedIcon /> Sync now
+      </button>
+            
+            <Link href="/bookings/new">
+              <button
+                className="flex items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+              >
+                Create New Booking
+              </button>
+            </Link>
+          </div>
         </div>
         <BookingsTable />
         <Pagination onPageChange={() => 2} currentPage={1} totalPages={1} />

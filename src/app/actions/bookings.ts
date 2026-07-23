@@ -71,3 +71,12 @@ export async function fetchBookingsForClient(userId: string) {
 
   return { data, success: !error, error };
 }
+
+export async function createNewBooking(bookingDetails: any) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('fleetmaster_bookings')
+    .insert(bookingDetails);
+
+  return { data, success: !error, error };
+}

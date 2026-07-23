@@ -1,51 +1,53 @@
-"use client"
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import TextArea from '@/components/form/input/TextArea';
 import Button from '@/components/ui/button/Button';
 import VehicleNotFound from '@/components/vehicles/NotFound';
 import Link from 'next/link';
-import { use } from 'react';
 import isBetween from 'dayjs/plugin/isBetween';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { Box, Chip } from '@mui/material';
 dayjs.extend(isBetween);
 import LocalGasStationOutlinedIcon from '@mui/icons-material/LocalGasStationOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
-import { useAdminFleet } from '@/context/AdminFleetContext';
-import { useAdminBooking } from '@/context/AdminBookingContext';
 import { AdminCalendarWrapper } from '@/components/calendar/AdminCalendarWrapper';
-
+import { fetchVehicleDetails } from '@/app/actions/vehicles';
+import type { Metadata } from 'next';
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string }>;
 }
 
+export async function generateMetadata({ params }: VehiclePageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const vehicleID = resolvedParams.vehicleID;
+
+  const response = await fetchVehicleDetails(Number(vehicleID));
+  const vehicle = response?.data;
+
+  if (!vehicle) {
+    return {
+      title: 'Vehicle Not Found | Fleetmaster',
+      description: 'The requested vehicle could not be found.',
+    };
+  }
+
+  return {
+    title: `${vehicle.make} ${vehicle.model} ${vehicle.year} | Fleetmaster`,
+    description: vehicle.description || `Rent or manage the ${vehicle.year} ${vehicle.make} ${vehicle.model} on Fleetmaster.`,
+  };
+}
+
 const breadcrumbItems = [{ label: "Vehicles", href: "/vehicles" }];
 
-const VehiclePage = ({ params }: VehiclePageProps) => {
-  const resolvedParams = use(params);
-    const { bookings } = useAdminBooking();
-
-  const { vehicles } = useAdminFleet();
+const VehiclePage = async ({ params }: VehiclePageProps) => {
+  const resolvedParams = await params;
   const vehicleID = resolvedParams.vehicleID;
-  const VehicleDetails = vehicles.find(v => v.id === parseInt(vehicleID));
-  const allVehicleBookings = bookings.filter((booking) => booking.vehicleId === parseInt(vehicleID))
 
-  const bookedDateStrings = allVehicleBookings.flatMap((booking) => {
-    const start = dayjs(booking.rentalStart);
-    const end = dayjs(booking.rentalEnd);
-    const days = [];
-
-    let current = start;
-    while (current.isBefore(end) || current.isSame(end, 'day')) {
-      days.push(current.format('YYYY-MM-DD'));
-      current = current.add(1, 'day');
-    }
-    return days;
-  });
+  const response = await fetchVehicleDetails(Number(vehicleID));
+  const VehicleDetails = response?.data;
 
   if (!VehicleDetails) {
-    return <VehicleNotFound />
+    return <VehicleNotFound />;
   }
 
   return (
@@ -78,8 +80,7 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                   }`}>
                   {VehicleDetails.status}
                 </span>
-                <span className='px-3 bg-green-100 text-green-700 ms-3 py-1 rounded-full text-xs font-sm mt-2 mb-1 ' color='success'>Self Driven</span>
-
+                <span className='px-3 bg-green-100 text-green-700 ms-3 py-1 rounded-full text-xs font-sm mt-2 mb-1'>Self Driven</span>
               </div>
             </div>
 
@@ -87,16 +88,14 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
               <Box className='flex gap-2' sx={{ position: 'absolute', top: 10, right: 10 }}>
                 <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<LocalGasStationOutlinedIcon fontSize='small' />} label={VehicleDetails.fuel_type} />
                 <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<PeopleAltOutlinedIcon fontSize='small' />} label={VehicleDetails.seats + ' Seats'} />
-
               </Box>
               <img src={VehicleDetails.image_url} alt={`${VehicleDetails.make} ${VehicleDetails.model}`} className="w-full object-cover rounded-xl mb-8 aspect-video" />
             </div>
 
             <div>
               <p className="text-gray-400">Description</p>
-              <TextArea readOnly value={VehicleDetails.description} className='mt-3' />
+              <p className='mt-3 text-gray-500 dark:text-white font-sm' >{VehicleDetails.description}</p>
             </div>
-
 
             <div className="grid grid-cols-2 gap-y-4 mt-6">
               <div>
@@ -108,11 +107,11 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.seats}</p>
               </div>
               <div>
-                <p className="text-gray-400">Exterrior Color</p>
+                <p className="text-gray-400">Exterior Color</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.color[0]}</p>
               </div>
               <div>
-                <p className="text-gray-400">Interrior Color</p>
+                <p className="text-gray-400">Interior Color</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.color[1]}</p>
               </div>
               <div>
@@ -135,7 +134,6 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
                 <p className="text-gray-400">Location</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.location}</p>
               </div>
-
               <div>
                 <p className="text-gray-400">Next Service Due</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.next_service_due}</p>
@@ -146,7 +144,8 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
               </div>
             </div>
             <Link href={'/vehicles/' + vehicleID + '/edit'}>
-              <Button className='w-full mt-5' size='sm'>Edit Vehicle Details</Button></Link>
+              <Button className='w-full mt-5' size='sm'>Edit Vehicle Details</Button>
+            </Link>
           </div>
         </div>
       </div>

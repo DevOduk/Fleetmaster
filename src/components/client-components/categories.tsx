@@ -16,13 +16,10 @@ export const DefaultCategories = [
 ];
 
 export default function ViewAllCategories({ tenantData }: Tenant) {
-    const { vehicles, loading } = useFleet();
+    const { vehicles } = useFleet();
 
-    // Filter vehicles for this specific tenant
     const myVehicles = vehicles?.filter((v) => v.tenant_id == tenantData?.id) || [];
 
-    // 1. Get unique categories from actual database data
-    // We use a Map to ensure we only get the first instance of each category
     const enrichedCategories = Array.from(
         new Map(myVehicles.map(v => [v.category, v])).values()
     ).map(v => ({
@@ -30,10 +27,8 @@ export default function ViewAllCategories({ tenantData }: Tenant) {
         image_url: v.image_url,
     }));
 
-    // 2. Identify which categories already exist from the database
     const existingCategoryNames = new Set(enrichedCategories.map(c => c.category));
 
-    // 3. Create fallback categories only if they don't already exist in the database
     const fallbackCategories = defaultVehicleImages
         .map((image, i) => ({
             category: DefaultCategories[i],
@@ -41,17 +36,12 @@ export default function ViewAllCategories({ tenantData }: Tenant) {
         }))
         .filter(item => !existingCategoryNames.has(item.category));
 
-    // 4. Combine them
     const allMyCategories = [...enrichedCategories, ...fallbackCategories];
 
     return (
         <div key={tenantData?.id} datatype={tenantData?.slug} className="grid mt-5 grid-cols-2 lg:grid-cols-3 m-auto gap-3 container mb-5">
-            {loading ? (
-                [...Array(3)].map((_, i) => (
-                    <div key={i} className="bg-gray-300 dark:bg-gray-700 animate-pulse shadow rounded-2xl mb-3 aspect-square">
-                    </div>
-                ))
-            ) : allMyCategories.slice(0, 6).map((item) => (
+            {
+             allMyCategories.slice(0, 6).map((item) => (
                 <Link key={item.category} href={`/vehicles?category=${item.category}`} >
                     <div className="mb-3 dark:bg-gray-500/10 bg-gray-500/3 shadow rounded-2xl">
                         <div className='relative'>
@@ -64,7 +54,7 @@ export default function ViewAllCategories({ tenantData }: Tenant) {
                             <img
                                 src={item.image_url}
                                 alt={item.category}
-                                className="w-full object-cover rounded-xl aspect-video"
+                                className="w-full object-cover rounded-xl aspect-4/3"
                             />
                         </div>
                     </div>

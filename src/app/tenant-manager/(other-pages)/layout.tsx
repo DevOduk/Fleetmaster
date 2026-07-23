@@ -45,7 +45,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       : "lg:ml-[90px]";
 
   return (
-    !loading && <div className="min-h-screen xl:flex">
+    !loading && 
+    <div className="min-h-screen xl:flex">
       {/* Sidebar and Backdrop */}
       <AppSidebar />
       <Backdrop />
@@ -71,13 +72,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SettingsProvider>
       <AdminProvider>
-        <AdminProvider>
           <UserProvider>
             <ManagerFleetProvider>
               <AdminLayoutContent>{children}</AdminLayoutContent>
             </ManagerFleetProvider>
           </UserProvider>
-        </AdminProvider>
       </AdminProvider>
     </SettingsProvider>
   );

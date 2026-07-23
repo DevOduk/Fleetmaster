@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchTenantDetails } from "@/app/actions/tenant";
+import { fetchTenantDetails, fetchTenantSubscriptions, updateTenantDetails } from "@/app/actions/tenant";
 import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -12,11 +12,22 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import MobileScreenShareOutlinedIcon from "@mui/icons-material/MobileScreenShareOutlined"
 import Button from "../ui/button/Button";
 import { subscriptionPlans } from "@/data/globalExports";
+import { useModal } from "@/hooks/useModal";
+import { useToast } from "@/context/ToastContext";
+import { createPayment } from "@/app/actions/payments";
+import Alert from "../ui/alert/Alert";
+import { Modal } from "../ui/modal";
+import { ArrowRightIcon } from "@/icons";
 
+export const mpesaPollingIterval = 22000;
 
-
-
-
+interface Subscription {
+  label: string;
+  value: string;
+  amount: number;
+  method: string;
+  date: string;
+}
 
 
 export default function CompanySubscriptionsCard() {
@@ -26,8 +37,21 @@ export default function CompanySubscriptionsCard() {
   const [selectedIndex, setSelectedIndex] = useState(1);
   const [mpesaNumber, setMpesaNumber] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('m-pesa');
-  const [isPaying, setIsPaying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+  const [error, setError] = useState(null);
+  const successModal = useModal();
+  const { showToast } = useToast();
+
+  const defaultSubscription: Subscription = {
+    label: 'Free Trial Plan',
+    value: 'Welcome to fleetmaster crm dashboard where you can manage your rental fleet with ease!',
+    amount: 0,
+    method: 'M-PESA',
+    date: company?.created_at || profile?.fleetmaster_tenants?.created_at
+  };
+
+  const [subscriptionsList, setSubScriptionsList] = useState<Subscription[]>([defaultSubscription]);
 
   useEffect(() => {
     const getTenantDetails = async () => {
@@ -37,7 +61,12 @@ export default function CompanySubscriptionsCard() {
       }
       if (profile?.tenant_id) {
         const res = await fetchTenantDetails(profile.tenant_id);
+        const subRes = await fetchTenantSubscriptions(profile.tenant_id);
+
+        console.log(subRes)
         setCompany(res.data);
+        setSubScriptionsList([...(subRes.data || []), defaultSubscription]);
+
         if (res) {
           setLoadingCompany(false);
         }
@@ -47,10 +76,396 @@ export default function CompanySubscriptionsCard() {
     getTenantDetails();
   }, [profile?.tenant_id]);
 
-  const handleCheckoutSubmit = async () => {
-    // implement ptment and expense, pyment, company profile update here; start with payment, then expenses then update profile 
-    
+  const grandTotalAmount = parseInt(subscriptionPlans[selectedIndex].price);
+
+  const createNewPayment = async () => {
+    setError(null);
+
+    if (!profile) {
+      showToast('Please sign in to your account to renew subscription!', 'error');
+      return;
+    }
+    if (paymentMethod === 'm-pesa' && !mpesaNumber) {
+      showToast('Please enter a valid M-Pesa phone number!', 'error');
+      return;
+    }
+
+    setIsPaying(true);
+
+    if (paymentMethod === 'm-pesa') {
+      showToast('Processing your security checks...', 'info');
+
+      let sanitizedNumber = mpesaNumber.replace(/\D/g, '');
+      if (sanitizedNumber.startsWith('0')) {
+        sanitizedNumber = `254${sanitizedNumber.substring(1)}`;
+      } else if (sanitizedNumber.startsWith('7') || sanitizedNumber.startsWith('1')) {
+        sanitizedNumber = `254${sanitizedNumber}`;
+      }
+
+      if (sanitizedNumber.length !== 12) {
+        showToast('Please enter a valid 9 or 10-digit M-Pesa phone number.', 'error');
+        setIsPaying(false);
+        return;
+      }
+
+      let intervalId: NodeJS.Timeout | null = null;
+      let safetyTimeoutId: NodeJS.Timeout | null = null;
+
+      const clearPollingTimers = () => {
+        if (intervalId) clearInterval(intervalId);
+        if (safetyTimeoutId) clearTimeout(safetyTimeoutId);
+      };
+
+      try {
+        // --- 1. CALL YOUR CUSTOM DARAJA STK ROUTE ---
+        const res = await fetch('/api/mpesa/stk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: Number(grandTotalAmount),
+            phoneNumber: sanitizedNumber,
+          })
+        });
+
+        const data = await res.json();
+        console.log('Daraja STK Response: ', data);
+
+        if (!res.ok || data.ResponseCode !== "0") {
+          throw new Error(data.errorMessage || data.ResponseDescription || 'Failed to dispatch M-Pesa push.');
+        }
+
+        const targetCheckoutId = data.CheckoutRequestID;
+
+        if (!targetCheckoutId) {
+          throw new Error('No tracking CheckoutRequestID returned from M-Pesa gateway.');
+        }
+
+        showToast('STK Push Request Sent! Please enter your M-Pesa PIN', 'info');
+
+        safetyTimeoutId = setTimeout(() => {
+          clearPollingTimers();
+          setIsPaying(false);
+          setError({ message: 'Payment verification timed out. Please check your Phone and try again.' });
+          showToast('Payment verification timed out. Please check your Phone and try again', 'error');
+        }, 65000);
+
+        // --- 2. POLL DARAJA STATUS ENDPOINT ---
+        intervalId = setInterval(async () => {
+          try {
+            const statusRes = await fetch('/api/mpesa/status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ checkoutRequestID: targetCheckoutId })
+            });
+
+            const statusData = await statusRes.json();
+
+            // Daraja returns ResultCode ('0' = Success, non-zero or user cancellation handles failure)
+            const resultCode = statusData.ResultCode;
+            const responseCode = statusData.ResponseCode;
+            console.log('Daraja status check poll: ', resultCode, responseCode, statusData);
+
+            // If ResultCode is 0, payment succeeded
+            if (resultCode === "0") {
+              clearPollingTimers();
+              setIsPaying(false);
+              showToast('Payment Confirmed! Your subscription renewal has been processed successfully.', 'success');
+              successModal.openModal();
+              setPaymentSuccess(true);
+
+              const mpesaRef = statusData.MpesaReceiptNumber || targetCheckoutId;
+
+              const newPayment = {
+                tenant_id: profile?.tenant_id,
+                intasend_invoice_id: targetCheckoutId,
+                provider: 'M-PESA',
+                provider_reference: mpesaRef,
+                amount: Number(grandTotalAmount),
+                currency: 'KES',
+                account_number: sanitizedNumber,
+                payment_ref: mpesaRef,
+                user_id: profile.id,
+                status: 'Success',
+                message: `Subscription renewal for package: ${subscriptionPlans[selectedIndex]?.name}`,
+              };
+
+              await createPayment(newPayment);
+
+              // 1. Determine the base date to add 30 days to
+              const currentExpiry = company?.expiry_date ? new Date(company.expiry_date).getTime() : 0;
+              const now = new Date().getTime();
+
+              // If current expiry is in the future, add 30 days to it. Otherwise, add to today.
+              const baseTime = currentExpiry > now ? currentExpiry : now;
+              const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+              const newExpiryTimestamp = baseTime + thirtyDaysInMs;
+
+              // 2. Convert to ISO string for Supabase timestamptz compatibility
+              const newExpiryIsoString = new Date(newExpiryTimestamp).toISOString();
+
+              await updateTenantDetails(
+                profile?.tenant_id,
+                {
+                  ...company,
+                  subscription_status: 'Active',
+                  subscription_plan: subscriptionPlans[selectedIndex]?.name,
+                  expiry_date: newExpiryIsoString
+                }
+              );
+
+              const subRes = await fetchTenantSubscriptions(profile.tenant_id);
+              setSubScriptionsList([...(subRes.data || []), defaultSubscription]);
+
+            } else if (resultCode && resultCode !== "0" && resultCode !== "4999") {
+              // ResultCode exists and is not 0 (User canceled, insufficient funds, etc.)
+              clearPollingTimers();
+              setIsPaying(false);
+              const failReason = statusData.ResultDesc || 'Transaction was canceled or failed.';
+              showToast(failReason, 'error');
+              setError({ message: failReason });
+
+              const newPayment = {
+                tenant_id: profile.tenant_id,
+                intasend_invoice_id: targetCheckoutId,
+                provider: 'M-PESA',
+                provider_reference: targetCheckoutId,
+                amount: Number(grandTotalAmount),
+                currency: 'KES',
+                account_number: sanitizedNumber,
+                payment_ref: targetCheckoutId,
+                user_id: profile.id,
+                status: 'Failed',
+                message: 'Subscription renewal failure: ' + failReason,
+              };
+
+              await createPayment(newPayment);
+            }
+            // If ResultCode is undefined, it means transaction is still processing on Safaricom's side; keep polling.
+          } catch (pollErr) {
+            console.error("Error during background status poll checking:", pollErr);
+          }
+        }, mpesaPollingIterval);
+
+      } catch (err: any) {
+        setError(err);
+        console.error("Direct STK Push Failed:", err);
+        showToast(err.message || 'M-Pesa STK verification failed.', 'error');
+        setIsPaying(false);
+      }
+    } else {
+      showToast('Card payment checkout not available! Consult support.', 'error');
+      setIsPaying(false);
+      setError({ message: 'Card payment checkout not available! Consult support.' })
+
+      return;
+    }
   };
+
+  // const handleCheckoutSubmit = async () => {
+  //   setError(null);
+
+  //   if (!profile) {
+  //     showToast('Please sign in to your account to place a booking!', 'error');
+  //     return;
+  //   }
+  //   if (paymentMethod === 'm-pesa' && !mpesaNumber) {
+  //     showToast('Please enter a valid M-Pesa phone number!', 'error');
+  //     return;
+  //   }
+
+  //   setIsPaying(true);
+  //   const firstName = profile?.first_name;
+  //   const lastName = profile?.last_name;
+
+  //   // --- BRANCH 1: ONE-CLICK DIRECT M-PESA STK PUSH (NO MODAL) ---
+  //   if (paymentMethod === 'm-pesa') {
+  //     showToast('Processing your security checks...', 'info');
+
+  //     // --- SANITIZE AND NORMALIZE PHONE NUMBER INPUT ---
+  //     let sanitizedNumber = mpesaNumber.replace(/\D/g, '');
+
+  //     if (sanitizedNumber.startsWith('0')) {
+  //       sanitizedNumber = `254${sanitizedNumber.substring(1)}`;
+  //     } else if (sanitizedNumber.startsWith('7') || sanitizedNumber.startsWith('1')) {
+  //       sanitizedNumber = `254${sanitizedNumber}`;
+  //     } else if (sanitizedNumber.startsWith('254') && sanitizedNumber.length > 3) {
+  //       // Already formatted
+  //     } else {
+  //       console.warn("Phone formatting fallback pattern encountered:", sanitizedNumber);
+  //     }
+
+  //     if (sanitizedNumber.length !== 12) {
+  //       showToast('Please enter a valid 9 or 10-digit M-Pesa phone number.', 'error');
+  //       setIsPaying(false);
+  //       return;
+  //     }
+
+  //     let intervalId: NodeJS.Timeout | null = null;
+  //     let safetyTimeoutId: NodeJS.Timeout | null = null;
+
+  //     const clearPollingTimers = () => {
+  //       if (intervalId) clearInterval(intervalId);
+  //       if (safetyTimeoutId) clearTimeout(safetyTimeoutId);
+  //     };
+
+  //     try {
+  //       // --- ATOMIC BACKEND PIPELINE TRIGGER ---
+  //       const res = await fetch('/api/intasend/stk', {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({
+  //           amount: Number(grandTotalAmount),
+  //           phone: sanitizedNumber,
+  //           email: profile?.email,
+  //           firstName,
+  //           lastName
+  //         })
+  //       });
+
+  //       const data = await res.json();
+  //       console.log('intasend stk response: ', res);
+
+  //       if (!res.ok) {
+  //         throw new Error(data.error || 'Failed to dispatch payment payload.');
+  //       }
+
+  //       const targetInvoiceId = data.invoice?.invoice_id || data.id;
+
+  //       if (!targetInvoiceId) {
+  //         throw new Error('No tracking invoice ID returned from billing gateway.');
+  //       }
+
+  //       showToast('STK Push Request Sent! Please enter your M-Pesa PIN', 'info');
+
+  //       // Safety lifecycle fallback boundary loop limit (2 minutes)
+  //       safetyTimeoutId = setTimeout(() => {
+  //         clearPollingTimers();
+  //         setIsPaying(false);
+  //         setError({ message: 'Payment verification timed out. Please check your Phone and try gain.' })
+  //         showToast('Payment verification timed out. Please check your Phone and try again', 'error');
+  //       }, 60000);
+
+  //       intervalId = setInterval(async () => {
+  //         try {
+  //           const statusRes = await fetch('/api/intasend/status', {
+  //             method: 'POST',
+  //             headers: { 'Content-Type': 'application/json' },
+  //             body: JSON.stringify({ invoice_id: targetInvoiceId })
+  //           });
+
+  //           const statusData = await statusRes.json();
+  //           console.log('status check poll: ', statusData);
+
+  //           // Safely map nested or flat invoice properties
+  //           const invoiceObj = statusData.data?.invoice || statusData.invoice || {};
+  //           const paymentState = (statusData.state || invoiceObj.state || '').toUpperCase();
+
+  //           const mpesaRef = invoiceObj.mpesa_reference ||
+  //             invoiceObj.provider_ref ||
+  //             `ST-${targetInvoiceId}`;
+
+  //           if (paymentState === 'COMPLETE' || paymentState === 'SUCCESS') {
+  //             clearPollingTimers();
+  //             setIsPaying(false);
+  //             showToast('Payment Confirmed! Your subscription renewal has been processed successfully.', 'success');
+  //             successModal.openModal();
+  //             setPaymentSuccess(true);
+
+  //             const newPayment = {
+  //               tenant_id: profile?.tenant_id,
+  //               intasend_invoice_id: invoiceObj.invoice_id || targetInvoiceId,
+  //               provider: invoiceObj.provider || 'M-PESA',
+  //               provider_reference: invoiceObj.provider_ref || mpesaRef,
+  //               amount: Number(grandTotalAmount),
+  //               currency: invoiceObj.currency || 'KES',
+  //               account_number: invoiceObj.account || profile?.tenant_id,
+  //               payment_ref: mpesaRef,
+  //               user_id: profile.id,
+  //               status: 'Success',
+  //               message: `Subscription renewal for package: ${subscriptionPlans[selectedIndex]?.name}`,
+  //             };
+
+  //             const paymentRes = await createPayment(newPayment);
+
+  //             // Calculate 30 days from now in milliseconds
+  //             const thirtyDaysFromNow = new Date().getTime() + (30 * 24 * 60 * 60 * 1000);
+
+  //             // FIXED: Pass only the primitive properties without spreading nested relations
+  //             const updateTenantRes = await updateTenantDetails(
+  //               profile?.tenant_id,
+  //               {
+  //                 subscription_status: 'Active',
+  //                 subscription_plan: subscriptionPlans[selectedIndex]?.name,
+  //                 expiry_date: thirtyDaysFromNow
+  //               }
+  //             );
+
+  //             if (paymentRes.success) {
+  //               // payment logged successfully
+  //             }
+  //             if (updateTenantRes.success) {
+  //               // tenant updated successfully
+  //             }
+  //             console.log("Database tenant update response:", updateTenantRes);
+
+  //           } else if (paymentState === 'FAILED') {
+  //             clearPollingTimers();
+  //             setIsPaying(false);
+  //             const failReason = invoiceObj.failed_reason || 'Transaction was declined, canceled, or timed out.';
+  //             showToast(failReason, 'error');
+  //             setError({ message: failReason });
+
+  //             const newPayment = {
+  //               tenant_id: profile.tenant_id,
+  //               intasend_invoice_id: invoiceObj.invoice_id || targetInvoiceId,
+  //               provider: invoiceObj.provider || 'M-PESA',
+  //               provider_reference: invoiceObj.provider_ref || `ST-${targetInvoiceId}`,
+  //               amount: Number(grandTotalAmount),
+  //               currency: invoiceObj.currency || 'KES',
+  //               account_number: invoiceObj.account || profile?.tenant_id,
+  //               payment_ref: targetInvoiceId,
+  //               user_id: profile.id,
+  //               status: 'Failed',
+  //               message: 'Subscription renewal failure: ' + failReason,
+  //             };
+
+  //             await createPayment(newPayment);
+  //           }
+  //           // If state is 'PROCESSING', the loop simply waits for the next interval tick.
+  //         } catch (pollErr) {
+  //           console.error("Error during background status poll checking:", pollErr);
+  //         }
+  //       }, 5000);
+
+  //     } catch (err: any) {
+  //       setError(err);
+  //       console.error("Direct STK Push Failed:", err);
+  //       showToast(err.message || 'M-Pesa STK verification failed.', 'error');
+  //       setIsPaying(false);
+  //     }
+
+  //     // --- BRANCH 2: SECURE CARD CHECKOUT via BACKEND INLINE MODAL ---
+  //   } else {
+  //     showToast('Card payment checkout not available! Consult support.', 'error');
+  //     setIsPaying(false);
+  //     return;
+  //   }
+  // };
+
+
+
+
+
+  useEffect(() => {
+    if (!document.getElementById("intasend-inline-sdk")) {
+      const script = document.createElement("script");
+      script.id = "intasend-inline-sdk";
+      script.src = "https://unpkg.com/intasend-checkout-sdk";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
 
   if (!profile || !profile.tenant_id || loadingCompany) {
     return (
@@ -123,6 +538,70 @@ export default function CompanySubscriptionsCard() {
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
       <ExpiryBanner plan={company.subscription_plan} expiryDate={company.expiry_date} />
+
+
+      <Modal
+        isOpen={successModal.isOpen}
+        onClose={successModal.closeModal}
+        className="max-w-150 p-5 lg:p-10 z-99999"
+      >
+        <div className="text-center">
+          <div className="relative flex items-center justify-center z-1 mb-7">
+            <svg
+              className="fill-success-50 dark:fill-success-500/15"
+              width="90"
+              height="90"
+              viewBox="0 0 90 90"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z"
+                fill=""
+                fillOpacity=""
+              />
+            </svg>
+
+            <span className="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+              <svg
+                className="fill-success-600 dark:fill-success-500"
+                width="38"
+                height="38"
+                viewBox="0 0 38 38"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M5.9375 19.0004C5.9375 11.7854 11.7864 5.93652 19.0014 5.93652C26.2164 5.93652 32.0653 11.7854 32.0653 19.0004C32.0653 26.2154 26.2164 32.0643 19.0014 32.0643C11.7864 32.0643 5.9375 26.2154 5.9375 19.0004ZM19.0014 2.93652C10.1296 2.93652 2.9375 10.1286 2.9375 19.0004C2.9375 27.8723 10.1296 35.0643 19.0014 35.0643C27.8733 35.0643 35.0653 27.8723 35.0653 19.0004C35.0653 10.1286 27.8733 2.93652 19.0014 2.93652ZM24.7855 17.0575C25.3713 16.4717 25.3713 15.522 24.7855 14.9362C24.1997 14.3504 23.25 14.3504 22.6642 14.9362L17.7177 19.8827L15.3387 17.5037C14.7529 16.9179 13.8031 16.9179 13.2173 17.5037C12.6316 18.0894 12.6316 19.0392 13.2173 19.625L16.657 23.0647C16.9383 23.346 17.3199 23.504 17.7177 23.504C18.1155 23.504 18.4971 23.346 18.7784 23.0647L24.7855 17.0575Z"
+                  fill=""
+                />
+              </svg>
+            </span>
+          </div>
+          <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90 sm:text-title-sm">
+            Confirmed! Payment Successful.
+          </h4>
+          <p className="text-sm leading-6 text-gray-500 dark:text-gray-400">
+            Your payment was successful. A receipt and your subscription details have been sent to your email. If you have any questions, contact support.                </p>
+
+          <div className="flex items-center justify-center w-full gap-3 mt-7">
+            <a href="/">
+              <Button size="sm" variant="outline" endIcon={<ArrowRightIcon />} >
+                Go to Dashboard
+              </Button>
+            </a>
+            <button
+              type="button"
+              onClick={successModal.closeModal}
+              className="flex justify-center w-full px-4 py-3 text-sm font-medium text-white rounded-lg bg-success-500 shadow-theme-xs hover:bg-success-600 sm:w-auto"
+            >
+              Okay, Got It
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Header Section */}
       <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5 dark:border-gray-800">
@@ -199,169 +678,185 @@ export default function CompanySubscriptionsCard() {
               ))
             }
           </div>
+          <div className="max-w-4xl container mx-auto">
 
 
-          {/* Billing Gateway Gateway Interface Config */}
-          <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">3. Choose Payment Method</h4>
-          <FormControl component="fieldset" className="w-full mb-6">
-            {/* Use ONE RadioGroup mapped directly to your state variable */}
-            <RadioGroup
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              className="space-y-3"
-            >
-              {/* M-Pesa Option Layout Box */}
-              <div
-                onClick={() => setPaymentMethod('m-pesa')}
-                className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'm-pesa'
-                  ? 'border-brand-500 bg-brand-50/5'
-                  : 'border-gray-200 dark:border-gray-800'
-                  }`}
+            {/* Billing Gateway Gateway Interface Config */}
+            <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Choose Payment Method</h4>
+            <FormControl component="fieldset" className="w-full mb-6">
+              {/* Use ONE RadioGroup mapped directly to your state variable */}
+              <RadioGroup
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="space-y-3"
               >
-                <FormControlLabel
-                  value="m-pesa"
-                  control={<Radio size="small" />}
-                  label={
-                    <div className="flex items-center gap-2">
-                      <MobileScreenShareOutlinedIcon className="text-brand-500" fontSize="small" />
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">M-Pesa Instant PayBill</span>
-                    </div>
-                  }
-                />
-              </div>
-
-              {/* Card Option Layout Box */}
-              <div
-                onClick={() => setPaymentMethod('card')}
-                className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'card'
-                  ? 'border-brand-500 bg-brand-50/5'
-                  : 'border-gray-200 dark:border-gray-800'
-                  }`}
-              >
-                <FormControlLabel
-                  value="card"
-                  control={<Radio size="small" />}
-                  label={
-                    <div className="flex items-center gap-2">
-                      <CreditCardIcon className="text-brand-500" fontSize="small" />
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">Bank Instant Checkout (VISA/MASTER Card)</span>
-                    </div>
-                  }
-                />
-              </div>
-            </RadioGroup>
-          </FormControl>
-
-          <div className="mt-4 mb-4 transition-all duration-200">
-            {paymentMethod === 'm-pesa' && (
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                  M-Pesa Mobile Number
-                </label>
-                <div className="relative mt-2">
-                  <Input
-                    type="tel"
-                    placeholder="e.g., 0712345678"
-                    className="pl-15.5"
-                    defaultValue={company?.phone}
-                    value={mpesaNumber || company?.phone}
-                    onChange={(e) => setMpesaNumber(e.target.value)}
-                    disabled={isPaying}
+                {/* M-Pesa Option Layout Box */}
+                <div
+                  onClick={() => setPaymentMethod('m-pesa')}
+                  className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'm-pesa'
+                    ? 'border-brand-500 bg-brand-50/5'
+                    : 'border-gray-200 dark:border-gray-800'
+                    }`}
+                >
+                  <FormControlLabel
+                    value="m-pesa"
+                    control={<Radio size="small" />}
+                    label={
+                      <div className="flex items-center gap-2">
+                        <MobileScreenShareOutlinedIcon className="text-brand-500" fontSize="small" />
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">M-Pesa Instant PayBill</span>
+                      </div>
+                    }
                   />
-                  <span className="absolute left-0 top-1/2 flex text-sm h-11 w-13.75 dark:text-white -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
-                    +254
-                  </span>
                 </div>
-              </div>
-            )}
 
-            {paymentMethod === 'card' && (
-              <div className="space-y-4">
-                {/* Card Number Row */}
+                {/* Card Option Layout Box */}
+                <div
+                  onClick={() => setPaymentMethod('card')}
+                  className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'card'
+                    ? 'border-brand-500 bg-brand-50/5'
+                    : 'border-gray-200 dark:border-gray-800'
+                    }`}
+                >
+                  <FormControlLabel
+                    value="card"
+                    control={<Radio size="small" />}
+                    label={
+                      <div className="flex items-center gap-2">
+                        <CreditCardIcon className="text-brand-500" fontSize="small" />
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">Bank Instant Checkout (VISA/MASTER Card)</span>
+                      </div>
+                    }
+                  />
+                </div>
+              </RadioGroup>
+            </FormControl>
+
+            <div className="mt-4 mb-4 transition-all duration-200">
+              {paymentMethod === 'm-pesa' && (
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                    Card Details
+                    M-Pesa Mobile Number
                   </label>
                   <div className="relative mt-2">
                     <Input
-                      type="text"
-                      placeholder="Card number"
+                      type="tel"
+                      placeholder="e.g., 0712345678"
                       className="pl-15.5"
-                    // value={cardNumber}
-                    // onChange={(e) => setCardNumber(e.target.value)}
+                      defaultValue={company?.phone}
+                      value={mpesaNumber || company?.phone}
+                      onChange={(e) => setMpesaNumber(e.target.value)}
+                      disabled={isPaying}
                     />
-                    <span className="absolute left-0 top-1/2 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
-                        <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
-                        <path
-                          d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
-                          fill="#FC6020"
-                        />
-                      </svg>
+                    <span className="absolute left-0 top-1/2 flex text-sm h-11 w-13.75 dark:text-white -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                      +254
                     </span>
                   </div>
                 </div>
+              )}
 
-                {/* Expiry and CVV Side-by-Side Row */}
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Expiry Field */}
+              {paymentMethod === 'card' && (
+                <div className="space-y-4">
+                  {/* Card Number Row */}
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                      Expiry Date
+                      Card Details
                     </label>
-                    <Input
-                      type="text"
-                      max={'5'}
-                      placeholder="MM/YY"
-                      className="w-full text-center mt-2"
-                    // value={expiry}
-                    // onChange={(e) => handleExpiryChange(e.target.value)}
-                    />
+                    <div className="relative mt-2">
+                      <Input
+                        type="text"
+                        placeholder="Card number"
+                        className="pl-15.5"
+                      // value={cardNumber}
+                      // onChange={(e) => setCardNumber(e.target.value)}
+                      />
+                      <span className="absolute left-0 top-1/2 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
+                          <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
+                          <path
+                            d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
+                            fill="#FC6020"
+                          />
+                        </svg>
+                      </span>
+                    </div>
                   </div>
 
-                  {/* CVV/CVC Field */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                      Secure Code (CVV)
-                    </label>
-                    <Input
-                      type="password"
-                      max={'4'}
-                      placeholder="•••"
-                      className="w-full text-center tracking-widest mt-2"
-                    // value={cvv}
-                    // onChange={(e) => setCvv(e.target.value)}
-                    />
+                  {/* Expiry and CVV Side-by-Side Row */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Expiry Field */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                        Expiry Date
+                      </label>
+                      <Input
+                        type="text"
+                        max={'5'}
+                        placeholder="MM/YY"
+                        className="w-full text-center mt-2"
+                      // value={expiry}
+                      // onChange={(e) => handleExpiryChange(e.target.value)}
+                      />
+                    </div>
+
+                    {/* CVV/CVC Field */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                        Secure Code (CVV)
+                      </label>
+                      <Input
+                        type="password"
+                        max={'4'}
+                        placeholder="•••"
+                        className="w-full text-center tracking-widest mt-2"
+                      // value={cvv}
+                      // onChange={(e) => setCvv(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
 
-          {/* Dynamic Call-To-Action Operations Routing Grid */}
-          <div className="space-y-3 mt-4">
-            <Button onClick={handleCheckoutSubmit} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md' disabled={isPaying || paymentSuccess}>
-              {isPaying
-                ? "Processing Transaction..."
-                : `Pay Now (Ksh. ${(parseInt(subscriptionPlans[selectedIndex].price)).toLocaleString()})`
-              }
-            </Button>
+            {
+              isPaying && <Alert title='Payment Processing!' variant='info' message='Your payment is being processed. Check your phone.' />
+            }
+            {
+              paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='Your payment was successful. A receipt and your subscription details have been sent to your email. If you have any questions, contact support.' />
+            }
+
+            {
+              error && <Alert title='Payment Error!' variant='error' message={error?.message || 'An error occured. Please try again later!'} />
+            }
+
+            {/* Dynamic Call-To-Action Operations Routing Grid */}
+            <div className="space-y-3 mt-4">
+              <Button onClick={createNewPayment} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md' disabled={isPaying || paymentSuccess}>
+                {isPaying
+                  ? "Processing Transaction..."
+                  : `Pay Now (Ksh. ${(grandTotalAmount).toLocaleString()})`
+                }
+              </Button>
+            </div>
           </div>
         </ComponentCard>
 
         {/* Operational Settings */}
         <ComponentCard title="Subscription History">
           <div className="grid grid-cols-1 gap-4">
-            <DataPoint label="Expert Plan" value={company.timezone} />
-            <DataPoint label="Free Trial Plan" value={company.language} />
+            {
+              subscriptionsList?.map((c, i) => (
+                <DataPoint key={i} amount={c.amount} method={c.method} date={c.date} label={c.label} value={c.value} />
+              ))
+            }
           </div>
         </ComponentCard>
       </div>
@@ -377,12 +872,15 @@ export default function CompanySubscriptionsCard() {
   );
 }
 
-function DataPoint({ label, value }: { label: string; value: string | null }) {
+function DataPoint({ label, value, amount, method, date }: Subscription) {
   return (
     <div className="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800/30">
       <span className="mb-2 text-[12px] font-bold uppercase tracking-widest text-gray-400">{label}</span>
+      <span className="text-xs text-brand-500 dark:text-brand-400 mb-2 flex items-center">
+        {value}
+      </span>
       <span className="text-sm text-gray-900 dark:text-gray-100 flex items-center">
-        Ksh. 550 | M-PESA | {(new Date()).toLocaleString()}
+        Ksh. {amount.toLocaleString()} | {method} | {(new Date(date)).toLocaleString()}
       </span>
     </div>
   );

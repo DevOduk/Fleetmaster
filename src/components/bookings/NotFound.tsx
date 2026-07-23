@@ -11,7 +11,7 @@ const BookingNotFound = () => {
       <div className="relative mb-6">
         <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-2xl animate-pulse" />
         <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-          <DoNotDisturbAltOutlinedIcon color='error' sx={{fontSize: '4rem'}} />
+          <DoNotDisturbAltOutlinedIcon color='error' sx={{fontSize: '2rem'}} />
         </div>
       </div>
 
@@ -19,7 +19,7 @@ const BookingNotFound = () => {
       <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
         Booking Not Found
       </h1>
-      <p className="mb-8 max-w-sm text-gray-500 dark:text-gray-400">
+      <p className="mb-8 max-w-2xl text-gray-500 dark:text-gray-400">
         The booking you are looking for doesn&apos;t exist or has been removed/deleted. Please check the ID and try again.
       </p>
 

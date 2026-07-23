@@ -14,21 +14,24 @@ import { getTenantAdminDetails } from "@/app/actions/admin";
 import { allCountriesDB, languages, timezones } from "@/data/globalExports";
 import handleProfileUpdate from "@/utils/admins/handleProfileUpdate";
 import { useUser } from "@/context/UserContext";
+import { CheckLineIcon } from "@/icons";
 
 
 
 
 export default function EditSystemUserCard({ userID }: { userID?: string; }) {
   const [profileDetails, setProfileDetails] = useState(null);
+  const [originalProfileDetails, setOriginalProfileDetails] = useState(null);
   const { showToast } = useToast();
   const [backDrop, setBackDrop] = useState(false);
-  const { profile, loading, setProfile } = useUser();
+  const { profile, setProfile } = useUser();
 
   useEffect(() => {
     if (!profile) return;
 
     if (!userID) {
       setProfileDetails(profile);
+      setOriginalProfileDetails(profile);
       return;
     };
 
@@ -37,6 +40,7 @@ export default function EditSystemUserCard({ userID }: { userID?: string; }) {
 
       if (res.success) {
         setProfileDetails(res.data)
+        setOriginalProfileDetails(res.data)
       }
     };
 
@@ -257,7 +261,7 @@ export default function EditSystemUserCard({ userID }: { userID?: string; }) {
           <form className="flex flex-col">
             <div className="px-2 overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <EditableInput placeholder="United States" type="select" options={allCountries()} label="Country" value={profileDetails?.country} onChange={(v) => handleInputChange("country", v)} />
+                <EditableInput placeholder="Select Country" type="select" options={allCountries()} label="Country" value={profileDetails?.country} onChange={(v) => handleInputChange("country", v)} />
                 <EditableInput placeholder="Arizona" type="text" label="City/State" value={profileDetails?.city} onChange={(v) => handleInputChange("city", v)} />
                 <EditableInput placeholder="E9108" type="text" label="Postal Address" value={profileDetails?.postal_code} onChange={(v) => handleInputChange("postal_code", v)} />
                 <EditableInput placeholder="Select user timezone" type="select" label="Timezone" options={allTimezones()} value={profileDetails?.timezone} onChange={(v) => handleInputChange("timezone", v)} />
@@ -270,7 +274,7 @@ export default function EditSystemUserCard({ userID }: { userID?: string; }) {
       </div>
 
 
-      
+
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
         <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
@@ -283,7 +287,8 @@ export default function EditSystemUserCard({ userID }: { userID?: string; }) {
           <form className="flex flex-col">
             <div className="px-2 overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <EditableInput placeholder="Enter password" type="password" label="Password" value={profileDetails?.password} onChange={(v) => handleInputChange("password", v)} />
+                <EditableInput placeholder="Enter old password" type="password" label="Old Password" value={profileDetails?.old_password} onChange={(v) => handleInputChange("old_password", v)} />
+                <EditableInput placeholder="Enter password" type="password" label="New Password" value={profileDetails?.password} onChange={(v) => handleInputChange("password", v)} />
                 <EditableInput placeholder="Confirm password" type="password" label="Confirm Password" value={profileDetails?.confirm_password} onChange={(v) => handleInputChange("confirm_password", v)} />
               </div>
             </div>
@@ -300,8 +305,8 @@ export default function EditSystemUserCard({ userID }: { userID?: string; }) {
             Cancel
           </Button>
         </Link>
-        <Button disabled={!profileDetails} size="sm" onClick={handleSave}>
-          Save Changes
+        <Button variant="success" disabled={!profileDetails || profileDetails === originalProfileDetails} size="sm" onClick={handleSave}>
+          Save Changes <CheckLineIcon />
         </Button>
       </div>
     </>
@@ -315,9 +320,9 @@ function EditableInput({ label, value, onChange, type = "text", disabled, placeh
       <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">{label}</Label>
       {
         type === "select" ?
-          <Select value={value || ""} placeholder={placeholder} onChange={(e) => onChange(e)} options={(options || [])}></Select>
+          <Select value={value || ""} defaultValue={value || ""} placeholder={placeholder} onChange={(e) => onChange(e)} options={(options || [])} />
           :
-          <Input placeholder={placeholder} disabled={disabled} type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="h-9" />
+          <Input placeholder={placeholder} error={label === "New Password"} hint="Password must be atleast 8 characters with a combination of special character, nubers, and letters" disabled={disabled} type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="h-9" />
       }
     </div >
   );

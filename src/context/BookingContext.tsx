@@ -17,7 +17,7 @@ interface BookingContextType {
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
 export const BookingProvider = ({ children }: { children: ReactNode }) => {
-  const { vehicles, loading: fleetLoading } = useFleet();
+  const { vehicles } = useFleet();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const { tenant } = useTenant();

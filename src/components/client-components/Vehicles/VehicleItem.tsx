@@ -83,7 +83,7 @@ function VehicleItem({ VehicleDetails, isBooked, filters }: VehicleDetails) {
                 <p className='font-medium text-right text-xs text-brand-400 mt-2'>Exclusive of VAT</p>
 
                 <Link href={`/vehicles/${VehicleDetails.id}?start=${filters?.start}&end=${filters?.end}`}>
-                    <Button variant='outline' className="w-full mt-3 text-sm! rounded-lg p-3! transition-colors hover:bg-brand-500! hover:text-white hover:border-transparent focus:bg-blue-500 focus:text-white focus:border-transparent focus:outline-hidden active:bg-blue-600 active:text-white active:border-transparent dark:bg-gray-200/10 dark:text-gray-400 dark:border-gray-500 dark:hover:bg-blue-600 dark:hover:text-white dark:hover:border-transparent dark:focus:bg-blue-600 dark:focus:text-white dark:focus:border-transparent dark:active:bg-blue-700 dark:active:text-white dark:active:border-transparent" >
+                    <Button variant='outline' className="w-full mt-3 text-sm! rounded-lg p-3! transition-colors hover:bg-brand-500! hover:text-white hover:border-transparent focus:bg-brand-500 focus:text-white focus:border-transparent focus:outline-hidden active:bg-brand-600 active:text-white active:border-transparent dark:bg-gray-200/10 dark:text-gray-400 dark:border-gray-500 dark:hover:bg-brand-600 dark:hover:text-white dark:hover:border-transparent dark:focus:bg-brand-600 dark:focus:text-white dark:focus:border-transparent dark:active:bg-brand-700 dark:active:text-white dark:active:border-transparent" >
                         See Details
                     </Button>
                 </Link>

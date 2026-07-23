@@ -178,8 +178,11 @@ export const accountItems: NavItem[] = [
   },
   {
     icon: <EmojiTransportationOutlinedIcon />,
-    name: "Company Profile",
-    path: "/company-profile",
+    name: "Company",
+    subItems: [
+      { name: "Profile", path: "/company-profile", pro: false },
+      { name: "Subscriptions", path: "/company-profile/subscription", pro: false, new: false },
+    ],
   },
   {
     icon: <ManageAccountsOutlinedIcon />,
@@ -461,6 +464,7 @@ const AppSidebar: React.FC = () => {
       return { type: menuType, index };
     });
   };
+const expiry = getExpiryString(profile?.fleetmaster_tenants?.expiry_date) || '';
 
   return (
     <aside
@@ -490,14 +494,14 @@ const AppSidebar: React.FC = () => {
                       width={154}
                       height={32}
                       className="dark:hidden"
-                      src="./images/logo/logo_expert.svg"
+                      src="/images/logo/logo_expert.svg"
                       alt="Logo"
                     />
                     <Image
                       width={154}
                       height={32}
                       className="hidden dark:block"
-                      src="./images/logo/logo_expert_dark.svg"
+                      src="/images/logo/logo_expert_dark.svg"
                       alt="Logo"
                     />
                   </>
@@ -509,14 +513,14 @@ const AppSidebar: React.FC = () => {
                         width={154}
                         height={32}
                         className="dark:hidden"
-                        src="./images/logo/logo_pro.svg"
+                        src="/images/logo/logo_pro.svg"
                         alt="Logo"
                       />
                       <Image
                         width={154}
                         height={32}
                         className="hidden dark:block"
-                        src="./images/logo/logo_pro_dark.svg"
+                        src="/images/logo/logo_pro_dark.svg"
                         alt="Logo"
                       />
                     </>
@@ -526,14 +530,14 @@ const AppSidebar: React.FC = () => {
                         width={154}
                         height={32}
                         className="dark:hidden"
-                        src="./images/logo/logo.svg"
+                        src="/images/logo/logo.svg"
                         alt="Logo"
                       />
                       <Image
                         width={154}
                         height={32}
                         className="hidden dark:block"
-                        src="./images/logo/logo-dark.svg"
+                        src="/images/logo/logo-dark.svg"
                         alt="Logo"
                       />
                     </>
@@ -603,7 +607,7 @@ const AppSidebar: React.FC = () => {
           </div>
         </nav>
 
-        {profile?.fleetmaster_tenants?.subscription_status === 'Expired' || isExpanded || isHovered || isMobileOpen ? <SidebarExpiryWidget plan={profile?.fleetmaster_tenants?.subscription_plan} expiry={getExpiryString(profile?.fleetmaster_tenants?.expiry_date)} /> : null}
+        {(profile?.fleetmaster_tenants?.subscription_status === 'Expired' || isExpanded || isHovered || isMobileOpen || !expiry?.toLowerCase().includes('weeks'))? <SidebarExpiryWidget plan={profile?.fleetmaster_tenants?.subscription_plan} expiry={getExpiryString(profile?.fleetmaster_tenants?.expiry_date)} /> : null}
 
         {isExpanded || isHovered || isMobileOpen ? <SidebarWidget plan={profile?.fleetmaster_tenants?.subscription_plan} /> : null}
       </div>

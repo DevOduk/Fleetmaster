@@ -4,7 +4,6 @@ import { SettingsProvider } from "@/context/SettingsContext";
 import { UserProvider } from "@/context/UserContext";
 import { SidebarProvider } from "@/context/SidebarContext";
 import React from "react";
-import { AdminProvider } from "@/context/AdminContext";
 import { AdminFleetProvider } from "@/context/AdminFleetContext";
 import { AdminBookingProvider } from "@/context/AdminBookingContext";
 
@@ -15,7 +14,6 @@ export default function RootAdminLayout({
 }) {
     return (
         <UserProvider>
-            <AdminProvider>
                 <SettingsProvider>
                     <AdminFleetProvider>
                         <AdminBookingProvider>
@@ -26,7 +24,6 @@ export default function RootAdminLayout({
                         </AdminBookingProvider>
                     </AdminFleetProvider>
                 </SettingsProvider>
-            </AdminProvider>
         </UserProvider>
     );
 }

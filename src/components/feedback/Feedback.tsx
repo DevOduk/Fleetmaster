@@ -157,8 +157,8 @@ const Feedback: React.FC = () => {
             {/* Notification alert response box */}
             {statusMessage && (
               <div className={`p-3 rounded-lg text-theme-sm ${statusMessage.type === "success"
-                  ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
-                  : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
                 }`}>
                 {statusMessage.text}
               </div>

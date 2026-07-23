@@ -11,6 +11,9 @@ import { getBookingDetailsServer } from "@/app/api/bookings/booking-details";
 import { useUser } from "@/context/UserContext";
 import BookingNotFound from "./NotFound";
 import Alert from "../ui/alert/Alert";
+import { getTimeRemaining } from "../client-components/EditBooking";
+import { CalendarComponent } from "../calendar/CalendarComponent";
+import dayjs from "dayjs";
 
 
 const calendarsEvents = {
@@ -18,42 +21,10 @@ const calendarsEvents = {
   'Medium Priority': "primary",
   'Low Priority': "warning",
 };
-function getTimeRemaining(status: string, start: string, end: string, time: string, created_at: string): string {
-  const startDate = new Date(`${start}T${time}`);
-  const endDate = new Date(`${end}T${time}`);
-  const now = new Date();
-
-  if (status.toLowerCase() === 'reserved') {
-    if(new Date().getTime() > new Date(created_at).getTime() + (30 * 60 * 1000)){
-      return 'Reservation Expired!'
-    }
-    return 'Reserved (Awaiting Payment)';
-  }
-
-  if (now > endDate) {
-    return `Rental ended on ${endDate.toLocaleDateString()}`;
-  }
-
-  if (now >= startDate && now <= endDate) {
-    return `Ends in ${formatDuration(endDate.getTime() - now.getTime())}`;
-  }
-
-  return `Starts in ${formatDuration(startDate.getTime() - now.getTime())}`;
-}
 
 /**
  * Helper to convert milliseconds into "X Days Y Hrs Z Mins S Secs"
  */
-function formatDuration(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
-  
-  const days = Math.floor(totalSeconds / (3600 * 24));
-  const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  return `${days} Days ${hours} Hrs ${minutes} Mins ${seconds} Secs`;
-}
 
 export default function ViewBooking({ BookingID }: { BookingID: number; }) {
   const { loading, profile } = useUser();
@@ -66,9 +37,9 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
     if (loading) return;
     setLoadingBooking(true);
 
-    getBookingDetailsServer(BookingID)
+    getBookingDetailsServer(BookingID, profile?.tenant_id)
       .then(res => {
-        console.log('get bookings', res);
+
         if (!res.error) {
           setBookingDetails(res.data);
           setLoadingBooking(false);
@@ -82,31 +53,30 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
   }, [loading, BookingID])
 
 
-useEffect(() => {
-  if (!bookingDetails) return;
+  useEffect(() => {
+    if (!bookingDetails) return;
 
-  // Define the interval function
-  const updateTimer = () => {
-    setTimerString(
-      getTimeRemaining(
-        bookingDetails.booking_status, 
-        bookingDetails.rental_start, 
-        // Ensure you use the correct field for the end date!
-        bookingDetails.rental_end, 
-        bookingDetails.rental_time,
-        bookingDetails.created_at,
-      )
-    );
-  };
+    // Define the interval function
+    const updateTimer = () => {
+      setTimerString(
+        getTimeRemaining(
+          bookingDetails.booking_status,
+          bookingDetails.rental_start,
+          bookingDetails.rental_end,
+          bookingDetails.rental_time,
+          bookingDetails.created_at,
+        )
+      );
+    };
 
-  // Run once immediately to avoid 1-second delay on mount
-  updateTimer();
+    // Run once immediately to avoid 1-second delay on mount
+    updateTimer();
 
-  const int = setInterval(updateTimer, 1000);
+    const int = setInterval(updateTimer, 1000);
 
-  // Return a function to correctly clear the interval
-  return () => clearInterval(int);
-}, [bookingDetails]); // Added dependency to re-run if details change
+    // Return a function to correctly clear the interval
+    return () => clearInterval(int);
+  }, [bookingDetails]); // Added dependency to re-run if details change
 
 
 
@@ -135,6 +105,28 @@ useEffect(() => {
   };
 
 
+  const bookedDates = (() => {
+    const start = dayjs(bookingDetails?.rental_start);
+    const end = dayjs(bookingDetails?.rental_end);
+    const days: any[] = [];
+    let current = start;
+
+    while (current.isBefore(end) || current.isSame(end, "day")) {
+      days.push(current.format("YYYY-MM-DD"));
+      current = current.add(1, "day");
+    }
+    return days;
+  })();
+
+  const isEnded = (() => {
+    const now = new Date();
+
+    const end = dayjs(bookingDetails?.rental_end);
+    const date = dayjs(now);
+    return date.isBefore(end);
+  });
+
+  
   // Helper to format Date object to YYYY-MM-DD (Local Time)
   if (loading || loadingBooking) {
     return <div className="min-h-[70vh]">
@@ -161,6 +153,9 @@ useEffect(() => {
       {bookingDetails ?
         <div className="flex flex-col px-2 relative">
           <Button className="sticky right-0 top-20 z-9999" variant="primary" size="sm">{timerString}</Button>
+
+          <CalendarComponent bookedDates={bookedDates} dateString={new Date().toISOString().split('T')[0]} />
+
           {bookingDetails?.booking_status.toLowerCase() === 'reserved' && (new Date().getTime() > new Date(bookingDetails.created_at).getTime() + (30 * 60 * 1000)) && (
             <Alert variant="error" title="Reservation expired!" message="This reservation has expired and can be rented by anther person. Once reservation is made, you have 30 minutes to complete payment or the reservation will be released for someone. If this happens you can check again after a few minutes for availability. Thank you!"></Alert>
           )}
@@ -448,7 +443,7 @@ useEffect(() => {
 
           <div className="flex items-center gap-3 mt-6 modal-footer sm:justify-end">
             <Link href={'#download'}><Button size="sm" variant="success-outline"><DownloadIcon /> Print Receipt</Button></Link>
-            <Link href={'/bookings/' + bookingDetails?.id + '/edit'}>
+            <Link className={`${isEnded && 'hidden'}`} href={'/bookings/' + bookingDetails?.id + '/edit'}>
               <Button
                 variant="primary"
                 size="sm"

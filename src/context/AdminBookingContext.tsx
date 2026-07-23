@@ -10,6 +10,7 @@ interface AdminBookingContextType {
   loading: boolean;
   setBookings: React.Dispatch<React.SetStateAction<any[]>>;
   updateBooking: (id: number, updatedBooking: Partial<any>) => void;
+  reloadBookings: () => void;
   newBooking: (booking: Omit<any, "id" | "date">) => Promise<boolean>; // Returns success flag to forms
 }
 
@@ -21,27 +22,30 @@ export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  async function fetchAllBookings() {
+    try {
+      const response = await fetchBookingsForAdmin(adminProfile?.tenant_id);
+      if (response.success) {
+        setBookings(response.data);
+      } else {
+        console.error("API Error fetching bookings:", response.error);
+      }
+    } catch (err) {
+      console.error("Network connection failure:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (!adminProfile) return;
 
-    async function fetchAllBookings() {
-      try {
-        const response = await fetchBookingsForAdmin(adminProfile?.tenant_id);
-        if (response.success) {
-          setBookings(response.data);
-        } else {
-          console.error("API Error fetching bookings:", response.error);
-        }
-      } catch (err) {
-        console.error("Network connection failure:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchAllBookings();
   }, [adminProfile]);
+
+  const reloadBookings = () => {
+    fetchAllBookings();
+  }
 
   // 2. Update existing fields cleanly by ID
   const updateBooking = (id: number, updatedFields: Partial<any>) => {
@@ -84,7 +88,7 @@ export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AdminBookingContext.Provider value={{ bookings, loading, setBookings, updateBooking, newBooking }}>
+    <AdminBookingContext.Provider value={{ bookings, loading, setBookings, reloadBookings, updateBooking, newBooking }}>
       {children}
     </AdminBookingContext.Provider>
   );

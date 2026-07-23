@@ -53,7 +53,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   const contentClasses = isFullscreen
     ? "w-full h-full"
-    : "relative w-full rounded-3xl bg-white  dark:bg-gray-900";
+    : "relative w-full rounded-3xl bg-white  dark:bg-black";
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-9999 flex items-center justify-center overflow-y-auto modal">

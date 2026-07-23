@@ -1,12 +1,10 @@
 "use client";
 import EditBookingForm from '@/components/client-components/EditBooking';
-import BookingNotFound from '@/components/bookings/NotFound';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
-import { useAdminBooking } from '@/context/AdminBookingContext';
 import { ChevronLeftIcon } from '@/icons';
 import Link from 'next/link';
-import { use } from 'react';
+import { use} from 'react';
 
 interface VehiclePageProps {
   params: Promise<{ bookingID: string }>;
@@ -14,17 +12,9 @@ interface VehiclePageProps {
 
 
 const EditBookingsPage = ({ params }: VehiclePageProps) => {
-  const { bookings } = useAdminBooking();
-
   const resolvedParams = use(params);
 
   const bookingID = resolvedParams.bookingID;
-  const bookingDetails = bookings.find(b => b.id === parseInt(bookingID));
-
-  if (!bookingDetails) {
-    return <BookingNotFound />
-  }
-
 
   const breadcrumbItems = [
     { label: "Bookings", href: "/bookings" },

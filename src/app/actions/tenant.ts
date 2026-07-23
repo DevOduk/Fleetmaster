@@ -27,14 +27,40 @@ export async function fetchTenantDetails(tenantId: string) {
   return { data, error, success: !error };
 }
 
+export async function fetchTenantSubscriptions(tenantId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("fleetmaster_payments")
+    .select('amount, tenant_id, message, provider, created_at')
+    .eq("tenant_id", tenantId) // Ensure this matches your table schema (tenant_id vs id)
+    .eq("status", "Success") // Ensure this matches your table schema (tenant_id vs id)
+    .ilike("message", "Subscription renewal for package:%")
+    .order('created_at', { ascending: false });
+
+  if (error || !data) {
+    return { data: [], error, success: false };
+  }
+  
+  const subscriptions = data.map((item) => {
+    return {
+      label: item.message.split('Subscription renewal for package: ')[1],
+      value: item.message,
+      date: item.created_at,
+      amount: item.amount,
+      method: item.provider,
+    };
+  })
+  return { data: subscriptions, error, success: !error };
+}
+
 export async function updateTenantDetails(tenantId: string, updatedData: any) {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("fleetmaster_tenants")
-    .update(updatedData)
-    .eq("id", tenantId)
-    .single();
+    .update({ ...updatedData, last_updated: new Date() })
+    .eq("id", tenantId);
 
   return { data, error, success: !error };
 }

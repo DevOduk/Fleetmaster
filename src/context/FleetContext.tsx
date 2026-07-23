@@ -28,6 +28,7 @@ export const FleetProvider = ({ children }: { children: ReactNode }) => {
     async function fetchAllVehicles() {
       try {
         const response = await fetchVehiclesForTenant(tenant?.id);
+
         if (response.success) {
           setVehicles(response.data);
         } else {
