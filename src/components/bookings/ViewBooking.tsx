@@ -11,9 +11,10 @@ import { getBookingDetailsServer } from "@/app/api/bookings/booking-details";
 import { useUser } from "@/context/UserContext";
 import BookingNotFound from "./NotFound";
 import Alert from "../ui/alert/Alert";
-import { getTimeRemaining } from "../client-components/EditBooking";
+import { getTimeRemaining } from "./EditBooking";
 import { CalendarComponent } from "../calendar/CalendarComponent";
 import dayjs from "dayjs";
+import SimpleLoader from "../ui/loading/simpleLoader";
 
 
 const calendarsEvents = {
@@ -27,6 +28,7 @@ const calendarsEvents = {
  */
 
 export default function ViewBooking({ BookingID }: { BookingID: number; }) {
+  document.title = "View Booking " + BookingID;
   const { loading, profile } = useUser();
   const [eventStartDate, setEventStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [loadingBooking, setLoadingBooking] = useState(true);
@@ -118,29 +120,17 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
     return days;
   })();
 
-  const isEnded = (() => {
-    const now = new Date();
-    const end = dayjs(bookingDetails?.rental_end);
-    const date = dayjs(now);
 
-    return date.isAfter(end); // Changed from isBefore to isAfter
+  const isReserved = (() => {
+    return bookingDetails?.booking_status === 'Reserved' || false; // Changed from isBefore to isAfter
   })();
-  
-  
+
+
   // Helper to format Date object to YYYY-MM-DD (Local Time)
   if (loading || loadingBooking) {
-    return <div className="min-h-[70vh]">
-      <div className="py-6 flex flex-col items-center">
-        <CircularProgress color="primary" size={30} />
-
-        <h4 className="mb-0 mt-3 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
-          Just a moment!
-        </h4>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Geting booking's details! Please bear with us for a moment ...
-        </p>
-      </div>
-    </div>
+    return (
+      <SimpleLoader name="booking details" />
+    )
   }
 
 
@@ -159,8 +149,18 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
           {bookingDetails?.booking_status.toLowerCase() === 'reserved' && (new Date().getTime() > new Date(bookingDetails.created_at).getTime() + (30 * 60 * 1000)) && (
             <Alert variant="error" title="Reservation expired!" message="This reservation has expired and can be rented by anther person. Once reservation is made, you have 30 minutes to complete payment or the reservation will be released for someone. If this happens you can check again after a few minutes for availability. Thank you!"></Alert>
           )}
-          <div className="mt-5">
-            <Badge size="md" color="success">STATUS: {bookingDetails?.booking_status}</Badge>
+          <div className="mt-5 mb-4 flex gap-3 items-center text-gray-400">
+            <Badge size="md"
+              color={
+                bookingDetails.booking_status === "Booked" ? "primary" :
+                  bookingDetails.booking_status === "Active" ? 'success' :
+                    bookingDetails.booking_status === "Completed" ? 'info' :
+                      "warning"
+              }
+            >BOOKING STATUS: {bookingDetails?.booking_status}</Badge>
+            {
+              bookingDetails?.booking_status === "Cancelled" && <>| <p className="text-red-500">{bookingDetails?.cancellation_reason || 'Reason for cancellation unavailable!'}</p></>
+            }
           </div>
           <h4 className="mt-3 mb-3 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
             Rental Information
@@ -443,7 +443,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
 
           <div className="flex items-center gap-3 mt-6 modal-footer sm:justify-end">
             <Link href={'#download'}><Button size="sm" variant="success-outline"><DownloadIcon /> Print Receipt</Button></Link>
-            <Link className={`${isEnded && 'hidden'}`} href={'/bookings/' + bookingDetails?.id + '/edit'}>
+            <Link className={`${isReserved && 'hidden'}`} href={'/bookings/' + bookingDetails?.id + '/edit'}>
               <Button
                 variant="primary"
                 size="sm"

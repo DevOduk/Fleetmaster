@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: VehiclePageProps): Promise<Me
   }
 
   return {
-    title: `${vehicle.make} ${vehicle.model} ${vehicle.year} | Fleetmaster`,
+    title: `View ${vehicle.make} ${vehicle.model} ${vehicle.year} | Fleetmaster`,
     description: vehicle.description || `Rent or manage the ${vehicle.year} ${vehicle.make} ${vehicle.model} on Fleetmaster.`,
   };
 }
@@ -72,7 +72,7 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
                 <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
                   {VehicleDetails.make} {VehicleDetails.model}
                 </h2>
-                <p className="text-gray-500">Body Type: {VehicleDetails.body_type} </p>
+                <p className="text-gray-500">Body Type: {VehicleDetails?.body_type} | Category: {VehicleDetails?.category} </p>
               </div>
               <div>
                 <span className={`px-3 py-1 rounded-full text-xs font-sm mt-2 mb-1 ${VehicleDetails.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
@@ -143,7 +143,7 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
               </div>
             </div>
             <Link href={'/vehicles/' + vehicleID + '/edit'}>
-              <Button className='w-full mt-5' size='sm'>Edit Vehicle Details</Button>
+              <Button className='w-full mt-5' size='sm'>Manage Vehicle</Button>
             </Link>
           </div>
         </div>

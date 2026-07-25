@@ -1,6 +1,6 @@
 import { createClient } from "../supabase/client";
 
-export async function handleImageFileUpload(event, showToast) {
+export async function handleImageFileUpload(event, showToast, folder = 'Images') {
     const supabase = createClient();
 
 
@@ -20,7 +20,7 @@ export async function handleImageFileUpload(event, showToast) {
     try {
         // 1. Upload file to Supabase bucket (replace 'your-bucket-name' with yours)
         const fileExt = file.name.split('.').pop();
-        const fileName = `Images/${Math.random()}.${fileExt}`;
+        const fileName = `${folder}/${Math.random()}.${fileExt}`;
 
         const { data, error } = await supabase.storage
             .from('fleetmaster_files')

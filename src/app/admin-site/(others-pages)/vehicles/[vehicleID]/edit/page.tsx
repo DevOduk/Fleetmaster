@@ -1,4 +1,5 @@
 "use client"
+
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Input from '@/components/form/input/InputField';
 import TextArea from '@/components/form/input/TextArea';
@@ -11,13 +12,18 @@ import Link from 'next/link';
 import { use, useEffect, useState } from 'react';
 import LocalGasStationOutlinedIcon from '@mui/icons-material/LocalGasStationOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
-import { fetchVehicleDetails, updateVehicleDetails } from '@/app/actions/vehicles';
+import { deleteVehicle, fetchVehicleDetails, updateVehicleDetails } from '@/app/actions/vehicles';
 import { useAdminFleet } from '@/context/AdminFleetContext';
 import { useToast } from '@/context/ToastContext';
 import { AdminCalendarWrapper } from '@/components/calendar/AdminCalendarWrapper';
 import { useUser } from '@/context/UserContext';
 import AddPhotoAlternateOutlinedIcon from "@mui/icons-material/AddPhotoAlternateOutlined"
 import CarModelsByBrand from '@/data/carMakeModels';
+import { handleImageFileUpload } from '@/utils/uploads/imageUpload';
+import { useModal } from '@/hooks/useModal';
+import { Modal } from '@/components/ui/modal';
+
+
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string }>;
@@ -34,12 +40,17 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
   const [loadingVehicle, setLoadingVehicle] = useState(false);
   const [backDrop, setBackDrop] = useState(false);
   const [disableButton, setDisableButton] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [VehicleDetails, setVehicleDetails] = useState<any>(null);
   const [originalVehicleDetails, setOriginalVehicleDetails] = useState<any>(null);
+  const { isOpen, openModal: openDeleteModal, closeModal } = useModal();
+
+
 
   useEffect(() => {
     if (!vehicleID) return;
     setLoadingVehicle(true);
+    document.title = 'Edit Vehicle ' + vehicleID + ' | FleetMaster'
 
     async function fetchAllVehicles() {
       try {
@@ -68,7 +79,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
   ];
 
 
-  const updateVehicles = async () => {
+  const updateVehicle = async () => {
     setDisableButton(true);
     setBackDrop(true);
 
@@ -121,6 +132,20 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
       setBackDrop(false);
     }
   }
+  const deleteVehicleItem = async () => {
+    setIsDeleting(true);
+
+    const res = await deleteVehicle(VehicleDetails?.id, profile);
+
+    if (res.success) {
+      showToast('Vehicle deleted successfully', 'success')
+
+      window.location.href = '/vehicles'
+    } else {
+      showToast(res.error.message || 'An error ocuured while deleting vehicle!', 'error')
+      setIsDeleting(false);
+    }
+  }
 
   if (loadingVehicle) {
     return <div>Fetching vehicle details</div>
@@ -134,7 +159,34 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
       <Backdrop
         sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
         open={backDrop}
-        onClick={() => 2} ><CircularProgress color="inherit" /></Backdrop>
+        onClick={() => 2} >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
+      <Modal
+        isOpen={isOpen}
+        onClose={closeModal}
+        className="max-w-146 p-5 lg:p-10"
+      >
+        <h4 className="mb-6 text-lg font-medium text-gray-800 dark:text-white/90">
+          Confirm Deletion
+        </h4>
+        <p className='text-black dark:text-white text-sm'>Are you sure you want to delete this vehicle? This action is irreverssible. Ensure there is no pending or active rental.</p>
+        <div className="flex items-center justify-end w-full gap-3 mt-6">
+          <Button size="sm" variant="outline" type="button" onClick={closeModal}>
+            Close
+          </Button>
+          <Button
+            size="sm"
+            variant="danger"
+            type="submit"
+            disabled={isDeleting}
+            onClick={deleteVehicleItem}
+          >
+            {isDeleting ? <>Deleting ... <CircularProgress color='inherit' size={14} /> </> : "Confirm Deletion"}
+          </Button>
+        </div>
+      </Modal>
       <PageBreadcrumb
         items={breadcrumbItems}
         pageTitle={`Edit ${VehicleDetails?.make} ${VehicleDetails?.model}`}
@@ -156,18 +208,20 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
         {/* Calendar Section: col-span-5 */}
         <div className="col-span-12 lg:col-span-5">
           <div className="rounded-2xl border border-gray-200 bg-white p-2 dark:border-gray-800 dark:bg-gray-900 shadow-sm">
-            <div className='flex justify-between items-center'>
+            <div className='flex justify-between items-center flex-col-reverse xl:flex-row'>
               <div className='px-4 pt-4 '>
                 <h3 className="font-semibold text-gray-800 dark:text-white">Service Schedule</h3>
                 <p className="font-small text-sm text-gray-600 dark:text-gray-400">Find a snapshot of vehicles calendar booking status.</p>
               </div>
-              {VehicleDetails?.status === 'Available' ? <Button size="sm" variant='danger' className='text-nowrap' onClick={() => updateAvailability("Not Available")}>Mark Unavailable</Button> : <Button size="sm" variant='success' className='text-nowrap' onClick={() => updateAvailability("Available")}>Mark Available</Button>}
+              {VehicleDetails?.status === 'Available' ? <Button size="sm" variant='danger' className='text-nowrap w-full xl:w-fit' onClick={() => updateAvailability("Not Available")}>Mark Unavailable</Button> : <Button size="sm" variant='success' className='text-nowrap w-full xl:w-fit' onClick={() => updateAvailability("Available")}>Mark Available</Button>}
             </div>
             <AdminCalendarWrapper isMarkedUnavailable={VehicleDetails?.status === "Not Available"} vehicleId={parseInt(vehicleID)} dateString={new Date().toISOString().split('T')[0]} />
             {
               VehicleDetails?.status === 'Available' ? <div className='text-sm text-green-500 mb-2 text-center'>This vehicle is now available for bookings!</div> : <div className='text-sm text-red-500 mb-2 text-center'>This vehicle will NOT be available for bookings!</div>
             }
           </div>
+
+          <Button onClick={openDeleteModal} variant='danger' className='w-full mt-5' size='sm'>Delete Vehicle</Button>
         </div>
 
         {/* Details Section: col-span-7 */}
@@ -178,7 +232,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
                 <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
                   {VehicleDetails?.make} {VehicleDetails?.model} {VehicleDetails?.year}
                 </h2>
-                <p className="text-gray-500">Body Type: {VehicleDetails?.bofy_type} </p>
+                <p className="text-gray-500">Body Type: {VehicleDetails?.body_type} | Category: {VehicleDetails?.category} </p>
               </div>
               <div>
                 <span className={`px-3 py-1 rounded-full text-xs font-sm mt-2 mb-1 ${VehicleDetails?.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
@@ -196,9 +250,16 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
                 <Chip sx={{ px: 1 }} variant='filled' color='primary' icon={<PeopleAltOutlinedIcon fontSize='small' />} label={VehicleDetails?.seats + ' Seats'} />
 
               </Box>
-              <button className='border-0 outline-0 text-sm flex items-center gap-2 cursor-pointer absolute bottom-3 right-3 bg-black/50 rounded-lg p-2 px-3 text-white'>
+              <label htmlFor='img' className='border-0 outline-0 text-sm flex items-center gap-2 cursor-pointer absolute bottom-3 right-3 bg-black/50 rounded-lg p-2 px-3 text-white'>
+                <input id='img' className="hidden" type="file" accept="image/*" onChange={async (e) => {
+                  setBackDrop(true);
+                  const image = await handleImageFileUpload(e, showToast);
+
+                  setVehicleDetails((prev) => ({ ...prev, image_url: image }))
+                  setBackDrop(false);
+                }} />
                 <AddPhotoAlternateOutlinedIcon /> Change Photo
-              </button>
+              </label>
               <img src={VehicleDetails?.image_url} alt={`${VehicleDetails?.make} ${VehicleDetails?.model}`} className="w-full object-cover rounded-xl mb-8 aspect-video" />
             </div>
 
@@ -234,7 +295,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
               </div>
               <div className='p-2'>
                 <p className="text-gray-400">Model</p>
-                
+
                 <Select
                   options={(CarModelsByBrand[VehicleDetails?.make]).map((model) => ({
                     value: model,
@@ -251,7 +312,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
                   className="dark:bg-dark-900 mt-3"
                 />
               </div>
-              
+
               <div className='p-2'>
                 <p className="text-gray-400">Category</p>
                 <Input
@@ -476,7 +537,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
                   }))}
                 />              </div>
 
-              <div className='p-2'>
+              <div className='p-2 hidden'>
                 <p className="text-gray-400">Tracking Provider</p>
                 <Select
                   options={[
@@ -519,7 +580,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
                   }
                 }))}
               />              </div>
-            <Button onClick={updateVehicles} disabled={disableButton || (VehicleDetails === originalVehicleDetails)} className='w-full mt-5' size='sm'>Update Vehicle</Button>
+            <Button onClick={updateVehicle} disabled={disableButton || (VehicleDetails === originalVehicleDetails)} className='w-full mt-5' size='sm'>Update Vehicle</Button>
           </div>
         </div>
       </div>

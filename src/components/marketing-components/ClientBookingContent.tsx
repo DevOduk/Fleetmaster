@@ -14,7 +14,7 @@ import Link from "next/link";
 import { fetchBookingsForClient } from "@/app/actions/bookings";
 import { CircularProgress } from "@mui/material";
 import SearchOffOutlinedIcon from "@mui/icons-material/SearchOffOutlined"
-import { getTimeRemaining } from "../client-components/EditBooking";
+import { getTimeRemaining } from "../bookings/EditBooking";
 
 
 

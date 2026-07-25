@@ -1,5 +1,5 @@
 "use client";
-import EditBookingForm from '@/components/client-components/EditBooking';
+import EditBookingForm from '@/components/bookings/EditBooking';
 import SecondaryHero from '@/components/marketing-components/SecondaryHero';
 import { use } from 'react';
 

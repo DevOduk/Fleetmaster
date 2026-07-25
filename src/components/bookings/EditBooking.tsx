@@ -8,7 +8,7 @@ import { CircularProgress, FormControl, FormControlLabel, Radio, RadioGroup, use
 import Badge from "../ui/badge/Badge";
 import { getBookingDetailsServer } from "@/app/api/bookings/booking-details";
 import { useUser } from "@/context/UserContext";
-import BookingNotFound from "../bookings/NotFound";
+import BookingNotFound from "./NotFound";
 import Alert from "../ui/alert/Alert";
 import dayjs from "dayjs";
 import { useModal } from "@/hooks/useModal";
@@ -23,8 +23,9 @@ import { mpesaPollingIterval } from "../company-profile/CompanySubscriptionsCard
 import ComponentCard from "../common/ComponentCard";
 import Rating from '@mui/material/Rating';
 import { submitUserFeedback } from "@/app/actions/feedback";
-import { Modal } from "../ui/modal";
+import { Modal } from '@/components/ui/modal';
 import Select from "../form/Select";
+import SimpleLoader from "../ui/loading/simpleLoader";
 
 
 
@@ -71,10 +72,10 @@ export function getTimeRemaining(status: string, start: string, end: string, tim
   }
 
   if (status.toLowerCase() === 'cancelled') {
-    return 'Booking Cancelled (View Details)';
+    return 'Booking Cancelled!';
   }
   if (status.toLowerCase() === 'completed') {
-    return 'Booking has been Completed';
+    return 'Hooray! Booking has been Completed.';
   }
   if (now > endDate) {
     return `Rental ended on ${endDate.toLocaleDateString()}`;
@@ -102,6 +103,7 @@ function formatDuration(ms: number): string {
 }
 
 export default function ViewBooking({ BookingID }: { BookingID: number; }) {
+  document.title = "Edit Booking " + BookingID;
   const { loading, profile } = useUser();
   const [eventStartDate, setEventStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [loadingBooking, setLoadingBooking] = useState(true);
@@ -321,6 +323,10 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
     const date = dayjs(now);
 
     return date.isAfter(end); // Changed from isBefore to isAfter
+  })();
+
+  const isReserved = (() => {
+    return bookingDetails?.booking_status === 'Reserved' || false; // Changed from isBefore to isAfter
   })();
 
   const isStarted = (() => {
@@ -618,18 +624,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
   // Helper to format Date object to YYYY-MM-DD (Local Time)
   if (loading || loadingBooking) {
     return (
-      <div className="min-h-[70vh]">
-        <div className="py-6 flex flex-col items-center">
-          <CircularProgress color="primary" size={30} />
-
-          <h4 className="mb-0 mt-3 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
-            Just a moment!
-          </h4>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Geting booking's details! Please bear with us for a moment ...
-          </p>
-        </div>
-      </div>
+      <SimpleLoader name="booking details" />
     )
   }
 
@@ -714,8 +709,18 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
             {bookingDetails?.booking_status.toLowerCase() === 'reserved' && (new Date().getTime() > new Date(bookingDetails.created_at).getTime() + (30 * 60 * 1000)) && (
               <Alert variant="error" title="Reservation expired!" message="This reservation has expired and can be rented by anther person. Once reservation is made, you have 30 minutes to complete payment or the reservation will be released for someone. If this happens you can check again after a few minutes for availability. Thank you!"></Alert>
             )}
-            <div className="mt-5">
-              <Badge size="md" color="success">STATUS: {bookingDetails?.booking_status}</Badge>
+            <div className="mt-5 mb-4 flex gap-3 items-center text-gray-400">
+              <Badge size="md"
+                color={
+                  bookingDetails.booking_status === "Booked" ? "primary" :
+                    bookingDetails.booking_status === "Active" ? 'success' :
+                      bookingDetails.booking_status === "Completed" ? 'info' :
+                        "warning"
+                }
+              >BOOKING STATUS: {bookingDetails?.booking_status}</Badge>
+              {
+                bookingDetails?.booking_status === "Cancelled" && <>| <p className="text-red-500">{bookingDetails?.cancellation_reason || 'Reason for cancellation unavailable!'}</p></>
+              }
             </div>
             <h4 className="mt-3 mb-3 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-xl">
               Rental Information
@@ -925,7 +930,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
               {isCancelled ? (
                 <div className="w-full mt-6 p-3 text-center">
                   <p className="text-sm font-medium text-red-600 dark:text-red-500">
-                    This booking has been cancelled!
+                    This booking has been cancelled with reason "{bookingDetails?.cancellation_reason || 'Unknown'}"!
                   </p>
                 </div>
               ) : isClient ? (
@@ -941,21 +946,21 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
               ) : (
                 <div className="w-full space-y-3 mt-6">
                   {!isEnded && !isCancelled && (
-<Button
-  onClick={() => {
-    const nextStatus = !isStarted ? "Active" : "Completed";
-    updateBookingStatus(nextStatus);
-  }}
-  disabled={(!isStarted && !isPastStartTime) || (isStarted && !isEnded)}
-  className={`w-full ${(!isStarted && !isPastStartTime) || (isStarted && !isEnded) ? 'hidden!' : ''}`}
-  variant={!isStarted && !isPastStartTime ? "danger" : "success"}
-  size="sm"
->
-  {!isStarted
-    ? (isPastStartTime ? 'Mark as Started' : 'Cannot start before scheduled time')
-    : (isEnded ? 'Mark as Complete' : 'Rental in progress!')
-  }
-</Button>
+                    <Button
+                      onClick={() => {
+                        const nextStatus = !isStarted ? "Active" : "Completed";
+                        updateBookingStatus(nextStatus);
+                      }}
+                      disabled={(!isStarted && !isPastStartTime) || (isStarted && !isEnded)}
+                      className={`w-full ${(!isStarted && !isPastStartTime) || (isStarted && !isEnded) ? 'hidden!' : ''}`}
+                      variant={!isStarted && !isPastStartTime ? "danger" : "success"}
+                      size="sm"
+                    >
+                      {!isStarted
+                        ? (isPastStartTime ? 'Mark as Started' : 'Cannot start before scheduled time')
+                        : (isEnded ? 'Mark as Complete' : 'Rental in progress!')
+                      }
+                    </Button>
                   )}
 
                   {canCancel && (

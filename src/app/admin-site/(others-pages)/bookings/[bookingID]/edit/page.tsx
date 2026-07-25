@@ -1,10 +1,10 @@
 "use client";
-import EditBookingForm from '@/components/client-components/EditBooking';
+import EditBookingForm from '@/components/bookings/EditBooking';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import { ChevronLeftIcon } from '@/icons';
 import Link from 'next/link';
-import { use} from 'react';
+import { use } from 'react';
 
 interface VehiclePageProps {
   params: Promise<{ bookingID: string }>;
