@@ -85,7 +85,7 @@ export default function Preferences() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto">
       {/* Preferences Section */}
       <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-8">
         <h3 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">

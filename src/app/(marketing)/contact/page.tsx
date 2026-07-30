@@ -75,8 +75,9 @@ export default function Page() {
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Email Us</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">support@fleetmaster.com</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">sales@fleetmaster.com</p>
+                    <p className="text-sm text-brand-600 dark:text-brand-400 mt-0.5">support@fleetmaster.co.ke</p>
+                    <p className="text-sm text-brand-600 dark:text-brand-400">info@fleetmaster.co.ke</p>
+                    <p className="text-sm text-brand-600 dark:text-brand-400">sales@fleetmaster.co.ke</p>
                   </div>
                 </div>
 
@@ -86,8 +87,8 @@ export default function Page() {
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Call Us</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">+1 (800) 555-FLEET</p>
-                    <p className="text-slate-400 text-xs">Mon-Fri from 8am to 6pm EST</p>
+                    <p className="text-sm text-brand-600 dark:text-brand-400 mt-0.5">+254 (768) 927-61793</p>
+                    <p className="text-slate-400 text-xs">Mon-Fri from 8am to 6pm EAT</p>
                   </div>
                 </div>
 
@@ -99,7 +100,7 @@ export default function Page() {
                     <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Headquarters</h4>
                     <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
                       100 Logistics Blvd, Suite 400<br />
-                      Austin, TX 78701
+                      Nairobi, NRB 00100
                     </p>
                   </div>
                 </div>

@@ -2,7 +2,10 @@ import { createClient } from "../supabase/client";
 
 export async function handleImageFileUpload(event, showToast, folder = 'Images') {
     const supabase = createClient();
-
+// FOLDERS
+// 1.Images
+// 2. Docuements
+// 3. Profiles
 
     const file = event.target.files[0];
     if (!file) return;

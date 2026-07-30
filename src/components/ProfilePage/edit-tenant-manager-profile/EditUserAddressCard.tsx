@@ -6,9 +6,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useToast } from "@/context/ToastContext";
 import { Backdrop, CircularProgress } from "@mui/material";
-import { hex } from "../client-profile/UserAddressCard";
 import { useAdmin } from "@/context/AdminContext";
 import handleProfileUpdate from "@/utils/managers/handleProfileUpdate";
+import { hex } from "../client-profile/ProfilePage";
 
 export default function EditUserAddressCard() {
   const { adminProfile: profile, loading, setAdminProfile: setProfile } = useAdmin();

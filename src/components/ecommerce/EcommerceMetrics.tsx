@@ -9,8 +9,17 @@ import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 import { formatedValue } from "./MonthlyTarget";
 
-export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading }: { vehicles: any, loadingVehicles: boolean, bookings: any, loading: boolean }) => {
 
+const calculateChange = (current: number, previous: number) => {
+  if (previous === 0) {
+    if (current === 0) return 0;        // no change
+    return null;                        // undefined growth
+  }
+  return ((current - previous) / previous) * 100;
+};
+
+
+export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading }: { vehicles: any, loadingVehicles: boolean, bookings: any, loading: boolean }) => {
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
@@ -85,19 +94,29 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
   const rateLastMonth = getBookingRateForPeriod(lastMonth, lastMonthYear, daysInLastMonth);
 
   // | ---------------------    CHANGES CALCULATORS --------------------| 
-  const totalRevenueChange = totalRevenueLastMonth === 0
-    ? (totalRevenue > 0 ? 100 : 0)
-    : ((totalRevenue - totalRevenueLastMonth) / totalRevenueLastMonth) * 100;
-  const vehiclesChange = vehiclesCountLastMonth === 0
-    ? (vehiclesCountThisMonth > 0 ? 100 : 0)
-    : ((vehiclesCountThisMonth - vehiclesCountLastMonth) / vehiclesCountLastMonth) * 100;
-  const completedPercentageChange = totalCompletedLastMonth === 0
-    ? (totalCompletedNow > 0 ? 100 : 0)
-    : ((totalCompletedNow - totalCompletedLastMonth) / totalCompletedLastMonth) * 100;
-  const rateChange = rateLastMonth === 0
-    ? (rateThisMonth > 0 ? 100 : 0)
-    : ((rateThisMonth - rateLastMonth) / rateLastMonth) * 100;
+  const totalRevenueChange = calculateChange(totalRevenue, totalRevenueLastMonth);
+  const vehiclesChange = calculateChange(vehiclesCountThisMonth, vehiclesCountLastMonth);
+  const completedPercentageChange = calculateChange(totalCompletedNow, totalCompletedLastMonth);
+  const rateChange = calculateChange(rateThisMonth, rateLastMonth);
 
+
+  const formatChange = (change: number | null) => {
+    if (change === null) {
+      return {
+        text: "New",
+        color: "success" as const,
+        icon: <ArrowUpIcon className="text-success-500" />
+      };
+    }
+
+    return {
+      text: change.toFixed(2) + "%",
+      color: change > 0 ? "success" as const : "error" as const,
+      icon: change > 0
+        ? <ArrowUpIcon className="text-success-500" />
+        : <ArrowDownIcon className="text-error-500" />
+    };
+  };
 
   const metrics = [
     {
@@ -105,12 +124,8 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
       title: "Total Revenue",
       value: formatedValue(totalRevenue) + ' /=',
       description: "Your total earned Revenue for this month",
-      icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
-      badge: {
-        text: totalRevenueChange.toFixed(2) + "%",
-        color: totalRevenueChange > 0 ? "success" as const : "error" as const,
-        icon: totalRevenueChange > 0 ? <ArrowUpIcon className="text-success-500" /> : <ArrowDownIcon className="text-error-500" />
-      },
+      icon: <AttachMoneyOutlinedIcon className="text-gray-500 dark:text-gray-400" />,
+      badge: formatChange(totalRevenueChange),
       isReady: !loading
     },
     {
@@ -118,12 +133,8 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
       title: "Vehicles",
       value: `${vehicles?.length || 0} +`,
       description: "Active operational vehicles in your fleet",
-      icon: <DirectionsCarFilledOutlinedIcon className="text-gray-800 size-6 dark:text-white/90" />,
-      badge: {
-        text: vehiclesChange.toFixed(2) + "%",
-        color: vehiclesChange > 0 ? "success" as const : "error" as const,
-        icon: vehiclesChange > 0 ? <ArrowUpIcon className="text-success-500" /> : <ArrowDownIcon className="text-error-500" />
-      },
+      icon: <DirectionsCarFilledOutlinedIcon className="text-gray-500 dark:text-gray-400" />,
+      badge: formatChange(vehiclesChange),
       isReady: !loadingVehicles
     },
     {
@@ -131,12 +142,8 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
       title: "Completed Bookings",
       value: `${totalCompletedNow} +`,
       description: "Total finalized deployment runs",
-      icon: <ScheduleOutlinedIcon className="text-gray-800 dark:text-white/90" />,
-      badge: {
-        text: completedPercentageChange.toFixed(2) + "%",
-        color: completedPercentageChange > 0 ? "success" as const : "error" as const,
-        icon: completedPercentageChange > 0 ? <ArrowUpIcon className="text-success-500" /> : <ArrowDownIcon className="text-error-500" />
-      },
+      icon: <ScheduleOutlinedIcon className="text-gray-500 dark:text-gray-400" />,
+      badge: formatChange(completedPercentageChange),
       isReady: !loading
     },
     {
@@ -144,12 +151,8 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
       title: "Booking Rate",
       value: `${formatedValue(rateThisMonth)} %`,
       description: "Average utility utilization metrics",
-      icon: <TrendingUpOutlinedIcon className="text-gray-800 dark:text-white/90" />,
-      badge: {
-        text: rateChange.toFixed(2) + "%",
-        color: rateChange > 0 ? "success" as const : "error" as const,
-        icon: rateChange > 0 ? <ArrowUpIcon className="text-success-500" /> : <ArrowDownIcon className="text-error-500" />
-      },
+      icon: <TrendingUpOutlinedIcon className="text-gray-500 dark:text-gray-400" />,
+      badge: formatChange(rateChange),
       isReady: !loading && !loadingVehicles
     }
   ];
@@ -159,7 +162,7 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
       {metrics.map((card, i) => (
         card.isReady ? (
           <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6 space-y-3" key={i}>
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 shadow-xs shadow-brand-600 rounded-xl dark:bg-gray-800">
+            <div className="flex items-center justify-end ms-auto shadow-xs">
               {card.icon}
             </div>
             <span className="text-lg font-bold text-gray-800 dark:text-gray-300">

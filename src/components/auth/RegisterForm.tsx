@@ -5,10 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
-import { EyeCloseIcon, EyeIcon } from "@/icons";
+import { ArrowRightIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import { useToast } from "@/context/ToastContext";
 import { createNewTenant } from "@/app/actions/tenant";
 import { createTenantAdmin } from "@/app/actions/admin";
+import Link from "next/link";
 
 
 
@@ -111,6 +112,9 @@ function RegisterFormInner() {
     <div className="flex flex-col flex-1 lg:w-1/2 w-full">
       <div className="flex flex-col justify-center flex-1 w-full max-w-lg mx-auto">
         <div className="mb-8">
+          <Link href={'/signin'} className="text-brand-500 flex gap-2 items-center mb-2">
+            <ArrowRightIcon className='r rotate-180' /> Signin instead.
+          </Link>
           <h1 className="mb-2 font-semibold text-gray-800 text-title-md dark:text-white/90">
             {step === "company" ? "Register workspace" : "Complete Admin Setup"}
           </h1>

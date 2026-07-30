@@ -1,11 +1,5 @@
-import { Metadata } from "next";
 import SecondaryHero from "@/components/marketing-components/SecondaryHero";
 import ClientBookingContent from "@/components/marketing-components/ClientBookingContent";
-
-export const metadata: Metadata = {
-  title: "My Bookings",
-  description: "View and manage your Oduk CarHire bookings.",
-};
 
 export default async function Page() {
   const pages = [{ label: 'Home', href: '/' }, { label: 'My Bookings', href: '/bookings' }];
@@ -20,7 +14,6 @@ export default async function Page() {
         description="Monitor your fleet performance and track your active rentals."
       />
 
-      {/* Pass the server-fetched data as a prop */}
       <ClientBookingContent  />
     </div>
   );

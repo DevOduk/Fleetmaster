@@ -1,10 +1,10 @@
 "use client"
-import UserAddressCard from "@/components/ProfilePage/client-profile/UserAddressCard";
 import UserInfoCard from "@/components/ProfilePage/client-profile/UserInfoCard";
-import UserMetaCard from "@/components/ProfilePage/client-profile/UserMetaCard";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import UserDocumentsCard from "@/components/ProfilePage/client-profile/UserDocumentsCard";
 import { useUser } from '@/context/UserContext';
+import UserMetaCard from "./UserMetaCard";
+import UserAddressCard from "./UserAddressCard";
+import UserDocumentsCard from "./UserDocumentsCard";
 
 
 function ProfilePage() {

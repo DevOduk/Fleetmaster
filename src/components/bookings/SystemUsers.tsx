@@ -18,6 +18,7 @@ import { useUser } from "@/context/UserContext";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getTenantAdmins } from "@/app/actions/admin";
+import { subscriptionPlans } from "@/data/globalExports";
 
 // 1. Explicitly type your User structure
 export interface AdminUser {
@@ -36,6 +37,16 @@ interface SystemUsersProps {
   initialUsers: AdminUser[];
   loading?: boolean;
 }
+
+const getUsersByPlan = (plan: string) => {
+  if (!plan) return 0;
+
+  if (plan === 'Trial') {
+    return 1;
+  } else {
+    return subscriptionPlans.find(s => s.name === plan).userAccounts;
+  }
+};
 
 // 2. Fixed the parameter mapping here
 const SystemUsers = () => {
@@ -102,7 +113,6 @@ const SystemUsers = () => {
   const startIndex = initialUsers.length === 0 ? 0 : indexStart + 1;
   const endIndex = Math.min(activePage * itemsPerPage, initialUsers.length);
 
-
   const handlePageChange = (page: number) => {
     const nextParams = new URLSearchParams(searchParams.toString());
     if (page > 1) {
@@ -117,12 +127,28 @@ const SystemUsers = () => {
   const plan = profile?.fleetmaster_tenants?.subscription_plan;
   const userCount = initialUsers.length;
 
+  // 1. Single source of truth for plan limits
+  const maxUsers = getUsersByPlan(plan); // Returns e.g. 1, 3, or Infinity / null for Unlimited
+
+  // 2. Check if the user limit has been reached or exceeded
+  const isLimitReached = maxUsers !== null && userCount >= maxUsers;
+
+  // 3. Define upgrade upsell messages per plan
+  const UPSELL_MESSAGES: Record<string, string> = {
+    Trial: "Upgrade to Pro to add more users!",
+    Starter: "Upgrade to Pro to add more users!",
+    Pro: "Upgrade to Expert to add unlimited users!",
+  };
+
+  // 4. Determine the action UI
   let actionContent;
 
-  if (plan === "Trial" || plan === "Starter") {
-    actionContent = <div className="text-red-500 text-sm">This plan only enables 1 user. Upgrade to Pro to add more users!</div>;
-  } else if (plan === "Pro" && userCount >= 3) {
-    actionContent = <div className="text-red-500 text-sm">Upgrade to expert to add unlimitted users!</div>;
+  if (isLimitReached) {
+    actionContent = (
+      <div className="text-red-500 text-sm font-medium">
+        {userCount}/{maxUsers} users used. {UPSELL_MESSAGES[plan] ?? "Upgrade your plan to add more users!"}
+      </div>
+    );
   } else {
     actionContent = (
       <Link href="/system-users/new">
@@ -137,6 +163,16 @@ const SystemUsers = () => {
     );
   }
 
+  const allowedUsers = maxUsers != null && maxUsers !== Infinity
+    ? initialUsers.slice(0, maxUsers)
+    : initialUsers;
+
+  // 2. Paginate ONLY the allowed users
+  const paginatedUsers = allowedUsers.slice(startIndex - 1, endIndex);
+
+
+
+
   return (
     <div>
       <div className="space-y-6">
@@ -146,7 +182,7 @@ const SystemUsers = () => {
               View all system users and manage them. Click Create New User to add a new user with admin rights.
             </p>
             <span className="text-gray-500 text-start text-theme-sm dark:text-gray-400">
-              {initialUsers.length} Users
+              {initialUsers.length} of {getUsersByPlan(plan)} User accounts
             </span>
           </div>
           {actionContent}
@@ -196,7 +232,7 @@ const SystemUsers = () => {
                     </TableRow>
                   ) : (
                     // 3. Loop through your live initialUsers data dynamically
-                    initialUsers.slice(startIndex - 1, endIndex).length > 0 ? initialUsers.slice(startIndex - 1, endIndex).map((user, i) => (
+                    paginatedUsers.length > 0 ? paginatedUsers.map((user, i) => (
                       <TableRow key={i}>
                         <TableCell className="px-5 py-4 sm:px-6 text-start">
                           <div className="flex items-center gap-3 min-w-45">
@@ -207,7 +243,7 @@ const SystemUsers = () => {
                             />
                             <div>
                               <span className="block font-medium uppercase text-gray-800 text-theme-sm dark:text-white/90">
-                                {user.first_name || "N/A"} ({user.id === profile.id && 'You'})
+                                {user.first_name || "N/A"} {user.id === profile.id && '(You)'}
                               </span>
                               <span className="block text-gray-500 text-theme-xs pt-2 dark:text-gray-400">
                                 {user.first_name} {user.last_name}

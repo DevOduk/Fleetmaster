@@ -5,7 +5,7 @@ import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { useUser } from "@/context/UserContext";
-import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { ArrowRightIcon, ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -18,8 +18,8 @@ interface Tenant {
 
 export default function SignInForm({ tenant }: Tenant) {
   const router = useRouter();
-  const { login } = useUser();
-  const { login: adminLogin } = useAdmin();
+  const { login, profile } = useUser();
+  const { login: adminLogin, adminProfile } = useAdmin();
   const { showToast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -77,7 +77,7 @@ export default function SignInForm({ tenant }: Tenant) {
       setIsRedirecting(true);
 
       const searchParams = new URLSearchParams(window.location.search);
-      const encodedRef = searchParams.get('url');
+      const encodedRef = searchParams.get('r');
 
       setTimeout(() => {
         if (encodedRef) {
@@ -106,6 +106,12 @@ export default function SignInForm({ tenant }: Tenant) {
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div>
           <div className="mb-5 sm:mb-8">
+            {
+              (profile || adminProfile) && <Link href={'/'} className="text-brand-500 flex gap-2 items-center mb-2">
+                <ArrowRightIcon className='r rotate-180' /> Stay signed in as {profile?.first_name || adminProfile?.first_name}
+              </Link>
+            }
+
             <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
               Sign In
             </h1>

@@ -10,6 +10,7 @@ export interface PricingPlan {
   tagline: string;
   price: string;
   currency: string;
+  userAccounts: number;
   popular: boolean;
   ctaText: string;
   ctaLink: string;
@@ -256,7 +257,7 @@ export const allCountriesDB = [
   { "country": "United Arab Emirates", "code": "AE", "l_code": "ARE", "numeric": "784", "currency": "AE", "phone": "+971" },
   { "country": "United Kingdom of Great Britain and Northern Ireland", "code": "GB", "l_code": "GBR", "numeric": "826", "currency": "GB", "phone": "+44" },
   { "country": "United States Minor Outlying Islands", "code": "UM", "l_code": "UMI", "numeric": "581", "currency": "UM", "phone": "+1" },
-  { "country": "United States of America", "code": "US", "l_code": "USA", "numeric": "840", "currency": "US", "phone": "+1" },
+  { "country": "United States", "code": "US", "l_code": "USA", "numeric": "840", "currency": "US", "phone": "+1" },
   { "country": "Uruguay", "code": "UY", "l_code": "URY", "numeric": "858", "currency": "UY", "phone": "+598" },
   { "country": "Uzbekistan", "code": "UZ", "l_code": "UZB", "numeric": "860", "currency": "UZ", "phone": "+998" },
   { "country": "Vanuatu", "code": "VU", "l_code": "VUT", "numeric": "548", "currency": "VU", "phone": "+678" },
@@ -361,6 +362,7 @@ export const subscriptionPlans: PricingPlan[] = [
     price: "450",
     currency: "Ksh",
     popular: false,
+    userAccounts: 1,
     ctaText: "Start free trial",
     ctaLink: "#",
     featuresTitle: "What you get",
@@ -385,6 +387,7 @@ export const subscriptionPlans: PricingPlan[] = [
     price: "899",
     currency: "Ksh",
     popular: true,
+    userAccounts: 3,
     ctaText: "Start free trial",
     ctaLink: "#",
     featuresTitle: "Everything in Starter, plus",
@@ -406,15 +409,16 @@ export const subscriptionPlans: PricingPlan[] = [
   },
   {
     name: "Expert",
-    tagline: "Established SME, 5 to 10 staff, no limits",
+    tagline: "Established SME, 10 to 30 staff, no limits",
     price: "1299",
     currency: "Ksh",
     popular: false,
+    userAccounts: 30,
     ctaText: "Get started now",
     ctaLink: "#",
     featuresTitle: "Everything in Pro, plus",
     features: [
-      { text: " accounts", included: true, highlightedText: "10 user" },
+      { text: " accounts", included: true, highlightedText: "30 user" },
       { text: " listings", included: true, highlightedText: "Unlimited" },
       { text: " expenses", included: true, highlightedText: "Unlimited" },
       { text: " custom domains", included: true, highlightedText: "Unlimited" },

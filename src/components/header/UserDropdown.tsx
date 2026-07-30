@@ -68,7 +68,7 @@ export default function UserDropdown() {
               />
             </svg>
           </button> : <Link
-            href={`/signin?url=${currentPageUrl}`}
+            href={`/signin?r=${currentPageUrl}`}
             className="flex text-nowrap items-center gap-2 text-gray-600 dark:text-gray-400"><Avatar src="" /> Sign in</Link>
       }
 

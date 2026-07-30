@@ -48,7 +48,6 @@ export default function AdminTicketView() {
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const fetchTicket = useCallback(async () => {
-        setFetching(true);
         if (rawTicketNumber) {
             const res = await getTicketDetails(displayTicketNumber);
             setTicket(res.data);

@@ -26,6 +26,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     async function checkSession() {
       try {
         const response = await fetch("/api/auth/me");
+        console.log(response)
         if (response.ok) {
           const data = await response.json();
           setProfile(data.user);

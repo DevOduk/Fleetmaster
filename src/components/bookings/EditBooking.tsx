@@ -26,6 +26,7 @@ import { submitUserFeedback } from "@/app/actions/feedback";
 import { Modal } from '@/components/ui/modal';
 import Select from "../form/Select";
 import SimpleLoader from "../ui/loading/simpleLoader";
+import Link from "next/link";
 
 
 
@@ -945,23 +946,37 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
                 </Button>
               ) : (
                 <div className="w-full space-y-3 mt-6">
-                  {!isEnded && !isCancelled && (
-                    <Button
-                      onClick={() => {
-                        const nextStatus = !isStarted ? "Active" : "Completed";
-                        updateBookingStatus(nextStatus);
-                      }}
-                      disabled={(!isStarted && !isPastStartTime) || (isStarted && !isEnded)}
-                      className={`w-full ${(!isStarted && !isPastStartTime) || (isStarted && !isEnded) ? 'hidden!' : ''}`}
-                      variant={!isStarted && !isPastStartTime ? "danger" : "success"}
-                      size="sm"
-                    >
-                      {!isStarted
-                        ? (isPastStartTime ? 'Mark as Started' : 'Cannot start before scheduled time')
-                        : (isEnded ? 'Mark as Complete' : 'Rental in progress!')
-                      }
-                    </Button>
-                  )}
+{!isCancelled && !isCompleted && (
+  <Button
+    onClick={() => {
+      let nextStatus;
+
+      if (!isStarted && isPastStartTime) {
+        nextStatus = "Active";
+      } else if (isStarted && isEnded) {
+        nextStatus = "Completed";
+      }
+
+      if (nextStatus) updateBookingStatus(nextStatus);
+    }}
+    disabled={
+      (!isStarted && !isPastStartTime) || // can't start early
+      (isStarted && !isEnded)             // can't complete before end
+    }
+    className="w-full"
+    variant={!isStarted ? "danger" : "success"}
+    size="sm"
+  >
+    {!isStarted
+      ? (isPastStartTime
+          ? 'Mark as Started'
+          : 'Cannot start before scheduled time')
+      : (isEnded
+          ? 'Mark as Complete'
+          : 'Rental in progress!')
+    }
+  </Button>
+)}
 
                   {canCancel && (
                     <Button
@@ -1058,348 +1073,354 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
                     </button>
                   </div>
                 </ComponentCard> :
-                <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-100 dark:border-gray-800">
-                    Invoice Summary
-                  </h3>
+                isEnded ? <>
+                  <Alert title="Booking Ended!" variant="info" message="This booking has ended! This booking will be complete once post rental assessments and pending issues/claims are solved!" />
+                  <Link href={'/vehicles'}>
+                    {profile.role === 'Client' && <Button className="w-full" size="md" variant="success">Book Another Vehicle</Button>}
+                  </Link>
+                </>
+                  : <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 shadow-sm">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-100 dark:border-gray-800">
+                      Invoice Summary
+                    </h3>
 
-                  {/* Date Picking Mirror Layer */}
-                  <div className="space-y-3 mb-4">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Label className="text-xs text-gray-400">Handover Date</Label>
-                        <Input disabled type="datetime-local" className="text-xs mt-1"
-                          value={
-                            dayjs((bookingDetails.rental_start + 'T' + bookingDetails.rental_time)).format('YYYY-MM-DDTHH:mm')
-                          }
-                          name="start_date" />
+                    {/* Date Picking Mirror Layer */}
+                    <div className="space-y-3 mb-4">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label className="text-xs text-gray-400">Handover Date</Label>
+                          <Input disabled type="datetime-local" className="text-xs mt-1"
+                            value={
+                              dayjs((bookingDetails.rental_start + 'T' + bookingDetails.rental_time)).format('YYYY-MM-DDTHH:mm')
+                            }
+                            name="start_date" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-gray-400">Return Date</Label>
+                          <Input
+                            type="datetime-local"
+                            className="text-xs mt-1"
+                            // Keep the value display consistent
+                            value={`${newBookingDetails.rental_end}T${newBookingDetails.rental_time}`}
+                            onChange={(e) => {
+                              // 1. Get the new full string from the input (e.g., "2026-07-15T14:30")
+                              const newDateTime = e.target.value;
+
+                              // 2. Extract ONLY the date part from the new selection
+                              const newDate = newDateTime.split('T')[0];
+
+
+
+                              // 3. Update the state using the NEW date, but the EXISTING (unchanged) time
+                              setNewBookingDetails((prev) => ({
+                                ...prev,
+                                rental_end: newDate,
+                                // Ensure rental_time remains explicitly the old value
+                                rental_time: prev.rental_time,
+                              }));
+                            }}
+                            name="end_date"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <Label className="text-xs text-gray-400">Return Date</Label>
-                        <Input
-                          type="datetime-local"
-                          className="text-xs mt-1"
-                          // Keep the value display consistent
-                          value={`${newBookingDetails.rental_end}T${newBookingDetails.rental_time}`}
-                          onChange={(e) => {
-                            // 1. Get the new full string from the input (e.g., "2026-07-15T14:30")
-                            const newDateTime = e.target.value;
+                      <small className="text-red-500 mb-2 text-sm">{new Date(`${newBookingDetails.rental_end}T${newBookingDetails.rental_time}`) < new Date(`${bookingDetails.rental_end}T${bookingDetails.rental_time}`) && 'Enter a valid end date!'}</small>
 
-                            // 2. Extract ONLY the date part from the new selection
-                            const newDate = newDateTime.split('T')[0];
-
-
-
-                            // 3. Update the state using the NEW date, but the EXISTING (unchanged) time
+                      {[1, 2, 3, 4, 5, 7, 10, 14].map((day) => (
+                        <Button className="mb-2 mr-2 py-2!" size="sm" variant="success-outline" key={day}
+                          onClick={() => {
                             setNewBookingDetails((prev) => ({
                               ...prev,
-                              rental_end: newDate,
-                              // Ensure rental_time remains explicitly the old value
-                              rental_time: prev.rental_time,
+                              rental_end: new Date(new Date(bookingDetails.rental_end).getTime() + day * 24 * 60 * 60 * 1000)
+                                .toISOString()
+                                .split('T')[0],
                             }));
-                          }}
-                          name="end_date"
-                        />
+                          }}>
+                          <PlusIcon />
+                          {day} Day{day > 1 ? 's' : ''}
+                        </Button>
+                      ))}
+
+                      <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 dark:bg-gray-950 p-2 rounded border dark:border-gray-800">
+                        <span className="flex items-center gap-1"><ScheduleIcon fontSize="inherit" /> Computed Extension Span:</span>
+                        <span className="font-bold text-gray-800 dark:text-gray-200">{dayGap} Days</span>
                       </div>
                     </div>
-                    <small className="text-red-500 mb-2 text-sm">{new Date(`${newBookingDetails.rental_end}T${newBookingDetails.rental_time}`) < new Date(`${bookingDetails.rental_end}T${bookingDetails.rental_time}`) && 'Enter a valid end date!'}</small>
 
-                    {[1, 2, 3, 4, 5, 7, 10, 14].map((day) => (
-                      <Button className="mb-2 mr-2 py-2!" size="sm" variant="success-outline" key={day}
-                        onClick={() => {
-                          setNewBookingDetails((prev) => ({
-                            ...prev,
-                            rental_end: new Date(new Date(bookingDetails.rental_end).getTime() + day * 24 * 60 * 60 * 1000)
-                              .toISOString()
-                              .split('T')[0],
-                          }));
-                        }}>
-                        <PlusIcon />
-                        {day} Day{day > 1 ? 's' : ''}
-                      </Button>
-                    ))}
-
-                    <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 dark:bg-gray-950 p-2 rounded border dark:border-gray-800">
-                      <span className="flex items-center gap-1"><ScheduleIcon fontSize="inherit" /> Computed Extension Span:</span>
-                      <span className="font-bold text-gray-800 dark:text-gray-200">{dayGap} Days</span>
-                    </div>
-                  </div>
-
-                  {/* Dynamic Financial Statement Engine */}
-                  {expandBreakdown && (
-                    <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-950/40 text-sm space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 dark:text-gray-400">Booked Days</span>
-                        <span className="font-medium text-gray-800 dark:text-gray-200">{bookingDetails?.rental_days} Days</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 dark:text-gray-400">Duration Allocation</span>
-                        <span className="font-medium text-gray-800 dark:text-gray-200">{dayGap} Days</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 dark:text-gray-400">Base Subtotal ({dayGap}d × Ksh {(bookingDetails?.vehicle?.daily_rate).toLocaleString()})</span>
-                        <span className="font-medium text-gray-800 dark:text-gray-200">Ksh. {(grossSubTotal).toLocaleString() || 0}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 dark:text-gray-400">Logistics Transfer Supplement</span>
-                        <span className="font-medium text-gray-800 dark:text-gray-200">Ksh. {(0).toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 dark:text-gray-400">Standard Incident Rescue Plan</span>
-                        <span className="font-medium text-gray-800 dark:text-gray-200">Ksh. {0}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 dark:text-gray-400">Statutory VAT (16%)</span>
-                        <span className="font-medium text-gray-800 dark:text-gray-200">Ksh. {(vatAmount).toLocaleString()}</span>
-                      </div>
-
-                      <div className="border-t border-gray-200 dark:border-gray-800 my-2" />
-                    </div>
-                  )}
-
-                  {/* Grand Total Matrix Block */}
-                  <div className="mt-4 flex items-center justify-between p-3 bg-brand-500/10 dark:bg-brand-500/5 rounded-xl border border-brand-500/20">
-                    <span className="font-bold text-gray-900 dark:text-white text-base">Grand Payable Total:</span>
-                    <span className="text-xl font-extrabold text-green-600 dark:text-green-500">
-                      Ksh. {(grandTotalAmount).toLocaleString()}
-                    </span>
-                  </div>
-
-                  <p role='button' className='font-medium text-left text-xs text-brand-500 mt-2 mb-6 underline cursor-pointer' onClick={() => setExpandBreakdown(!expandBreakdown)}>
-                    {expandBreakdown ? 'Hide itemized breakdowns' : 'Expose line-item invoice data'}
-                  </p>
-
-                  {/* Billing Gateway Gateway Interface Config */}
-                  <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">3. Choose Payment Method</h4>
-                  <FormControl component="fieldset" className="w-full mb-6">
-                    {/* Use ONE RadioGroup mapped directly to your state variable */}
-                    <RadioGroup
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="space-y-3"
-                    >
-                      {/* M-Pesa Option Layout Box */}
-                      <div
-                        onClick={() => setPaymentMethod('m-pesa')}
-                        className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'm-pesa'
-                          ? 'border-brand-500 bg-brand-50/5'
-                          : 'border-gray-200 dark:border-gray-800'
-                          }`}
-                      >
-                        <FormControlLabel
-                          value="m-pesa"
-                          control={<Radio size="small" />}
-                          label={
-                            <div className="flex items-center gap-2">
-                              <MobileScreenShareOutlinedIcon className="text-brand-500" fontSize="small" />
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">M-Pesa Instant PayBill</span>
-                            </div>
-                          }
-                        />
-                      </div>
-
-                      {/* Card Option Layout Box */}
-                      <div
-                        onClick={() => setPaymentMethod('card')}
-                        className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'card'
-                          ? 'border-brand-500 bg-brand-50/5'
-                          : 'border-gray-200 dark:border-gray-800'
-                          }`}
-                      >
-                        <FormControlLabel
-                          value="card"
-                          control={<Radio size="small" />}
-                          label={
-                            <div className="flex items-center gap-2">
-                              <CreditCardIcon className="text-brand-500" fontSize="small" />
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">Bank Instant Checkout (VISA/MASTER Card)</span>
-                            </div>
-                          }
-                        />
-                      </div>
-                    </RadioGroup>
-                  </FormControl>
-
-                  <div className="mt-4 mb-4 transition-all duration-200">
-                    {paymentMethod === 'm-pesa' && (
-                      <div className="space-y-2">
-                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                          M-Pesa Mobile Number
-                        </label>
-                        <div className="relative mt-2">
-                          <Input
-                            type="tel"
-                            placeholder="e.g., 0712345678"
-                            className="pl-15.5"
-                            defaultValue={mpesaNumber}
-                            value={mpesaNumber}
-                            onChange={(e) => setMpesaNumber(e.target.value)}
-                            disabled={isPaying}
-                          />
-                          <span className="absolute left-0 top-1/2 flex text-sm h-11 w-13.75 dark:text-white -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
-                            +254
-                          </span>
+                    {/* Dynamic Financial Statement Engine */}
+                    {expandBreakdown && (
+                      <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-950/40 text-sm space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500 dark:text-gray-400">Booked Days</span>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">{bookingDetails?.rental_days} Days</span>
                         </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500 dark:text-gray-400">Duration Allocation</span>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">{dayGap} Days</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500 dark:text-gray-400">Base Subtotal ({dayGap}d × Ksh {(bookingDetails?.vehicle?.daily_rate).toLocaleString()})</span>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">Ksh. {(grossSubTotal).toLocaleString() || 0}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500 dark:text-gray-400">Logistics Transfer Supplement</span>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">Ksh. {(0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500 dark:text-gray-400">Standard Incident Rescue Plan</span>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">Ksh. {0}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500 dark:text-gray-400">Statutory VAT (16%)</span>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">Ksh. {(vatAmount).toLocaleString()}</span>
+                        </div>
+
+                        <div className="border-t border-gray-200 dark:border-gray-800 my-2" />
                       </div>
                     )}
 
-                    {paymentMethod === 'card' && (
-                      <div className="space-y-4">
-                        {/* Card Number Row */}
+                    {/* Grand Total Matrix Block */}
+                    <div className="mt-4 flex items-center justify-between p-3 bg-brand-500/10 dark:bg-brand-500/5 rounded-xl border border-brand-500/20">
+                      <span className="font-bold text-gray-900 dark:text-white text-base">Grand Payable Total:</span>
+                      <span className="text-xl font-extrabold text-green-600 dark:text-green-500">
+                        Ksh. {(grandTotalAmount).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <p role='button' className='font-medium text-left text-xs text-brand-500 mt-2 mb-6 underline cursor-pointer' onClick={() => setExpandBreakdown(!expandBreakdown)}>
+                      {expandBreakdown ? 'Hide itemized breakdowns' : 'Expose line-item invoice data'}
+                    </p>
+
+                    {/* Billing Gateway Gateway Interface Config */}
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">3. Choose Payment Method</h4>
+                    <FormControl component="fieldset" className="w-full mb-6">
+                      {/* Use ONE RadioGroup mapped directly to your state variable */}
+                      <RadioGroup
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="space-y-3"
+                      >
+                        {/* M-Pesa Option Layout Box */}
+                        <div
+                          onClick={() => setPaymentMethod('m-pesa')}
+                          className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'm-pesa'
+                            ? 'border-brand-500 bg-brand-50/5'
+                            : 'border-gray-200 dark:border-gray-800'
+                            }`}
+                        >
+                          <FormControlLabel
+                            value="m-pesa"
+                            control={<Radio size="small" />}
+                            label={
+                              <div className="flex items-center gap-2">
+                                <MobileScreenShareOutlinedIcon className="text-brand-500" fontSize="small" />
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">M-Pesa Instant PayBill</span>
+                              </div>
+                            }
+                          />
+                        </div>
+
+                        {/* Card Option Layout Box */}
+                        <div
+                          onClick={() => setPaymentMethod('card')}
+                          className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'card'
+                            ? 'border-brand-500 bg-brand-50/5'
+                            : 'border-gray-200 dark:border-gray-800'
+                            }`}
+                        >
+                          <FormControlLabel
+                            value="card"
+                            control={<Radio size="small" />}
+                            label={
+                              <div className="flex items-center gap-2">
+                                <CreditCardIcon className="text-brand-500" fontSize="small" />
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">Bank Instant Checkout (VISA/MASTER Card)</span>
+                              </div>
+                            }
+                          />
+                        </div>
+                      </RadioGroup>
+                    </FormControl>
+
+                    <div className="mt-4 mb-4 transition-all duration-200">
+                      {paymentMethod === 'm-pesa' && (
                         <div className="space-y-2">
                           <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                            Card Details
+                            M-Pesa Mobile Number
                           </label>
                           <div className="relative mt-2">
                             <Input
-                              type="text"
-                              placeholder="Card number"
+                              type="tel"
+                              placeholder="e.g., 0712345678"
                               className="pl-15.5"
-                            // value={cardNumber}
-                            // onChange={(e) => setCardNumber(e.target.value)}
+                              defaultValue={mpesaNumber}
+                              value={mpesaNumber}
+                              onChange={(e) => setMpesaNumber(e.target.value)}
+                              disabled={isPaying}
                             />
-                            <span className="absolute left-0 top-1/2 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
-                              <svg
-                                width="20"
-                                height="20"
-                                viewBox="0 0 20 20"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
-                                <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
-                                <path
-                                  d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
-                                  fill="#FC6020"
-                                />
-                              </svg>
+                            <span className="absolute left-0 top-1/2 flex text-sm h-11 w-13.75 dark:text-white -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                              +254
                             </span>
                           </div>
                         </div>
+                      )}
 
-                        {/* Expiry and CVV Side-by-Side Row */}
-                        <div className="grid grid-cols-2 gap-4">
-                          {/* Expiry Field */}
+                      {paymentMethod === 'card' && (
+                        <div className="space-y-4">
+                          {/* Card Number Row */}
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                              Expiry Date
+                              Card Details
                             </label>
-                            <Input
-                              type="text"
-                              max={'5'}
-                              placeholder="MM/YY"
-                              className="w-full text-center mt-2"
-                            // value={expiry}
-                            // onChange={(e) => handleExpiryChange(e.target.value)}
-                            />
+                            <div className="relative mt-2">
+                              <Input
+                                type="text"
+                                placeholder="Card number"
+                                className="pl-15.5"
+                              // value={cardNumber}
+                              // onChange={(e) => setCardNumber(e.target.value)}
+                              />
+                              <span className="absolute left-0 top-1/2 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 20 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
+                                  <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
+                                  <path
+                                    d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
+                                    fill="#FC6020"
+                                  />
+                                </svg>
+                              </span>
+                            </div>
                           </div>
 
-                          {/* CVV/CVC Field */}
-                          <div className="space-y-2">
-                            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                              Secure Code (CVV)
-                            </label>
-                            <Input
-                              type="password"
-                              max={'4'}
-                              placeholder="•••"
-                              className="w-full text-center tracking-widest mt-2"
-                            // value={cvv}
-                            // onChange={(e) => setCvv(e.target.value)}
-                            />
+                          {/* Expiry and CVV Side-by-Side Row */}
+                          <div className="grid grid-cols-2 gap-4">
+                            {/* Expiry Field */}
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                Expiry Date
+                              </label>
+                              <Input
+                                type="text"
+                                max={'5'}
+                                placeholder="MM/YY"
+                                className="w-full text-center mt-2"
+                              // value={expiry}
+                              // onChange={(e) => handleExpiryChange(e.target.value)}
+                              />
+                            </div>
+
+                            {/* CVV/CVC Field */}
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                Secure Code (CVV)
+                              </label>
+                              <Input
+                                type="password"
+                                max={'4'}
+                                placeholder="•••"
+                                className="w-full text-center tracking-widest mt-2"
+                              // value={cvv}
+                              // onChange={(e) => setCvv(e.target.value)}
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
 
 
-                  <Modal
-                    isOpen={successModal.isOpen}
-                    onClose={successModal.closeModal}
-                    className="max-w-150 p-5 lg:p-10 z-99999 bg-white! dark:bg-black!"
-                  >
-                    <div className="text-center">
-                      <div className="relative flex items-center justify-center z-1 mb-7">
-                        <svg
-                          className="fill-success-50 dark:fill-success-500/15"
-                          width="90"
-                          height="90"
-                          viewBox="0 0 90 90"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z"
-                            fill=""
-                            fillOpacity=""
-                          />
-                        </svg>
-
-                        <span className="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+                    <Modal
+                      isOpen={successModal.isOpen}
+                      onClose={successModal.closeModal}
+                      className="max-w-150 p-5 lg:p-10 z-99999 bg-white! dark:bg-black!"
+                    >
+                      <div className="text-center">
+                        <div className="relative flex items-center justify-center z-1 mb-7">
                           <svg
-                            className="fill-success-600 dark:fill-success-500"
-                            width="38"
-                            height="38"
-                            viewBox="0 0 38 38"
+                            className="fill-success-50 dark:fill-success-500/15"
+                            width="90"
+                            height="90"
+                            viewBox="0 0 90 90"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
                           >
                             <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M5.9375 19.0004C5.9375 11.7854 11.7864 5.93652 19.0014 5.93652C26.2164 5.93652 32.0653 11.7854 32.0653 19.0004C32.0653 26.2154 26.2164 32.0643 19.0014 32.0643C11.7864 32.0643 5.9375 26.2154 5.9375 19.0004ZM19.0014 2.93652C10.1296 2.93652 2.9375 10.1286 2.9375 19.0004C2.9375 27.8723 10.1296 35.0643 19.0014 35.0643C27.8733 35.0643 35.0653 27.8723 35.0653 19.0004C35.0653 10.1286 27.8733 2.93652 19.0014 2.93652ZM24.7855 17.0575C25.3713 16.4717 25.3713 15.522 24.7855 14.9362C24.1997 14.3504 23.25 14.3504 22.6642 14.9362L17.7177 19.8827L15.3387 17.5037C14.7529 16.9179 13.8031 16.9179 13.2173 17.5037C12.6316 18.0894 12.6316 19.0392 13.2173 19.625L16.657 23.0647C16.9383 23.346 17.3199 23.504 17.7177 23.504C18.1155 23.504 18.4971 23.346 18.7784 23.0647L24.7855 17.0575Z"
+                              d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z"
                               fill=""
+                              fillOpacity=""
                             />
                           </svg>
-                        </span>
+
+                          <span className="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+                            <svg
+                              className="fill-success-600 dark:fill-success-500"
+                              width="38"
+                              height="38"
+                              viewBox="0 0 38 38"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                                d="M5.9375 19.0004C5.9375 11.7854 11.7864 5.93652 19.0014 5.93652C26.2164 5.93652 32.0653 11.7854 32.0653 19.0004C32.0653 26.2154 26.2164 32.0643 19.0014 32.0643C11.7864 32.0643 5.9375 26.2154 5.9375 19.0004ZM19.0014 2.93652C10.1296 2.93652 2.9375 10.1286 2.9375 19.0004C2.9375 27.8723 10.1296 35.0643 19.0014 35.0643C27.8733 35.0643 35.0653 27.8723 35.0653 19.0004C35.0653 10.1286 27.8733 2.93652 19.0014 2.93652ZM24.7855 17.0575C25.3713 16.4717 25.3713 15.522 24.7855 14.9362C24.1997 14.3504 23.25 14.3504 22.6642 14.9362L17.7177 19.8827L15.3387 17.5037C14.7529 16.9179 13.8031 16.9179 13.2173 17.5037C12.6316 18.0894 12.6316 19.0392 13.2173 19.625L16.657 23.0647C16.9383 23.346 17.3199 23.504 17.7177 23.504C18.1155 23.504 18.4971 23.346 18.7784 23.0647L24.7855 17.0575Z"
+                                fill=""
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                        <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90 sm:text-title-sm">
+                          Confirmed! Payment Successful.
+                        </h4>
+                        <p className="text-sm leading-6 text-gray-500 dark:text-gray-400">
+                          Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.
+                        </p>
+
+                        <div className="flex items-center justify-center w-full gap-3 mt-7">
+                          <Button size="sm" variant="outline" endIcon={<ArrowRightIcon />} >
+                            Go to bookings
+                          </Button>
+                          <button
+                            type="button"
+                            onClick={successModal.closeModal}
+                            className="flex justify-center w-full px-4 py-3 text-sm font-medium text-white rounded-lg bg-success-500 shadow-theme-xs hover:bg-success-600 sm:w-auto"
+                          >
+                            Okay, Got It
+                          </button>
+                        </div>
                       </div>
-                      <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90 sm:text-title-sm">
-                        Confirmed! Payment Successful.
-                      </h4>
-                      <p className="text-sm leading-6 text-gray-500 dark:text-gray-400">
-                        Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support or view your booking in the dashboard.
-                      </p>
-
-                      <div className="flex items-center justify-center w-full gap-3 mt-7">
-                        <Button size="sm" variant="outline" endIcon={<ArrowRightIcon />} >
-                          Go to bookings
-                        </Button>
-                        <button
-                          type="button"
-                          onClick={successModal.closeModal}
-                          className="flex justify-center w-full px-4 py-3 text-sm font-medium text-white rounded-lg bg-success-500 shadow-theme-xs hover:bg-success-600 sm:w-auto"
-                        >
-                          Okay, Got It
-                        </button>
-                      </div>
-                    </div>
-                  </Modal>
+                    </Modal>
 
 
-                  <div className='space-y-5'>
-                    {
-                      isPaying && <Alert title='Payment Processing!' variant='info' message='Your payment is being processed. Check your phone.' />
-                    }
-                    {
-                      paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support.' />
-                    }
-
-                    {
-                      error && <Alert title='Payment Error!' variant='error' message={error?.message || 'An error occured. Please try again later!'} />
-                    }
-                  </div>
-                  {/* Dynamic Call-To-Action Operations Routing Grid */}
-                  <div className="space-y-3 mt-4">
-                    <Button onClick={handleCheckoutSubmit} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md' disabled={isPaying || paymentSuccess || newBookingDetails === bookingDetails}>
-                      {isPaying
-                        ? "Processing Transaction..."
-                        : `Pay Now (Ksh. ${(grandTotalAmount).toLocaleString()})`
+                    <div className='space-y-5'>
+                      {
+                        isPaying && <Alert title='Payment Processing!' variant='info' message='Your payment is being processed. Check your phone.' />
                       }
-                    </Button>
-                  </div>
+                      {
+                        paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='Your payment was successful. A receipt and your booking details have been sent to your email. If you have any questions, contact support.' />
+                      }
 
-                </div>
+                      {
+                        error && <Alert title='Payment Error!' variant='error' message={error?.message || 'An error occured. Please try again later!'} />
+                      }
+                    </div>
+                    {/* Dynamic Call-To-Action Operations Routing Grid */}
+                    <div className="space-y-3 mt-4">
+                      <Button onClick={handleCheckoutSubmit} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md' disabled={isPaying || paymentSuccess || newBookingDetails === bookingDetails}>
+                        {isPaying
+                          ? "Processing Transaction..."
+                          : `Pay Now (Ksh. ${(grandTotalAmount).toLocaleString()})`
+                        }
+                      </Button>
+                    </div>
+
+                  </div>
             }
           </div>
         </div>
