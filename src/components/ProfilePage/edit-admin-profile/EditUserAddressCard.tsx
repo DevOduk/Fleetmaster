@@ -7,8 +7,8 @@ import { useUser } from "@/context/UserContext";
 import { useEffect, useState } from "react";
 import { useToast } from "@/context/ToastContext";
 import { Backdrop, CircularProgress } from "@mui/material";
-import { hex } from "../client-profile/UserAddressCard";
 import handleProfileUpdate from "@/utils/admins/handleProfileUpdate";
+import { hex } from "../client-profile/ProfilePage";
 
 export default function EditUserAddressCard() {
   const { profile, loading, setProfile } = useUser();
