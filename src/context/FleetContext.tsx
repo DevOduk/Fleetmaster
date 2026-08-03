@@ -2,8 +2,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
 import { useTenant } from "./TenantContext";
 import { fetchVehiclesForTenant } from "@/app/actions/vehicles";
-// import { useBooking } from "./BookingContext";
-// import dayjs from "dayjs";
 
 // Define the shape of our context
 interface FleetContextType {

@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import CompanyInfoCard from "@/components/company-profile/CompanyInfoCard";
 import CompanySubscriptionsCard from "@/components/company-profile/CompanySubscriptionsCard";
 
 // 1. Generate dynamic metadata

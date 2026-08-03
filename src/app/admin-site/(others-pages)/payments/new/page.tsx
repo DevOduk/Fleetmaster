@@ -8,8 +8,8 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title:
-    "Record New Payment | FleetManager Admin Dashboard - Best tool for Fleet Management",
-  description: "FleetManager is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
+    "Record New Payment | FleetMaster - Best tool for Fleet Management",
+ // description: "FleetManager is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
 };
 
 export default function NewBooking() {

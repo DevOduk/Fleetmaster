@@ -3,8 +3,8 @@ import { Metadata } from "next";
 import SystemUsers from "@/components/bookings/SystemUsers";
 
 export const metadata: Metadata = {
-  title: "System Users | FleetManager Admin Dashboard",
-  description: "Manage your system users.",
+  title: "System Users | FleetMaster - Best tool for Fleet Management",
+  // description: "Manage your system users.",
 };
 
 export default async function Page() {
