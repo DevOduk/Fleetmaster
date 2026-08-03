@@ -1,10 +1,9 @@
 "use client"
-import UserAddressCard from "@/components/ProfilePage/client-profile/UserAddressCard";
 import UserInfoCard from "@/components/ProfilePage/client-profile/UserInfoCard";
-import UserMetaCard from "@/components/ProfilePage/client-profile/UserMetaCard";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import UserDocumentsCard from "@/components/ProfilePage/client-profile/UserDocumentsCard";
 import { useUser } from '@/context/UserContext';
+import UserAddressCard from "../admin-profile/UserAddressCard";
+import UserMetaCard from "../admin-profile/UserMetaCard";
 
 
 function ProfilePage() {
@@ -28,7 +27,6 @@ function ProfilePage() {
                         <UserMetaCard />
                         <UserInfoCard />
                         <UserAddressCard />
-                        <UserDocumentsCard />
                     </div>
                 </div>
             </div>

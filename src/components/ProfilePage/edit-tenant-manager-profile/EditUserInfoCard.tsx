@@ -1,12 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useModal } from "../../../hooks/useModal";
-import { Modal } from "../../ui/modal";
 import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import Link from "next/link";
-import { useUser } from "@/context/UserContext";
 import { useToast } from "@/context/ToastContext";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { useAdmin } from "@/context/AdminContext";
