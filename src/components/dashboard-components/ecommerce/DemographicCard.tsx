@@ -69,7 +69,7 @@ export default function DemographicCard({ tenants }: { tenants: any[]; }) {
             <div className="space-y-5">
                 {
                     loading ? <>
-                        {[...Array(2)].map((i) => (
+                        {[...Array(2)].map((_, i) => (
                             <div key={i} className="flex bg-gray-300 p-2 rounded dark:bg-gray-600 items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="items-center w-full rounded-full max-w-8">
