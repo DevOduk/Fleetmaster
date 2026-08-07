@@ -18,19 +18,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ToastProvider>
-      <ThemeProvider>
-        <SidebarProvider>
-          <html lang="en">
-            <body suppressHydrationWarning className={`${outfit.className} client-theme dark:bg-gray-900 min-h-screen`}>
+    <html lang="en" suppressHydrationWarning={true}>
+      <ToastProvider>
+        <ThemeProvider>
+          <SidebarProvider>
+            <body suppressHydrationWarning={true} className={`${outfit.className} client-theme dark:bg-gray-900 min-h-screen`}>
               <ThemeInitializer defaultColor="#465fff" />
-              {/* Inject the interceptor to fix links dynamically in the browser */}
               <ClientLinkInterceptor />
               {children}
             </body>
-          </html>
-        </SidebarProvider>
-      </ThemeProvider>
-    </ToastProvider>
+          </SidebarProvider>
+        </ThemeProvider>
+      </ToastProvider>
+    </html>
   );
 }

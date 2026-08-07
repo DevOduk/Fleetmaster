@@ -117,8 +117,16 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import * as jose from 'jose';
-
+import { Redis } from "@upstash/redis"; // Highly recommended to avoid database hitting lags
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+
 
 export async function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
@@ -139,7 +147,7 @@ export async function proxy(req: NextRequest) {
   if (req.nextUrl.pathname.startsWith('/_next') || req.headers.get('x-nextjs-data')) {
     return NextResponse.next();
   }
-  
+
   // ========================================================================
   // NEW VERCEL TRIAL ROUTING CHECKERER
   // ========================================================================
@@ -159,13 +167,11 @@ export async function proxy(req: NextRequest) {
 
   // 3. IDENTIFY THE SUBDOMAIN (Production & Localhost Compatible)
   let subdomain = '';
-
   if (hostname.includes('localhost')) {
     const parts = hostname.split('.');
     if (parts.length > 1) subdomain = parts[0];
   } else {
     const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'fleetmaster';
-
     if (hostname !== baseDomain && hostname.endsWith(`.${baseDomain}`)) {
       subdomain = hostname.replace(`.${baseDomain}`, '');
     }
@@ -190,6 +196,8 @@ export async function proxy(req: NextRequest) {
 
   // Setup variable tracking for internal rewrite target mapping
   let targetPathname = pathname;
+  let tenantDataString = '';
+  let tenantId = '';
 
   // 5. ADMIN DASHBOARD ROUTER (app.yourdomain.com)
   if (subdomain === 'app') {
@@ -205,7 +213,37 @@ export async function proxy(req: NextRequest) {
   else {
     const cleanPathname = pathname === '/' ? '' : pathname;
     targetPathname = `/client-site/${subdomain}${cleanPathname}`;
+
+    // ========================================================================
+    // NEW: INSTANT SERVER-SIDE RESOLUTION
+    // ========================================================================
+    try {
+      // Look up tenant details in Redis cache first (Runs in < 2ms)
+      let tenant: any = await redis.get(`tenant_slug:${subdomain}`);
+
+      if (!tenant) {
+        // Fallback: If not in cache, query your DB/Supabase via an internal fetch call
+        const origin = url.origin;
+        const res = await fetch(`${origin}/api/tenants/resolve?slug=${subdomain}`);
+        if (res.ok) {
+          const data = await res.json();
+          tenant = data.tenant;
+          // Store it in Redis for 1 hour so subsequent page clicks are blazing fast
+          await redis.set(`tenant_slug:${subdomain}`, tenant, { ex: 3600 });
+        }
+      }
+
+      if (tenant) {
+        tenantId = tenant.id;
+        tenantDataString = JSON.stringify(tenant);
+      }
+    } catch (e) {
+      console.error("Failed to pre-resolve tenant in proxy middleware:", e);
+    }
   }
+
+
+
   // ========================================================================
   // CORE AUTH SECURITY INTERCEPTOR LAYER
   // ========================================================================
@@ -261,8 +299,31 @@ export async function proxy(req: NextRequest) {
       return failRedirect;
     }
   }
-
-  // Final execution pass: rewrite target paths safely
+  
+  // Final execution pass: rewrite target paths safely and inject headers
   url.pathname = targetPathname;
-  return NextResponse.rewrite(url);
+
+  // 1. CREATE A NEW HEADERS INSTANCE OBJECT FROM THE INCOMING REQUEST
+  const requestHeaders = new Headers(req.headers);
+
+  // 2. IF A VALID TENANT WAS RESOLVED, INJECT DATA INTO THE REQUEST FLOW
+  if (tenantId) {
+    requestHeaders.set('x-tenant-id', tenantId);
+    requestHeaders.set('x-tenant-data', tenantDataString);
+  }
+
+  // 3. PASS THE UPDATED REQUEST HEADERS DIRECTLY INSIDE THE REWRITE OPTIONS
+  const response = NextResponse.rewrite(url, {
+    request: {
+      headers: requestHeaders,
+    },
+  });
+
+  // Optional: Also keep them on the response headers if your client-side fetchers need them
+  if (tenantId) {
+    response.headers.set('x-tenant-id', tenantId);
+    response.headers.set('x-tenant-data', tenantDataString);
+  }
+
+  return response;
 }

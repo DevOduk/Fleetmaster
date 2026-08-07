@@ -1,5 +1,6 @@
 import React from 'react'
 import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined"
+import Link from 'next/link';
 
 
 interface Pages {
@@ -49,9 +50,9 @@ export default function SecondaryHero({
                                                 {page.label}
                                             </span>
                                         ) : (
-                                            <a href={page.href} className="text-amber-500 hover:text-amber-600 transition-colors">
+                                            <Link href={page.href} className="text-amber-500 hover:text-amber-600 transition-colors">
                                                 {page.label}
-                                            </a>
+                                            </Link>
                                         )}
                                     </React.Fragment>
                                 );

@@ -14,8 +14,6 @@ import { accountItems, navItems, othersItems } from "./AppSidebar";
 import { useAdminFleet } from "@/context/AdminFleetContext";
 import { useAdminBooking } from "@/context/AdminBookingContext";
 import userVerified from "@/utils/clients/checkverification";
-const supabase = createClient();
-import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined"
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);

@@ -29,13 +29,14 @@ function VehicleItem({ VehicleDetails, isBooked, filters }: VehicleDetails) {
 
     return (
         <div key={VehicleDetails.id} className="mb-3 dark:bg-gray-500/10 bg-gray-500/3 shadow rounded-2xl">
-            <div className='relative'>
+            <Link className='relative' href={`/vehicles/${VehicleDetails.id}?start=${filters?.start}&end=${filters?.end}`}>
                 <Box className='flex gap-2' sx={{ position: 'absolute', top: 10, right: 10 }}>
                     <Chip size='small' sx={{ px: 1 }} variant='filled' color='primary' label={VehicleDetails.driver_type} />
                     <Chip size='small' sx={{ px: 1 }} variant='filled' color='secondary' icon={<DirectionsCarFilledOutlinedIcon fontSize='small' />} label={VehicleDetails.category} />
                 </Box>
                 <img src={VehicleDetails.image_url} alt={`${VehicleDetails.make} ${VehicleDetails.model}`} className="w-full bg-gray-500 object-cover rounded-xl rounded-b-none mb-3 aspect-video" />
-            </div>
+            </Link>
+
             <div className="px-3 pb-4">
                 <h4 className="font-bold text-black dark:text-white mb-1">{VehicleDetails.year} {VehicleDetails.make} {VehicleDetails.model} </h4>
                 {/* <p className="truncate text-gray-500 mb-2 mt-1 text-sm dark:text-gray-400">{VehicleDetails.description}</p> */}

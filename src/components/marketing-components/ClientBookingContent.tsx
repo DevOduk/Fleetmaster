@@ -139,7 +139,7 @@ function ClientBookingContent() {
 
                 {
                   filteredBookings.map((b) => (
-                    <Link href={'/bookings/' + b.id} className="border border-slate-100 dark:border-slate-800 p-4 dark:hover:bg-gray-800 hover:bg-gray-200 rounded-2xl flex gap-6 bg-white dark:bg-gray-800/20 items-center transition-all hover:border-amber-500/30"
+                    <Link href={'/bookings/' + b.id} className="border border-slate-100 dark:border-slate-800 p-4 dark:hover:bg-gray-800 dark:active:bg-gray-800 dark:focus:bg-gray-800 hover:bg-gray-200 focus:bg-gray-200 active:bg-gray-200 rounded-2xl flex gap-6 bg-white dark:bg-gray-800/20 items-center transition-all hover:border-amber-500/30"
                       key={b.id}
                     >
                       <div className="w-45 shrink-0">
@@ -160,17 +160,19 @@ function ClientBookingContent() {
                             {b.pickup_location} •
                             <Badge size="sm" color={b.booking_status.toLowerCase() === 'reserved' ? "info" : b.booking_status.toLowerCase() === 'booked' ? "primary" : b.booking_status.toLowerCase() === 'active' ? "success" : b.booking_status.toLowerCase() === 'completed' ? "warning" : "error"} >{b.booking_status}</Badge>
                           </p>
-                          <p className="mb-3 w-full flex justify-between p-.5 max-w-[80%] px-0"><span className="font-semibold">{b.rental_start}</span> - <span className="font-semibold">{b.rental_end}</span></p>
+                          <p className="mb-1 w-full flex justify-between p-.5 max-w-[80%] px-0"><span className="font-semibold">{b.rental_start}</span> - <span className="font-semibold">{b.rental_end}</span></p>
                           {b.booking_status.toLowerCase() === 'reserved' ?
                             (new Date().getTime() > new Date(b.created_at).getTime() + (30 * 60 * 1000)) && <p className="text-sm text-red-500">Reservation expired!</p> :
-                            <p>{
-                              getTimeRemaining(
-                                b.booking_status,
-                                b.rental_start,
-                                b.rental_end,
-                                b.rental_time,
-                                b.created_at,
-                              )}</p>
+                            <p className="italic text-xs text-brand-500">
+                              {new Date(b.created_at).toLocaleString()} | {
+                                getTimeRemaining(
+                                  b.booking_status,
+                                  b.rental_start,
+                                  b.rental_end,
+                                  b.rental_time,
+                                  b.created_at,
+                                )}
+                            </p>
                           }
                         </div>
                       </div>

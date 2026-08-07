@@ -45,9 +45,9 @@ export async function deleteVehicle(id: number, profile: any) {
   const supabase = await createClient();
 
   if (!profile || !profile.role || profile.role === "Client") {
-    return { 
-      success: false, 
-      error: { message: "Unauthorized action detected! Please verify access & try again." } 
+    return {
+      success: false,
+      error: { message: "Unauthorized action detected! Please verify access & try again." }
     };
   }
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useTenant } from "./TenantContext";
 import { fetchVehiclesForTenant } from "@/app/actions/vehicles";
 
@@ -13,18 +13,31 @@ interface FleetContextType {
 
 const FleetContext = createContext<FleetContextType | undefined>(undefined);
 
-export const FleetProvider = ({ children }: { children: ReactNode }) => {
-  const [vehicles, setVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
+interface FleetProviderProps {
+  children: ReactNode;
+  initialVehicles?: any[]; // <-- NEW: Accept pre-fetched vehicles from Server Component layout
+}
+
+export const FleetProvider = ({ children, initialVehicles = [] }: FleetProviderProps) => {
+  // If the server provides vehicles, boot up state with them immediately
+  const [vehicles, setVehicles] = useState<any[]>(initialVehicles);
+
+  // Set loading to false instantly if vehicles were provided by the server
+  const [loading, setLoading] = useState(initialVehicles.length === 0);
   const { tenant } = useTenant();
 
-
-
   useEffect(() => {
+    // If server provided initial data, skip executing the client fetch block
+    if (initialVehicles.length > 0) {
+      setLoading(false);
+      return;
+    }
+
     if (!tenant) return;
 
     async function fetchAllVehicles() {
       try {
+        setLoading(true);
         const response = await fetchVehiclesForTenant(tenant?.id);
 
         if (response.success) {
@@ -40,8 +53,7 @@ export const FleetProvider = ({ children }: { children: ReactNode }) => {
     }
 
     fetchAllVehicles();
-  }, [tenant]);
-
+  }, [tenant, initialVehicles]); // Re-run tracker if initial data arrays adjust
 
   // Helper function to update a single vehicle by ID
   const updateVehicle = (id: number, updatedVehicle: any) => {
@@ -49,7 +61,6 @@ export const FleetProvider = ({ children }: { children: ReactNode }) => {
       prev.map((v) => (v.id === id ? updatedVehicle : v))
     );
   };
-
 
   return (
     <FleetContext.Provider value={{ vehicles, loading, setVehicles, updateVehicle }}>
