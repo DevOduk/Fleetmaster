@@ -5,13 +5,13 @@ import ClientHeader from "@/layout/(client-layout)/ClientHeader";
 import { BookingProvider } from "@/context/BookingContext";
 import { FleetProvider } from "@/context/FleetContext";
 import { TenantProvider } from "@/context/TenantContext";
-import jwt from "jsonwebtoken"
 import { notFound } from "next/navigation";
 import { UserProvider } from "@/context/UserContext";
 import { ToastProvider } from "@/context/ToastContext";
 import TenantLoadingScreenGuard from "./TenantLoadingScreenGuard";
 import { fetchVehiclesForTenant } from '@/app/actions/vehicles';
 import { Redis } from '@upstash/redis';
+import jwt from "jsonwebtoken"
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const redis = new Redis({
@@ -79,7 +79,7 @@ export default async function TenantLayout({
         <FleetProvider initialVehicles={initialVehicles || []}>
           <UserProvider initialUser={serverUser}>
             <BookingProvider>
-              
+
               <TenantLoadingScreenGuard>
                 <div>
                   <ClientHeader />
