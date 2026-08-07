@@ -206,6 +206,7 @@ export async function proxy(req: NextRequest) {
   let targetPathname = pathname;
   let tenantDataString = '';
   let tenantId = '';
+  console.log("Proxy Middleware: Handling subdomain:", subdomain, "for path:", pathname);
 
   // 5. ADMIN DASHBOARD ROUTER (app.domain.com)
   if (subdomain === 'app') {
@@ -216,6 +217,7 @@ export async function proxy(req: NextRequest) {
     targetPathname = `/tenant-manager${pathname}`;
   }
   // 7. CLIENT MULTI-TENANT HANDLER (tenant-slug.domain.com)
+  
   else {
     const cleanPathname = pathname === '/' ? '' : pathname;
     targetPathname = `/client-site/${subdomain}${cleanPathname}`;
