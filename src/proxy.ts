@@ -118,16 +118,16 @@ import type { NextRequest } from 'next/server';
 import * as jose from 'jose';
 import { Redis } from "@upstash/redis";
 
-const JWT_SECRET = process.env.JWT_SECRET 
-  ? new TextEncoder().encode(process.env.JWT_SECRET) 
+const JWT_SECRET = process.env.JWT_SECRET
+  ? new TextEncoder().encode(process.env.JWT_SECRET)
   : null;
 
 // Instantiate Redis safely
 const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
   ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  })
   : null;
 
 export async function proxy(req: NextRequest) {
@@ -146,17 +146,25 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. VERCEL DOMAIN HANDLER (.vercel.app preview and staging deployments)
-  if (hostname.endsWith('.vercel.app')) {
-    // If accessing directly via standard Next.js routes, let it pass directly
+  // 2. VERCEL DEPLOYMENT / STAGING OVERRIDE
+  if (hostname.endsWith('vercel.app')) {
+    // If the user visits /client-site/slug directly on Vercel preview, 
+    // ensure Next.js resolves it properly to your dynamic route folder
     if (
-      pathname === '/' ||
       pathname.startsWith('/signin') ||
       pathname.startsWith('/signup') ||
       pathname.startsWith('/register') ||
-      pathname.startsWith('/client-site') ||
-      pathname.startsWith('/admin-site') ||
-      pathname.startsWith('/tenant-manager')
+      pathname.startsWith('/api')
+    ) {
+      return NextResponse.next();
+    }
+
+    // If testing subdomains directly via path prefix on Vercel (e.g. /client-site/blexy)
+    // Let Next.js handle the request directly without adding secondary prefixes
+    if (
+      pathname.startsWith('/client-site/') ||
+      pathname.startsWith('/admin-site/') ||
+      pathname.startsWith('/tenant-manager/')
     ) {
       return NextResponse.next();
     }
@@ -176,8 +184,8 @@ export async function proxy(req: NextRequest) {
   // 4. ROOT DOMAIN / NO SUBDOMAIN HANDLER
   if (!subdomain || subdomain === 'www' || hostname === baseDomain) {
     if (
-      pathname.startsWith('/signin') || 
-      pathname.startsWith('/signup') || 
+      pathname.startsWith('/signin') ||
+      pathname.startsWith('/signup') ||
       pathname.startsWith('/register')
     ) {
       return NextResponse.next();
