@@ -1,5 +1,4 @@
 // app/(admin)/layout.tsx
-import { BookingProvider } from "@/context/BookingContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { UserProvider } from "@/context/UserContext";
 import { SidebarProvider } from "@/context/SidebarContext";
