@@ -97,7 +97,7 @@ export default function DemographicCard({ clients }: { clients: any[]; }) {
             ))}
           </> :
             <div className="flex flex-col gap-4">
-              {countries.map((c, i) => {
+              {countries.sort((a, b) => a.length - b.length).map((c, i) => {
                 const percentage = ((clients?.filter(m => m.country === c).length) / clients.length) * 100;
                 const country = allCountriesDB.find(b => b.country === c);
 

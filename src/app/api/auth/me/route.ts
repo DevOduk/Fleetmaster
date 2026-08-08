@@ -70,7 +70,7 @@ export async function GET(request: Request) {
       // Optimized query without heavy join (* nested queries)
       const { data, error } = await supabase
         .from(tableName)
-        .select("id, first_name, last_name, email, phone, created_at, city, verification_status, country, role, tenant_id, profile_pic")
+        .select(`id, first_name, last_name, email, phone, created_at, city, verification_status, country, role, tenant_id, profile_pic, fleetmaster_tenants(*)`)
         .eq("id", decoded.id)
         .maybeSingle();
 
