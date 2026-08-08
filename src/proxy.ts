@@ -50,8 +50,7 @@ export async function proxy(req: NextRequest) {
       subdomain = parts.slice(0, -1).join('.');
     }
   } else if (isVercelDomain) {
-    // Vercel app environment: extract slug from path segment index 1
-    // Example: /client-site/oduk/dashboard -> subdomain = "oduk"
+    // Vercel app environment (path-based routing)
     if (pathSegments[0] === 'client-site' && pathSegments[1]) {
       subdomain = pathSegments[1];
     } else if (pathSegments[0] === 'admin-site') {
@@ -60,12 +59,13 @@ export async function proxy(req: NextRequest) {
       subdomain = 'dashboard';
     }
   } else if (baseDomain && hostname.endsWith(`.${baseDomain}`)) {
-    // Production/Custom domain environment: extract from hostname
+    // Production / Custom domain (subdomain routing)
     subdomain = hostname.replace(`.${baseDomain}`, '');
   }
 
   // 3. ROOT DOMAIN / NO SUBDOMAIN HANDLER
-  if (!subdomain || subdomain === 'www' || (hostname === baseDomain && !isVercelDomain)) {
+  // Only block raw direct folder access if we are on a PRODUCTION custom domain, NOT Vercel.
+  if (!isVercelDomain && (!subdomain || subdomain === 'www' || hostname === baseDomain)) {
     if (
       pathname.startsWith('/admin-site') ||
       pathname.startsWith('/tenant-manager') ||
@@ -74,6 +74,11 @@ export async function proxy(req: NextRequest) {
       url.pathname = '/404';
       return NextResponse.rewrite(url);
     }
+    return NextResponse.next();
+  }
+
+  // If on Vercel and accessing root '/', proceed as normal
+  if (isVercelDomain && !subdomain) {
     return NextResponse.next();
   }
 
@@ -87,7 +92,6 @@ export async function proxy(req: NextRequest) {
   } else if (subdomain === 'dashboard') {
     targetPathname = isVercelDomain ? pathname : `/tenant-manager${pathname}`;
   } else {
-    // For Vercel path-based routing, target path is already routed to /client-site/[subdomain]
     if (!isVercelDomain) {
       const cleanPath = pathname === '/' ? '' : pathname;
       targetPathname = `/client-site/${subdomain}${cleanPath}`;
