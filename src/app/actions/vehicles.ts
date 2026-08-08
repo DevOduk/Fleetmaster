@@ -90,21 +90,6 @@ export async function deleteVehicle(id: number, profile: any) {
   return { success: !deleteError, error: deleteError };
 }
 
-export async function fetchVehiclesForAdmin(tenantId: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("fleetmaster_vehicles")
-    .select(`*, tenant:fleetmaster_tenants(name)`)
-    .eq("tenant_id", tenantId)
-    .order('created_at', { ascending: false });
-
-  const formattedData = data?.map((vehicle) => ({
-    ...vehicle,
-    owner: vehicle.tenant?.name || vehicle.owner
-  }));
-
-  return { data: formattedData, success: !error, error };
-}
 
 export async function fetchVehiclesForTenant(tenantId: string) {
   const { data, error, success } = await getCachedVehicles(tenantId);

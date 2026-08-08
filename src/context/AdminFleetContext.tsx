@@ -1,9 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
 import { useUser } from "./UserContext";
-import { fetchVehiclesForAdmin } from "@/app/actions/vehicles";
-// import { useBooking } from "./BookingContext";
-// import dayjs from "dayjs";
+import { fetchVehiclesForTenant } from "@/app/actions/vehicles";
 
 // Define the shape of our context
 interface AdminFleetContextType {
@@ -26,7 +24,7 @@ export const AdminFleetProvider = ({ children }: { children: ReactNode }) => {
 
     async function fetchAllVehicles() {
       try {
-        const response = await fetchVehiclesForAdmin(adminProfile?.tenant_id);
+        const response = await fetchVehiclesForTenant(adminProfile?.tenant_id);
 
         if (response.success) {
           setVehicles(response.data);
