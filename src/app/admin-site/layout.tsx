@@ -9,6 +9,7 @@ import { UserProvider } from "@/context/UserContext";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { AdminFleetProvider } from "@/context/AdminFleetContext";
 import { AdminBookingProvider } from "@/context/AdminBookingContext";
+import { fetchVehiclesForTenant } from "@/app/actions/vehicles";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -25,6 +26,7 @@ export default async function RootAdminLayout({
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("user_session");
   let serverUser = null;
+  let initialVehicles: any[] = [];
 
   if (sessionCookie?.value && JWT_SECRET) {
     try {
@@ -58,10 +60,23 @@ export default async function RootAdminLayout({
     }
   }
 
+  // Pre-fetch vehicles on the server if tenant_id exists on serverUser
+  const tenantId = serverUser?.tenant_id;
+  if (tenantId) {
+    try {
+      const vehicleRes = await fetchVehiclesForTenant(tenantId);
+      if (vehicleRes?.success) {
+        initialVehicles = vehicleRes.data || [];
+      }
+    } catch (err) {
+      console.error("Failed to pre-fetch initial vehicles on layout:", err);
+    }
+  }
+
   return (
     <UserProvider initialUser={serverUser}>
       <SettingsProvider>
-        <AdminFleetProvider>
+        <AdminFleetProvider initialVehicles={initialVehicles}>
           <AdminBookingProvider>
             <SidebarProvider>
               {children}

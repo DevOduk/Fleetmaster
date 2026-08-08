@@ -34,6 +34,7 @@ import { PencilIcon, ChevronDownIcon } from "@/icons";
 import { syncTimeToDateString } from '../client-components/Vehicles/ClientVehiclesPage';
 import { mpesaPollingIterval } from '../company-profile/CompanySubscriptionsCard';
 import { createNewBooking } from '@/app/actions/bookings';
+import { useAdminBooking } from '@/context/AdminBookingContext';
 
 
 
@@ -65,6 +66,8 @@ const CreateNewBookingForm = () => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const successModal = useModal();
   const { isOpen, openModal, closeModal } = useModal();
+  const { reloadBookings } = useAdminBooking();
+
 
   const token = searchParams.get('token');
   let decodedData = null;
@@ -150,10 +153,6 @@ const CreateNewBookingForm = () => {
     return 0; // default branch
   };
 
-
-  const resetFilters = () => {
-    setFilters(null);
-  }
 
   const handleSave = () => {
     // 1. Create the single source of truth for the updated state
@@ -345,6 +344,8 @@ const CreateNewBookingForm = () => {
 
               console.log("Database payment update response:", dbRes);
               console.log("Database booking insert response:", bookingRes);
+
+              reloadBookings(); // <-- Trigger a refresh of the bookings list in the parent component
             } else {
               const failReason = statusData.ResultDesc || 'Transaction was canceled or failed.';
               showToast(failReason, 'error');
@@ -590,7 +591,7 @@ const CreateNewBookingForm = () => {
                         <FormControl component="fieldset" className="w-full">
                           <RadioGroup value={dropoffLocation} onChange={(e) => setDropoffLocation(e.target.value)} className="space-y-2">
                             {
-                              profile?.fleetmaster_tenants?.yards.filter(y => y.title !== VehicleDetails?.location).length > 0 ?  profile?.fleetmaster_tenants?.yards.filter(y => y.title !== VehicleDetails?.location).map((y) => (
+                              profile?.fleetmaster_tenants?.yards.filter(y => y.title !== VehicleDetails?.location).length > 0 ? profile?.fleetmaster_tenants?.yards.filter(y => y.title !== VehicleDetails?.location).map((y) => (
                                 <div key={y.title} className={`flex items-center justify-between border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 ${dropoffLocation === y.title ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-200 dark:border-gray-800'}`}>
                                   <FormControlLabel value={y.title} control={<Radio size="small" color="primary" />} label={<span className="text-sm dark:text-gray-200">{y.title}</span>} />
                                   <span className="text-xs font-semibold text-brand-500">+ Ksh 200</span>

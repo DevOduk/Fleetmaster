@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useAdminFleet } from "./AdminFleetContext";
 import { useUser } from "./UserContext";
-import { fetchBookingsForAdmin } from "@/app/actions/bookings";
+import { fetchBookingsForTenant } from "@/app/actions/bookings";
 
 interface AdminBookingContextType {
   bookings: any[];
@@ -24,7 +24,7 @@ export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
 
   async function fetchAllBookings() {
     try {
-      const response = await fetchBookingsForAdmin(adminProfile?.tenant_id);
+      const response = await fetchBookingsForTenant(adminProfile?.tenant_id);
       if (response.success) {
         setBookings(response.data);
       } else {

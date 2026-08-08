@@ -27,6 +27,7 @@ import { Modal } from '@/components/ui/modal';
 import Select from "../form/Select";
 import SimpleLoader from "../ui/loading/simpleLoader";
 import Link from "next/link";
+import { useAdminBooking } from "@/context/AdminBookingContext";
 
 
 
@@ -128,16 +129,10 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
   const { isOpen, openModal: openCancelModal, closeModal } = useModal();
   const [cancellation_reason, setCancellation_reason] = useState("");
   const [cancelEmail, setCancelEmail] = useState("");
+  const { reloadBookings } = useAdminBooking();
 
 
 
-
-
-  const handleSave = () => {
-    // Handle save logic here
-    console.log("Saving changes...");
-    closeModal();
-  };
 
   useEffect(() => {
     if (loading) return;
@@ -311,6 +306,8 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
 
       setNewBookingDetails((prev) => ({ ...prev, booking_status: status }))
       setBookingDetails((prev) => ({ ...prev, booking_status: status }))
+
+      reloadBookings(); // <-- Trigger reload of bookings in context to reflect the updated status
     } else {
       console.log(response.error)
       showToast('Could not update booking status. Try again later!', 'error');
@@ -499,6 +496,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
               successModal.openModal();
               setPaymentSuccess(true);
               setBookingDetails({ ...newBookingDetails, rental_days: (bookingDetails.rental_days + dayGap) });
+              reloadBookings();
 
               const newPayment = {
                 tenant_id: profile?.tenant_id,

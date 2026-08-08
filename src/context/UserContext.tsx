@@ -51,7 +51,7 @@ export function UserProvider({ children, initialUser = null }: { children: React
     }
     checkSession();
   }, [initialUser]); // Listen to initial data streams safely
-
+console.log('user:', initialUser, profile);
   const login = async (role: 'client' | 'admin', email: string, password: string, tenant: string) => {
     try {
       const response = await fetch("/api/auth/login", {

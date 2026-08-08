@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useUser } from "./UserContext";
 import { fetchVehiclesForTenant } from "@/app/actions/vehicles";
 
@@ -13,18 +13,32 @@ interface AdminFleetContextType {
 
 const AdminFleetContext = createContext<AdminFleetContextType | undefined>(undefined);
 
-export const AdminFleetProvider = ({ children }: { children: ReactNode }) => {
-  const { profile: adminProfile } = useUser();
-  const [vehicles, setVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
+interface AdminFleetProviderProps {
+  children: ReactNode;
+  initialVehicles?: any[]; // Accept pre-fetched vehicles from Server Component layout
+}
 
+export const AdminFleetProvider = ({ children, initialVehicles = [] }: AdminFleetProviderProps) => {
+  // If the server provides vehicles, boot up state with them immediately
+  const [vehicles, setVehicles] = useState<any[]>(initialVehicles);
+
+  // Set loading to false instantly if vehicles were provided by the server
+  const [loading, setLoading] = useState(initialVehicles.length === 0);
+  const { profile: adminProfile } = useUser();
 
   useEffect(() => {
-    if (!adminProfile) return;
+    // If server provided initial data, skip executing the client fetch block
+    if (initialVehicles.length > 0) {
+      setLoading(false);
+      return;
+    }
+
+    if (!adminProfile?.tenant_id) return;
 
     async function fetchAllVehicles() {
       try {
-        const response = await fetchVehiclesForTenant(adminProfile?.tenant_id);
+        setLoading(true);
+        const response = await fetchVehiclesForTenant(adminProfile.tenant_id);
 
         if (response.success) {
           setVehicles(response.data);
@@ -34,14 +48,13 @@ export const AdminFleetProvider = ({ children }: { children: ReactNode }) => {
       } catch (err) {
         console.error("Network connection failure:", err);
       } finally {
-        setTimeout(() => {
-          setLoading(false);
-        }, 1500);
+        setLoading(false);
       }
     }
 
     fetchAllVehicles();
-  }, [adminProfile]);
+  // Pass primitives (tenant_id string & array length number) to prevent infinite object re-evaluation
+  }, [adminProfile?.tenant_id, initialVehicles?.length]);
 
   // Helper function to update a single vehicle by ID
   const updateVehicle = (id: number, updatedVehicle: any) => {
@@ -49,7 +62,6 @@ export const AdminFleetProvider = ({ children }: { children: ReactNode }) => {
       prev.map((v) => (v.id === id ? updatedVehicle : v))
     );
   };
-
 
   return (
     <AdminFleetContext.Provider value={{ vehicles, loading, setVehicles, updateVehicle }}>
@@ -61,6 +73,6 @@ export const AdminFleetProvider = ({ children }: { children: ReactNode }) => {
 // Custom hook for easy access
 export const useAdminFleet = () => {
   const context = useContext(AdminFleetContext);
-  if (!context) throw new Error("useAdminFleet must be used within a AdminFleetProvider");
+  if (!context) throw new Error("useAdminFleet must be used within an AdminFleetProvider");
   return context;
 };

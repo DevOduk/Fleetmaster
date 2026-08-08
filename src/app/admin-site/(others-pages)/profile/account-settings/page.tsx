@@ -1,13 +1,63 @@
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import AccountSettings from "@/components/account/AccountSettings";
 import { Metadata } from "next";
+import { headers } from "next/headers";
+import { createPublicClient } from "@/utils/supabase/server";
 
+// Helper function to safely extract and parse tenant data from headers
+async function getTenantFromHeaders() {
+  const headerList = await headers();
+  const tenantId = headerList.get("x-tenant-id");
+  const rawTenantData = headerList.get("x-tenant-data");
 
-export const metadata: Metadata = {
-  title:
-    "Account Settings  | FleetMaster - Best tool for Fleet Management",
-  //  description: "FleetManager is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
-};
+  let tenantData = null;
+  if (rawTenantData) {
+    try {
+      tenantData = JSON.parse(rawTenantData);
+    } catch (e) {
+      console.error("Failed to parse x-tenant-data header:", e);
+    }
+  }
+
+  return { tenantId, tenantData };
+}
+
+// 1. Dynamic Server-Side Metadata Generation
+export async function generateMetadata(): Promise<Metadata> {
+  const { tenantData } = await getTenantFromHeaders();
+
+  // If header tenant data exists, use it directly (saves a DB query)
+  let tenantName = tenantData?.name;
+  let tenantDescription = tenantData?.about;
+
+  // Fallback to DB query if header data isn't present
+  if (!tenantName) {
+    const supabase = createPublicClient();
+    const { data: tenant } = await supabase
+      .from("fleetmaster_tenants")
+      .select("name, about")
+      .limit(1)
+      .maybeSingle();
+
+    tenantName = tenant?.name || "FleetMaster";
+    tenantDescription =
+      tenant?.about ||
+      `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
+  } else {
+    tenantDescription =
+      tenantDescription ||
+      `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
+  }
+
+  return {
+    title: `Account Settings | ${tenantName}: FleetMaster - Premium Car Rental & Fleet Solutions Software`,
+    description: tenantDescription,
+    openGraph: {
+      title: `${tenantName} - Official Admin Website`,
+      description: tenantDescription,
+    },
+  };
+}
 export default function SettingsPage() {
   return (
     <div>

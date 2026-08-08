@@ -32,8 +32,8 @@ const Vehicles: React.FC = () => {
               <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 space-y-4">
                 <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-full mb-6"></div>
                 <div className="space-y-4">
-                  {[...Array(9)].map(l => (
-                    <div key={l} className="h-10 bg-gray-100 dark:bg-gray-800 rounded w-full"></div>
+                  {[...Array(9)].map((_, i) => (
+                    <div key={i} className="h-10 bg-gray-100 dark:bg-gray-800 rounded w-full"></div>
                   ))}
                 </div>
               </div>

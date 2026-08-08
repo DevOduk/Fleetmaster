@@ -9,7 +9,7 @@ const redis = new Redis({
 });
 
 // Cache Expiration Time Constants (5 minutes for active lists, 1 hour for specific IDs)
-const CACHE_TTL_LISTS = 300; 
+const CACHE_TTL_LISTS = 300;
 const CACHE_TTL_SINGLE = 3600;
 
 // Helper to safely parse strings or objects from Redis
@@ -113,34 +113,6 @@ export async function fetchBookingDetails(id: number) {
   return { data, error, source: "db" };
 }
 
-export async function fetchBookingsForAdmin(tenantId: string) {
-  const cacheKey = `bookings:admin:${tenantId}`;
-
-  try {
-    const cached = await redis.get(cacheKey);
-    if (cached) return { data: parseCachedData(cached), success: true, error: null, source: "cache" };
-  } catch (e) {
-    console.error("Redis read error on fetchBookingsForAdmin:", e);
-  }
-
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("fleetmaster_bookings")
-    .select(`*, vehicleDetails:fleetmaster_vehicles(*)`)
-    .eq("tenant_id", tenantId)
-    .neq("booking_status", "Reserved")
-    .order("created_at", { ascending: false });
-
-  if (!error && data) {
-    try {
-      await redis.set(cacheKey, data, { ex: CACHE_TTL_LISTS });
-    } catch (e) {
-      console.error("Redis write error on fetchBookingsForAdmin:", e);
-    }
-  }
-
-  return { data, success: !error, error, source: "db" };
-}
 
 export async function fetchBookingsForTenant(tenantId: string) {
   const cacheKey = `bookings:tenant:${tenantId}`;
@@ -205,7 +177,7 @@ export async function fetchBookingsForClient(userId: string) {
 
 export async function updateBookingDetails(id: number, bookingDetails: any) {
   const supabase = await createClient();
-  
+
   // Fetch current booking data before mutating to figure out which tenant/client maps to clean up
   const { data: currentBooking } = await supabase
     .from("fleetmaster_bookings")
