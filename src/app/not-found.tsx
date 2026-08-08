@@ -1,30 +1,44 @@
-// src/app/not-found.tsx
 "use client";
+
+import { useEffect } from "react";
 import Button from "@/components/ui/button/Button";
 import { ArrowRightIcon } from "@/icons";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React from "react";
-import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined"
-
+import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 
 export default function GlobalNotFound() {
   const router = useRouter();
 
-  // console.log(router.back())
+  useEffect(() => {
+    // Set document title
+    document.title = "Page Not Found | FleetMaster - Fleet Management Solution";
+
+    // Update or create description meta tag
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+      metaDescription = document.createElement("meta");
+      metaDescription.setAttribute("name", "description");
+      document.head.appendChild(metaDescription);
+    }
+    metaDescription.setAttribute(
+      "content",
+      "Oops! The page you are looking for does not exist. Return to the FleetMaster homepage to explore our fleet management solutions and services."
+    );
+  }, []);
+
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden bg-white dark:bg-gray-900">
-      <div className="relative z-10 w-full max-w-lg px-6 py-10 text-center transition-all backdrop-blur-sm  shadow-2xl shadow-gray-200/50 dark:shadow-none">
-        {/* Image Container with Hover Effect */}
-        <div className="mb-8 mx-auto w-fit  transition-transform duration-500 ease-out hover:scale-105">
+      <div className="relative z-10 w-full max-w-lg px-6 py-10 text-center transition-all backdrop-blur-sm shadow-2xl shadow-gray-200/50 dark:shadow-none">
+        {/* Image Container */}
+        <div className="mb-8 mx-auto w-fit transition-transform duration-500 ease-out hover:scale-105">
           <Image
             src="/images/error/404.svg"
             alt="Page Not Found"
             width={200}
             height={67}
             priority
-            // style={{ width: "auto", height: "auto" }}
             className="dark:hidden drop-shadow-xl"
           />
           <Image
@@ -33,26 +47,28 @@ export default function GlobalNotFound() {
             width={200}
             height={67}
             priority
-            // style={{ width: "auto", fill: "red" }}
             className="hidden animate-bounce dark:block drop-shadow-[0_0_25px_rgba(59,130,246,0.15)]"
           />
         </div>
 
         {/* Refined Text Content */}
-        <h1 className="mb-4 text-xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-xl">
+        <h1 className="mb-4 font-semibold tracking-tight text-gray-900 dark:text-white">
           Houston, we have a problem!
         </h1>
-        <p className="mb-5 text-base leading-relaxed text-gray-500 dark:text-gray-400 mx-auto">
+        <p className="mb-5 text-sm leading-relaxed text-gray-500 dark:text-gray-400 mx-auto">
           Looks like this page took a wrong turn at the space station. 🚀
           Don't worry, our astronaut is still exploring, but this page is lost in cyberspace!
         </p>
-        
-          <Button variant="success" size="sm"
-            onClick={() => router.refresh()} endIcon={<ReplayOutlinedIcon fontSize="small" />}
-            className="font-small text-sm w-full mb-5"
-          >
-            Retry Connection
-          </Button>
+
+        <Button
+          variant="success"
+          size="sm"
+          onClick={() => router.refresh()}
+          endIcon={<ReplayOutlinedIcon fontSize="small" />}
+          className="font-small text-sm w-full mb-5"
+        >
+          Retry Connection
+        </Button>
 
         {/* Button Group */}
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -62,8 +78,11 @@ export default function GlobalNotFound() {
           >
             Return to Earth
           </Link>
-          <Button variant="outline" size="sm"
-            onClick={() => router.back()} startIcon={<ArrowRightIcon className='rotate-180' />}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.back()}
+            startIcon={<ArrowRightIcon className="rotate-180" />}
             className="font-small text-sm"
           >
             Go Back in Time
@@ -75,6 +94,6 @@ export default function GlobalNotFound() {
           Error Status: 404_NOT_FOUND
         </p>
       </div>
-    </div >
+    </div>
   );
 }

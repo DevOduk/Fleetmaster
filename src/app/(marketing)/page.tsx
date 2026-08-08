@@ -1,7 +1,5 @@
 // app/page.tsx
 import type { Metadata } from "next";
-import React from 'react'
-import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined"
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth"
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined"
 import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined"
@@ -12,7 +10,6 @@ import SubtitlesOutlinedIcon from "@mui/icons-material/SubtitlesOutlined"
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined"
 import NoCrashOutlinedIcon from "@mui/icons-material/NoCrashOutlined"
 import TestimonialsSection from '@/components/marketing-components/Testimonials'
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined"
 import InventoryOutlinedIcon from "@mui/icons-material/InventoryOutlined"
 import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined"
@@ -23,8 +20,8 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title:
-    "FleetMaster Home - Best tool for Fleet Management",
-  description: "FleetManager is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
+    "Home | FleetMaster - Fleet Management Solution",
+  description: "FleetMaster is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
 };
 
 export default function Home() {

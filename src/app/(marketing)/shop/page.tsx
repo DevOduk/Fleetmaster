@@ -12,7 +12,7 @@ import BluetoothDriveOutlinedIcon from "@mui/icons-material/BluetoothDriveOutlin
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "FleetMaster Shop - Fleet Hardware & GPS Trackers",
+  title: "Shop | FleetMaster - Fleet Hardware & GPS Trackers",
   description: "Equip your fleet with commercial-grade vehicle hardware. Purchase pre-configured wired GPS trackers, magnetic asset trackers, and advanced fuel telemetry sensors fully integrated with your FleetMaster dashboard.",
 };
 

@@ -8,7 +8,7 @@ import { subscriptionPlans } from "@/data/globalExports";
 
 
 export const metadata: Metadata = {
-  title: "FleetMaster Pricing | Kenya",
+  title: "Pricing | FleetMaster - Fleet Management Solution",
   description: "FleetMaster is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
 };
 

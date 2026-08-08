@@ -1,22 +1,57 @@
-import React from "react";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import AccountSettings from "@/components/account/AccountSettings";
+import { Metadata } from "next";
+import { createPublicClient } from "@/utils/supabase/server";
+
+
+interface PageProps {
+  params: Promise<{
+    tenant: string;
+  }>;
+}
+
+
+// 1. Dynamic Server-Side Metadata Generation
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const tenantSlug = resolvedParams.tenant;
+
+  const supabase = createPublicClient();
+  const { data: tenant } = await supabase
+    .from("fleetmaster_tenants")
+    .select("name, about")
+    .eq("slug", tenantSlug)
+    .maybeSingle();
+
+  const tenantName = tenant?.name || "FleetMaster";
+  const tenantDescription =
+    tenant?.about ||
+    `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
+
+  return {
+    title: `Account Settings | ${tenantName} - Premium Car Rental & Fleet Solutions`,
+    description: tenantDescription,
+    openGraph: {
+      title: `${tenantName} - Official Website`,
+      description: tenantDescription,
+    },
+  };
+}
+
 
 export default function SettingsPage() {
   return (
     <div className="container m-auto min-h-screen">
-      <PageBreadCrumb pageTitle="Account Settings" />
-
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Account Settings
-        </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Manage your account information, preferences, and security settings
-        </p>
+      <div className="rounded-2xl mt-4 mb-4 border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
+        <div className="flex gap-3 items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+            Account Settings
+          </h3>
+        </div>
+        <div className="space-y-6">
+          <AccountSettings />
+        </div>
       </div>
-
-      <AccountSettings />
     </div>
   );
 }

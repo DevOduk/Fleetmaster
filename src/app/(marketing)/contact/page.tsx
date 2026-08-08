@@ -11,7 +11,7 @@ import ContactForm from "@/components/marketing-components/ContactForm";
 
 
 export const metadata: Metadata = {
-  title: "Contact FleetMaster - Get in Touch with Our Team",
+  title: "Contact | FleetMaster - Get in Touch with Our Team",
   description: "Have questions about FleetMaster? Reach out to our support, sales, or technical teams. We're here to help you optimize your fleet management operations.",
 };
 

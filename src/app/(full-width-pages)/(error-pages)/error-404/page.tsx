@@ -4,9 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Next.js Error 404 | TailAdmin - Next.js Dashboard Template",
-  description:
-    "This is Next.js Error 404 page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
+  title: "Page Not Found | FleetMaster - Fleet Management Solution",
+  description: "Oops! The page you are looking for does not exist. Return to the FleetMaster homepage to explore our fleet management solutions and services.",
 };
 
 export default function Error404() {

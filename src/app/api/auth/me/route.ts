@@ -7,33 +7,19 @@ import { Ratelimit } from "@upstash/ratelimit";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// 1. Initialize Upstash Redis
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
-// 2. Configure a defensive rate limiter (e.g., 60 requests per minute per user/IP)
 const limiter = new Ratelimit({
   redis: redis,
   limiter: Ratelimit.slidingWindow(60, "1 m"),
-  analytics: true,
+  analytics: false, // Turn off analytics to prevent extra async Redis calls
 });
 
 export async function GET(request: Request) {
-    const startTime = Date.now();
-
-  // --- RATE LIMIT SECURITY LAYER ---
-  // Get IP for rate-limiting guests, or fallback safely
-  const ip = request.headers.get("x-forwarded-for") || "127.0.0.1";
-  const { success: limitOk } = await limiter.limit(`rate_auth_${ip}`);
-  
-  if (!limitOk) {
-    return NextResponse.json(
-      { error: "Too many authentication check requests. Slow down." },
-      { status: 429 }
-    );
-  }
+  const startTime = Date.now();
 
   try {
     const cookieStore = await cookies();
@@ -50,65 +36,63 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
 
+    // --- NON-BLOCKING BACKGROUND RATE LIMIT CHECK ---
+    const ip = request.headers.get("x-forwarded-for") || "127.0.0.1";
+    limiter.limit(`rate_auth_${ip}`).then(({ success }) => {
+      if (!success) console.warn(`Rate limit triggered for IP: ${ip}`);
+    }).catch((e) => console.error("Rate limit check error:", e));
+
     const targetAccountType = decoded.accountType || decoded.role;
     const normalizedType =
       targetAccountType === "admin" || targetAccountType === "client"
         ? targetAccountType
         : "client";
 
-    // 3. HIGH SPEED REDIS FETCH
     const cacheKey = `user:profile:${decoded.id}:${normalizedType}`;
     let userAccount: any = null;
-  console.log(`[DEBUG ME]: Checking key -> ${cacheKey}`);
 
+    // 1. FAST REDIS LOOKUP
     try {
-          const t0 = Date.now();
-
-      userAccount = await redis.get(cacheKey);
-          console.log(`[PERF ME]: Redis look up took -> ${Date.now() - t0}ms`);
-
+      const rawCachedUser = await redis.get(cacheKey);
+      if (rawCachedUser) {
+        userAccount = typeof rawCachedUser === "string" ? JSON.parse(rawCachedUser) : rawCachedUser;
+      }
     } catch (redisError) {
       console.error("Redis session lookup failed, falling back to DB:", redisError);
     }
 
-    // 4. CACHE MISS -> QUERY SUPABASE
+    // 2. CACHE MISS -> FAST SUPABASE LOOKUP
     if (!userAccount) {
-
-    console.log(`[WARN ME]: CACHE MISS! Hitting Supabase for user: ${decoded.id}`);
-    const t1 = Date.now();
-
+      console.log(`[WARN ME]: CACHE MISS! Hitting Supabase for user: ${decoded.id}`);
       const supabase = createPublicClient();
       const tableName = normalizedType === "admin" ? "fleetmaster_admins" : "fleetmaster_clients";
 
+      // Optimized query without heavy join (* nested queries)
       const { data, error } = await supabase
         .from(tableName)
-        .select(
-          "id, first_name, last_name, email, phone, created_at, city, verification_status, country, role, tenant_id, postal_code, timezone, language, profile_pic, fleetmaster_tenants(*)"
-        )
+        .select("id, first_name, last_name, email, phone, created_at, city, verification_status, country, role, tenant_id, profile_pic")
         .eq("id", decoded.id)
         .maybeSingle();
-    console.log(`[PERF ME]: Supabase query took -> ${Date.now() - t1}ms`);
-    
+
       if (error || !data) {
         return NextResponse.json({ error: "User profile no longer exists" }, { status: 404 });
       }
 
       userAccount = data;
 
-      // 5. CACHE HIT -> WRITE TO REDIS (Keep active for 15 minutes)
-      try {
-        await redis.set(cacheKey, userAccount, { ex: 900 });
-      } catch (redisError) {
-        console.error("Redis write failure:", redisError);
-      }
+      // Write back to Redis as stringified JSON to prevent type mismatch on retrieval
+      redis.set(cacheKey, JSON.stringify(userAccount), { ex: 900 }).catch((e) =>
+        console.error("Redis write failure:", e)
+      );
     }
- console.log(`[TOTAL ME CODE RUNTIME]: ${Date.now() - startTime}ms`);
+
+    console.log(`[TOTAL ME CODE RUNTIME]: ${Date.now() - startTime}ms`);
+
     return NextResponse.json(
       { user: userAccount },
       {
         status: 200,
         headers: {
-          // Tell the browser to hold onto this context for 60 seconds to save network bandwidth
           "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
         },
       }

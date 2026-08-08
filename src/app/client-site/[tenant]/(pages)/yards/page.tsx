@@ -1,15 +1,44 @@
-import Map from "@/components/map/Map";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import { Metadata } from "next";
-import React from "react";
-import Yards from "@/components/yards/Yards";
+
 import ClientsYardView from "@/components/yards/ClientsYardView";
 
-export const metadata: Metadata = {
-  title:
-    "FleetManager Admin Dashboard - Best tool for Fleet Management",
-  description: "FleetManager is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
-};
+import { Metadata } from "next";
+import { createPublicClient } from "@/utils/supabase/server";
+
+
+interface PageProps {
+  params: Promise<{
+    tenant: string;
+  }>;
+}
+
+
+// 1. Dynamic Server-Side Metadata Generation
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const tenantSlug = resolvedParams.tenant;
+
+  const supabase = createPublicClient();
+  const { data: tenant } = await supabase
+    .from("fleetmaster_tenants")
+    .select("name, about")
+    .eq("slug", tenantSlug)
+    .maybeSingle();
+
+  const tenantName = tenant?.name || "FleetMaster";
+  const tenantDescription =
+    tenant?.about ||
+    `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
+
+  return {
+    title: `Yards | ${tenantName} - Premium Car Rental & Fleet Solutions`,
+    description: tenantDescription,
+    openGraph: {
+      title: `${tenantName} - Official Website`,
+      description: tenantDescription,
+    },
+  };
+}
+
 export default function page() {
   return (
     <div className="min-h-screen">

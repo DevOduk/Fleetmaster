@@ -112,7 +112,8 @@
 //   url.pathname = targetPathname;
 //   return NextResponse.rewrite(url);
 // }
-// src/proxy.ts
+
+// src/proxy.ts (or src/middleware.ts)
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import * as jose from 'jose';
@@ -122,75 +123,49 @@ const JWT_SECRET = process.env.JWT_SECRET
   ? new TextEncoder().encode(process.env.JWT_SECRET)
   : null;
 
-// Instantiate Redis safely
 const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
   ? new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-  })
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
   : null;
 
 export async function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
-  const hostHeader = req.headers.get('host') || '';
-  const hostname = hostHeader.split(':')[0].toLowerCase();
+
+  const rawHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+  const hostname = rawHost.split(':')[0].toLowerCase();
   const pathname = url.pathname;
 
-  // 1. Skip static files, Next.js assets, and internal API routes
+  // 1. SKIP INTERNAL ASSETS & RSC ROUTER PAYLOADS
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname.includes('.') ||
-    req.headers.get('x-nextjs-data')
+    req.headers.get('x-nextjs-data') ||
+    req.headers.get('rsc') === '1' ||
+    req.headers.get('next-router-prefetch') === '1' ||
+    req.headers.has('next-router-state-tree')
   ) {
     return NextResponse.next();
   }
 
-  // 2. VERCEL DEPLOYMENT / STAGING OVERRIDE
-  if (hostname.endsWith('vercel.app')) {
-    // If the user visits /client-site/slug directly on Vercel preview, 
-    // ensure Next.js resolves it properly to your dynamic route folder
-    if (
-      pathname.startsWith('/signin') ||
-      pathname.startsWith('/signup') ||
-      pathname.startsWith('/register') ||
-      pathname.startsWith('/api')
-    ) {
-      return NextResponse.next();
-    }
-
-    // If testing subdomains directly via path prefix on Vercel (e.g. /client-site/blexy)
-    // Let Next.js handle the request directly without adding secondary prefixes
-    if (
-      pathname.startsWith('/client-site/') ||
-      pathname.startsWith('/admin-site/') ||
-      pathname.startsWith('/tenant-manager/')
-    ) {
-      return NextResponse.next();
-    }
-  }
-
-  // 3. IDENTIFY SUBDOMAIN
+  // 2. IDENTIFY SUBDOMAIN
   let subdomain = '';
-  const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || ''; // e.g. "fleetmaster.com" or "localhost:3000"
+  const rawBaseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'fleetmaster-lemon.vercel.app';
+  const baseDomain = rawBaseDomain.split(':')[0].toLowerCase();
 
   if (hostname.includes('localhost')) {
     const parts = hostname.split('.');
-    if (parts.length > 1) subdomain = parts[0];
+    if (parts.length > 1 && parts[parts.length - 1] === 'localhost') {
+      subdomain = parts.slice(0, -1).join('.');
+    }
   } else if (baseDomain && hostname.endsWith(`.${baseDomain}`)) {
     subdomain = hostname.replace(`.${baseDomain}`, '');
   }
 
-  // 4. ROOT DOMAIN / NO SUBDOMAIN HANDLER
+  // 3. ROOT DOMAIN / NO SUBDOMAIN HANDLER
   if (!subdomain || subdomain === 'www' || hostname === baseDomain) {
-    if (
-      pathname.startsWith('/signin') ||
-      pathname.startsWith('/signup') ||
-      pathname.startsWith('/register')
-    ) {
-      return NextResponse.next();
-    }
-
     if (
       pathname.startsWith('/admin-site') ||
       pathname.startsWith('/tenant-manager') ||
@@ -202,33 +177,28 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Variable tracking for rewrite targets
+  // 4. SUBDOMAIN ROUTING MAPPER & REDIS LOOKUP
   let targetPathname = pathname;
   let tenantDataString = '';
   let tenantId = '';
-  console.log("Proxy Middleware: Handling subdomain:", subdomain, "for path:", pathname);
 
-  // 5. ADMIN DASHBOARD ROUTER (app.domain.com)
   if (subdomain === 'app') {
     targetPathname = `/admin-site${pathname}`;
-  }
-  // 6. TENANT SYSTEM MANAGER ROUTER (dashboard.domain.com)
-  else if (subdomain === 'dashboard') {
+  } else if (subdomain === 'dashboard') {
     targetPathname = `/tenant-manager${pathname}`;
-  }
-  // 7. CLIENT MULTI-TENANT HANDLER (tenant-slug.domain.com)
-  
-  else {
-    const cleanPathname = pathname === '/' ? '' : pathname;
-    targetPathname = `/client-site/${subdomain}${cleanPathname}`;
+  } else {
+    const cleanPath = pathname === '/' ? '' : pathname;
+    targetPathname = `/client-site/${subdomain}${cleanPath}`;
 
-    // Redis Lookup
     if (redis) {
       try {
-        const tenant: any = await redis.get(`tenant_slug:${subdomain}`);
-        if (tenant) {
-          tenantId = typeof tenant === 'string' ? JSON.parse(tenant).id : tenant.id;
-          tenantDataString = typeof tenant === 'string' ? tenant : JSON.stringify(tenant);
+        const rawTenant: any = await redis.get(`tenant_slug:${subdomain.toLowerCase().trim()}`);
+        if (rawTenant) {
+          const parsedTenant = typeof rawTenant === 'string' ? JSON.parse(rawTenant) : rawTenant;
+          if (parsedTenant && parsedTenant.id) {
+            tenantId = parsedTenant.id;
+            tenantDataString = typeof rawTenant === 'string' ? rawTenant : JSON.stringify(rawTenant);
+          }
         }
       } catch (e) {
         console.error("Redis lookup failed in proxy:", e);
@@ -236,11 +206,9 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  // ========================================================================
-  // CORE AUTH SECURITY INTERCEPTOR
-  // ========================================================================
-  const isSignInPage = pathname.startsWith('/signin') || targetPathname.includes('/signin') || pathname.startsWith('/signup');
-  const isRegisterPage = pathname.startsWith('/register') || targetPathname.includes('/register');
+  // 5. SECURITY INTERCEPTOR
+  const isSignInPage = pathname.startsWith('/signin') || pathname.startsWith('/signup');
+  const isRegisterPage = pathname.startsWith('/register');
 
   const isPrivateTenantAdmin = targetPathname.startsWith('/admin-site') && !isSignInPage && !isRegisterPage;
   const isPrivateAdmin = targetPathname.startsWith('/tenant-manager') && !isSignInPage;
@@ -281,7 +249,7 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  // Final execution pass
+  // 6. EXECUTE REWRITE WITH HEADERS
   url.pathname = targetPathname;
   const requestHeaders = new Headers(req.headers);
 

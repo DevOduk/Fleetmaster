@@ -6,7 +6,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Rental Terms & Vehicle Usage Conditions - FleetMaster",
+  title: "Rental Terms & Vehicle Usage Conditions | FleetMaster - Fleet Management Solution",
   description: "Review the mandatory legal framework, active telemetry tracking consents, speed boundaries, and physical asset liability covenants required for renting or operating fleet vehicles.",
 };
 

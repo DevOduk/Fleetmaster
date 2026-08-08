@@ -22,70 +22,18 @@ export function TenantProvider({ children, initialTenant = null }: TenantProvide
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (tenant?.color) {
-      applyThemeVariables(tenant.color);
-      localStorage.setItem("brand-color", tenant?.color);
-
+    if (initialTenant) {
+      setTenant(initialTenant);
+      setLoading(false);
     }
-  }, [tenant]);
+  }, [initialTenant]);
 
   useEffect(() => {
-    // 1. If tenant is already loaded by server or a previous run, do nothing
-    if (tenant) return;
-
-    async function resolveTenantContext() {
-      try {
-        const hostname = window.location.hostname;
-        const pathname = window.location.pathname;
-        const parts = hostname.split(".");
-
-        let slug: string | null = parts.length > 1 ? parts[0] : null;
-
-        // --- NEW: VERCEL FLAT ROUTE SUB-FOLDER EXTRACTION ---
-        if (hostname.includes("vercel.app")) {
-          const pathSegments = pathname.split("/").filter(Boolean);
-          const clientSiteIndex = pathSegments.indexOf("client-site");
-
-          if (clientSiteIndex !== -1 && pathSegments[clientSiteIndex + 1]) {
-            slug = pathSegments[clientSiteIndex + 1];
-          } else {
-            slug = null; // We are on the root platform domain
-          }
-        }
-        // Localhost and traditional custom domain resolution rules
-        else if (hostname === "localhost" || parts.includes("fleetmaster")) {
-          if (parts.length <= 2) slug = null;
-        }
-
-        // If it's a root domain or global management portal (no tenant slug)
-        if (!slug || slug === "app" || slug === "dashboard" || slug === "fleetmaster-lemon") {
-          setTenant(null);
-          return; // Safely lands down inside the finally block
-        }
-
-        const res = await fetch(`/api/tenants/resolve?slug=${slug}`);
-
-        // 2. Handle errors cleanly and let it fall through to the finally block
-        if (!res.ok) {
-          console.warn(`Tenant workspace "${slug}" could not be resolved.`);
-          setTenant(null);
-          return; // Safely lands down inside the finally block
-        }
-
-        const data = await res.json();
-        setTenant(data.tenant);
-      } catch (err: any) {
-        console.error("Tenant Context resolution error:", err);
-        setError(err.message || "An error occurred");
-        setTenant(null);
-      } finally {
-        // This is now guaranteed to run on success, 404, or hard runtime catch crashes!
-        setLoading(false);
-      }
+    if (tenant?.color) {
+      applyThemeVariables(tenant.color);
+      localStorage.setItem("brand-color", tenant.color);
     }
-
-    resolveTenantContext();
-  }, []); // Guaranteed execution fires exactly ONCE on mount
+  }, [tenant]);
 
   return (
     <TenantContext.Provider value={{ tenant, loading, error }}>

@@ -1,8 +1,11 @@
-// [tenant]/(auth)/signin/page.tsx
-
 import RequestDemo from "@/components/auth/RequestDemo";
 import CallToAction from "@/components/marketing-components/CallToAction";
+import type { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "Request Demo | FleetMaster - Fleet Hardware & GPS Trackers",
+  description: "Equip your fleet with commercial-grade vehicle hardware. Purchase pre-configured wired GPS trackers, magnetic asset trackers, and advanced fuel telemetry sensors fully integrated with your FleetMaster dashboard.",
+};
 
 export default function RequestDemoPage() {
   return (

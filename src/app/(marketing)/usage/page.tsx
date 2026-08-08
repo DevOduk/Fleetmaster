@@ -19,7 +19,7 @@ import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "FleetMaster Use Cases - Platform Capabilities",
+  title: "Use Cases | FleetMaster - Fleet Management Solution",
   description: "Explore how fleet operators use FleetMaster to automate vehicle rentals, manage domain allocations, track telematics diagnostics, and handle secure client bookings efficiently.",
 };
 

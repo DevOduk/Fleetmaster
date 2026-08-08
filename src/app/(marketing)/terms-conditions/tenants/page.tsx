@@ -6,7 +6,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Tenant Merchant & Platform Service Agreement - FleetMaster",
+  title: "Tenant Merchant & Platform Service Agreement | FleetMaster - Fleet Management Solution",
   description: "Review the core cloud SaaS infrastructure rules, diagnostic hardware liability exclusions, M-PESA webhook verification policies, and terms of service governing commercial operators.",
 };
 

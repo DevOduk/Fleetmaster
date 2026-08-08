@@ -54,11 +54,11 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
   const allMakes = vehicles.map(v => v.make);
   const modelsForMake = (make: string) => {
     const vehicleModels = vehicles.filter(v => v.make === make);
-    
+
     return vehicleModels.map(v => v.model);
   }
 
-  const allYards = tenant.yards.map(y => y.title);
+  const allYards = tenant?.yards?.map(y => y.title) || [];
 
 
   const categories = [...new Set([...allCategories, ...DefaultCategories])];
@@ -77,7 +77,7 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
   return (
     <form onSubmit={handleSubmit} className="p-7 min-h-[70vh] justify-center flex flex-col mb-2">
       {/* <h1 className="text-2xl font-bold">Welcome, {tenant}!</h1> */}
-      <p className="text-amber-500">Welcome to {tenant?.name || 'our Car Hire'}, {tenant?.country || 'Kenya'}</p>
+      <p className="text-amber-500">Welcome to {tenant?.name || 'the number 1 Car Hire'}, {tenant?.country || 'Kenya'}</p>
       <h1 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white max-w-[80%]">Affordable, Reliable & Efficient Car Hire Services in {tenant?.country || 'Kenya'}</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400">Choose your preferred vehicle brand and category below to find the ideal ride for your journey. Visit our yard or make a booking online for delivery (See yard location on Map)</p>
 

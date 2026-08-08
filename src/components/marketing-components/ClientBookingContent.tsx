@@ -31,7 +31,6 @@ function ClientBookingContent() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [activeSection, setActiveSection] = useState<string>("All");
   const supabase = createClient();
-  document.title = "My Bookings | " + profile?.fleetmaster_tenants?.name || 'Home'
 
 
 

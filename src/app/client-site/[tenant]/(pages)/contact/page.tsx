@@ -1,14 +1,44 @@
 import CallToAction from "@/components/marketing-components/CallToAction";
-import { Metadata } from "next";
 import SecondaryHero from "@/components/marketing-components/SecondaryHero";
 import ContactFormContainer from "@/components/client-components/ContactForm";
 
+import { Metadata } from "next";
+import { createPublicClient } from "@/utils/supabase/server";
 
 
-export const metadata: Metadata = {
-  title: "Contact FleetMaster - Get in Touch with Our Team",
-  description: "Have questions about FleetMaster? Reach out to our support, sales, or technical teams. We're here to help you optimize your fleet management operations.",
-};
+interface PageProps {
+  params: Promise<{
+    tenant: string;
+  }>;
+}
+
+
+// 1. Dynamic Server-Side Metadata Generation
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const tenantSlug = resolvedParams.tenant;
+
+  const supabase = createPublicClient();
+  const { data: tenant } = await supabase
+    .from("fleetmaster_tenants")
+    .select("name, about")
+    .eq("slug", tenantSlug)
+    .maybeSingle();
+
+  const tenantName = tenant?.name || "FleetMaster";
+  const tenantDescription =
+    tenant?.about ||
+    `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
+
+  return {
+    title: `Contact | ${tenantName} - Premium Car Rental & Fleet Solutions`,
+    description: tenantDescription,
+    openGraph: {
+      title: `${tenantName} - Official Website`,
+      description: tenantDescription,
+    },
+  };
+}
 
 export default function Page() {
   const pages = [

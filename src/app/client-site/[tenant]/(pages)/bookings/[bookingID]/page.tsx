@@ -1,6 +1,6 @@
 "use client";
+
 import ViewBooking from '@/components/bookings/ViewBooking';
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import SecondaryHero from '@/components/marketing-components/SecondaryHero';
 import { use } from 'react';
 
@@ -9,7 +9,7 @@ interface VehiclePageProps {
 }
 
 
-const VehiclePage = ({ params }: VehiclePageProps) => {
+const VehiclePage = async ({ params }: VehiclePageProps) => {
   const resolvedParams = use(params);
   const bookingID = resolvedParams.bookingID;
 
