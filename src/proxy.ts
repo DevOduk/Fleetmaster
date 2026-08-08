@@ -36,7 +36,7 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-// 2. IDENTIFY SUBDOMAIN / ROUTING SLUG
+  // 2. IDENTIFY SUBDOMAIN / ROUTING SLUG
   let subdomain = '';
   const rawBaseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'fleetmaster-lemon.vercel.app';
   const baseDomain = rawBaseDomain.split(':')[0].toLowerCase();
@@ -114,8 +114,8 @@ export async function proxy(req: NextRequest) {
   }
 
   // 5. SECURITY INTERCEPTOR
-  const isSignInPage = pathname.startsWith('/signin') || pathname.startsWith('/signup');
-  const isRegisterPage = pathname.startsWith('/register');
+  const isSignInPage = pathname.includes('/signin') || pathname.includes('/signup');
+  const isRegisterPage = pathname.includes('/register');
 
   const isPrivateTenantAdmin = targetPathname.startsWith('/admin-site') && !isSignInPage && !isRegisterPage;
   const isPrivateAdmin = targetPathname.startsWith('/tenant-manager') && !isSignInPage;
@@ -124,12 +124,24 @@ export async function proxy(req: NextRequest) {
     const sessionToken = req.cookies.get("user_session")?.value;
     const managerSessionToken = req.cookies.get("admin_session")?.value;
 
+    // Dynamically construct sign-in path depending on domain type
+    let signInPath = '/signin';
+    if (isVercelDomain) {
+      if (pathSegments[0] === 'admin-site') {
+        signInPath = '/admin-site/signin';
+      } else if (pathSegments[0] === 'tenant-manager') {
+        signInPath = '/tenant-manager/signin';
+      } else if (pathSegments[0] === 'client-site' && pathSegments[1]) {
+        signInPath = `/client-site/${pathSegments[1]}/signin`;
+      }
+    }
+
     if (isPrivateTenantAdmin && !sessionToken) {
-      return NextResponse.redirect(new URL('/signin', req.url));
+      return NextResponse.redirect(new URL(signInPath, req.url));
     }
 
     if (isPrivateAdmin && !managerSessionToken) {
-      return NextResponse.redirect(new URL('/signin', req.url));
+      return NextResponse.redirect(new URL(signInPath, req.url));
     }
 
     try {
@@ -138,7 +150,7 @@ export async function proxy(req: NextRequest) {
         const userRole = (payload.accountType || payload.role || "").toString().toLowerCase();
 
         if (!userRole.includes('admin')) {
-          return NextResponse.redirect(new URL('/signin', req.url));
+          return NextResponse.redirect(new URL(signInPath, req.url));
         }
       }
 
@@ -147,7 +159,7 @@ export async function proxy(req: NextRequest) {
       }
     } catch (err) {
       console.error("Proxy middleware session verification error:", err);
-      const failRedirect = NextResponse.redirect(new URL('/signin', req.url));
+      const failRedirect = NextResponse.redirect(new URL(signInPath, req.url));
 
       if (isPrivateTenantAdmin) failRedirect.cookies.delete("user_session");
       if (isPrivateAdmin) failRedirect.cookies.delete("admin_session");
