@@ -18,7 +18,6 @@ export default function UserMetaCard() {
                   height: 80
                 }}
                 src={profile?.profile_pic}
-                alt="user"
               />
             </div>
             <div className="order-3 xl:order-2">

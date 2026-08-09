@@ -6,7 +6,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 interface AdminContextType {
   adminProfile: any | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; emailVerified?: boolean; phoneVerified?: boolean; id?: string }>;
   logout: () => void;
   setAdminProfile: React.Dispatch<React.SetStateAction<any | null>>;
 }
@@ -56,7 +56,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         setAdminProfile(data.user);
-        return { success: true };
+        return { success: true, emailVerified: data.user?.verification_status?.email, phoneVerified: data.user?.phone_verified, id: data.user?.id };
       } else {
         return { success: false, error: data.error };
       }

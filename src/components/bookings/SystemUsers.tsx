@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
-import { PencilIcon } from "@/icons";
+import { ArrowRightIcon, PencilIcon } from "@/icons";
 import { Avatar, CircularProgress } from "@mui/material";
 import "leaflet/dist/leaflet.css";
 import Pagination from "../tables/Pagination";
@@ -275,17 +275,21 @@ const SystemUsers = () => {
                           {user.created_at ? new Date(user.created_at).toLocaleString() : "—"}
                         </TableCell>
                         <TableCell className="px-4 flex gap-3 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          <Link href={user.id === profile.id ? '/profile/edit' : `/system-users/${user.id}/edit`}>
-                            <Button size="sm" variant="success-outline" endIcon={<EditOutlinedIcon fontSize="small" className="m-0" />}>
-                              Update
-                            </Button>
-                          </Link>
+                          {
+                            profile?.role === 'Super Admin' && (
+                              <Link href={user.id === profile.id ? '/profile/edit' : `/system-users/${user.id}/edit`}>
+                                <Button size="sm" variant="success-outline" endIcon={<EditOutlinedIcon fontSize="small" className="m-0" />}>
+                                  Update
+                                </Button>
+                              </Link>
+                            )
+                          }
                           <Link target={user.id === profile.id ? '_blank' : '_self'} href={user.id === profile.id ? '/profile' : `/system-users/${user.id}`}>
-                            <Button variant="primary" size="sm"
+                            <button
                               className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
                             >
-                              View User
-                            </Button>
+                              View User <ArrowRightIcon className="ml-1" />
+                            </button>
                           </Link>
                         </TableCell>
                       </TableRow>

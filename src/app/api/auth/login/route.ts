@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         // 3. Fail explicitly if no user matches filters
         if (!userAccount) {
             return NextResponse.json(
-                { error: "Invalid credentials or unauthorized tenant access" },
+                { error: "No user found with this email and tenant combination." },
                 { status: 401 }
             );
         }
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
         // 4. Validate password hashes safely
         const isMatch = await compare(password, userAccount.password || "");
         if (!isMatch) {
-            return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+            return NextResponse.json({ error: "You have entered an invalid password." }, { status: 401 });
         }
 
         // 5. Package state parameters into the JWT payload

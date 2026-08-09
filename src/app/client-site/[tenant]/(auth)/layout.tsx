@@ -10,6 +10,8 @@ import React from "react";
 import { Redis } from '@upstash/redis';
 import jwt from "jsonwebtoken"
 import { cookies } from "next/headers";
+import { getCachedTenant } from "@/utils/tenant-cache";
+import { notFound } from "next/navigation";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const redis = new Redis({
@@ -18,11 +20,25 @@ const redis = new Redis({
 });
 export default async function AuthLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
-}) {  const cookieStore = await cookies();
+  params: Promise<{ tenant: string }>;
+}) {
+  const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("user_session");
   let serverUser = null;
+  const { tenant: rawSlug } = await params;
+  const tenantSlug = rawSlug?.toLowerCase().trim();
+
+  // 1. FETCH TENANT FROM REDIS / SUPABASE
+  const tenantData = await getCachedTenant(tenantSlug);
+
+  // 2. STRICT 404: IF TENANT DOES NOT EXIST OR HAS NO DB ID -> 404 PAGE
+  if (!tenantData || !tenantData.id) {
+    notFound();
+  }
+
 
   if (sessionCookie) {
     try {
@@ -44,7 +60,7 @@ export default async function AuthLayout({
   return (
     <UserProvider initialUser={serverUser}>
       <AdminProvider>
-        <TenantProvider>
+        <TenantProvider initialTenant={tenantData}>
           <div className="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
             <ThemeProvider>
               <div className="relative flex lg:flex-row w-full h-screen justify-center flex-col  dark:bg-gray-900 sm:p-0">

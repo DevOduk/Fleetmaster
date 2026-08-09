@@ -49,10 +49,15 @@ const SystemManagers = () => {
     const getAdmins = async () => {
       const res = await getAllAdmins();
 
-      if (res) {
-        setIinitialUsers(res.data);
-        setLoading(false);
+      if (
+        res &&
+        typeof res === "object" &&
+        res !== null &&
+        Array.isArray((res as { data?: unknown }).data)
+      ) {
+        setIinitialUsers((res as { data: AdminUser[] }).data);
       }
+      setLoading(false);
     }
 
     getAdmins();

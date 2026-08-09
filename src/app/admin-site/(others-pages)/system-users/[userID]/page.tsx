@@ -1,30 +1,51 @@
-"use client";
-import ViewBooking from '@/components/bookings/ViewBooking';
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import { use } from 'react';
+import { getTenantAdminDetails } from "@/app/actions/admin";
+import ProfilePage from "@/components/ProfilePage/admin-profile/ProfilePage";
+import Button from "@/components/ui/button/Button";
+import { ChevronLeftIcon } from "@/icons";
+import { Metadata } from "next";
+import Link from "next/link";
 
-interface VehiclePageProps {
-  params: Promise<{ bookingID: string }>;
-}
-
-const breadcrumbItems = [{ label: "Bookings", href: "/bookings" }];
-
-const VehiclePage = ({ params }: VehiclePageProps) => {
-
-  const resolvedParams = use(params);
-  const bookingID = resolvedParams.bookingID;
-
-  return (
-    <main className="space-y-6 p-6">
-      <PageBreadcrumb
-        items={breadcrumbItems}
-        pageTitle={`Booking ${bookingID}`}
-      />
-
-      <ViewBooking BookingID={Number(bookingID)} />
-
-    </main>
-  );
+export const metadata: Metadata = {
+  title:
+    "Update System User Profile | FleetManager Admin Dashboard - Best tool for Fleet Management",
+  description: "FleetManager is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
 };
 
-export default VehiclePage;
+export default async function Profile({ params }: { params: Promise<{ userID: string }> }) {
+  const { userID } = await params;
+
+  // Fetch user profile data based on userID
+  const res = await getTenantAdminDetails(userID);
+  const profile = res.data;
+
+  if (!profile) {
+    return (
+      <div className="container min-h-[80vh] mx-auto p-5 text-gray-400">
+        User profile not found.
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
+        <div className="flex gap-3 items-center mb-4">
+
+          <Link href="/system-users" className="mr-2">
+            <Button size="sm" variant="danger-outline">
+              <ChevronLeftIcon />
+              Back to System Users
+            </Button>
+          </Link>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+            View Profile
+          </h3>
+        </div>
+        
+        <div className="space-y-6">
+          <ProfilePage userProfile={profile} />
+        </div>
+      </div>
+    </div>
+  );
+}

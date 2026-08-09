@@ -8,7 +8,7 @@ import { applyThemeVariables } from "@/components/ThemeInitializer";
 interface UserContextType {
   profile: any | null;
   loading: boolean;
-  login: (role: 'client' | 'admin', email: string, password: string, tenant: string) => Promise<{ success: boolean; error?: string }>;
+  login: (role: 'client' | 'admin', email: string, password: string, tenant: string) => Promise<{ success: boolean; error?: string; emailVerified?: boolean; phoneVerified?: boolean; id?: string }>;
   logout: () => void;
   setProfile: React.Dispatch<React.SetStateAction<any | null>>;
 }
@@ -18,7 +18,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children, initialUser = null }: { children: React.ReactNode; initialUser: any }) {
   // Populate the profile state with the full server-side profile object immediately
   const [profile, setProfile] = useState<any | null>(initialUser);
-  
+
   // If the server provided full data, turn loading off right away (false).
   // Otherwise, if a token exists but no profile cache was found, set to true to look it up.
   const [loading, setLoading] = useState<boolean>(!initialUser);
@@ -31,6 +31,8 @@ export function UserProvider({ children, initialUser = null }: { children: React
     // skip the redundant client-side network request entirely!
     if (initialUser) {
       setLoading(false);
+      applyThemeVariables(initialUser?.fleetmaster_tenants?.color || "#465fff");
+      localStorage.setItem("brand-color", initialUser?.fleetmaster_tenants?.color || "#465fff");
       return;
     }
 
@@ -50,8 +52,10 @@ export function UserProvider({ children, initialUser = null }: { children: React
       }
     }
     checkSession();
+    applyThemeVariables(initialUser?.fleetmaster_tenants?.color || "#465fff");
+    localStorage.setItem("brand-color", initialUser?.fleetmaster_tenants?.color || "#465fff");
   }, [initialUser]); // Listen to initial data streams safely
-console.log('user:', initialUser, profile);
+
   const login = async (role: 'client' | 'admin', email: string, password: string, tenant: string) => {
     try {
       const response = await fetch("/api/auth/login", {
@@ -65,7 +69,7 @@ console.log('user:', initialUser, profile);
       if (response.ok) {
         setProfile(data.user);
         applyThemeVariables(data.user?.fleetmaster_tenants?.color);
-        return { success: true };
+        return { success: true, emailVerified: data.user?.verification_status?.email, phoneVerified: data.user?.phone_verified, id: data.user?.id };
       } else {
         return { success: false, error: data.error };
       }

@@ -5,6 +5,7 @@ import UserInfoCard from "@/components/ProfilePage/admin-profile/UserInfoCard";
 import { Metadata } from "next";
 import { headers } from "next/headers";
 import { createPublicClient } from "@/utils/supabase/server";
+import ProfilePage from "@/components/ProfilePage/admin-profile/ProfilePage";
 
 // Helper function to safely extract and parse tenant data from headers
 async function getTenantFromHeaders() {
@@ -69,9 +70,7 @@ export default function Profile() {
         <PageBreadcrumb pageTitle="View Profile" />
 
         <div className="space-y-6">
-          <UserMetaCard />
-          <UserInfoCard />
-          <UserAddressCard />
+          <ProfilePage />
         </div>
       </div>
     </div>

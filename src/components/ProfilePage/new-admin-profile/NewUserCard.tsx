@@ -1,4 +1,5 @@
 "use client";
+
 import { Avatar, Backdrop, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
 import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined"
@@ -12,6 +13,7 @@ import Select from '@/components/form/Select';
 import { allCountriesDB, languages, timezones } from "@/data/globalExports";
 import { createTenantAdmin } from "@/app/actions/admin";
 import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
 
 
 export default function NewUserCard() {
@@ -19,6 +21,7 @@ export default function NewUserCard() {
   const { showToast } = useToast();
   const [backDrop, setBackDrop] = useState(false);
   const { profile } = useUser();
+  const router = useRouter();
 
 
 
@@ -69,6 +72,10 @@ export default function NewUserCard() {
     }
     if (res.success) {
       showToast('Account created successfully!', 'success')
+
+      setTimeout(() => {
+        router.push(`/system-users`);
+      }, 4000);
     }
     setBackDrop(false)
   };
@@ -88,7 +95,7 @@ export default function NewUserCard() {
     })
     );
   };
-console.log(profileDetails)
+  console.log(profileDetails)
 
   return (
     <>
