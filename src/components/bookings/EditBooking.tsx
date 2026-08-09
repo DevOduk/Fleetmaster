@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
@@ -6,7 +7,6 @@ import Label from "../form/Label";
 import { ArrowRightIcon, CalenderIcon, ChevronDownIcon, CloseIcon, CloseLineIcon, DownloadIcon, PencilIcon, PlusIcon, TimeIcon } from "@/icons";
 import { CircularProgress, FormControl, FormControlLabel, Radio, RadioGroup, useTheme } from "@mui/material";
 import Badge from "../ui/badge/Badge";
-import { getBookingDetailsServer } from "@/app/api/bookings/booking-details";
 import { useUser } from "@/context/UserContext";
 import BookingNotFound from "./NotFound";
 import Alert from "../ui/alert/Alert";
@@ -17,7 +17,7 @@ import ScheduleIcon from "@mui/icons-material/Schedule";
 import TextArea from "../form/input/TextArea";
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { useToast } from "@/context/ToastContext";
-import { updateBookingDetails } from "@/app/actions/bookings";
+import { fetchBookingDetails, updateBookingDetails } from "@/app/actions/bookings";
 import { createPayment } from "@/app/actions/payments";
 import { mpesaPollingIterval } from "../company-profile/CompanySubscriptionsCard";
 import ComponentCard from "../common/ComponentCard";
@@ -138,7 +138,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
     if (loading) return;
     setLoadingBooking(true);
 
-    getBookingDetailsServer(BookingID, profile?.tenant_id)
+    fetchBookingDetails(BookingID, profile?.tenant_id)
       .then(res => {
         if (!res.error) {
           setBookingDetails(res.data);

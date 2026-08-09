@@ -85,8 +85,16 @@ export async function fetchAllBookings() {
   return { success: true, data, source: "db" };
 }
 
-export async function fetchBookingDetails(id: number) {
-  const cacheKey = `booking:id:${id}`;
+export async function fetchBookingDetails(id: number, tenantID: string) {
+  // Strict guard: Prevent the network/database query entirely if tenantID is missing, invalid, or falsy
+  if (!tenantID || typeof tenantID !== 'string' || !tenantID.trim() || isNaN(Number(id))) {
+    return {
+      data: null,
+      error: { message: "Unauthorized: Invalid or missing tenant credentials." }
+    };
+  }
+
+  const cacheKey = `booking:id:${id}:tenant:${tenantID}`;
 
   try {
     const cached = await redis.get(cacheKey);
