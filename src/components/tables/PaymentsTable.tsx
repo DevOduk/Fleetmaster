@@ -10,36 +10,9 @@ import Badge from "../ui/badge/Badge";
 import { ArrowRightIcon, PencilIcon, TrashBinIcon } from "@/icons";
 import Link from "next/link";
 import { CircularProgress } from "@mui/material";
-import { useAdminBooking } from "@/context/AdminBookingContext";
-import { fetchPaymentsForAdmin } from "@/app/actions/payments";
-import { useUser } from "@/context/UserContext";
 
 
-
-export default function PaymentsTable() {
-  const { profile } = useUser();
-  const [loading, setLoading] = useState(true);
-  const [expenses, setExpenses] = useState([])
-
-  useEffect(() => {
-    if (!profile?.tenant_id) return;
-    const fetchPayments = async () => {
-      setLoading(true);
-
-      const res = await fetchPaymentsForAdmin(profile?.tenant_id)
-      console.log(res)
-      if (res.success) {
-        setExpenses(res.data);
-
-        setLoading(false);
-      } else {
-
-        setLoading(false);
-      }
-    }
-    fetchPayments();
-  }, [profile])
-
+export default function PaymentsTable({expenses, loading}: {expenses: any; loading: boolean;}) {
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
       <div className="max-w-full overflow-x-auto">

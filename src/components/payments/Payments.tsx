@@ -4,7 +4,6 @@ import "leaflet/dist/leaflet.css";
 import Pagination from "../tables/Pagination";
 import Link from "next/link";
 import PaymentsTable from "../tables/PaymentsTable";
-import { useAdminBooking } from "@/context/AdminBookingContext";
 import { fetchPaymentsForAdmin } from "@/app/actions/payments";
 import { useUser } from "@/context/UserContext";
 
@@ -12,9 +11,12 @@ const Payments: React.FC = () => {
 
     const { profile } = useUser();
     const [expenses, setExpenses] = useState<any[]>([])
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!profile?.tenant_id) return;
+        setLoading(true);
+
         const fetchPayments = async () => {
 
             const res = await fetchPaymentsForAdmin(profile?.tenant_id)
@@ -22,6 +24,7 @@ const Payments: React.FC = () => {
             if (res.success && Array.isArray(res.data)) {
                 setExpenses(res.data.filter((p: any) => p.status === 'Success'));
             }
+            setLoading(false);
         }
         fetchPayments();
     }, [profile])
@@ -117,7 +120,7 @@ const Payments: React.FC = () => {
                     </button>
                 </Link>
             </div>
-            <PaymentsTable />
+            <PaymentsTable expenses={expenses} loading={loading} />
             <Pagination onPageChange={() => 2} currentPage={1} totalPages={1} />
         </div>
     );
