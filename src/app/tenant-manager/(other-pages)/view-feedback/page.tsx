@@ -2,10 +2,15 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { createClient } from "@/utils/supabase/server";
 import ViewFeedbacks, { FeedbackLog } from "@/components/feedback/ViewFeedbacks";
+import { Metadata } from "next";
 
-export const metadata = {
-  title: "User Feedbacks Directory | FleetManager",
-  description: "Review system reviews, bug reports, and features requested by application users.",
+export const dynamic = 'force-dynamic';
+
+
+export const metadata: Metadata = {
+  title:
+    "Feedbacks | FleetMaster Dashboard - Best tool for Fleet Management",
+  description: "FleetMaster is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
 };
 
 async function getAllFeedbacks() {

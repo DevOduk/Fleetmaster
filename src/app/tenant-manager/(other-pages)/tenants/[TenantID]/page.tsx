@@ -5,10 +5,12 @@ import AdminCompanyInfoCard from "@/components/company-profile/AdminCompanyInfoC
 // 1. Generate dynamic metadata
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Company Profile | FleetMaster Admin Dashboard",
-    description: "View and manage your company profile information.",
+    title:
+      "View Tenant | FleetMaster Dashboard - Best tool for Fleet Management",
+    description: "FleetMaster is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
   };
 }
+
 interface TenantPageProps {
   params: Promise<{ TenantID: string }>;
 }

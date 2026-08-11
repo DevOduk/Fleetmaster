@@ -11,8 +11,8 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { ticketNumber } = await params;
   return {
-    title: `Support Ticket #${ticketNumber} | FleetMaster Admin Support`,
-    description: `Managing support ticket #${ticketNumber}`,
+    title: `Support Ticket #${ticketNumber} | FleetMaster Dashboard - Best tool for Fleet Management`,
+    description: "FleetMaster is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
   };
 }
 
@@ -20,9 +20,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ManageTicketPage({ params }: PageProps) {
   // Await the params (required in Next.js 15+)
   const { ticketNumber } = await params;
-  
+
   const displayTicketNumber = `#${ticketNumber}`;
-  
+
   const pages = [
     { label: 'Support', href: '/view-support' }
   ];
@@ -31,7 +31,7 @@ export default async function ManageTicketPage({ params }: PageProps) {
     <div className="space-y-6">
       <PageBreadcrumb items={pages} pageTitle={`Ticket ${displayTicketNumber}`} />
       <br />
-      
+
       <AdminTicketView />
     </div>
   );
