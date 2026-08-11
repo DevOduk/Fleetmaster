@@ -11,7 +11,7 @@ import { useUser } from "@/context/UserContext";
 const Payments: React.FC = () => {
 
     const { profile } = useUser();
-    const [expenses, setExpenses] = useState([])
+    const [expenses, setExpenses] = useState<any[]>([])
 
     useEffect(() => {
         if (!profile?.tenant_id) return;
@@ -19,8 +19,8 @@ const Payments: React.FC = () => {
 
             const res = await fetchPaymentsForAdmin(profile?.tenant_id)
 
-            if (res.success) {
-                setExpenses(res.data.filter(p => p.status === 'Success'));
+            if (res.success && Array.isArray(res.data)) {
+                setExpenses(res.data.filter((p: any) => p.status === 'Success'));
             }
         }
         fetchPayments();
