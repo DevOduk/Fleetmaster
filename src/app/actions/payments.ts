@@ -160,3 +160,37 @@ export async function fetchPaymentsForAdmin(tenantId: string) {
 
   return { data, success: true, error: null };
 }
+
+export async function fetchAllSubscriptionPayments() {
+  const cacheKey = "payments:subscriptions:all";
+
+  try {
+    // 1. Read from Redis
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+  } catch (cacheErr) {
+    console.error("Redis read error in fetchAllPayments:", cacheErr);
+  }
+
+  // 2. Fetch from Supabase on cache miss
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("fleetmaster_payments")
+    .select(`*`)
+    .ilike('message', `Subscription renewal for package:%`)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return [];
+  }
+  // 3. Store in Redis
+  try {
+    await redis.set(cacheKey, JSON.stringify(data), { ex: CACHE_TTL_SECONDS });
+  } catch (cacheErr) {
+    console.error("Redis write error in fetchAllPayments:", cacheErr);
+  }
+
+  return data || [];
+}

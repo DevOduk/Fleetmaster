@@ -24,6 +24,7 @@
     color: white !important;
     font-weight: bold !important;
 }
+
 @theme {
   --font-*: initial;
   --font-outfit: Outfit, sans-serif;

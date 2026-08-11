@@ -32,7 +32,7 @@ export default function RecentVehiscles() {
           </Link>
         </div>
       </div>
-      <div className="max-w-full overflow-x-auto">
+      <div className="max-w-full overflow-x-auto custom-scrollbar">
         <Table>
           {/* Table Header */}
           <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
@@ -91,11 +91,11 @@ export default function RecentVehiscles() {
                           alt={product.make}
                         />
                         <div>
-                          <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                          <p className="font-medium text-nowrap text-gray-800 text-theme-sm dark:text-white/90">
                             {product.make} {product.model} {product.year}
                           </p>
-                          <span className="text-gray-500 text-theme-xs dark:text-gray-400">
-                            {product.license_plate} | Min {product.min_rental_days} Days
+                          <span className="text-gray-500 text-nowrap text-theme-xs dark:text-gray-400">
+                            {product.license_plate} | {product.min_rental_days} Days
                           </span>
                         </div>
                       </div>
@@ -103,10 +103,10 @@ export default function RecentVehiscles() {
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400 text-nowrap">
                       {product.owner}
                     </TableCell>
-                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
                       {product.category}
                     </TableCell>
-                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
                       {formatedValue(product.daily_rate)} Ksh.
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">

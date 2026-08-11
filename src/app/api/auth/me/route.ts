@@ -63,7 +63,6 @@ export async function GET(request: Request) {
 
     // 2. CACHE MISS -> FAST SUPABASE LOOKUP
     if (!userAccount) {
-      console.log(`[WARN ME]: CACHE MISS! Hitting Supabase for user: ${decoded.id}`);
       const supabase = createPublicClient();
       const tableName = normalizedType === "admin" ? "fleetmaster_admins" : "fleetmaster_clients";
 
@@ -86,7 +85,6 @@ export async function GET(request: Request) {
       );
     }
 
-    console.log(`[TOTAL ME CODE RUNTIME]: ${Date.now() - startTime}ms`);
 
     return NextResponse.json(
       { user: userAccount },

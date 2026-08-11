@@ -9,14 +9,33 @@ import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 import { formatedValue } from "./MonthlyTarget";
 
 
-const calculateChange = (current: number, previous: number) => {
+export const calculateChange = (current: number, previous: number) => {
   if (previous === 0) {
     if (current === 0) return 0;        // no change
     return null;                        // undefined growth
   }
-  return ((current - previous) / previous) * 100;
+  const change = ((current - previous) / previous) * 100;
+
+  return change;
 };
 
+export const formatChange = (change: number | null) => {
+  if (change === null) {
+    return {
+      text: "New",
+      color: "success" as const,
+      icon: <ArrowUpIcon className="text-success-500" />
+    };
+  }
+
+  return {
+    text: Math.abs(change).toFixed(2) + "%",
+    color: change >= 0 ? "success" as const : "error" as const,
+    icon: change >= 0
+      ? <ArrowUpIcon className="text-success-500" />
+      : <ArrowDownIcon className="text-error-500" />
+  };
+};
 
 export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading }: { vehicles: any, loadingVehicles: boolean, bookings: any, loading: boolean }) => {
   const now = new Date();
@@ -99,23 +118,6 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
   const rateChange = calculateChange(rateThisMonth, rateLastMonth);
 
 
-  const formatChange = (change: number | null) => {
-    if (change === null) {
-      return {
-        text: "New",
-        color: "success" as const,
-        icon: <ArrowUpIcon className="text-success-500" />
-      };
-    }
-
-    return {
-      text: change.toFixed(2) + "%",
-      color: change > 0 ? "success" as const : "error" as const,
-      icon: change > 0
-        ? <ArrowUpIcon className="text-success-500" />
-        : <ArrowDownIcon className="text-error-500" />
-    };
-  };
 
   const metrics = [
     {

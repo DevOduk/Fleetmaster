@@ -4,7 +4,6 @@ import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
 import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
 import StatisticsChart from "@/components/ecommerce/StatisticsChart";
 import RecentOrders from "@/components/ecommerce/RecentOrders";
-import DemographicCard from "@/components/app-components/DemographicCard";
 import { useUser } from '@/context/UserContext';
 import { useEffect, useMemo, useState } from "react";
 import { useAdminFleet } from "@/context/AdminFleetContext";
@@ -14,6 +13,7 @@ import { fetchExpensesForAdmin } from "@/app/actions/expenses";
 import Link from "next/link";
 import { PlusIcon } from "@/icons";
 import { fetchClientsForTenant } from "@/app/actions/client";
+import DemographicCard from "./DemographicCard";
 
 
 function HomePage() {

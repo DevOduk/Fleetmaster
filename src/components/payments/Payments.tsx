@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import Pagination from "../tables/Pagination";
@@ -8,10 +9,10 @@ import { fetchPaymentsForAdmin } from "@/app/actions/payments";
 import { useUser } from "@/context/UserContext";
 
 const Payments: React.FC = () => {
-
     const { profile } = useUser();
     const [expenses, setExpenses] = useState<any[]>([])
     const [loading, setLoading] = useState(true);
+    const currency = profile?.fleetmaster_tenants?.currency || 'USD'
 
     useEffect(() => {
         if (!profile?.tenant_id) return;
@@ -71,31 +72,27 @@ const Payments: React.FC = () => {
                     [
                         {
                             title: 'Daily Earnings',
-                            currency: 'Ksh',
                             value: totalToday,
                             description: 'Total earnings today ' + fullDay,
                         },
                         {
                             title: 'Weekly Earnings',
-                            currency: 'Ksh',
                             value: totalThisWeek,
                             description: 'Total earnings this week',
                         },
                         {
                             title: 'Monthly  Earnings',
-                            currency: 'Ksh',
                             value: totalThisMonth,
                             description: `Total earnings this Month (${fullMonth})`,
                         },
                         {
                             title: 'Daily Average (This Month)',
-                            currency: 'Ksh',
                             value: averageDailyThisMonth,
                             description: 'Your average daily earnings this month',
                         },
                     ].map((p, i) => (
-                        <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6 space-y-3" key={i}>
-                            <span className="text-brand-500 text-2xl font-semibold mb-2 uppercase tracking-wider">{p.currency}</span>
+                        <div className="rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/3 md:p-6 space-y-3" key={i}>
+                            <span className="text-success-500 text-xl font-semibold mb-3 uppercase tracking-wider">{currency}</span>
                             <h4 className="text-md text-black dark:text-white">
                                 {p?.title}
                             </h4>

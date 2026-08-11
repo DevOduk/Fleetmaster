@@ -5,7 +5,7 @@ async function handleProfileUpdate(id, profileDetails, setBackDrop, showToast, s
 
    const { fleetmaster_tenants, ...cleanProfile } = profileDetails;
     const res = await updateProfileDetails({ id, profileDetails: cleanProfile });
-    console.log(res)
+
     if (res.success) {
         showToast('Profile was updated successfully!', 'success')
         setBackDrop(false);

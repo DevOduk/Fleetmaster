@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         if (resolvedState === 'PENDING') {
             resolvedState = 'PROCESSING'; // Treat PENDING as PROCESSING so the frontend loop keeps waiting
         }
-console.log('statusResponse: ',statusResponse)
+
         return NextResponse.json({ 
             state: resolvedState, 
             data: statusResponse.data || statusResponse 

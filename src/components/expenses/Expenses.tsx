@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useMemo, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import Pagination from "../tables/Pagination";
@@ -8,6 +9,7 @@ import { useUser } from "@/context/UserContext";
 import { fetchExpensesForAdmin } from "@/app/actions/expenses";
 import ReactApexChart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
+import { CircularProgress } from "@mui/material";
 
 type Expense = {
     amount: number | string;
@@ -17,7 +19,24 @@ type Expense = {
 
 const Expenses: React.FC = () => {
     const { profile } = useUser();
+    const [loading, setLoading] = useState(true);
     const [expenses, setExpenses] = useState<Expense[]>([]);
+    const currency = profile?.fleetmaster_tenants?.currency || 'USD'
+    const [isDark, setIsDark] = useState(false);
+
+
+    // Theme observer for dark mode sync
+    useEffect(() => {
+        setIsDark(document.documentElement.classList.contains("dark"));
+        const observer = new MutationObserver(() => {
+            setIsDark(document.documentElement.classList.contains("dark"));
+        });
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class"],
+        });
+        return () => observer.disconnect();
+    }, []);
 
     const aggregatedData = useMemo<{ series: number[]; labels: string[] }>(() => {
         if (!expenses || expenses.length === 0) return { series: [], labels: [] };
@@ -67,7 +86,10 @@ const Expenses: React.FC = () => {
             },
         },
         title: {
-            text: 'Expenses summary chart by ctegory',
+            text: 'Expenses summary chart by Category',
+            style: {
+                color: isDark ? "#ffffff" : "#000000", // White in dark mode, Black in light mode
+            }
         },
         responsive: [
             {
@@ -96,6 +118,8 @@ const Expenses: React.FC = () => {
 
     useEffect(() => {
         if (!profile?.tenant_id) return;
+        setLoading(true);
+
         const fetchPayments = async () => {
 
             const res = await fetchExpensesForAdmin(profile?.tenant_id)
@@ -103,6 +127,7 @@ const Expenses: React.FC = () => {
             if (res.success) {
                 setExpenses(res.data);
             }
+            setLoading(false)
         }
         fetchPayments();
     }, [profile])
@@ -147,32 +172,28 @@ const Expenses: React.FC = () => {
                 {
                     [
                         {
-                            title: 'Today',
-                            currency: 'Ksh',
+                            title: 'Today\'s Expenses',
                             value: totalToday,
                             description: 'Total Expenses today',
                         },
                         {
-                            title: 'This week',
-                            currency: 'Ksh',
+                            title: 'This week\s Expenses',
                             value: totalThisWeek,
                             description: 'Total Expenses this week',
                         },
                         {
-                            title: 'This Month',
-                            currency: 'Ksh',
+                            title: 'This Month\'s Expenses',
                             value: totalThisMonth,
                             description: `Total earnings this Month (${fullMonth})`,
                         },
                         {
                             title: 'Daily Average (This Month)',
-                            currency: 'Ksh',
                             value: averageDailyThisMonth,
                             description: 'Your average daily expenses this month',
                         },
                     ].map((p, i) => (
-                        <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6 space-y-3" key={i}>
-                            <span className="text-brand-500 text-2xl font-semibold mb-2 uppercase tracking-wider">{p.currency}</span>
+                        <div className="rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/3 md:p-6 space-y-3" key={i}>
+                            <span className="text-error-500 text-xl font-semibold mb-3 uppercase tracking-wider">{currency}</span>
                             <h4 className="text-md text-black dark:text-white">
                                 {p?.title}
                             </h4>
@@ -184,10 +205,14 @@ const Expenses: React.FC = () => {
                         </div>
                     ))}
             </div>
-            <div id="chart" className="flex items-center text-black justify-center py-5 border p-3 dark:border-gray-500 rounded-2xl min-h-75 bg-white">
-                {aggregatedData.series.length > 0 ? (
+            <div id="chart" className="flex items-center  justify-center py-5 border p-3 dark:border-gray-500 rounded-2xl min-h-7">
+                {loading ? (
+                    <div className="flex items-center justify-center h-75 text-gray-600">
+                        <CircularProgress color="primary" size={'1.5rem'} />
+                    </div>
+                ) : aggregatedData.series.length > 0 ? (
                     <ReactApexChart
-                        key={aggregatedData.series.length} // Force re-render only when data loads
+                        key={JSON.stringify(aggregatedData.series)} // Force re-render only when data loads
                         options={options}
                         series={aggregatedData.series}
                         type="donut"
@@ -196,7 +221,7 @@ const Expenses: React.FC = () => {
                     />
                 ) : (
                     <div className="flex items-center justify-center h-75 text-gray-600">
-                        Loading chart data...
+                        No expenses found for this month
                     </div>
                 )}
             </div>

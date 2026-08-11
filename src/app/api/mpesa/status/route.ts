@@ -5,7 +5,7 @@ import getDarajaAccessToken from "../getDarajaAccessToken";
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function POST(request: Request) {
-    console.log('status endpoint hit: ', (new Date()).getTime())
+
     try {
         const { checkoutRequestID } = await request.json();
 
@@ -62,7 +62,6 @@ export async function POST(request: Request) {
             data = await response.json();
         }
 
-        console.log('status check data: ', data);
 
         if (data.fault) {
             return NextResponse.json({ ResultCode: "PROCESSING", ResultDesc: 'Too many requests! Wait for a few minutes and try again.' }, { status: 200 });

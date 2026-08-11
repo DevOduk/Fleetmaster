@@ -1,6 +1,6 @@
 let cachedToken: string | null = null;
 let tokenExpiryTime: number = 0;
-console.log('a render happened here: ', (new Date()).getTime())
+
 export default async function getDarajaAccessToken() {
   const now = Date.now();
   if (cachedToken && now < tokenExpiryTime) {

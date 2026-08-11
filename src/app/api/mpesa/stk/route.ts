@@ -45,7 +45,6 @@ export async function POST(request: Request) {
 
         const data = await mpesaRes.json();
 
-        console.log('server stk data: ', data)
         return NextResponse.json(data);
     } catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });

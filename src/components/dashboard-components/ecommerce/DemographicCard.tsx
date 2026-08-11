@@ -7,11 +7,15 @@ import { allCountriesDB } from "@/data/globalExports";
 import CountryMap from "@/components/ecommerce/CountryMap";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
+import { getAllTenants } from "@/app/actions/tenant";
+import { CircularProgress } from "@mui/material";
 
 export default function DemographicCard({ tenants }: { tenants: any[]; }) {
+    const { loading } = useUser();
     const [isOpen, setIsOpen] = useState(false);
-    const { loading } = useUser()
-    const countries = [...new Set(tenants?.flatMap(t => t.country))];
+    const [refreshing, setRefreshing] = useState(false);
+    const [allTenants, setAllTenants] = useState(tenants || []);
+    const countries = [...new Set(allTenants?.flatMap(t => t.country))];
 
     function toggleDropdown() {
         setIsOpen(!isOpen);
@@ -21,19 +25,34 @@ export default function DemographicCard({ tenants }: { tenants: any[]; }) {
         setIsOpen(false);
     }
 
+    const refresh = async () => {
+        setRefreshing(true);
+        const newTenants = await getAllTenants();
+
+        setAllTenants(newTenants);
+        setRefreshing(false);
+    }
+
+    // Build countries data for the map
+    const mapCountries = countries.map(country => ({
+        latLng: allCountriesDB.find(c => c.country === country)?.latlng,
+        name: country,
+    }));
+
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 sm:p-6 h-full">
             <div className="flex justify-between">
                 <div>
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        Customers Demographic
+                        Tenant Demographic
                     </h3>
                     <p className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
-                        Number of customer based on country
+                        Number of tenants based on country
                     </p>
                 </div>
 
-                <div className="relative inline-block">
+                <div className="relative flex gap-2 text-gray-400 items-center">
+                    {refreshing && <CircularProgress size={'1rem'} color="inherit" />}
                     <button onClick={toggleDropdown} className="dropdown-toggle">
                         <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" />
                     </button>
@@ -43,17 +62,21 @@ export default function DemographicCard({ tenants }: { tenants: any[]; }) {
                         className="w-40 p-2"
                     >
                         <DropdownItem
-                            onItemClick={closeDropdown}
+                            onItemClick={() => {
+                                closeDropdown();
+
+                                refresh();
+                            }}
                             className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                         >
-                            View More
+                            Refresh
                         </DropdownItem>
-                        <DropdownItem
+                        {/* <DropdownItem
                             onItemClick={closeDropdown}
                             className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                         >
                             Delete
-                        </DropdownItem>
+                        </DropdownItem> */}
                     </Dropdown>
                 </div>
             </div>
@@ -62,7 +85,7 @@ export default function DemographicCard({ tenants }: { tenants: any[]; }) {
                     id="mapOne"
                     className="mapOne map-btn -mx-4 -my-6 h-53 w-63 2xsm:w-67 xsm:w-90 sm:-mx-6 md:w-167 lg:w-159.5 xl:w-98 2xl:w-139"
                 >
-                    <CountryMap />
+                    <CountryMap countries={mapCountries} />
                 </div>
             </div>
 
@@ -98,14 +121,14 @@ export default function DemographicCard({ tenants }: { tenants: any[]; }) {
                     </> :
                         <div className="flex flex-col gap-4">
                             {countries.map((c, i) => {
-                                const percentage = ((tenants?.filter(m => m.country === c).length) / tenants.length) * 100;
-                                const country = allCountriesDB.find(b => b.country === c);
+                                const percentage = ((allTenants?.filter(m => m.country === c).length) / allTenants.length) * 100;
+                                const countryCode = allCountriesDB.find(b => b.country === c).code;
 
                                 return (
                                     <div key={i} className="flex items-center justify-between p-3 bg-gray-200 dark:bg-gray-900 rounded-2xl">
                                         <div className="flex items-center gap-3">
                                             <img
-                                                src={`https://flagsapi.com/${country.code}/flat/64.png`}
+                                                src={`https://flagsapi.com/${countryCode || 'US'}/flat/64.png`}
                                                 alt={c}
                                                 className="w-10 h-10 border rounded-full object-contain"
                                             />
@@ -115,7 +138,7 @@ export default function DemographicCard({ tenants }: { tenants: any[]; }) {
                                                     {c}
                                                 </p>
                                                 <span className="block w-fit text-nowrap text-gray-500 text-theme-xs dark:text-gray-400">
-                                                    {(tenants?.filter(m => m.country === c).length.toLocaleString() || 0)} Clients
+                                                    {(allTenants?.filter(m => m.country === c).length.toLocaleString() || 0)} Clients
                                                 </span>
                                             </div>
                                         </div>

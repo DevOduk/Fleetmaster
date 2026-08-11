@@ -9,8 +9,15 @@ const VectorMap = dynamic(
 );
 
 // Define the component props
+interface CountryProp {
+  latLng: number[];
+  name: string;
+}
+
+// Define the component props
 interface CountryMapProps {
   mapColor?: string;
+  countries?: CountryProp[];
 }
 
 type MarkerStyle = {
@@ -31,64 +38,42 @@ type Marker = {
     strokeOpacity?: number;
   };
 };
+const style = {
+  fill: "#465FFF",
+  borderWidth: 1,
+  borderColor: "white",
+  strokeOpacity: 0,
+};
 
-const CountryMap: React.FC<CountryMapProps> = ({ mapColor }) => {
+const CountryMap: React.FC<CountryMapProps> = ({ mapColor, countries }) => {
   return (
     <VectorMap
+    key={JSON.stringify(countries)}
       map={worldMill}
       backgroundColor="transparent"
       markerStyle={
         {
           initial: {
             fill: "#465FFF",
-            r: 4, // Custom radius for markers
+            r: 3, // Custom radius for markers
           }, // Type assertion to bypass strict CSS property checks
         } as MarkerStyle
       }
       markersSelectable={true}
       markers={
-        [
-          // {
-          //   latLng: [37.2580397, -104.657039],
-          //   name: "United States",
-          //   style: {
-          //     fill: "#465FFF",
-          //     borderWidth: 1,
-          //     borderColor: "white",
-          //     stroke: "#383f47",
-          //   },
-          // },
-          // {
-          //   latLng: [20.7504374, 73.7276105],
-          //   name: "India",
-          //   style: { fill: "#465FFF", borderWidth: 1, borderColor: "white" },
-          // },
-          // {
-          //   latLng: [53.613, -11.6368],
-          //   name: "United Kingdom",
-          //   style: { fill: "#465FFF", borderWidth: 1, borderColor: "white" },
-          // },
-          // {
-          //   latLng: [-25.0304388, 115.2092761],
-          //   name: "Sweden",
-          //   style: {
-          //     fill: "#465FFF",
-          //     borderWidth: 1,
-          //     borderColor: "white",
-          //     strokeOpacity: 0,
-          //   },
-          // },
-          {
-            latLng: [-1.286389, 36.817223],
-            name: "Kenya",
-            style: {
-              fill: "#465FFF",
-              borderWidth: 1,
-              borderColor: "white",
-              strokeOpacity: 0,
-            },
-          },
-        ] as Marker[]
+        countries.map((country) => {
+          return {
+            ...country,
+            style: style,
+          }
+        }) as Marker[]
+        // [
+        //   {
+        //     latLng: [-1.286389, 36.817223],
+        //     name: "Kenya",
+        //     style: style,
+        //   },
+        // ] as Marker[]
       }
       zoomOnScroll={false}
       zoomMax={12}

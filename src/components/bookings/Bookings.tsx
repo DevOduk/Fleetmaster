@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import Pagination from "../tables/Pagination";
@@ -11,7 +12,6 @@ import Badge from "../ui/badge/Badge";
 import CachedIcon from "@mui/icons-material/Cached"
 import PageBreadcrumb from "../common/PageBreadCrumb";
 import { useAdminFleet } from "@/context/AdminFleetContext";
-import SimpleLoader from "../ui/loading/simpleLoader";
 
 
 const Bookings: React.FC = () => {
@@ -134,7 +134,6 @@ const Bookings: React.FC = () => {
           {[
             {
               title: 'Daily Bookings',
-              currency: 'Ksh',
               value: totalCountToday,
               description: 'Total Bookings today',
               icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
@@ -142,7 +141,6 @@ const Bookings: React.FC = () => {
             },
             {
               title: 'Weekly Bookings',
-              currency: 'Ksh',
               value: totalCountThisWeek,
               description: 'Total Bookings this week',
               icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
@@ -150,22 +148,20 @@ const Bookings: React.FC = () => {
             },
             {
               title: 'Monthly  Bookings',
-              currency: 'Ksh',
               value: totalCountThisMonth,
               description: 'Total Bookings this Month',
               icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
               badge: { text: "9.05%", color: "success" as const, icon: <ArrowUpIcon className="text-success-500" /> },
             },
             {
-              title: 'Average Bookings (This Month)',
-              currency: 'Ksh',
+              title: 'Avg. Bookings',
               value: averageDailyThisMonth,
               description: 'Average Daily Bookings for This Month',
               icon: <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />,
               badge: { text: "9.05%", color: "success" as const, icon: <ArrowUpIcon className="text-success-500" /> },
             },
           ].map((p, i) => (
-            <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6 space-y-3" key={i}>
+          <div className="rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/3 md:p-6 space-y-3" key={i}>
               <span className="text-lg font-bold text-gray-800 dark:text-gray-300">
                 {p.title}
               </span>

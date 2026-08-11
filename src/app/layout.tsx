@@ -40,17 +40,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
-      <ToastProvider>
-        <ThemeProvider>
-          <SidebarProvider>
-            <body suppressHydrationWarning={true} className={`${outfit.className} client-theme dark:bg-gray-900 min-h-screen`}>
-              <ThemeInitializer defaultColor="#465fff" />
-              <ClientLinkInterceptor />
+      <ThemeProvider>
+        <SidebarProvider>
+          <body suppressHydrationWarning={true} className={`${outfit.className} client-theme dark:bg-gray-900 min-h-screen`}>
+            <ThemeInitializer defaultColor="#465fff" />
+            <ClientLinkInterceptor />
+            <ToastProvider>
               {children}
-            </body>
-          </SidebarProvider>
-        </ThemeProvider>
-      </ToastProvider>
+            </ToastProvider>
+          </body>
+        </SidebarProvider>
+      </ThemeProvider>
     </html>
   );
 }

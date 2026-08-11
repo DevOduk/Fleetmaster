@@ -127,7 +127,6 @@ export async function POST(request: Request) {
                 api_ref: paymentTrackingRef, 
             });
 
-            console.log("✅ IntaSend Gateway Handshake Success:", intasendResponse);
         } catch (intasendError: any) {
             console.error("❌ IntaSend SDK Gateway Handshake Failure:", intasendError);
             return NextResponse.json({
