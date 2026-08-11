@@ -98,7 +98,7 @@ export default function DemographicCard({ clients }: { clients: any[]; }) {
           </> :
             <div className="flex flex-col gap-4">
               {countries.sort((a, b) => a.length - b.length).map((c, i) => {
-                const percentage = ((clients?.filter(m => m.country === c).length) / clients.length) * 100;
+                const percentage = (((clients?.filter(m => m.country === c).length) / clients.length) * 100);
                 const country = allCountriesDB.find(b => b.country === c);
 
                 return (
@@ -125,7 +125,7 @@ export default function DemographicCard({ clients }: { clients: any[]; }) {
                         <div style={{ width: `${percentage}%` }} className={`absolute left-0 top-0 flex h-full items-center justify-center rounded-sm bg-brand-500 text-xs font-medium text-white`}></div>
                       </div>
                       <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {percentage}%
+                        {percentage.toFixed(0)}%
                       </p>
                     </div>
                   </div>

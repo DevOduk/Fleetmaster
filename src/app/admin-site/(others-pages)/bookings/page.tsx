@@ -1,4 +1,3 @@
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Bookings from "@/components/bookings/Bookings";
 import { Metadata } from "next";
 import { headers } from "next/headers";
@@ -62,7 +61,6 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function page() {
   return (
     <div>
-      <PageBreadcrumb pageTitle="Bookings" />
       <Bookings />
     </div>
   );

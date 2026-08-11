@@ -11,7 +11,6 @@ import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import Link from "next/link";
-// import DropzoneComponent from '@/components/form/form-elements/DropZone'
 import Select from '@/components/form/Select';
 import { allCountriesDB, languages, timezones } from '@/data/globalExports';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -103,8 +102,7 @@ function EditProfilePage() {
                   width: 80,
                   height: 80
                 }}
-                src={profileDetails?.profile_pic || 'U'}
-                alt="User"
+                src={profileDetails?.profile_pic}
               />
               <input className="hidden" type="file" accept="image/*" onChange={async (e) => {
                 const image = await handleImageFileUpload(e, showToast);
@@ -264,7 +262,7 @@ function EditProfilePage() {
           <div className="px-2 overflow-y-auto custom-scrollbar">
             <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
               <EditableInput placeholder="Select Country" type="select" options={allCountries()} label="Country" value={profileDetails?.country} onChange={(v) => handleInputChange("country", v)} />
-              <EditableInput placeholder="Arizona" type="text" label="City/State" value={profileDetails?.city} onChange={(v) => handleInputChange("city", v)} />
+              <EditableInput placeholder="Phoenix,  AZ" type="text" label="City/State" value={profileDetails?.city} onChange={(v) => handleInputChange("city", v)} />
               <EditableInput placeholder="E9108" type="text" label="Postal Address" value={profileDetails?.postal_code} onChange={(v) => handleInputChange("postal_code", v)} />
               <EditableInput placeholder="Select user timezone" type="select" label="Timezone" options={allTimezones()} value={profileDetails?.timezone} onChange={(v) => handleInputChange("timezone", v)} />
               <EditableInput placeholder="Select user primary language" type="select" options={languages} label="Language" value={profileDetails?.language} onChange={(v) => handleInputChange("language", v)} />

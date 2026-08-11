@@ -473,12 +473,12 @@ const NewVehiclePage = () => {
               <div className='p-2'>
                 <p className="text-gray-400">Location (Cant't find location? Create one <Link target='_blank' href={'/yards'} className='text-brand-500'>Here</Link>)</p>
                 <Select
-                  options={profile?.fleetmaster_tenants?.yards?.map((y) => `${y.title}`).map(l => {
+                  options={profile?.fleetmaster_tenants?.yards?.map((y) => `${y.title}`)?.map(l => {
                     return {
                       value: l,
                       label: l
                     }
-                  })}
+                  }) || []}
 
                   defaultValue={VehicleDetails?.location}
                   value={VehicleDetails?.location}

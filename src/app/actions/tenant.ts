@@ -152,18 +152,101 @@ export async function updateTenantDetails(tenantId: string, updatedData: any) {
 }
 
 export async function createNewTenant(newTenantData: any) {
-  const supabase = await createClient();
+  try {
+    if (!newTenantData || typeof newTenantData !== "object") {
+      return {
+        success: false,
+        data: null,
+        error: { message: "Invalid tenant data provided." },
+      };
+    }
+    const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("fleetmaster_tenants")
-    .insert(newTenantData)
-    .select("id")
-    .single();
+    const { data, error } = await supabase
+      .from("fleetmaster_tenants")
+      .insert(newTenantData)
+      .select("id")
+      .single();
 
-  if (!error) {
-    // Invalidate global tenant list cache
-    await redis.del("tenants:all");
+    if (error) {
+      console.error("Supabase createNewTenant error:", error);
+
+      let customMessage = "Failed to create company record. Please try again.";
+
+      // Map common PostgreSQL / Supabase error codes to clear messages
+      switch (error.code) {
+        case "23505": // Unique constraint violation
+          const errText = `${error.details || ''} ${error.message || ''}`.toLowerCase();
+
+          if (errText.includes("slug")) {
+            customMessage = "A company with this subdomain/slug already exists.";
+          } else if (errText.includes("email")) {
+            customMessage = "A company with this email address is already registered.";
+          } else if (errText.includes("phone")) {
+            customMessage = "A company with this phone number is already registered.";
+          } else if (errText.includes("name")) {
+            customMessage = "A company with this name is already registered.";
+          } else {
+            customMessage = "A company with these details already exists.";
+          }
+          break;
+
+        case "23514": // Check constraint violation
+          if (error.message?.includes("check_status_values")) {
+            customMessage = "Invalid company status value provided.";
+          } else {
+            customMessage = "One or more provided fields failed database validation rules.";
+          }
+          break;
+
+        case "23502": // Not-null constraint violation
+          const columnMatch = error.message?.match(/column "([^"]+)"/);
+          const columnName = columnMatch ? columnMatch[1] : "required field";
+          customMessage = `Missing required field: ${columnName.replace(/_/g, " ")}.`;
+          break;
+
+        case "22P02": // Invalid text representation (e.g. wrong data type)
+          customMessage = "Invalid data format provided for one of the fields.";
+          break;
+
+        case "42P01": // Undefined table
+          customMessage = "Database table configuration error. Please contact support.";
+          break;
+      }
+
+      return {
+        success: false,
+        data: null,
+        error: {
+          code: error.code,
+          message: customMessage,
+          details: error.details || error.message,
+        },
+      };
+    }
+
+    // Invalidate global tenant list cache on success
+    if (redis) {
+      try {
+        await redis.del("tenants:all");
+      } catch (cacheErr) {
+        console.error("Redis cache invalidation error (createNewTenant):", cacheErr);
+      }
+    }
+
+    return {
+      success: true,
+      data,
+      error: null,
+    };
+  } catch (err: any) {
+    console.error("Unexpected error in createNewTenant:", err);
+    return {
+      success: false,
+      data: null,
+      error: {
+        message: err.message || "An unexpected system error occurred while creating the company.",
+      },
+    };
   }
-
-  return { data, error, success: !error };
 }

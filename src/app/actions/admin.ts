@@ -3,6 +3,11 @@
 import { createClient } from "@/utils/supabase/server";
 import { hash } from "bcrypt-ts";
 import { Redis } from "@upstash/redis";
+import { retryDuration } from "@/data/globalExports";
+import crypto from "crypto";
+import { Resend } from "resend";
+import { VerifyEmailNotification } from "@/utils/templates/email-templates";
+
 
 // Initialize Upstash Redis Client
 const redis = new Redis({
@@ -12,12 +17,16 @@ const redis = new Redis({
 
 const CACHE_TTL_SECONDS = 900; // Cache duration: 15 minutes
 const SALT_ROUNDS = Number(process.env.BCRYPT_SALT || "12");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function createTenantAdmin(newTenantAdmin: any) {
   try {
     const supabase = await createClient();
 
-    // Pass the number of rounds, NOT a string salt
+    // 1. Generate a secure 6-digit OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const otpValidityMinutes = retryDuration / 60;
+    const otpExpiresAt = new Date(Date.now() + otpValidityMinutes * 60 * 1000).toISOString();
     const hashedPassword = await hash(newTenantAdmin.password, SALT_ROUNDS);
 
     const { error, data } = await supabase
@@ -25,8 +34,10 @@ export async function createTenantAdmin(newTenantAdmin: any) {
       .insert({
         ...newTenantAdmin,
         password: hashedPassword, // Store the full hash
+        otp_code: otp,
+        otp_expires_at: otpExpiresAt
       })
-      .select("*")
+      .select(`id, first_name, last_name, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, fleetmaster_tenants(*)`)
       .single();
 
     if (!error && newTenantAdmin?.tenant_id) {
@@ -34,7 +45,40 @@ export async function createTenantAdmin(newTenantAdmin: any) {
       await redis.del(`tenant:admins:${newTenantAdmin.tenant_id}`);
     }
 
-    return { data, success: !error, error };
+    if (!error) {
+      // 3. Dispatch the verification email via Resend
+      const { error: mailError } = await resend.emails.send({
+        from: "FleetMaster <onboarding@resend.dev>", // Replace with your domain when verified
+        to: newTenantAdmin.email,
+        subject: `${otp} is your verification code`,
+        html: VerifyEmailNotification(otp, otpValidityMinutes),
+      });
+
+      return { data, success: !error, error, mailError };
+    }
+
+    if (error) {
+      console.error("Supabase insert error:", error);
+
+      let friendlyMessage = "An unexpected error occurred while creating the account. Please try again.";
+
+      if (error.code === '23505') {
+        if (error.message.includes("email") || error.details?.includes("email")) {
+          friendlyMessage = "An account with this email address already exists. Sign in or use a different email.";
+        } else if (error.message.includes("phone") || error.details?.includes("phone")) {
+          friendlyMessage = "This phone number is already registered.";
+        } else {
+          friendlyMessage = "A user with these details already exists. Please check your information and try again.";
+        }
+      }
+
+      return {
+        data: null,
+        success: false,
+        error: { message: friendlyMessage }
+      };
+    }
+
   } catch (err: any) {
     console.error("New Tenant Admin Creation failure:", err);
     return { success: false, error: err.message || "Failed to register admin." };

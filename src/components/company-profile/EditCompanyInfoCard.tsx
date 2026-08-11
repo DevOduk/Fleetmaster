@@ -17,8 +17,17 @@ import UpdateYardsModal from "../yards/UpdateYardsModal";
 import { applyThemeVariables } from "../ThemeInitializer";
 import { createClient } from "@/utils/supabase/client";
 import Checkbox from "../form/input/Checkbox";
+import { allCountriesDB, languages, timezones } from "@/data/globalExports";
+import Select from "../form/Select";
 
-
+  export const allTimezones = () => {
+    return timezones.flatMap(t =>
+      t.regions.map(region => ({
+        value: `(${t.timezone.replace('GMT', 'UTC')}) ${region}`,
+        label: `(${t.timezone.replace('GMT', 'UTC')}) ${region}`
+      }))
+    );
+  };
 
 export default function EditCompanyInfoCard() {
   const { profile } = useUser();
@@ -169,6 +178,15 @@ export default function EditCompanyInfoCard() {
     }
   }
 
+  const allCountries = () => {
+    return allCountriesDB.flatMap(c => ({
+      value: c.country,
+      label: c.country
+    })
+    );
+  };
+
+
 
   if (!profile || !profile.tenant_id || loadingCompany) {
     return (
@@ -285,26 +303,25 @@ export default function EditCompanyInfoCard() {
         </ComponentCard>
 
         <ComponentCard title="Company Description">
-          <TextArea disabled={updatingCompany} value={companyFormData.description} onChange={(v) => handleInputChange("description", v)} className="text-sm text-gray-600 dark:text-gray-300" />
+          <TextArea disabled={updatingCompany} value={companyFormData.description || ''} onChange={(v) => handleInputChange("description", v)} className="text-sm text-gray-600 dark:text-gray-300" />
         </ComponentCard>
 
         <ComponentCard title="Contact Information">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <EditableInput disabled={updatingCompany} type="email" label="Email Address" value={companyFormData.email} onChange={(v) => handleInputChange("email", v)} />
             <EditableInput disabled={updatingCompany} type="tel" label="Primary Phone Number" value={companyFormData.phone} onChange={(v) => handleInputChange("phone", v)} />
-            <EditableInput disabled={updatingCompany} label="State/County" value={companyFormData.county} onChange={(v) => handleInputChange("county", v)} />
-            <EditableInput disabled={updatingCompany} label="Country" value={companyFormData.country} onChange={(v) => handleInputChange("country", v)} />
+            <EditableInput disabled={updatingCompany} placeholder="Select Country" type="select" options={allCountries()} label="Country" value={companyFormData?.country} onChange={(v) => handleInputChange("country", v)} />
             <EditableInput disabled={updatingCompany} label="City" value={companyFormData.city} onChange={(v) => handleInputChange("city", v)} />
             <EditableInput disabled={updatingCompany} label="Zip Code" value={companyFormData.zip_code} onChange={(v) => handleInputChange("zip_code", v)} />
-            <EditableInput disabled={updatingCompany} label="Address" value={companyFormData.address} onChange={(v) => handleInputChange("address", v)} />
+            <EditableInput disabled={updatingCompany} label="Main Office Address" value={companyFormData.address} onChange={(v) => handleInputChange("address", v)} />
           </div>
         </ComponentCard>
 
         <ComponentCard title="System Settings">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <EditableInput disabled={updatingCompany} label="Timezone" value={companyFormData.timezone} onChange={(v) => handleInputChange("timezone", v)} />
-            <EditableInput disabled={updatingCompany} label="Language" value={companyFormData.language} onChange={(v) => handleInputChange("language", v)} />
-            <EditableInput disabled={updatingCompany} label="Currency" value={companyFormData.currency} onChange={(v) => handleInputChange("currency", v)} />
+            <EditableInput disabled={updatingCompany} placeholder="Select timezone" type="select" label="Timezone" options={allTimezones()} value={companyFormData?.timezone} onChange={(v) => handleInputChange("timezone", v)} />
+            <EditableInput disabled={updatingCompany} placeholder="Select user primary language" type="select" options={languages} label="Language" value={companyFormData?.language} onChange={(v) => handleInputChange("language", v)} />
+            <EditableInput disabled={updatingCompany} placeholder="Select currency" type="select" options={allCountriesDB.map(c => ({ value: c.currency, label: c.currency }))} label="Currency" value={companyFormData.currency} onChange={(v) => handleInputChange("currency", v)} />
             <EditableInput disabled={updatingCompany} type="number" label="Buffer (Hours)" value={companyFormData.buffer} onChange={(v) => handleInputChange("buffer", v)} />
             <EditableInput disabled={updatingCompany} type="number" label="Monthly Target" value={companyFormData.monthly_target} onChange={(v) => handleInputChange("monthly_target", v)} />
             <EditableInput disabled={updatingCompany} type="color" label="Color Preference" value={companyFormData.color} onChange={(v) => handleInputChange("color", v)} />
@@ -353,7 +370,7 @@ export default function EditCompanyInfoCard() {
 
 
         <ComponentCard title="Company About (Brief Overview)">
-          <TextArea value={companyFormData.about} onChange={(v) => handleInputChange("about", v)} className="text-sm text-gray-600 dark:text-gray-300" />
+          <TextArea value={companyFormData.about || ''} onChange={(v) => handleInputChange("about", v)} className="text-sm text-gray-600 dark:text-gray-300" />
         </ComponentCard>
       </div>
       <div className="flex items-center justify-end border-t border-gray-100 px-6 py-5 dark:border-gray-800">
@@ -366,11 +383,16 @@ export default function EditCompanyInfoCard() {
   );
 }
 
-function EditableInput({ label, value, onChange, type = "text", disabled }: { label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean }) {
+function EditableInput({ label, value, onChange, type = "text", disabled, placeholder, options }: { label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean; placeholder?: string; options?: any[]; }) {
   return (
-    <div className="flex flex-col space-y-1">
+    <div className="col-span-2 lg:col-span-1 space-y-1 flex flex-col">
       <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">{label}</Label>
-      <Input disabled={disabled} type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="h-9" />
-    </div>
+      {
+        type === "select" ?
+          <Select value={value || ""} defaultValue={value || ""} placeholder={placeholder} onChange={(e) => onChange(e)} options={(options || [])} />
+          :
+          <Input placeholder={placeholder} disabled={disabled} type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="h-9" />
+      }
+    </div >
   );
 }

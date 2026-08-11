@@ -7,7 +7,6 @@ import { CalenderIcon, DownloadIcon, PencilIcon, PlusIcon, TimeIcon } from "@/ic
 import Link from "next/link";
 import { CircularProgress } from "@mui/material";
 import Badge from "../ui/badge/Badge";
-import { getBookingDetailsServer } from "@/app/api/bookings/booking-details";
 import { useUser } from "@/context/UserContext";
 import BookingNotFound from "./NotFound";
 import Alert from "../ui/alert/Alert";
@@ -15,6 +14,7 @@ import { getTimeRemaining } from "./EditBooking";
 import { CalendarComponent } from "../calendar/CalendarComponent";
 import dayjs from "dayjs";
 import SimpleLoader from "../ui/loading/simpleLoader";
+import { fetchBookingDetails } from "@/app/actions/bookings";
 
 
 const calendarsEvents = {
@@ -39,7 +39,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number; }) {
     if (loading) return;
     setLoadingBooking(true);
 
-    getBookingDetailsServer(BookingID, profile?.tenant_id)
+    fetchBookingDetails(BookingID, profile?.tenant_id)
       .then(res => {
 
         if (!res.error) {

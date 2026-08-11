@@ -2,7 +2,17 @@
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 
+export const getRemainingDays = (expiryDate?: string | Date): number => {
+  if (!expiryDate) return 0;
+  const now = new Date();
+  const expiry = new Date(expiryDate);
+  const diffMs = expiry.getTime() - now.getTime();
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+};
+
 export const getExpiryString = (expiryDate: string) => {
+  if (!expiryDate) return "No active subscription";
+
   const now = new Date();
   const expiry = new Date(expiryDate);
   const diff = expiry.getTime() - now.getTime();

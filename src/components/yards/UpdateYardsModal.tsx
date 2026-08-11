@@ -19,6 +19,7 @@ const MapPicker = dynamic(() => import("../map/MapPicker"), {
 export default function UpdateYardsModal({
     tenantId, isOpen, yardDetails, setCompanyFormData, companyFormData, setIsOpen
 }: any) {
+    const [isUpdloading, setIsUploading] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const { showToast } = useToast();
     const [updatedYard, setUpdatedYard] = useState<any>(yardDetails || {
@@ -29,12 +30,15 @@ export default function UpdateYardsModal({
     });
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        setIsUploading(true);
         const image = await handleImageFileUpload(e, showToast, 'Profiles');
 
         if (image) {
             setUpdatedYard((prev: any) => ({ ...prev, imageUrl: image as string }));
+            setIsUploading(false);
         } else {
             showToast('An error occured while uploading image!', 'error')
+            setIsUploading(false);
         }
     };
 
@@ -103,8 +107,8 @@ export default function UpdateYardsModal({
                     <Button size="sm" variant="danger-outline" onClick={() => setIsOpen(false)}>
                         Cancel
                     </Button>
-                    <Button disabled={isUpdating} size="sm" variant="primary" onClick={handleSubmitYard}>
-                        {isUpdating ? 'Just a moment ...' : yardDetails ? "Update Yard" : "Create Yard"}
+                    <Button disabled={isUpdating || isUpdloading} size="sm" variant="primary" onClick={handleSubmitYard}>
+                        {(isUpdating || isUpdloading) ? 'Just a moment ...' : yardDetails ? "Update Yard" : "Create Yard"}
                     </Button>
                 </div>
             </div>

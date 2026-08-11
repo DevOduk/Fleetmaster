@@ -118,7 +118,7 @@ export default function SignInForm({ tenant }: Tenant) {
           <div className="mb-5 sm:mb-8">
             {
               (profile || adminProfile) && <Link href={'/'} className="text-brand-500 flex gap-2 items-center mb-2">
-                <ArrowRightIcon className='r rotate-180' /> Stay signed in as {profile?.first_name || adminProfile?.first_name}
+                <ArrowRightIcon className='r rotate-180' /> Signed in as {profile?.first_name || adminProfile?.first_name}
               </Link>
             }
 

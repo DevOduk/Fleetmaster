@@ -8,6 +8,7 @@ import { useToast } from "@/context/ToastContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Button from "../ui/button/Button";
 import { verifyOTP, resendOTP, sendEmailVerification } from "@/app/actions/verification/email";
+import { retryDuration } from "@/data/globalExports";
 
 export default function ValidateEmailForm({ params }: { params: { tenant: string } }) {
   const router = useRouter();
@@ -16,49 +17,29 @@ export default function ValidateEmailForm({ params }: { params: { tenant: string
   const [otp, setOtp] = useState('');
   const [email, setEmail] = useState('');
   const [id, setId] = useState('');
+  const [role, setRole] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSendingInitial, setIsSendingInitial] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [cooldown, setCooldown] = useState(0);
+  const [cooldown, setCooldown] = useState(retryDuration);
   const [errorMessage, setErrorMessage] = useState('');
-
+  const verificationParam = searchParams.get('v');
 
   // Parse verification token safely on client mount
   useEffect(() => {
-    const verificationParam = searchParams.get('v');
     if (verificationParam) {
       try {
         const decodedData = JSON.parse(atob(verificationParam));
         if (decodedData.email) setEmail(decodedData.email);
         if (decodedData.id) setId(decodedData.id);
+        if (decodedData.role) setRole(decodedData.role);
       } catch (error) {
         console.error('Failed to decode verification parameter:', error);
       }
     }
   }, [searchParams]);
 
-  // Handle initial OTP trigger once email & id are decoded
-  const dispatchInitialOtp = useCallback(async (userId: string, userEmail: string) => {
-    setIsSendingInitial(true);
-    const res = await sendEmailVerification(userId, userEmail);
-    setIsSendingInitial(false);
-
-    if (res.success) {
-      showToast("Verification code sent to your email.", "success");
-      setCooldown(60*5); // 5-minute cooldown
-    } else {
-      showToast(`Failed to send verification email: ${res.error?.message}`, "error");
-      setErrorMessage(res.error?.message || "Failed to send verification email.");
-    }
-  }, []);
-
-  useEffect(() => {
-    if (email && id) {
-      if (cooldown > 0) return;
-
-      dispatchInitialOtp(id, email);
-    }
-  }, [email, id]);
+  // initial dispatch is handled immediately after signup so no need to rerun dispatch 
 
   // Countdown timer effect for resend cooldown
   useEffect(() => {
@@ -71,12 +52,13 @@ export default function ValidateEmailForm({ params }: { params: { tenant: string
 
   const handleVerifyOTP = async () => {
     if (!otp.trim()) {
-      showToast("Please enter the 6-digit verification code.", "error");      
+      showToast("Please enter the 6-digit verification code.", "error");
       return;
     }
 
     setIsLoading(true);
-    const res = await verifyOTP(btoa(JSON.stringify({ email, id, otp })));
+    setErrorMessage('');
+    const res = await verifyOTP(btoa(JSON.stringify({ email, id, otp })), role);
 
     if (res.success) {
       showToast(`Email verification complete! You will be redirected to login in 5 sec.`, "success");
@@ -93,18 +75,21 @@ export default function ValidateEmailForm({ params }: { params: { tenant: string
   };
 
   const handleResendCode = () => {
+    setSendingCode(true);
     if (cooldown > 0 || !email) return;
 
     startTransition(async () => {
-      const res = await resendOTP(btoa(email));
+      const res = await resendOTP(btoa(email), role);
 
       if (res.success) {
         showToast("A new verification code has been sent.", "success");
-        setCooldown(60*5);
+        setCooldown(retryDuration);
       } else {
-        showToast(`${res.error?.message||'Failed to send code'}`, "error");
-        setErrorMessage(`${res.error?.message||'Failed to send code'}`);
+        showToast(`${res.error?.message || 'Failed to send code'}`, "error");
+        setErrorMessage(`${res.error?.message || 'Failed to send code'}`);
       }
+
+      setSendingCode(false);
     });
   };
 
@@ -145,23 +130,26 @@ export default function ValidateEmailForm({ params }: { params: { tenant: string
                     Enter OTP<span className="text-error-500">*</span>
                   </Label>
                   <Input
-                  error={!!errorMessage}
-                  hint={errorMessage || "Enter the 6-digit code sent to your email."}
-                    type="text"
+                    error={!!errorMessage}
+                    hint={errorMessage || "Enter the 6-digit code sent to your email."}
+                    type="tel"
                     id="otp"
-                    className="mt-2 text-center! w-full! tracking-wide"
+                    className="mt-2 text-center w-full tracking-wide"
                     name="otp"
                     maxLength={6}
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    placeholder="0 0 0 0 0 0"
-                    disabled={isLoading || isSendingInitial}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      setOtp(value);
+                    }}
+                    placeholder="000000"
+                    disabled={isLoading || sendingCode}
                   />
                 </div>
                 {/* <!-- Button --> */}
                 <div>
-                  <Button type="submit" variant="primary" disabled={isLoading || isSendingInitial || !email.trim() || isSendingInitial || otp.trim().length < 6} className="px-4! py-3! w-full text-sm">
-                    {isLoading ? "Verifying..." : isSendingInitial ? "Sending Code..." : "Verify OTP"}
+                  <Button type="submit" variant="primary" disabled={isLoading || sendingCode || !email.trim() || sendingCode || otp.trim().length < 6} className="px-4! py-3! w-full text-sm">
+                    {isLoading ? "Verifying..." : sendingCode ? "Sending Code..." : "Verify OTP"}
                   </Button>
                 </div>
               </div>

@@ -58,10 +58,10 @@ export const EcommerceMetrics = ({tenants}: { tenants: any;}) => {
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 md:gap-6">
-      {metrics.map((card) => (
+      {metrics.map((card,i) => (
         card.isReady ? (
-          <div key={card.id} className="rounded-2xl border border-gray-200 px-5 py-3 dark:border-gray-800 bg-brand-500/5 space-y-3">
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 shadow-xs shadow-brand-600 rounded-xl dark:bg-gray-800">
+          <div className="rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/3 md:p-6 space-y-3" key={i}>
+            <div className="flex items-center justify-end ms-auto shadow-xs">
               {card.icon}
             </div>
             <span className="text-lg font-bold text-gray-800 dark:text-gray-300">
@@ -81,7 +81,7 @@ export const EcommerceMetrics = ({tenants}: { tenants: any;}) => {
             </div>
           </div>
         ) : (
-          <div key={card.id} className="rounded-2xl animate-pulse border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/5 md:p-6">
+          <div className="rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/3 md:p-6 space-y-3" key={i}>
             <div className="flex items-center justify-center w-12 h-12 bg-gray-50 rounded-xl dark:bg-gray-700" />
             <div className="flex items-end justify-between mt-5">
               <div>

@@ -40,7 +40,7 @@ interface SupportDashboardProps {
 const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({ initialTickets }) => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
-const {adminProfile} = useAdmin();
+  const { adminProfile } = useAdmin();
   // Calculate real-time metrics overview cards
   const metrics = useMemo(() => {
     if (!initialTickets) return;
@@ -63,7 +63,7 @@ const {adminProfile} = useAdmin();
     });
   }, [initialTickets, filterStatus, filterPriority]);
 
-// console.log(initialTickets, "initialTickets");
+  // console.log(initialTickets, "initialTickets");
 
   return (
     <div className="space-y-8">
@@ -100,33 +100,29 @@ const {adminProfile} = useAdmin();
               style: "bg-rose-50/40 border-rose-100 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/10 dark:text-rose-400",
               icon: <ReportGmailerrorredOutlinedIcon fontSize="large" className="text-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1 dark:text-white/90" />
             }
-          ].map((card, idx) => (
-              <div key={idx} className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 bg-brand-500/5 md:p-6">
-                <div className="flex gap-3 items-center">
-                  {/* <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-                            <AttachMoneyOutlinedIcon className="text-gray-800 dark:text-white/90" />
-                          </div> */}
-
-                  <span className="text-xl font-bold text-gray-200 dark:text-gray-300">
-                    {card.title}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between mt-3">
-                  <div>
-                    <h4 className="mt-2 font-bold text-gray-800 flex gap-2 items-center text-title-sm dark:text-white/90">
-                      {card.icon} {card.count.toLocaleString()}
-                    </h4>
-                  </div>
-
-                  <Badge color="success">
-                    <ArrowUpIcon className="text-success-500" />
-                    0.0%
-                  </Badge>
-                </div>
-                <div className="text-sm truncate mt-3 text-gray-500 dark:text-gray-400">
-                  {card.label}
-                </div>
+          ].map((card, i) => (
+            <div className="rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/3 md:p-6 space-y-3" key={i}>
+              <div className="flex gap-3 items-center">
+                <span className="text-xl font-bold text-gray-200 dark:text-gray-300">
+                  {card.title}
+                </span>
               </div>
+              <div className="flex items-center justify-between mt-3">
+                <div>
+                  <h4 className="mt-2 font-bold text-gray-800 flex gap-2 items-center text-title-sm dark:text-white/90">
+                    {card.icon} {card.count.toLocaleString()}
+                  </h4>
+                </div>
+
+                <Badge color="success">
+                  <ArrowUpIcon className="text-success-500" />
+                  0.0%
+                </Badge>
+              </div>
+              <div className="text-sm truncate mt-3 text-gray-500 dark:text-gray-400">
+                {card.label}
+              </div>
+            </div>
           ))}
       </div>
 

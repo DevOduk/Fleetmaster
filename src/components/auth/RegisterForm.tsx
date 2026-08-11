@@ -10,6 +10,9 @@ import { useToast } from "@/context/ToastContext";
 import { createNewTenant } from "@/app/actions/tenant";
 import { createTenantAdmin } from "@/app/actions/admin";
 import Link from "next/link";
+import Select from "../form/Select";
+import { allCountriesDB, timezones } from "@/data/globalExports";
+import { allTimezones } from "../company-profile/EditCompanyInfoCard";
 
 
 
@@ -18,6 +21,20 @@ const user = [{ "idx": 0, "id": "67996b2b-4889-4e56-b876-46b6a72b822a", "tenant_
 interface Tenant {
   tenant?: string;
 }
+
+
+const industries = [
+  'Rental Company',
+  'Leasing Company',
+  'Private Rental Agency',
+];
+const employees = [
+  '1-10',
+  '11-30',
+  '31-50',
+  '51-100',
+  '> 100',
+];
 
 function RegisterFormInner() {
   const router = useRouter();
@@ -29,13 +46,6 @@ function RegisterFormInner() {
   const [isLoading, setIsLoading] = useState(false);
   const [tenantId, setTenantId] = useState<string | null>(searchParams.get("id"));
 
-  // Company Form Fields
-  const [companyName, setCompanyName] = useState("Test Company");
-  const [slug, setSlug] = useState("slug");
-  const [primaryEmail, setPrimaryEmail] = useState("company@gmail.com");
-  const [primaryPhone, setPrimaryPhone] = useState("0768927611");
-
-  // Admin Form Fields
   const [first, setFirst] = useState("First");
   const [last, setLast] = useState("Last");
   const [email, setEmail] = useState("admin@gmail.com");
@@ -43,6 +53,22 @@ function RegisterFormInner() {
   const [password, setPassword] = useState("123456789");
   const [confirmPassword, setConfirmPassword] = useState("123456789");
   const [showPassword, setShowPassword] = useState(false);
+
+  const [companyStep, setCompanyStep] = useState(1);
+  const [companyDetils, setCompanyDetails] = useState({
+    name: 'Test Company',
+    email: 'company@gmail.com',
+    phone: '0768927611',
+    country: 'Kenya',
+    timezone: '(UTC+3:00) East African Timezone',
+    industry: 'Private Rental Agency',
+    address: '7th Parklands Av., Nairobi',
+    slug: 'slug',
+    employees: '1-10',
+    subscription_status: 'Active'
+  })
+  const [errorMessage, setErrorMessage] = useState('');
+
 
   // If ID exists in URL, skip to Admin step
   useEffect(() => {
@@ -52,35 +78,39 @@ function RegisterFormInner() {
   }, [searchParams]);
 
   const handleCreateCompany = async () => {
-    if (!companyName?.trim()) return showToast("Company name is required", "warning");
-    if (!slug?.trim()) return showToast("Your subdomain slug is required", "warning");
-    if (!primaryEmail?.trim()) return showToast("Company primary email is required", "warning");
-    if (!primaryPhone?.trim()) return showToast("Company primary phone is required", "warning");
+    if (!companyDetils.name?.trim()) return showToast("Company name is required", "warning");
+    if (!companyDetils.slug?.trim()) return showToast("Your subdomain slug is required", "warning");
+    if (!companyDetils.email?.trim()) return showToast("Company primary email is required", "warning");
+    if (!companyDetils.phone?.trim()) return showToast("Company primary phone is required", "warning");
+
+    if (!companyDetils.country?.trim() || !companyDetils.address?.trim() || !companyDetils.timezone?.trim() || !companyDetils.industry?.trim()) return showToast("Missing required items! Check and try again", "warning");
 
     setIsLoading(true);
 
-    const companyDetils = {
-      name: companyName,
-      slug: slug,
-      email: primaryEmail,
-      phone: primaryPhone
-    }
+
     const res = await createNewTenant(companyDetils);
     if (res.success) {
       setTenantId(res.data.id);
       setStep("admin");
       router.replace(`/register?id=${res.data.id}`);
-      showToast(`Registration of company "${companyName}" Complete! Now setup primary admin details.`, "success");
+      showToast(`Registration of company "${companyDetils.name}" Complete! Now setup primary admin details.`, "success");
 
       setIsLoading(false);
     } else {
-      showToast(`Failed to register company: ${res.error.message}`, "error");
+      showToast(`${res.error.message}`, "error");
+      setErrorMessage(res.error.message);
+      setCompanyStep(1);
+
       setIsLoading(false);
     }
   };
 
   const handleCreateAdmin = async () => {
-    if (!email || !password) return showToast("All fields required", "warning");
+    if (!email.trim() || !password.trim() || !confirmPassword.trim()) return showToast("Please fill out all the required fields!", "warning");
+    if (password.trim() !== confirmPassword.trim()) {
+      showToast('Passwords do not match! Please check your password and try again.', 'error')
+      return;
+    }
     setIsLoading(true);
 
 
@@ -94,15 +124,11 @@ function RegisterFormInner() {
       role: "Super Admin",
     }
     const res = await createTenantAdmin(adminDetils);
-    console.log(res)
 
     if (res.success) {
-      showToast(`Registration Complete! You will be redirected to login in 5 sec.`, "success");
-
-      setTimeout(() => {
-        router.push("/signin");
-        setIsLoading(false);
-      }, 5000);
+      showToast(`Registration successful! Please verify your email.`, "success");
+      
+      router.push(`/verify-email?v=${btoa(JSON.stringify({ email, id: res.data.id, role: 'admin' }))}`);
     } else {
       showToast(`Failed to register details: ${res.error.message}`, "error");
       setIsLoading(false);
@@ -127,34 +153,113 @@ function RegisterFormInner() {
 
         {step === "company" ? (
           <div className="space-y-6 animate-in fade-in duration-500">
-            <div>
-              <Label>Rental Company Name <span className="text-error-500">*</span></Label>
-              <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Fleet Master Inc." />
-            </div>
+            {
+              companyStep === 1 ? (
+                <>
+                  <div>
+                    <Label>Rental Company Name <span className="text-error-500">*</span></Label>
+                    <Input                     
+                      error={!!errorMessage.includes("name")}
+                      hint={errorMessage.includes("name") ? errorMessage : undefined}
+                      value={companyDetils.name} onChange={(e) => setCompanyDetails((prev) => ({ ...prev, name: e.target.value }))} placeholder="e.g. Fleet Master Inc." />
+                  </div>
 
-            <div>
-              <Label>Subdomain Slug <span className="text-error-500">*</span></Label>
-              <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="e.g. mycompany" />
+                  <div>
+                    <Label>Subdomain Slug <span className="text-error-500">*</span></Label>
+                    <Input
+                      error={!!errorMessage.includes("slug")}
+                      hint={errorMessage.includes("slug") ? errorMessage : undefined}
+                      value={companyDetils.slug} onChange={(e) => setCompanyDetails((prev) => ({ ...prev, slug: e.target.value }))} placeholder="e.g. mycompany" />
 
-              {/* Slug Preview */}
-              <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-                <p className="text-xs text-gray-400 mb-1">Workspace URL preview:</p>
-                <p className="text-sm font-mono text-brand-500">
-                  {slug.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-') ? slug.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-') : "mycompany"}.fleetmaster.co.ke
-                </p>
-              </div>
-            </div>
-            <div>
-              <Label>Company Email </Label>
-              <Input type="email" value={primaryEmail} onChange={(e) => setPrimaryEmail(e.target.value)} placeholder="example@email.com" />
-            </div>
-            <div>
-              <Label>Primary Phone </Label>
-              <Input type="tel" value={primaryPhone} onChange={(e) => setPrimaryPhone(e.target.value)} placeholder="07123*****" />
-            </div>
+                    {/* Slug Preview */}
+                    <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
+                      <p className="text-xs text-gray-400 mb-1">Workspace URL preview:</p>
+                      <p className="text-sm font-mono text-brand-500">
+                        {(companyDetils.slug).trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-') ? (companyDetils.slug).trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-') : "mycompany"}.fleetmaster.co.ke
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Company Email </Label>
+                    <Input                     
+                      error={!!errorMessage.includes("email")}
+                      hint={errorMessage.includes("email") ? errorMessage : undefined}
+                      type="email" value={companyDetils.email} onChange={(e) => setCompanyDetails((prev) => ({ ...prev, email: e.target.value }))} placeholder="example@email.com" />
+                  </div>
+                  <div>
+                    <Label>Primary Phone </Label>
+                    <Input                    
+                      error={!!errorMessage.includes("phone")}
+                      hint={errorMessage.includes("phone") ? errorMessage : undefined}
+                       type="tel" value={companyDetils.phone} onChange={(e) => setCompanyDetails((prev) => ({ ...prev, phone: e.target.value }))} placeholder="07123*****" />
+                  </div>
+                </>
+              ) : companyStep === 2 ? (
+                <>
+                  <div>
+                    <Label>Country </Label>
+                    <Select
+                      options={allCountriesDB.map(c => {
+                        return {
+                          value: c.country,
+                          label: c.country,
+                        }
+                      })}
+                      defaultValue={companyDetils.country}
+                      value={companyDetils.country}
+                      onChange={(e) => setCompanyDetails((prev) => ({ ...prev, country: e }))} />
+                  </div>
 
-            <Button className="w-full" onClick={handleCreateCompany} disabled={isLoading}>
-              {isLoading ? "Creating..." : "Continue to Admin Setup"}
+                  <div>
+                    <Label>Head Office Address </Label>
+                    <Input type="email" value={companyDetils.address} onChange={(e) => setCompanyDetails((prev) => ({ ...prev, address: e.target.value }))} placeholder="example@email.com" />
+                  </div>
+                  <div>
+                    <Label>Timezone </Label>
+                    <Select
+                      options={allTimezones()}
+                      defaultValue={companyDetils.timezone}
+                      value={companyDetils.timezone}
+                      onChange={(e) => setCompanyDetails((prev) => ({ ...prev, timezone: e }))} />
+                  </div>
+                  <div>
+                    <Label>Industry Type </Label>
+                    <Select
+                      options={industries.map(c => {
+                        return {
+                          value: c,
+                          label: c,
+                        }
+                      })}
+                      defaultValue={companyDetils.industry}
+                      value={companyDetils.industry}
+                      onChange={(e) => setCompanyDetails((prev) => ({ ...prev, industry: e }))} />
+                  </div>
+                  <div>
+                    <Label>Number of Employees </Label>
+                    <Select
+                      options={employees.map(c => {
+                        return {
+                          value: c,
+                          label: c + ' Employees',
+                        }
+                      })}
+                      defaultValue={companyDetils.employees}
+                      value={companyDetils.employees}
+                      onChange={(e) => setCompanyDetails((prev) => ({ ...prev, employees: e }))} />
+                  </div>
+                </>
+              ) : null
+            }
+
+            <Button className="w-full" onClick={() => {
+              companyStep === 2 ?
+                handleCreateCompany() :
+                setCompanyStep((prev => prev + 1))
+            }}
+              endIcon={<ArrowRightIcon />}
+              disabled={isLoading}>
+              {isLoading ? "Creating..." : companyStep === 1 ? "Next" : "Continue"}
             </Button>
           </div>
         ) : (

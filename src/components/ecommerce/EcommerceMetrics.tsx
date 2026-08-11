@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Badge from "../ui/badge/Badge";
 import { ArrowDownIcon, ArrowUpIcon } from "@/icons";
 import DirectionsCarFilledOutlinedIcon from '@mui/icons-material/DirectionsCarFilledOutlined';
@@ -161,7 +160,7 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 md:gap-6">
       {metrics.map((card, i) => (
         card.isReady ? (
-          <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6 space-y-3" key={i}>
+          <div className="rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/3 md:p-6 space-y-3" key={i}>
             <div className="flex items-center justify-end ms-auto shadow-xs">
               {card.icon}
             </div>
@@ -182,7 +181,7 @@ export const EcommerceMetrics = ({ vehicles, loadingVehicles, bookings, loading 
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl border border-gray-200 bg-brand-500/5 p-5 dark:border-gray-800 md:p-6 space-y-3" key={i}>
+          <div className="rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/3 md:p-6 space-y-3" key={i}>
             <div className="flex items-center justify-center w-12 h-12 bg-gray-50 rounded-xl dark:bg-gray-700" />
             <div className="flex items-end justify-between mt-5">
               <div>

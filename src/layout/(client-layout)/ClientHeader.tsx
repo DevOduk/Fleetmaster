@@ -1,8 +1,8 @@
 "use client";
+
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
 import UserDropdown from "@/components/header/UserDropdown";
-import { useSidebar } from "@/context/SidebarContext";
 import Link from "next/link";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined"
@@ -13,10 +13,10 @@ import { useTenant } from "@/context/TenantContext";
 import VerificationBanner from "@/components/client-components/VerificationBanner";
 import { useFleet } from "@/context/FleetContext";
 import { fetchUserTickets } from "@/app/actions/support";
-import { createClient } from "@/utils/supabase/client";
 import SearchModal from "@/components/header/SearchModal";
 import userVerified from "@/utils/clients/checkverification";
-const supabase = createClient();
+import { getNotifications } from "@/app/actions/notifications";
+import { fetchBookingsForClient } from "@/app/actions/bookings";
 
 
 export default function ClientHeader() {
@@ -28,7 +28,7 @@ export default function ClientHeader() {
     const [cachedTickets, setCachedTickets] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [cachedBookings, setCachedBookings] = useState([]);
-    const tenantVehicles = vehicles.filter(vehicle => vehicle.tenant_id === tenant?.id);
+    const [notifications, setNotifications] = useState<any[]>([]);
 
 
 
@@ -43,11 +43,8 @@ export default function ClientHeader() {
     ]
 
 
-    const fetchUserBookings = async (userId: string) => {
-        const { data, error } = await supabase
-            .from('fleetmaster_bookings')
-            .select(`*, vehicleDetails:fleetmaster_vehicles!inner(*)`)
-            .eq('user_id', userId);
+    const fetchUserBookings =  async (userId: string) => {
+        const { data, error } = await fetchBookingsForClient(userId);
         return { data, error };
     }
 
@@ -82,7 +79,20 @@ export default function ClientHeader() {
             setCachedBookings(bookingsRes?.data || []);
         };
 
+        const fetchNotifications = async () => {
+            const notificationsRes = await getNotifications(profile.id);
+
+            if (notificationsRes.error) {
+                console.error("Error fetching notifications:", notificationsRes.error);
+                return;
+            }
+
+            setNotifications(notificationsRes.data || []);
+        }
+
+
         loadSearchData();
+        fetchNotifications();
     }, [profile?.id]);
 
 
@@ -257,7 +267,7 @@ export default function ClientHeader() {
                                     setIsOpen={setIsOpen}
                                     Tickets={cachedTickets}
                                     Bookings={cachedBookings}
-                                    Vehicles={tenantVehicles}
+                                    Vehicles={vehicles}
                                     PAGES={CLIENT_PAGES}
                                 />
                             </div>
@@ -267,12 +277,13 @@ export default function ClientHeader() {
                             <ThemeToggleButton />
                             {/* <!-- Dark Mode Toggler --> */}
 
-                            <NotificationDropdown />
+                            <NotificationDropdown notifications={notifications} setNotifications={setNotifications} />
                             {/* <!-- Notification Menu Area --> */}
                         </div>
                         {/* <!-- User Area --> */}
                         <UserDropdown />
                     </div>
+
                     {isApplicationMenuOpen && (
                         <div className="flex p-2 flex-col gap-2 w-full lg:hidden">
                             {navLinks.map((link, index) => {

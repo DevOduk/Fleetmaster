@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 
 export default function SidebarWidget({ plan }: { plan?: string }) {
@@ -12,11 +13,13 @@ export default function SidebarWidget({ plan }: { plan?: string }) {
       <p className="mb-4 text-gray-500 text-xs dark:text-gray-400">
         FleetMaster Expert is the ultimate fleet management dashboard.
       </p>
-      <button
-        className="flex w-full items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-sm hover:bg-brand-600"
-      >
-        Upgrade To Expert
-      </button>
+      <Link href={'/company-profile/subscription'}>
+        <button
+          className="flex w-full items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-sm hover:bg-brand-600"
+        >
+          Upgrade To Expert
+        </button>
+      </Link>
     </div>
   ) : null;
 }

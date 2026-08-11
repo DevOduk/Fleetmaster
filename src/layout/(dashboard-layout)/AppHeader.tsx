@@ -1,16 +1,56 @@
 "use client";
+
+import { getNotifications } from "@/app/actions/notifications";
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import AdminDropdown from "@/components/dashboard-components/header/AdminDropdown";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
+import SearchModal from "@/components/header/SearchModal";
+import { useAdmin } from "@/context/AdminContext";
+import { useManagerFleet } from "@/context/ManagerFleetContext";
 import { useSidebar } from "@/context/SidebarContext";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 
 const AppHeader: React.FC = () => {
+  const { adminProfile: profile } = useAdmin();
+  const { vehicles } = useManagerFleet();
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-
+  const [notifications, setNotifications] = useState<any[]>([]);
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
+  const [cachedTickets, setCachedTickets] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [cachedBookings, setCachedBookings] = useState([]);
+
+
+
+  const navLinks = [
+    { name: "Find a car", description: "Browse our available vehicles available for rentals all accross our yards", href: "/vehicles" },
+    { name: "Lease your car", description: "Learn about our leasing options", href: "/lease" },
+    { name: "About us", description: "Get to know our company", href: "/about" },
+    { name: "Contact us", description: "Reach out to our team of experts,call us, email us, chat with us on whatsapp", href: "/contact" },
+    { name: "Our yards", description: "Visit our locations", href: "/yards" }
+  ]
+
+
+  const PageLinks = navLinks.map((link, index) => {
+    return {
+      title: link.name,
+      description: link.description,
+      link: link.href
+    };
+  }
+  );
+
+  // client component 
+  const CLIENT_PAGES = useMemo(() => [
+    { title: "Terms and Conditions", description: "Review our terms and conditions", link: "/terms-conditions" },
+    { title: "Support Tickets", description: "Submit and track support tickets", link: "/support" },
+    { title: "View Profile", description: "View my profile information", link: "/profile" },
+    { title: "Edit Profile", description: "Update my profile information. Change my details name, email, phone number etc.", link: "/profile" },
+    { title: "Account Settings", description: "Manage your account settings, change password, preferences, 2FA, Two Factor Authentication, dark/light theme, notifications preferences etc.", link: "/profile/account-settings" },
+    ...PageLinks
+  ], [PageLinks]);
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -29,7 +69,7 @@ const AppHeader: React.FC = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         event.preventDefault();
-        inputRef.current?.focus();
+        setIsOpen(true);
       }
     };
 
@@ -39,6 +79,29 @@ const AppHeader: React.FC = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const loadSearchData = () => {
+      // something here 
+    };
+
+    const fetchNotifications = async () => {
+      const notificationsRes = await getNotifications(profile.id);
+
+      if (notificationsRes.error) {
+        console.error("Error fetching notifications:", notificationsRes.error);
+        return;
+      }
+
+      setNotifications(notificationsRes.data || []);
+    }
+
+    loadSearchData();
+    fetchNotifications();
+  }, [profile?.id]);
 
   return (
     <header className="sticky top-0 flex w-full bg-white border-gray-200 z-99 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
@@ -120,8 +183,8 @@ const AppHeader: React.FC = () => {
             </svg>
           </button>
 
-          <div className="hidden lg:block">
-            <form>
+          <div className="hidden xl:block">
+            <div>
               <div className="relative">
                 <span className="absolute -translate-y-1/2 left-4 top-1/2 pointer-events-none">
                   <svg
@@ -142,6 +205,7 @@ const AppHeader: React.FC = () => {
                 </span>
                 <input
                   ref={inputRef}
+                  onClick={() => setIsOpen(true)}
                   type="text"
                   placeholder="hold ctrl + k to search"
                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/3 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-107.5"
@@ -152,9 +216,21 @@ const AppHeader: React.FC = () => {
                   <span> K </span>
                 </button>
               </div>
-            </form>
+
+
+
+              <SearchModal
+                isOpen={isOpen}
+                setIsOpen={setIsOpen}
+                Tickets={cachedTickets}
+                Bookings={cachedBookings}
+                Vehicles={vehicles}
+                PAGES={CLIENT_PAGES}
+              />
+            </div>
           </div>
         </div>
+
         <div
           className={`${isApplicationMenuOpen ? "flex" : "hidden"
             } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
@@ -164,7 +240,7 @@ const AppHeader: React.FC = () => {
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
 
-            <NotificationDropdown />
+            <NotificationDropdown notifications={notifications} setNotifications={setNotifications} />
             {/* <!-- Notification Menu Area --> */}
           </div>
           {/* <!-- User Area --> */}

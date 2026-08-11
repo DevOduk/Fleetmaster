@@ -194,7 +194,7 @@ const Support: React.FC = () => {
             <button onClick={() => setMode('New Ticket')} className="text-green-500 flex items-center gap-2 text-sm hover:underline"><PlusIcon /> Create New Ticket</button>
           </div>
 
-          <div className="overflow-x-auto mb-4">
+          <div className="overflow-x-auto mb-4 custom-scrollbar">
             <Table>
               <TableHeader className="border-b border-gray-100 dark:border-white/5">
                 <TableRow className="text-slate-500 text-sm">

@@ -238,11 +238,11 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
                       </TableCell>
                       <TableCell className="px-4 flex gap-3 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         <Link href={`/tenants/${tenant.id}`}>
-                          <Button variant="primary" size="sm"
-                            className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+                          <button
+                            className="flex text-nowrap items-center justify-center p-2 px-4 font-medium text-white rounded-lg bg-brand-500 border border-brand-500 text-theme-sm hover:bg-brand-600"
                           >
                             View Tenant <ArrowRightIcon />
-                          </Button>
+                          </button>
                         </Link>
                       </TableCell>
                     </TableRow>

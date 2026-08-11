@@ -27,7 +27,7 @@ import { useAdminFleet } from "@/context/AdminFleetContext";
 import { useAdminBooking } from "@/context/AdminBookingContext";
 import { useUser } from "@/context/UserContext";
 import SidebarExpiryWidget from "./SidebarExpiryWidget";
-import { getExpiryString } from "@/components/company-profile/ExpiryBanner";
+import { getExpiryString, getRemainingDays } from "@/components/company-profile/ExpiryBanner";
 
 
 type NavItem = {
@@ -464,7 +464,18 @@ const AppSidebar: React.FC = () => {
       return { type: menuType, index };
     });
   };
-const expiry = getExpiryString(profile?.fleetmaster_tenants?.expiry_date) || '';
+
+  const isSidebarVisible = isExpanded || isHovered || isMobileOpen;
+  const tenant = profile?.fleetmaster_tenants;
+
+  const daysLeft = getRemainingDays(tenant?.expiry_date);
+  const expiryString = getExpiryString(tenant?.expiry_date);
+
+  const isExpired = tenant?.subscription_status === 'Expired' || daysLeft <= 0;
+  const isExpiringSoon = daysLeft > 0 && daysLeft <= 14; // <= 14 days (2 weeks)
+
+  // ✅ FIX: Only show expiry widget if the plan is actually Expired or Expiring Soon AND sidebar is visible
+  const shouldShowExpiryWidget = isSidebarVisible && (isExpired || isExpiringSoon);
 
   return (
     <aside
@@ -607,9 +618,20 @@ const expiry = getExpiryString(profile?.fleetmaster_tenants?.expiry_date) || '';
           </div>
         </nav>
 
-        {(profile?.fleetmaster_tenants?.subscription_status === 'Expired' || isExpanded || isHovered || isMobileOpen || !expiry?.toLowerCase().includes('weeks'))? <SidebarExpiryWidget plan={profile?.fleetmaster_tenants?.subscription_plan} expiry={getExpiryString(profile?.fleetmaster_tenants?.expiry_date)} /> : null}
 
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget plan={profile?.fleetmaster_tenants?.subscription_plan} /> : null}
+        {/* Expiry Widget: Shows if Expired, Expiring in <14 days, OR Sidebar is opened/hovered */}
+        {shouldShowExpiryWidget && (
+          <SidebarExpiryWidget
+            plan={tenant?.subscription_plan}
+            expiry={expiryString}
+          />
+        )}
+
+        {/* Standard Widget */}
+        {isSidebarVisible && (
+          <SidebarWidget plan={tenant?.subscription_plan} />
+        )}
+
       </div>
     </aside>
   );

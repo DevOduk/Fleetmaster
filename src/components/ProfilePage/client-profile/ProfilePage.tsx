@@ -268,7 +268,7 @@ function ProfilePage() {
                                         City/State
                                     </p>
                                     <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                                        {profile?.county || "N/A"}, {profile?.country || "N/A"}.
+                                        {profile?.city || "N/A"}, {profile?.country || "N/A"}.
                                     </p>
                                 </div>
 

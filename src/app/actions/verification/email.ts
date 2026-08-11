@@ -1,11 +1,15 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { Resend } from "resend";
 import crypto from "crypto";
 import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
 import { headers } from "next/headers";
+import { Resend } from "resend";
+import { triggerPostVerificationNotification } from "@/utils/notifications/verification-notification";
+import { VerifyEmailNotification } from "@/utils/templates/email-templates";
+import { retryDuration } from "@/data/globalExports";
+
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -15,7 +19,7 @@ const redis = new Redis({
     token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
-const OTP_VALIDITY_MINUTES = 5;
+const otpValidityMinutes = retryDuration / 60;
 
 // Rate Limit: Max 3 OTP requests per 10 minutes per IP/email
 const otpRateLimiter = new Ratelimit({
@@ -71,25 +75,16 @@ async function sendOTPEmail(email: string, otp: string) {
         from: "FleetMaster <onboarding@resend.dev>", // Update with your custom verified domain
         to: email,
         subject: `${otp} is your verification code`,
-        html: `
-      <div style="font-family: sans-serif; padding: 24px; max-width: 480px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <h2 style="color: #0f172a; margin-bottom: 16px;">Verify your identity</h2>
-        <p style="color: #334155; font-size: 16px; line-height: 24px;">
-          Use the following security code to complete your verification request. This code is active for ${OTP_VALIDITY_MINUTES} minutes.
-        </p>
-        <div style="background-color: #f1f5f9; padding: 14px; text-align: center; border-radius: 6px; margin: 24px 0;">
-          <span style="font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #0f172a;">${otp}</span>
-        </div>
-        <p style="color: #64748b; font-size: 12px;">If you did not request this verification code, please ignore this email.</p>
-      </div>
-    `,
+        html: VerifyEmailNotification(otp, otpValidityMinutes),
     });
 }
 
 /**
  * Sends initial verification email for an existing record
  */
-export async function sendEmailVerification(userId: string, userEmail: string) {
+export async function sendEmailVerification(userId: string, userEmail: string, role?: string) {
+    const tableSource = role === 'admin' ? 'fleetmaster_admins' : 'fleetmaster_clients'
+
     try {
         if (!userEmail || !userId) {
             return { success: false, error: { message: "Invalid user details." } };
@@ -103,17 +98,17 @@ export async function sendEmailVerification(userId: string, userEmail: string) {
 
         const supabase = await createClient();
         const otp = crypto.randomInt(100000, 999999).toString();
-        const otpExpiresAt = new Date(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000).toISOString();
+        const otpExpiresAt = new Date(Date.now() + otpValidityMinutes * 60 * 1000).toISOString();
 
         // 2. Cache OTP in Redis (5-minute TTL)
         const redisKey = `otp:${userEmail.toLowerCase()}`;
         await redis.set(redisKey, JSON.stringify({ otp, userId, expiresAt: otpExpiresAt }), {
-            ex: OTP_VALIDITY_MINUTES * 60,
+            ex: otpValidityMinutes * 60,
         });
 
         // 3. Update Supabase record
         const { data, error } = await supabase
-            .from("fleetmaster_clients")
+            .from(tableSource)
             .update({
                 otp_code: otp,
                 otp_expires_at: otpExpiresAt,
@@ -158,7 +153,7 @@ export async function sendEmailVerification(userId: string, userEmail: string) {
 /**
  * Resends the verification OTP when requested by user
  */
-export async function resendOTP(encodedEmail: string) {
+export async function resendOTP(encodedEmail: string, role?: string) {
     try {
         const userEmail = await decodeEmail(encodedEmail);
         if (!userEmail) {
@@ -172,10 +167,11 @@ export async function resendOTP(encodedEmail: string) {
         }
 
         const supabase = await createClient();
+        const tableSource = role === 'admin' ? 'fleetmaster_admins' : 'fleetmaster_clients'
 
         // Check if user exists
         const { data: user, error: userError } = await supabase
-            .from("fleetmaster_clients")
+            .from(tableSource)
             .select("id, email")
             .eq("email", userEmail)
             .single();
@@ -185,17 +181,17 @@ export async function resendOTP(encodedEmail: string) {
         }
 
         const otp = crypto.randomInt(100000, 999999).toString();
-        const otpExpiresAt = new Date(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000).toISOString();
+        const otpExpiresAt = new Date(Date.now() + otpValidityMinutes * 60 * 1000).toISOString();
 
         // 2. Cache new OTP in Redis (5-minute TTL)
         const redisKey = `otp:${userEmail.toLowerCase()}`;
         await redis.set(redisKey, JSON.stringify({ otp, userId: user.id, expiresAt: otpExpiresAt }), {
-            ex: OTP_VALIDITY_MINUTES * 60,
+            ex: otpValidityMinutes * 60,
         });
 
         // 3. Update Supabase record
         const { error: updateError } = await supabase
-            .from("fleetmaster_clients")
+            .from(tableSource)
             .update({
                 otp_code: otp,
                 otp_expires_at: otpExpiresAt,
@@ -225,7 +221,7 @@ export async function resendOTP(encodedEmail: string) {
 /**
  * Verifies the user's OTP code against Redis / DB
  */
-export async function verifyOTP(encodedEmail: string) {
+export async function verifyOTP(encodedEmail: string, role?: string) {
     try {
         const supabase = await createClient();
         const { email, id, otp } = JSON.parse(atob(encodedEmail));
@@ -238,6 +234,7 @@ export async function verifyOTP(encodedEmail: string) {
         let userOtpCode: string | null = null;
         let userOtpExpiresAt: string | null = null;
         let user: any = null;
+        const tableSource = role === 'admin' ? 'fleetmaster_admins' : 'fleetmaster_clients'
 
         if (cachedOtpData) {
             userOtpCode = cachedOtpData.otp;
@@ -245,8 +242,8 @@ export async function verifyOTP(encodedEmail: string) {
         } else {
             // 2. Cache miss: Fall back to Supabase DB
             const { data: dbUser, error } = await supabase
-                .from("fleetmaster_clients")
-                .select("id, otp_code, otp_expires_at, verification_status")
+                .from(tableSource)
+                .select(`id, first_name, email, otp_code, otp_expires_at, verification_status, fleetmaster_tenants(slug, name)`)
                 .eq("email", userEmail)
                 .eq("id", id)
                 .single();
@@ -268,11 +265,11 @@ export async function verifyOTP(encodedEmail: string) {
             return { success: false, error: { message: "Verification code has expired. Please request a new one." } };
         }
 
-        // Fetch user status if cached branch was executed
+        // Fetch user full profile if executed from cached branch
         if (!user) {
             const { data: dbUser, error } = await supabase
-                .from("fleetmaster_clients")
-                .select("id, verification_status")
+                .from(tableSource)
+                .select("id, first_name, email, verification_status")
                 .eq("email", userEmail)
                 .eq("id", id)
                 .single();
@@ -291,6 +288,9 @@ export async function verifyOTP(encodedEmail: string) {
             driving_license: false,
         };
 
+        // Determine if this is initial onboarding verification
+        const isFirstTimeVerification = !currentStatus.email;
+
         const updatedVerificationStatus = {
             ...currentStatus,
             email: true,
@@ -298,7 +298,7 @@ export async function verifyOTP(encodedEmail: string) {
 
         // Mark user verified and clear code
         const { error: updateError } = await supabase
-            .from("fleetmaster_clients")
+            .from(tableSource)
             .update({
                 verification_status: updatedVerificationStatus,
                 otp_code: null,
@@ -310,10 +310,41 @@ export async function verifyOTP(encodedEmail: string) {
             return { success: false, error: { message: "Failed to complete verification." } };
         }
 
-        // 3. Clear Redis key after successful verification
+        // 3. Clear Redis key
         await redis.del(redisKey);
 
-        return { success: true, message: "Your Email has been verified successfully." };
+        // 4. Trigger background email dispatcher with retry logic
+        triggerPostVerificationNotification({
+            isFirstTime: isFirstTimeVerification,
+            userEmail: user.email,
+            tenant: user.fleetmaster_tenants,
+            firstName: user.first_name,
+        }).catch((err) => console.error("Notification dispatch error:", err));
+
+        // 5. Send internal notification
+        if (isFirstTimeVerification) {
+            const { error: notifError, data } = await supabase
+                .from("fleetmaster_notifications")
+                .insert({
+                    user_id: user.id,
+                    category: 'System',
+                    title: 'Welcome!',
+                    notification: `Hello${user.first_name && ' ' + user.first_name}, Welcome to ${user.fleetmaster_tenants.name}. Thank you for choosing us. Please read the terms & conditions and guide to get started!\nAustine O. - CEO`,
+                    seen: false
+                });
+
+            if (notifError) {
+                console.error("Internal notification insert error:", notifError);
+            }
+        }
+
+        return {
+            success: true,
+            isFirstTimeVerification,
+            message: isFirstTimeVerification
+                ? "Your email has been verified. Welcome to FleetMaster!"
+                : "Your email address has been updated and re-verified successfully.",
+        };
     } catch (err: any) {
         return {
             success: false,
