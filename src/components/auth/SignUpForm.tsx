@@ -20,9 +20,8 @@ export const countries = allCountriesDB.map((country) => ({
   country: country.country
 }));
 
-const formatToE164 = (phone: string, countryCode: string) => {
+export const formatToE164 = (phone: string, countryCode: string) => {
   const phoneNumber = parsePhoneNumberFromString(phone, countryCode as any);
-
   if (
     phoneNumber &&
     phoneNumber.isValid() &&

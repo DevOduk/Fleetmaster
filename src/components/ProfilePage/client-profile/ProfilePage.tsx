@@ -6,7 +6,16 @@ import Link from "next/link";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined"
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined"
 import { DownloadIcon } from "@/icons";
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useModal } from '@/hooks/useModal';
+import { Modal } from '@/components/ui/modal';
+import Button from '@/components/ui/button/Button';
+import { useEffect, useState, useTransition } from 'react';
+import { useToast } from '@/context/ToastContext';
+import Input from '@/components/form/input/InputField';
+import Label from '@/components/form/Label';
+import { resendPhoneOTP, sendPhoneVerification, verifyPhoneOTP } from '@/app/actions/verification/phone';
+import { retryDuration } from '@/data/globalExports';
 
 
 export const hex = (id: string): string => {
@@ -26,26 +35,206 @@ export const hex = (id: string): string => {
 
 
 function ProfilePage() {
-    const { profile, loading } = useUser();
+    const { profile, loading, setProfile } = useUser();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const searchString = searchParams.toString();
+    const { isOpen, openModal, closeModal } = useModal();
+    const { showToast } = useToast();
+    const [otp, setOtp] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [sendingCode, setSendingCode] = useState(false);
+    const [sentCode, setSentCode] = useState(false);
+    const [isPending, startTransition] = useTransition();
+    const [cooldown, setCooldown] = useState(0); // shorter for sms
+    const [errorMessage, setErrorMessage] = useState('');
+
+
+    const phone = profile?.phone || '';
+    const verifyData = { email: profile?.email, id: profile?.id };
+
+    // Countdown timer effect for resend cooldown
+    useEffect(() => {
+        if (cooldown <= 0) return;
+        const interval = setInterval(() => {
+            setCooldown((prev) => prev - 1);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [cooldown]);
+
+    const handleVerifyOTP = async () => {
+        if (!otp.trim()) {
+            showToast("Please enter the 6-digit verification code.", "error");
+            return;
+        }
+
+        setIsLoading(true);
+        setErrorMessage('');
+
+        const res = await verifyPhoneOTP(btoa(JSON.stringify({ phone, id: profile?.id, otp })));
+
+        if (res.success) {
+            showToast(`Your phone number ${phone} has been verified successfully!`, "success");
+
+            setIsLoading(false);
+            closeModal();
+            setProfile((prev) => ({
+                ...prev,
+                verification_status: ({
+                    ...prev.verification_status,
+                    phone: true
+                })
+            }))
+        } else {
+            showToast(`${res.error?.message || 'Failed to verify OTP'}`, "error");
+            setErrorMessage(`${res.error?.message || 'Failed to verify OTP'}`);
+            setIsLoading(false);
+        }
+    };
+
+    const handleSendCode = async () => {
+        setSendingCode(true);
+        setSentCode(true);
+
+        if (cooldown > 0 || !phone) return;
+
+        const res = await sendPhoneVerification(profile?.id, phone);
+
+        if (res.success) {
+            showToast(`A verification code has been sent to ${phone}.`, "success");
+            setCooldown(retryDuration);
+        } else {
+            showToast(`${res.error?.message || 'Failed to send code'}`, "error");
+            setErrorMessage(`${res.error?.message || 'Failed to send code'}`);
+            setSentCode(false);
+        }
+
+        setSendingCode(false);
+    }
+
+    const handleResendCode = () => {
+        setSendingCode(true);
+        if (cooldown > 0 || !phone) return;
+
+        startTransition(async () => {
+            const res = await resendPhoneOTP(profile?.id, btoa(phone));
+
+            if (res.success) {
+                showToast("A new verification code has been sent.", "success");
+                setCooldown(retryDuration);
+            } else {
+                showToast(`${res.error?.message || 'Failed to send code'}`, "error");
+                setErrorMessage(`${res.error?.message || 'Failed to send code'}`);
+            }
+
+            setSendingCode(false);
+        });
+    };
+
 
     // Rebuild the accurate current page URL dynamically
     const currentPageUrl = encodeURIComponent(
         searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname)
     );
 
-    // if (loading) {
-    //     return <div className="container min-h-[80vh] max-w-6xl mx-auto p-5 text-gray-400">Loading profile ...</div>
-    // } else
-    if (!loading && !profile) {
-        window.location.href = `/signin?r=${currentPageUrl}`;
-        return <div className="container min-h-[80vh] max-w-6xl mx-auto p-5 text-gray-400">Redirecting to signin ...</div>
-    }
+  if (loading) {
+    return <div className="container min-h-[80vh] max-w-6xl mx-auto p-5 text-gray-400">Loading profile ...</div>
+  } else if (!loading && !profile) {
+    window.location.href = `/signin?r=${currentPageUrl}`;
+    return <div className="container min-h-[80vh] max-w-6xl mx-auto p-5 text-gray-400">Redirecting to signin ...</div>
+  }
 
     return (
         <div className="container mt-6 max-w-6xl mb-6 m-auto min-h-screen">
+
+            <Modal
+                isOpen={isOpen}
+                onClose={closeModal}
+                className="max-w-150 p-5 lg:p-10"
+            >
+                <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
+                    Verify phone
+                </h4>
+
+                <p className="text-sm leading-6 text-gray-500 dark:text-gray-400">
+                    We have sent a verification code to your mobile phone {phone.slice(0, 5)}*******{phone.slice(-3)}. Please check your inbox and enter the code below to verify your email.
+                </p>
+                {/* phone verification otp block  */}
+                <div>
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        if (sentCode) {
+                            handleVerifyOTP();
+                        } else {
+                            handleSendCode()
+                        }
+                    }}>
+                        <div className="space-y-5">
+                            {/* <!-- Enter OTP --> */}
+                            <div className="w-full">
+                                <Label>
+                                    Enter OTP<span className="text-error-500">*</span>
+                                </Label>
+                                <Input
+                                    error={!!errorMessage}
+                                    hint={errorMessage || "Enter the 6-digit code sent to your phone."}
+                                    type="tel"
+                                    id="otp"
+                                    className="mt-2 text-center w-full tracking-wide"
+                                    name="otp"
+                                    maxLength={6}
+                                    value={otp}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/[^0-9]/g, '');
+                                        setOtp(value);
+                                    }}
+                                    placeholder="000000"
+                                    disabled={isLoading || sendingCode}
+                                />
+                            </div>
+                            {/* <!-- Button --> */}
+                            <div>
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    disabled={
+                                        isLoading ||
+                                        sendingCode ||
+                                        !phone.trim() ||
+                                        (sentCode && otp.trim().length < 6)
+                                    }
+                                    className="px-4! py-3! w-full text-sm"
+                                >
+                                    {!sentCode ? 'Send OTP' : isLoading ? "Verifying..." : sendingCode ? "Sending Code..." : "Verify OTP"}
+                                </Button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div className="mt-5">
+                        <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
+                            Did not receive code? &nbsp;
+                            {cooldown > 0 ? (
+                                <span className="text-gray-400 dark:text-gray-500">
+                                    Resend in {cooldown}s
+                                </span>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handleResendCode}
+                                    disabled={isPending || !phone.trim()}
+                                    className="text-brand-500 hover:text-brand-600 dark:text-brand-400 font-medium disabled:opacity-50"
+                                >
+                                    {isPending ? "Resending..." : "Resend Code"}
+                                </button>
+                            )}
+                        </p>
+                    </div>
+                </div>
+            </Modal>
+
             <div className="space-y-6" data-loading={loading}>
                 <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
                     <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
@@ -74,7 +263,7 @@ function ProfilePage() {
                                     </p>
                                     <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Joined {profile?.created_at ? new Date(profile.created_at).toLocaleString() : "Date Joined"}                                    </p>
+                                        Joined {profile?.created_at ? new Date(profile?.created_at).toLocaleString() : "Date Joined"}                                    </p>
                                 </div>
                             </div>
                             {/* socials  */}
@@ -212,9 +401,18 @@ function ProfilePage() {
                                     {profile?.email || "N/A"}
 
                                     {
-                                        profile?.verification_status?.email ? <TaskAltOutlinedIcon fontSize="small" className="text-green-500 mt-1" /> : <CancelOutlinedIcon fontSize="small" className="text-red-500 mt-1" />
+                                        profile?.verification_status?.email ? <TaskAltOutlinedIcon fontSize="small" className="text-green-500" /> : <CancelOutlinedIcon fontSize="small" className="text-red-500" />
                                     }
                                 </p>
+
+                                {
+                                    !profile?.verification_status?.email &&
+                                    <a target='_blank' href={`/verify-email?v=${btoa(JSON.stringify(verifyData))}`}
+                                        className="flex mt-3 w-full text-nowrap items-center justify-center p-2 px-4 font-medium text-white rounded-lg bg-blue-500 border border-blue-500 text-theme-sm hover:bg-blue-600"
+                                    >
+                                        Verify Email
+                                    </a>
+                                }
                             </div>
 
                             <div>
@@ -222,12 +420,21 @@ function ProfilePage() {
                                     Phone
                                 </p>
                                 <p className="text-sm flex items-center gap-5 justify-between font-medium text-gray-800 dark:text-white/90">
-                                    {profile?.phone || "N/A"}
+                                    {phone || "N/A"}
 
                                     {
-                                        profile?.verification_status?.phone ? <TaskAltOutlinedIcon fontSize="small" className="text-green-500 mt-1" /> : <CancelOutlinedIcon fontSize="small" className="text-red-500 mt-1" />
+                                        profile?.verification_status?.phone ? <TaskAltOutlinedIcon fontSize="small" className="text-green-500" /> : <CancelOutlinedIcon fontSize="small" className="text-red-500" />
                                     }
                                 </p>
+                                {
+                                    !profile?.verification_status?.phone &&
+                                    <button
+                                        onClick={openModal}
+                                        className="flex mt-3 w-full text-nowrap items-center justify-center p-2 px-4 font-medium text-white rounded-lg bg-blue-500 border border-blue-500 text-theme-sm hover:bg-blue-600"
+                                    >
+                                        Verify Phone
+                                    </button>
+                                }
                             </div>
 
                             <div>
@@ -316,7 +523,7 @@ function ProfilePage() {
                                     <DownloadIcon style={{ width: 28, height: 28 }} />{profile?.national_id_number || "Not uploaded"}
                                 </span>
                                 {
-                                    profile?.verification_status?.national_id ? <TaskAltOutlinedIcon className="text-green-500 mt-1" /> : <CancelOutlinedIcon className="text-red-500 mt-1" />
+                                    profile?.verification_status?.national_id ? <TaskAltOutlinedIcon className="text-green-500" /> : <CancelOutlinedIcon className="text-red-500" />
                                 }
                             </p>
                         </div>
@@ -331,7 +538,7 @@ function ProfilePage() {
                                 </span>
 
                                 {
-                                    profile?.verification_status?.driving_license ? <TaskAltOutlinedIcon className="text-green-500 mt-1" /> : <CancelOutlinedIcon className="text-red-500 mt-1" />
+                                    profile?.verification_status?.driving_license ? <TaskAltOutlinedIcon className="text-green-500" /> : <CancelOutlinedIcon className="text-red-500" />
                                 }
                             </p>
                         </div>
@@ -347,7 +554,7 @@ function ProfilePage() {
                                 </span>
 
                                 {
-                                    profile?.verification_status?.kra_pin ? <TaskAltOutlinedIcon className="text-green-500 mt-1" /> : <CancelOutlinedIcon className="text-red-500 mt-1" />
+                                    profile?.verification_status?.kra_pin ? <TaskAltOutlinedIcon className="text-green-500" /> : <CancelOutlinedIcon className="text-red-500" />
                                 }
                             </p>
                         </div>

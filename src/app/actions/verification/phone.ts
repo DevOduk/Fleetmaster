@@ -5,13 +5,17 @@ import crypto from "crypto";
 import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
 import { headers } from "next/headers";
-import { Resend } from "resend";
-import { triggerPostVerificationNotification } from "@/utils/notifications/verification-notification";
-import { VerifyEmailNotification } from "@/utils/templates/email-templates";
 import { retryDuration } from "@/data/globalExports";
+import AfricasTalking from "africastalking";
 
+// Initialize Africa's Talking SDK
+const at = AfricasTalking({
+    apiKey: process.env.AT_API_KEY!,
+    username: process.env.AT_USERNAME || "sandbox",
+});
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const sms = at.SMS;
+
 
 // 1. Initialize Upstash Redis Client with explicit env vars
 const redis = new Redis({
@@ -21,22 +25,22 @@ const redis = new Redis({
 
 const otpValidityMinutes = retryDuration / 60;
 
-// Rate Limit: Max 3 OTP requests per 10 minutes per IP/email
+// Rate Limit: Max 3 OTP requests per 10 minutes per IP/phone
 const otpRateLimiter = new Ratelimit({
     redis,
-    limiter: Ratelimit.slidingWindow(3, "10 m"),
+    limiter: Ratelimit.slidingWindow(3, `1 m`),
     analytics: true,
-    prefix: "@upstash/ratelimit:otp",
+    prefix: "@upstash/ratelimit:phone-otp",
 });
 
-// Helper function to encode email for URL/Client obfuscation
-export async function encodeEmail(email: string): Promise<string> {
-    return Buffer.from(email).toString("base64");
+// Helper function to encode phone for URL/Client obfuscation
+export async function encodePhone(phone: string): Promise<string> {
+    return Buffer.from(phone).toString("base64");
 }
 
-// Helper function to decode email on the server
-export async function decodeEmail(encodedEmail: string): Promise<string> {
-    return Buffer.from(encodedEmail, "base64").toString("ascii");
+// Helper function to decode phone on the server
+export async function decodePhone(encodedPhone: string): Promise<string> {
+    return Buffer.from(encodedPhone, "base64").toString("ascii");
 }
 
 /**
@@ -52,11 +56,11 @@ async function getClientIp(): Promise<string> {
 }
 
 /**
- * Internal Helper: Enforce rate limits by combining IP and Email
+ * Internal Helper: Enforce rate limits by combining IP and Phone
  */
 async function checkRateLimit(identifier: string) {
     const ip = await getClientIp();
-    const key = `${ip}:${identifier.toLowerCase()}`;
+    const key = `${ip}:${identifier.replace(/\s+/g, "")}`;
     const { success, reset } = await otpRateLimiter.limit(key);
 
     if (!success) {
@@ -69,29 +73,49 @@ async function checkRateLimit(identifier: string) {
     return { limited: false };
 }
 
-// Internal Helper to send OTP email via Resend
-async function sendOTPEmail(email: string, otp: string) {
-    return await resend.emails.send({
-        from: "FleetMaster <onboarding@resend.dev>", // Update with your custom verified domain
-        to: email,
-        subject: `${otp} is your verification code`,
-        html: VerifyEmailNotification(otp, otpValidityMinutes),
-    });
+async function sendOTPSMS(phone: string, otp: string) {
+    const options = {
+        to: [phone], // Must be in E.164 format, e.g., +254768927617
+        message: `Your FleetMaster verification code is: ${otp}. Valid for ${otpValidityMinutes} minutes.`,
+        // senderId: "FleetMaster"
+    };
+
+    try {
+        const response = await sms.send(options);
+
+        // Africa's Talking returns an array of recipients with their statuses
+        const recipient = response.SMSMessageData?.Recipients?.[0];
+
+        if (!recipient || recipient.statusCode !== 101) { // 101 usually means Success/Processed
+            throw new Error(recipient?.status || "Failed to dispatch SMS via Africa's Talking.");
+        }
+
+        return { success: true, data: response };
+    } catch (error: any) {
+        console.error("Africa's Talking SMS error:", error);
+        throw new Error(error.message || "SMS delivery failed.");
+    }
 }
 
 /**
- * Sends initial verification email for an existing record
+ * Sends initial phone verification OTP for an existing record
  */
-export async function sendEmailVerification(userId: string, userEmail: string, role?: string) {
-    const tableSource = role === 'admin' ? 'fleetmaster_admins' : 'fleetmaster_clients'
+export async function sendPhoneVerification(userId: string, userPhone: string, role?: string) {
+    const tableSource = role === 'admin' ? 'fleetmaster_admins' : 'fleetmaster_clients';
+
+    // using my own number to simulate sending to a different number eevrything else stays the same as if it were the actual number 
+    const mobilePhone = (
+        // userPhone 
+        '+254768927617'
+    );
 
     try {
-        if (!userEmail || !userId) {
+        if (!mobilePhone || !userId) {
             return { success: false, error: { message: "Invalid user details." } };
         }
 
         // 1. Enforce Rate Limit
-        const rateCheck = await checkRateLimit(userEmail);
+        const rateCheck = await checkRateLimit(userPhone);
         if (rateCheck.limited) {
             return { success: false, error: { message: rateCheck.error } };
         }
@@ -100,18 +124,18 @@ export async function sendEmailVerification(userId: string, userEmail: string, r
         const otp = crypto.randomInt(100000, 999999).toString();
         const otpExpiresAt = new Date(Date.now() + otpValidityMinutes * 60 * 1000).toISOString();
 
-        // 2. Cache OTP in Redis (5-minute TTL)
-        const redisKey = `otp:${userEmail.toLowerCase()}`;
+        // 2. Cache OTP in Redis
+        const redisKey = `otp:phone:${userPhone.replace(/\s+/g, "")}`;
         await redis.set(redisKey, JSON.stringify({ otp, userId, expiresAt: otpExpiresAt }), {
             ex: otpValidityMinutes * 60,
         });
 
-        // 3. Update Supabase record
+        // 3. Update Supabase record (Assumes columns like phone_otp_code / phone_otp_expires_at or adjust column names)
         const { data, error } = await supabase
             .from(tableSource)
             .update({
-                otp_code: otp,
-                otp_expires_at: otpExpiresAt,
+                phone_otp_code: otp,
+                phone_otp_expires_at: otpExpiresAt,
             })
             .eq("id", userId)
             .select("*")
@@ -119,30 +143,29 @@ export async function sendEmailVerification(userId: string, userEmail: string, r
 
         if (error) {
             console.error("Supabase update error:", error);
-            return { success: false, error: { message: "Failed to set verification code." } };
+            return { success: false, error: { message: "Failed to set phone verification code.", error } };
         }
 
-        // 4. Send Email via Resend
-        const { error: mailError } = await sendOTPEmail(userEmail, otp);
-
-        if (mailError) {
-            console.error("Resend delivery error:", mailError);
+        // 4. Send SMS via Africa's Talking 
+        try {
+            await sendOTPSMS(mobilePhone, otp);
+        } catch (smsErr: any) {
+            console.error("Africa's Talking  delivery error:", smsErr);
             return {
                 data,
                 success: false,
-                error: { message: `Verification email failed to send: ${mailError.message}` },
+                error: { message: `Verification SMS failed to send: ${smsErr.message}` },
             };
         }
 
-        const encodedEmail = await encodeEmail(userEmail);
+        const encodedPhone = await encodePhone(userPhone);
 
         return {
             success: true,
-            encodedEmail,
-            message: "Verification email sent successfully.",
+            encodedPhone,
+            message: "Verification SMS sent successfully.",
         };
     } catch (err: any) {
-        console.error("Send verification failure:", err);
         return {
             success: false,
             error: { message: err.message || "A system connection error occurred." },
@@ -151,29 +174,33 @@ export async function sendEmailVerification(userId: string, userEmail: string, r
 }
 
 /**
- * Resends the verification OTP when requested by user
+ * Resends the phone verification OTP when requested by user
  */
-export async function resendOTP(encodedEmail: string, role?: string) {
+export async function resendPhoneOTP(userId: string, encodedPhone: string, role?: string) {
+    const userPhone = await decodePhone(encodedPhone);
+    if (!userPhone) {
+        return { success: false, error: { message: "Invalid verification token." } };
+    }
+    const mobilePhone = (
+        // userPhone 
+        '+254768927617'
+    );
     try {
-        const userEmail = await decodeEmail(encodedEmail);
-        if (!userEmail) {
-            return { success: false, error: { message: "Invalid verification token." } };
-        }
 
         // 1. Enforce Rate Limit
-        const rateCheck = await checkRateLimit(userEmail);
+        const rateCheck = await checkRateLimit(userPhone);
         if (rateCheck.limited) {
             return { success: false, error: { message: rateCheck.error } };
         }
 
         const supabase = await createClient();
-        const tableSource = role === 'admin' ? 'fleetmaster_admins' : 'fleetmaster_clients'
+        const tableSource = role === 'admin' ? 'fleetmaster_admins' : 'fleetmaster_clients';
 
         // Check if user exists
         const { data: user, error: userError } = await supabase
             .from(tableSource)
-            .select("id, email")
-            .eq("email", userEmail)
+            .select("id, phone")
+            .eq("id", userId)
             .single();
 
         if (userError || !user) {
@@ -183,8 +210,8 @@ export async function resendOTP(encodedEmail: string, role?: string) {
         const otp = crypto.randomInt(100000, 999999).toString();
         const otpExpiresAt = new Date(Date.now() + otpValidityMinutes * 60 * 1000).toISOString();
 
-        // 2. Cache new OTP in Redis (5-minute TTL)
-        const redisKey = `otp:${userEmail.toLowerCase()}`;
+        // 2. Cache new OTP in Redis
+        const redisKey = `otp:phone:${userPhone.replace(/\s+/g, "")}`;
         await redis.set(redisKey, JSON.stringify({ otp, userId: user.id, expiresAt: otpExpiresAt }), {
             ex: otpValidityMinutes * 60,
         });
@@ -193,8 +220,8 @@ export async function resendOTP(encodedEmail: string, role?: string) {
         const { error: updateError } = await supabase
             .from(tableSource)
             .update({
-                otp_code: otp,
-                otp_expires_at: otpExpiresAt,
+                phone_otp_code: otp,
+                phone_otp_expires_at: otpExpiresAt,
             })
             .eq("id", user.id);
 
@@ -202,14 +229,14 @@ export async function resendOTP(encodedEmail: string, role?: string) {
             return { success: false, error: { message: "Failed to generate new OTP." } };
         }
 
-        // 4. Send Email
-        const { error: mailError } = await sendOTPEmail(userEmail, otp);
-
-        if (mailError) {
-            return { success: false, error: { message: "Failed to resend email code." } };
+        // 4. Send SMS
+        try {
+            await sendOTPSMS(mobilePhone, otp);
+        } catch (smsErr: any) {
+            return { success: false, error: { message: smsErr.message || "Failed to resend SMS code." } };
         }
 
-        return { success: true, message: "A new code has been sent to your email." };
+        return { success: true, message: "A new code has been sent to your phone." };
     } catch (err: any) {
         return {
             success: false,
@@ -219,16 +246,20 @@ export async function resendOTP(encodedEmail: string, role?: string) {
 }
 
 /**
- * Verifies the user's OTP code against Redis / DB
+ * Verifies the user's phone OTP code against Redis / DB
  */
-export async function verifyOTP(encodedEmail: string, role?: string) {
+
+export async function verifyPhoneOTP(encodedPayload: string, role?: string) {
     try {
         const supabase = await createClient();
-        const { email, id, otp } = JSON.parse(atob(encodedEmail));
-        const userEmail = email;
+        const { phone, id, otp } = JSON.parse(atob(encodedPayload));
+        const userPhone = phone;
+        if (!userPhone) {
+            return { success: false, error: { message: "Invalid verification token." } };
+        }
 
         // 1. Check Redis Cache First
-        const redisKey = `otp:${userEmail.toLowerCase()}`;
+        const redisKey = `otp:phone:${userPhone.replace(/\s+/g, "")}`;
         const cachedOtpData: { otp: string; userId: string; expiresAt: string } | null = await redis.get(redisKey);
 
         let userOtpCode: string | null = null;
@@ -244,18 +275,17 @@ export async function verifyOTP(encodedEmail: string, role?: string) {
             // 2. Cache miss: Fall back to Supabase DB
             const { data: dbUser, error } = await supabase
                 .from(tableSource)
-                .select(`id, first_name, email, otp_code, otp_expires_at, verification_status, fleetmaster_tenants(slug, name)`)
-                .eq("email", userEmail)
+                .select(`id, first_name, phone, phone_otp_code, phone_otp_expires_at, verification_status, fleetmaster_tenants(slug, name)`)
                 .eq("id", id)
                 .single();
 
             if (error || !dbUser) {
-                return { success: false, error: { message: "Invalid email or account does not exist." } };
+                return { success: false, error: { error, message: "Invalid phone number or account does not exist." } };
             }
 
             user = dbUser;
-            userOtpCode = dbUser.otp_code;
-            userOtpExpiresAt = dbUser.otp_expires_at;
+            userOtpCode = dbUser.phone_otp_code;
+            userOtpExpiresAt = dbUser.phone_otp_expires_at;
         }
 
         if (!userOtpCode || userOtpCode !== otp) {
@@ -270,13 +300,12 @@ export async function verifyOTP(encodedEmail: string, role?: string) {
         if (!user) {
             const { data: dbUser, error } = await supabase
                 .from(tableSource)
-                .select("id, first_name, email, verification_status, fleetmaster_tenants(slug, name)")
-                .eq("email", userEmail)
+                .select("id, first_name, phone, verification_status, fleetmaster_tenants(slug, name)")
                 .eq("id", id)
                 .single();
 
             if (error || !dbUser) {
-                return { success: false, error: { message: "Account verification failed." } };
+                return { success: false, error: { error, message: "Account verification failed." } };
             }
             user = dbUser;
         }
@@ -289,66 +318,57 @@ export async function verifyOTP(encodedEmail: string, role?: string) {
             driving_license: false,
         };
 
-        // Determine if this is initial onboarding verification
-        const isFirstTimeVerification = !currentStatus.email;
+        const isFirstTimeVerification = !currentStatus.phone;
 
         const updatedVerificationStatus = {
             ...currentStatus,
-            email: true,
+            phone: true,
         };
 
-        // Mark user verified and clear code
+        // Mark phone verified and clear codes, add new phone that has just been successfully verified together
         const { error: updateError } = await supabase
             .from(tableSource)
             .update({
                 verification_status: updatedVerificationStatus,
-                otp_code: null,
-                otp_expires_at: null,
+                phone_otp_code: null,
+                phone_otp_expires_at: null,
+                phone: userPhone,
             })
             .eq("id", user.id);
 
         if (updateError) {
-            return { success: false, error: { message: "Failed to complete verification." } };
+            console.error("Supabase update error:", updateError);
+
+            // Gracefully handle PostgreSQL Unique Violation (23505)
+            if (updateError.code === "23505") {
+                return {
+                    success: false,
+                    error: { message: "This phone number is already registered to another account." }
+                };
+            }
+
+            return {
+                success: false,
+                error: { message: updateError.message || "Failed to complete phone verification." }
+            };
         }
 
-        // 3. Clear Redis key & INVALIDATE PROFILE CACHE
+        // 3. Clear OTP Redis key & INVALDIATE PROFILE CACHE
         const profileCacheKey = `user:profile:${user.id}:${normalizedRole}`;
         await Promise.all([
             redis.del(redisKey),
             redis.del(profileCacheKey),
         ]).catch((e) => console.error("Redis cache cleanup failure:", e));
 
-        // 4. Trigger background email dispatcher with retry logic
-        triggerPostVerificationNotification({
-            isFirstTime: isFirstTimeVerification,
-            userEmail: user.email,
-            tenant: user.fleetmaster_tenants,
-            firstName: user.first_name,
-        }).catch((err) => console.error("Notification dispatch error:", err));
-
         // 5. Send internal notification
-        if (isFirstTimeVerification) {
+        if (!isFirstTimeVerification) {
             const { error: notifError } = await supabase
                 .from("fleetmaster_notifications")
                 .insert({
                     user_id: user.id,
                     category: 'System',
-                    title: 'Welcome!',
-                    notification: `Hello${user.first_name && ' ' + user.first_name}, Welcome to ${user.fleetmaster_tenants?.name || 'FleetMaster'}. Thank you for choosing us. Please read the terms & conditions and guide to get started!\nAustine O. - CEO`,
-                    seen: false
-                });
-
-            if (notifError) {
-                console.error("Internal notification insert error:", notifError);
-            }
-        } else {
-            const { error: notifError } = await supabase
-                .from("fleetmaster_notifications")
-                .insert({
-                    user_id: user.id,
-                    category: 'System',
-                    title: 'Email Change!',
-                    notification: `Hello${user.first_name && ' ' + user.first_name}. Your email has been changed successfully on ${(new Date()).toLocaleString()}! If you did not initialise the change contact support now.\nAustine O. - CEO`,
+                    title: 'Phone Change!',
+                    notification: `Hello${user.first_name && ' ' + user.first_name}. Your phone was changed successfully on ${(new Date()).toLocaleString()}! If you did not initialise the change contact support now.\nAustine O. - CEO`,
                     seen: false
                 });
 
@@ -361,13 +381,13 @@ export async function verifyOTP(encodedEmail: string, role?: string) {
             success: true,
             isFirstTimeVerification,
             message: isFirstTimeVerification
-                ? "Your email has been verified. Welcome to FleetMaster!"
-                : "Your email address has been updated and re-verified successfully.",
+                ? "Your phone number has been verified successfully!"
+                : "Your phone number has been updated and re-verified successfully.",
         };
     } catch (err: any) {
         return {
             success: false,
-            error: { message: err.message || "An error occurred during verification." },
+            error: { err, message: err.message || "An error occurred during phone verification." },
         };
     }
 }

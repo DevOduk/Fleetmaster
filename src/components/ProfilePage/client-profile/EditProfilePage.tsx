@@ -221,8 +221,9 @@ function EditProfilePage() {
             <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
               <EditableInput placeholder="John" type="text" label="First Name" value={profileDetails?.first_name} onChange={(v) => handleInputChange("first_name", v)} />
               <EditableInput placeholder="Doe" type="text" label="Last Name" value={profileDetails?.last_name} onChange={(v) => handleInputChange("last_name", v)} />
-              <EditableInput placeholder="example@email.com" type="email" label="Email Address" value={profileDetails?.email} onChange={(v) => handleInputChange("email", v)} />
-              <EditableInput type="tel" label="Phone" value={profileDetails?.phone} onChange={(v) => handleInputChange("phone", v)} />
+              {/* use a different page to change phone and if email changes redirect to verify again  */}
+              {/* <EditableInput placeholder="example@email.com" type="email" label="Email Address" value={profileDetails?.email} onChange={(v) => handleInputChange("email", v)} /> */}
+              {/* <EditableInput type="tel" label="Phone" value={profileDetails?.phone} onChange={(v) => handleInputChange("phone", v)} /> */}
               <EditableInput placeholder="Write a short bio about yourself" type="text" label="Bio" value={profileDetails?.bio} onChange={(v) => handleInputChange("bio", v)} />
 
             </div>
@@ -308,29 +309,6 @@ function EditProfilePage() {
         </div>
       </div>
 
-
-
-      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
-        <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
-          <div className="px-2 pr-14">
-            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Security
-            </h4>
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Pick a strong password to keep you safe            </p>
-          </div>
-          <form className="flex flex-col">
-            <div className="px-2 overflow-y-auto custom-scrollbar">
-              <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <EditableInput placeholder="Enter old password" type="password" label="Old Password" value={profileDetails?.old_password} onChange={(v) => handleInputChange("old_password", v)} />
-                <EditableInput placeholder="Enter password" type="password" label="New Password" value={profileDetails?.password} onChange={(v) => handleInputChange("password", v)} />
-                <EditableInput placeholder="Confirm password" type="password" label="Confirm Password" value={profileDetails?.confirm_password} onChange={(v) => handleInputChange("confirm_password", v)} />
-              </div>
-            </div>
-          </form>
-
-        </div>
-      </div>
 
       <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
         <Link href="/profile" className="mr-2">

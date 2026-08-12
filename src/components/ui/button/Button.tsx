@@ -31,7 +31,7 @@ const Button: React.FC<ButtonProps> = ({
   // Variant Classes
   const variantClasses = {
     "success-outline":
-      "bg-white text-green-500 ring-1 ring-inset ring-green-300 hover:bg-green-50 dark:bg-gray-800 dark:text-green-400 dark:ring-green-700 dark:hover:bg-white/[0.03] dark:hover:text-green-300",
+      "text-green-500 ring-1 ring-inset ring-green-300 hover:bg-green-50 dark:text-green-400 dark:ring-green-700 dark:hover:bg-white/[0.03] dark:hover:text-green-300",
     primary:
       "bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600 disabled:bg-brand-300",
     success:
@@ -39,11 +39,11 @@ const Button: React.FC<ButtonProps> = ({
     danger:
       "bg-red-700 text-white shadow-theme-xs hover:bg-red-800 disabled:bg-red-300",
     outline:
-      "bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] dark:hover:text-gray-300",
+      "bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] dark:hover:text-gray-300",
     "danger-outline":
-      "bg-white text-red-500 ring-1 ring-inset ring-red-300 hover:bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:ring-red-700 dark:hover:bg-white/[0.03] dark:hover:text-red-300",
+      "text-red-500 ring-1 ring-inset ring-red-300 hover:bg-red-50 dark:text-red-400 dark:ring-red-700 dark:hover:bg-white/[0.03] dark:hover:text-red-300",
     "primary-outline":
-      "bg-white text-brand-500 ring-1 ring-inset ring-brand-300 hover:bg-brand-50 dark:bg-gray-800 dark:text-brand-400 dark:ring-brand-700 dark:hover:bg-white/[0.03] dark:hover:text-brand-300",
+      "text-brand-500 ring-1 ring-inset ring-brand-300 hover:bg-brand-50 dark:text-brand-400 dark:ring-brand-700 dark:hover:bg-white/[0.03] dark:hover:text-brand-300",
   };
 
   return (
