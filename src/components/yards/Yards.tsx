@@ -5,12 +5,11 @@ import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import Button from "../ui/button/Button";
 import { PlusIcon } from "@/icons";
-import { useModal } from "@/hooks/useModal";
 import { useUser } from "@/context/UserContext";
 import UpdateYardsModal from "./UpdateYardsModal";
-import { fetchTenantDetails, updateTenantDetails } from "@/app/actions/tenant";
+import { deleteTenantYard, fetchTenantDetails, updateTenantDetails } from "@/app/actions/tenant";
 import { useToast } from "@/context/ToastContext";
-import Image from "next/image";
+import { Avatar, Backdrop, CircularProgress } from "@mui/material";
 
 // --- Part 1: Client-Only Map Sub-Component ---
 // This safely loads and renders Leaflet elements ONLY in the browser environment.
@@ -51,7 +50,7 @@ const SafeLeafletMap: React.FC<{
           <Marker key={i} position={[yard.location[0], yard.location[1]]} icon={defaultIcon}>
             <Popup>
               <div className="flex gap-3 items-center">
-                <img src={yard.imageUrl} alt={yard.title || "Yard"} className="w-20 h-auto mb-2" />
+                <img src={yard.image_url} alt={yard.title || "Yard"} className="w-20 h-auto mb-2" />
                 <div>
                   <strong>{yard.title}</strong> <br />
                   <span className="mt-1 text-sm/4 text-gray-400">{yard.description}</span>
@@ -74,6 +73,9 @@ const YardsContent: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [loadingCompany, setLoadingCompany] = useState<boolean>(true);
   const [companyFormData, setCompanyFormData] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+
 
   useEffect(() => {
     const getTenantDetails = async () => {
@@ -83,6 +85,7 @@ const YardsContent: React.FC = () => {
       }
       if (adminProfile?.tenant_id) {
         const res = await fetchTenantDetails(adminProfile.tenant_id);
+
         setCompanyFormData(res.data);
         if (res) {
           setLoadingCompany(false);
@@ -126,22 +129,29 @@ const YardsContent: React.FC = () => {
 
 
   const handleDeleteYard = async (yard: any) => {
-    if (!yard || !yard.title) {
+    if (!yard || !yard.id) {
       console.error("Invalid yard data for deletion:", yard);
       return;
     }
 
-    const confirmDelete = window.confirm(`Are you sure you want to delete the yard "${yard.title}"?`);
+    const confirmDelete = window.confirm(`Are you sure you want to delete this yard "${yard.title}"?`);
     if (!confirmDelete) return;
 
-    const updatedYards = companyFormData.yards.filter((y: any) => y.title !== yard.title);
 
-    const res = await updateTenantDetails(adminProfile.tenant_id, { ...companyFormData, yards: updatedYards });
+    setIsSaving(true);
+    const updatedYards = companyFormData.yards.filter((y: any) => y.id !== yard.id);
+
+    const res = await deleteTenantYard(adminProfile.tenant_id, yard.id);
+
     if (res.success) {
       showToast(`Yard "${yard.title}" deleted successfully.`, "success");
       setCompanyFormData((prev: any) => ({ ...prev, yards: updatedYards }));
+
+      setIsSaving(false);
     } else {
-      showToast("Failed to delete yard.", "error");
+      showToast("Failed to delete yard. Try again later!", "error");
+
+      setIsSaving(false);
     }
   }
 
@@ -219,6 +229,15 @@ const YardsContent: React.FC = () => {
         />
       )}
 
+      <Backdrop
+        sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+        open={isSaving}
+        onClick={() => null}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
+
       <div className="grid grid-cols-12 gap-6">
         <div
           className={`w-full col-span-12 lg:col-span-5 rounded-2xl border transition-colors duration-200 mt-4 h-100 ${isDarkMode ? "border-gray-800 bg-white/3" : "border-gray-200 bg-white"
@@ -246,7 +265,7 @@ const YardsContent: React.FC = () => {
                 mainMapYards.map((yard: any, i: number) => (
                   <div key={i} className="rounded-xl relative border border-gray-100 p-4 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
                     <img
-                      src={yard.imageUrl || "/images/brand/default-yard.png"}
+                      src={yard.image_url || "/images/brand/default-yard.png"}
                       alt={yard.title || "Yard"}
                       className="mb-2 h-auto aspect-video w-full rounded-lg object-cover"
                     />

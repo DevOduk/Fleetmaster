@@ -45,18 +45,16 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
   const vehicleID = resolvedParams.vehicleID;
   let loading = true;
   let bookings = [];
-
   // Get the request headers to check the URL safely on the server
   const headersList = await headers();
   const referer = headersList.get("referer") || "";
   const xUrl = headersList.get("x-url") || ""; // Optional: if you set a custom header in middleware
   const isDashboard = referer.includes('dashboard') || xUrl.includes('dashboard');
-  
+
   const response = await fetchVehicleDetails(Number(vehicleID));
   const VehicleDetails = response?.data;
 
   const bookingsResponse = await fetchBookingsForVehicle(vehicleID);
-  console.log(bookingsResponse)
 
   if (bookingsResponse.success) {
     loading = false;
@@ -64,7 +62,6 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
   } else {
     loading = false;
   }
-  console.log('details', VehicleDetails)
 
   if (!VehicleDetails) {
     return <VehicleNotFound />;
@@ -142,10 +139,10 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
                 <p className="text-gray-400">License Plate</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.license_plate.toUpperCase()}</p>
               </div>
-              {/* <div>
+              <div>
                 <p className="text-gray-400">VIN</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">{VehicleDetails.vin}</p>
-              </div> */}
+              </div>
               <div>
                 <p className="text-gray-400">Daily Rate</p>
                 <p className="font-sm mt-2 mb-1 text-blue-600">Ksh. {VehicleDetails.daily_rate.toLocaleString()}</p>

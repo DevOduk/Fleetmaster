@@ -14,7 +14,6 @@ import { resendPhoneOTP, sendPhoneVerification, verifyPhoneOTP } from "@/app/act
 import { allCountriesDB, retryDuration } from "@/data/globalExports";
 import { usePathname, useSearchParams } from "next/navigation";
 import { formatToE164 } from "../auth/SignUpForm";
-import Link from "next/link";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined"
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined"
 

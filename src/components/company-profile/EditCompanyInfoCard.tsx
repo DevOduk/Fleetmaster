@@ -20,14 +20,14 @@ import Checkbox from "../form/input/Checkbox";
 import { allCountriesDB, languages, timezones } from "@/data/globalExports";
 import Select from "../form/Select";
 
-  export const allTimezones = () => {
-    return timezones.flatMap(t =>
-      t.regions.map(region => ({
-        value: `(${t.timezone.replace('GMT', 'UTC')}) ${region}`,
-        label: `(${t.timezone.replace('GMT', 'UTC')}) ${region}`
-      }))
-    );
-  };
+export const allTimezones = () => {
+  return timezones.flatMap(t =>
+    t.regions.map(region => ({
+      value: `(${t.timezone.replace('GMT', 'UTC')}) ${region}`,
+      label: `(${t.timezone.replace('GMT', 'UTC')}) ${region}`
+    }))
+  );
+};
 
 export default function EditCompanyInfoCard() {
   const { profile } = useUser();
@@ -81,6 +81,7 @@ export default function EditCompanyInfoCard() {
       }
       if (profile?.tenant_id) {
         const res = await fetchTenantDetails(profile.tenant_id);
+
         setCompany(res.data);
         setCompanyFormData(res.data);
         if (res) {
@@ -125,7 +126,6 @@ export default function EditCompanyInfoCard() {
         .from('fleetmaster_files')
         .getPublicUrl(fileName);
 
-      console.log(publicUrl)
       handleInputChange("tenant_logo", publicUrl);
 
 
@@ -138,8 +138,8 @@ export default function EditCompanyInfoCard() {
 
   const handleSaveChanges = async () => {
     setUpdatingCompany(true);
-
-    const res = await updateTenantDetails(profile.tenant_id, companyFormData);
+    const { admins, yards, ...cleanData } = companyFormData;
+    const res = await updateTenantDetails(profile.tenant_id, cleanData);
 
     if (res.success) {
       showToast("Company details updated successfully!", "success");
@@ -302,6 +302,10 @@ export default function EditCompanyInfoCard() {
           </div>
         </ComponentCard>
 
+        <ComponentCard title="Company About (Brief Overview)">
+          <TextArea value={companyFormData.about || ''} onChange={(v) => handleInputChange("about", v)} className="text-sm text-gray-600 dark:text-gray-300" />
+        </ComponentCard>
+
         <ComponentCard title="Company Description">
           <TextArea disabled={updatingCompany} value={companyFormData.description || ''} onChange={(v) => handleInputChange("description", v)} className="text-sm text-gray-600 dark:text-gray-300" />
         </ComponentCard>
@@ -368,14 +372,10 @@ export default function EditCompanyInfoCard() {
           </ComponentCard>
         )}
 
-
-        <ComponentCard title="Company About (Brief Overview)">
-          <TextArea value={companyFormData.about || ''} onChange={(v) => handleInputChange("about", v)} className="text-sm text-gray-600 dark:text-gray-300" />
-        </ComponentCard>
       </div>
       <div className="flex items-center justify-end border-t border-gray-100 px-6 py-5 dark:border-gray-800">
         <Button disabled={updatingCompany} variant="primary" size="sm" onClick={handleSaveChanges}>
-          {updatingCompany ? 'Saving Changes ...' : 'Save & Submit Changes'} {updatingCompany && <CircularProgress size={16} />}
+          {updatingCompany ? 'Saving ...' : 'Save Changes'} {updatingCompany && <CircularProgress size={16} />}
         </Button>
       </div>
 

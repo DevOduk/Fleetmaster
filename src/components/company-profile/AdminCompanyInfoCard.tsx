@@ -1,10 +1,9 @@
 "use client";
 
 import { fetchTenantDetails } from "@/app/actions/tenant";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import ComponentCard from "../common/ComponentCard";
-import ExpiryBanner from "./ExpiryBanner";
+import ExpiryBanner, { getExpiryString } from "./ExpiryBanner";
 
 
 export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string }) {
@@ -113,12 +112,18 @@ export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string })
           <div>
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">{company.name}</h2>
             <div className="flex items-center gap-2">
-              <p className="text-xs font-medium text-gray-500">{company.slug}.fleetmaster.co.ke {company.website && ` - ${company.website}`}</p>
+              <p className="text-xs font-medium text-gray-500">
+                {company.slug}.fleetmaster.co.ke {company.website && ` - ${company.website}`}
+                </p>
               <span className="text-xs text-gray-400">|</span>
               <p className="text-xs font-medium text-gray-500">{company.subscription_plan || "N/A"} Plan</p>
               <span className="text-xs text-gray-400">|</span>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${company.subscription_status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-600'}`}>
                 {company.subscription_status || "Inactive"}
+              </span>
+              <span className="text-xs text-gray-400">|</span>
+              <span className={`text-xs font-medium text-gray-500`}>
+                {getExpiryString(company.expiry_date)}
               </span>
             </div>
           </div>
@@ -161,6 +166,26 @@ export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string })
             <DataPoint label="Buffer (Hours)" value={`${company.buffer || "N/A"} hrs`} />
             <DataPoint label="Color Preference" value={`${company.color || "Default"}`} />
             <DataPoint label="Admins" value={`${company.color || "2"}`} />
+          </div>
+        </ComponentCard>
+
+        {/* Operational Settings */}
+        <ComponentCard title={`Tenant Administrators (${company.admins?.length || 0} Users)`}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {
+              company.admins?.length > 0 ? company.admins?.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((admin, i) => (
+                <>
+                  <div key={i} className="col-span-full text-md font-semibold text-brand-500">
+                    {i + 1}. {admin?.first_name} {admin?.last_name} {i === 0 && '(Super Admin)'}
+                  </div>
+                  <DataPoint label="Role" value={admin.role} />
+                  <DataPoint label="Email" value={admin.email} />
+                  <DataPoint label="Phone" value={admin.phone} />
+                  <DataPoint label="Country" value={admin.country} />
+                  <DataPoint label="Location" value={admin.city} />
+                </>
+              )) : 'We couldnt find admin details!'
+            }
           </div>
         </ComponentCard>
 

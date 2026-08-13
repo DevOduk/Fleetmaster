@@ -22,7 +22,7 @@ import CarModelsByBrand from '@/data/carMakeModels';
 import { handleImageFileUpload } from '@/utils/uploads/imageUpload';
 import { useModal } from '@/hooks/useModal';
 import { Modal } from '@/components/ui/modal';
-import { useAdminBooking } from '@/context/AdminBookingContext';
+import { fetchBookingsForVehicle } from '@/app/actions/bookings';
 
 
 
@@ -45,7 +45,9 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
   const [VehicleDetails, setVehicleDetails] = useState<any>(null);
   const [originalVehicleDetails, setOriginalVehicleDetails] = useState<any>(null);
   const { isOpen, openModal: openDeleteModal, closeModal } = useModal();
-  const { bookings, loading } = useAdminBooking();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(false);
+
 
 
 
@@ -54,7 +56,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
     setLoadingVehicle(true);
     document.title = 'Edit Vehicle ' + vehicleID + ' | FleetMaster'
 
-    async function fetchAllVehicles() {
+    async function getVehicleDetails() {
       try {
         const response = await fetchVehicleDetails(Number(vehicleID));
 
@@ -62,7 +64,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
           setVehicleDetails(response.data);
           setOriginalVehicleDetails(response.data);
         } else {
-          console.error("API Error fetching vehicle detailss:", response.error);
+          console.error("API Error fetching vehicle details:", response.error);
         }
       } catch (err) {
         console.error("Network connection failure:", err);
@@ -71,7 +73,24 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
       }
     }
 
-    fetchAllVehicles();
+    async function getBookingsForVehicle() {
+      try {
+        const response = await fetchBookingsForVehicle(vehicleID);
+
+        if (!response.error) {
+          setBookings(response.data);
+        } else {
+          console.error("API Error fetching bookings:", response.error);
+        }
+      } catch (err) {
+        console.error("Network connection failure:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getVehicleDetails();
+    getBookingsForVehicle();
   }, [vehicleID]);
 
 
@@ -134,7 +153,6 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
       setBackDrop(false);
     }
   }
-
   const deleteVehicleItem = async () => {
     setIsDeleting(true);
 

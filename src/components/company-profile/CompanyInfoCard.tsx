@@ -23,6 +23,7 @@ export default function CompanyInfoCard() {
       }
       if (profile?.tenant_id) {
         const res = await fetchTenantDetails(profile.tenant_id);
+
         setCompany(res.data);
         if (res) {
           setLoadingCompany(false);
@@ -172,16 +173,17 @@ export default function CompanyInfoCard() {
         </ComponentCard>
 
         {/* Yards Section */}
-        {company.yards && company.yards.length > 0 && (
+        {company?.yards?.length > 0 && (
           <ComponentCard title="Yards & Depots">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {company.yards.map((yard: any, idx: number) => (
+              {company?.yards.map((yard: any, idx: number) => (
                 <div key={idx} className="rounded-xl border border-gray-100 p-4 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
                   <img
-                    src={yard.imageUrl || "/images/brand/default-yard.png"}
+                    src={yard.image_url || "/images/brand/default-yard.png"}
                     alt={yard.title || "Yard"}
                     className="mb-2 h-auto aspect-video w-full rounded-lg object-cover"
-                  />                  <p className="text-sm font-bold text-gray-900 dark:text-white">{yard.title}</p>
+                  />
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">{yard.title}</p>
                   <p className="mt-1 text-xs text-gray-500 line-clamp-2">{yard.description}</p>
                 </div>
               ))}

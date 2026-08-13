@@ -16,6 +16,9 @@ import WysiwygOutlinedIcon from '@mui/icons-material/WysiwygOutlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined"
+import DirectionsCarFilledOutlinedIcon from '@mui/icons-material/DirectionsCarFilledOutlined';
+
+
 
 type NavItem = {
   name: string;
@@ -34,6 +37,11 @@ const navItems: NavItem[] = [
     icon: <CalendarTodayOutlinedIcon />,
     name: "Tenants",
     path: "/tenants",
+  },
+  {
+    icon: <DirectionsCarFilledOutlinedIcon />,
+    name: "Vehicles",
+    path: "/vehicles",
   },
 ];
 

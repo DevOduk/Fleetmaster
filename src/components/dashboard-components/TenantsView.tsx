@@ -32,8 +32,10 @@ export interface AdminUser {
   tenant_logo: string;
   about: string;
   subscription_status: string;
+  subscription_plan: string;
   expiry_date: string | null;
   created_at: string;
+  admins: any[];
 }
 
 interface SystemUsersProps {
@@ -119,11 +121,11 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
             </span>
           </div>
           <Link target="_blank" href="/register">
-            <Button variant="success" size="sm"
-              className="flex items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+            <button
+              className="flex text-nowrap items-center justify-center p-2 px-4 font-medium text-white rounded-lg bg-green-600 border border-green-600 text-theme-sm hover:bg-green-700"
             >
               New Tenant <PlusIcon />
-            </Button>
+            </button>
           </Link>
         </div>
 
@@ -151,8 +153,14 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
                   <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                     Yards
                   </TableCell>
+                  <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    Admins
+                  </TableCell>
                   <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                     Date Created
+                  </TableCell>
+                  <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    Plan
                   </TableCell>
                   <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                     Status
@@ -223,10 +231,16 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
                         {tenant.phone || "—"}
                       </TableCell>
                       <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        {tenant.yards?.length}
+                        {tenant.yards?.length || 0}
+                      </TableCell>
+                      <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {(tenant.admins?.length || 0)} {(tenant.admins?.length || 0) === 1 ? 'admin' : 'admins'}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
                         {tenant.created_at ? new Date(tenant.created_at).toLocaleString() : "—"}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
+                        {tenant.subscription_plan}
                       </TableCell>
                       <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         <Badge variant='light' color={tenant.subscription_status === 'Active' ? 'success' : tenant.subscription_status === 'Not Active' ? 'error' : 'warning'}>

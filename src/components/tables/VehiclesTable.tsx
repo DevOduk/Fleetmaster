@@ -13,26 +13,18 @@ import Pagination from "./Pagination";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CircularProgress } from "@mui/material";
-import { useBooking } from "@/context/BookingContext";
-import { useAdminFleet } from "@/context/AdminFleetContext";
-import { useAdminBooking } from "@/context/AdminBookingContext";
 
 
-export default function VehiclesTable() {
+export default function VehiclesTable({ vehicles, loading }: { vehicles: any[]; loading: boolean; }) {
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams.toString());
-  const { vehicles, loading } = useAdminFleet();
-  const { bookings } = useAdminBooking();
   const router = useRouter();
   const pathname = usePathname();
   const urlPage = parseInt(searchParams.get("page") || "1", 10);
 
-  const allVehicles = vehicles.map(vehicle => {
-    const booking = bookings.find(v => v.id === vehicle.id);
-    return { ...vehicle, booking };
-  });
+  const allVehicles = vehicles || [];
 
-  const totalResults = allVehicles.length;
+  const totalResults = allVehicles?.length;
   const [currentPage, setCurrentPage] = useState<number>(urlPage)
   const itemsPerPage = 10;
   const totalPages = Math.max(1, Math.ceil(totalResults / itemsPerPage));
@@ -125,7 +117,7 @@ export default function VehiclesTable() {
                       <TableCell colSpan={9} className="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
                         <div className="flex py-4 flex-col items-center justify-center gap-3 w-full text-gray-500 text-theme-sm dark:text-gray-400">
                           <CircularProgress color="secondary" />
-                          <span>Loading vehicles...</span>
+                          <span>Loading vehicles?...</span>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -135,7 +127,7 @@ export default function VehiclesTable() {
                         No vehicles found.
                       </TableCell>
                     </TableRow>
-                  ) : allVehicles.slice(startIndex - 1, endIndex).map((vehicle, i) => (
+                  ) : allVehicles?.slice(startIndex - 1, endIndex).map((vehicle, i) => (
                     <TableRow key={i}>
                       <TableCell className="px-5 py-4 sm:px-6 text-start min-w-100">
                         <div className="flex items-center gap-3">
@@ -207,7 +199,7 @@ export default function VehiclesTable() {
 
       <div className="flex items-center justify-between pb-3 pt-8">
         <span className="dark:text-white text-gray-800">
-          Showing {startIndex} to {endIndex} of {totalResults} results
+          Showing {startIndex} to {isNaN(endIndex) ? 1 : endIndex} of {totalResults || 0} results
         </span>
         <Pagination onPageChange={(page) => {
           setCurrentPage(page);
@@ -217,7 +209,6 @@ export default function VehiclesTable() {
         }} currentPage={currentPage} totalPages={(totalPages)} />
 
       </div>
-
     </div>
   );
 }

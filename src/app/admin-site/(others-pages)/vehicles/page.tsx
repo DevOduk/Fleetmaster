@@ -1,8 +1,10 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import Vehicles from "@/components/vehicles/Vehicles";
 import { Metadata } from "next";
 import { headers } from "next/headers";
 import { createPublicClient } from "@/utils/supabase/server";
+import VehiclesWrapper from "./Wrapper";
+
+
 
 // Helper function to safely extract and parse tenant data from headers
 async function getTenantFromHeaders() {
@@ -66,7 +68,7 @@ export default function page() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Vehicles" />
-      <Vehicles />
+      <VehiclesWrapper />
     </div>
   );
 }

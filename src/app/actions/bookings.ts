@@ -151,6 +151,35 @@ export async function fetchBookingsForTenant(tenantId: string) {
   return { data, success: !error, error, source: "db" };
 }
 
+export async function fetchBookingsForVehicle(vehicleId: string) {
+  const cacheKey = `bookings:vehicle:${vehicleId}`;
+
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) return { data: parseCachedData(cached), success: true, error: null, source: "cache" };
+  } catch (e) {
+    console.error("Redis read error on fetchBookingsForTenant:", e);
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("fleetmaster_bookings")
+    .select(`*, vehicleDetails:fleetmaster_vehicles(*)`)
+    .eq("vehicle_id", vehicleId)
+    .neq("booking_status", "Reserved")
+    .order("created_at", { ascending: false });
+
+  if (!error && data) {
+    try {
+      await redis.set(cacheKey, data, { ex: CACHE_TTL_LISTS });
+    } catch (e) {
+      console.error("Redis write error on fetchBookingsForTenant:", e);
+    }
+  }
+
+  return { data, success: !error, error, source: "db" };
+}
+
 export async function fetchBookingsForClient(userId: string) {
   const cacheKey = `bookings:client:${userId}`;
 

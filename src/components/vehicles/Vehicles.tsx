@@ -1,15 +1,12 @@
 "use client";
-import React, { useEffect } from "react";
+
 import ComponentCard from "../common/ComponentCard";
 import VehiclesTable from "../tables/VehiclesTable";
 import Link from "next/link";
-import { useAdminFleet } from "@/context/AdminFleetContext";
-import { useAdminBooking } from "@/context/AdminBookingContext";
 import { PlusIcon } from "@/icons";
 
-const Vehicles: React.FC = () => {
-  const { vehicles, loading } = useAdminFleet();
-  const { bookings } = useAdminBooking();
+function Vehicles({ vehicles, loading }: { vehicles: any[]; loading: boolean; }) {
+  const isDashboard = window?.location.href.includes('dashboard');
 
   return (
     <div>
@@ -38,7 +35,7 @@ const Vehicles: React.FC = () => {
                 </div>
               </div>
             </div>
-            : vehicles.length < 1 ? (
+            : vehicles?.length < 1 ? (
               <div className="flex w-full flex-col items-center justify-center min-h-[70vh] m-auto p-8 text-center rounded-2xl shadow-sm col-span-12">
                 <div className="flex items-center justify-center w-16 h-16 mb-6 bg-white rounded-full">
                   <svg className="w-8 h-8 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,21 +59,29 @@ const Vehicles: React.FC = () => {
                 <div className="flex justify-between py-3 items-center">
                   <div>
                     <p className="font-medium text-gray-800 mb-2 text-theme-sm dark:text-white/90">
-                      View all vehicles and manage them. Click Add New Vehicle to add a new vehicle.
+
+                      {
+                        isDashboard ?
+                          'View all system vehicles across multiple tenants.' :
+                          'View all vehicles and manage them. Click Add New Vehicle to add a new vehicle.'
+                      }
                     </p>
                     <span className="text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {vehicles?.length || 0} Vehicles | {bookings?.length || 0} Booked | 7 Average per Day
+                      {vehicles?.length || 0} Vehicles | {vehicles?.filter(v => v.status === 'Available').length || 0} Available
                     </span>
                   </div>
-                  <Link href={'/vehicles/new'}>
-                    <button
-                      className="flex items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
-                    >
-                      Add New Vehicle
-                    </button>
-                  </Link>
+                  {
+                    !isDashboard &&
+                    <Link href={'/vehicles/new'}>
+                      <button
+                        className="flex items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+                      >
+                        Add New Vehicle
+                      </button>
+                    </Link>
+                  }
                 </div>
-                <VehiclesTable />
+                <VehiclesTable vehicles={vehicles || []} loading={loading} />
               </ComponentCard>
             )}
       </div>

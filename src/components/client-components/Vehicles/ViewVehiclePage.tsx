@@ -1,9 +1,9 @@
 "use client"
+
 import { CalendarWrapper } from '@/components/calendar/CalendarWrapper';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import VehicleNotFound from '@/components/vehicles/NotFound';
-import { useFleet } from '@/context/FleetContext';
 import Link from 'next/link';
 import { use, useEffect, useMemo, useState } from 'react';
 import isBetween from 'dayjs/plugin/isBetween';
@@ -22,10 +22,10 @@ import Label from '@/components/form/Label';
 import Input from '@/components/form/input/InputField';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/context/ToastContext';
-import { useBooking } from '@/context/BookingContext';
 import DeliveryBanner from '@/components/client-components/DeliveryBanner';
 import userVerified from '@/utils/clients/checkverification';
 import { fetchVehicleDetails } from '@/app/actions/vehicles';
+import { fetchBookingsForVehicle } from '@/app/actions/bookings';
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string; tenant: string }>;
@@ -51,10 +51,11 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
   const searchParams = useSearchParams();
   const resolvedParams = use(params);
   const [loading, setLoading] = useState(true);
+  const [loadingBooking, setLoadingBooking] = useState(true);
+  const [bookings, setBookings] = useState([]);
   const { showToast } = useToast();
   const { profile } = useUser();
   const { tenant } = useTenant();
-  const { bookings } = useBooking();
   const [isRedirecting, setIsRedirecting] = useState(false)
 
   const fallbackStart = dayjs().add(1, 'day').format('YYYY-MM-DD[T]HH:mm');
@@ -68,6 +69,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
 
   const vehicleID = resolvedParams.vehicleID;
   const [VehicleDetails, setVehicleDetails] = useState<any | null>(null);
+
 
   useEffect(() => {
     if (!vehicleID || isNaN(parseInt(vehicleID))) {
@@ -95,11 +97,37 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
       });
   }, [vehicleID]);
 
+  useEffect(() => {
+    if (!vehicleID || isNaN(parseInt(vehicleID))) {
+      console.error("Invalid vehicleID:", vehicleID);
+      setVehicleDetails(null);
+      return;
+    }
+
+    setLoadingBooking(true);
+    fetchBookingsForVehicle(vehicleID)
+      .then((response) => {
+
+        if (response.data) {
+          setBookings(response.data);
+        } else {
+          console.error("Error fetching vehicle details:", response.error);
+          setBookings([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Fetch vehicle details failed:", err);
+        setBookings(null);
+      })
+      .finally(() => {
+        setLoadingBooking(false);
+      });
+  }, [vehicleID]);
+
   const bookedDates = useMemo(() => {
     if (loading || !bookings) return [];
 
-    const vehicleBookings = bookings.filter((b) => b.vehicle_id === Number(vehicleID));
-    const activeBookings = vehicleBookings.filter((b) =>
+    const activeBookings = bookings.filter((b) =>
       ["Booked", "In Progress"].includes(b.booking_status)
     );
 
@@ -301,7 +329,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
         {/* Calendar Section: col-span-5 */}
         <div className="col-span-12 lg:col-span-5">
           <div className="rounded-2xl border border-gray-200 bg-white p-2 dark:border-gray-800 dark:bg-gray-900 shadow-sm">
-            <CalendarWrapper isMarkedUnavailable={VehicleDetails?.status === "Not Available"} vehicleId={parseInt(vehicleID)} dateString={new Date().toISOString().split('T')[0]} />
+            <CalendarWrapper bookings={bookings.filter(b => b.vehicle_id === Number(vehicleID)) || []} loading={loadingBooking} isMarkedUnavailable={VehicleDetails?.status === "Not Available"} vehicleId={parseInt(vehicleID)} dateString={new Date().toISOString().split('T')[0]} />
           </div>
 
           {/* Price Range Fields */}
@@ -467,7 +495,6 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
                       showToast('Please select a minimum of ' + VehicleDetails?.min_rental_days + ' days!', 'error');
                       return;
                     }
-                    console.log('booked vs booking', bookedDates, 'start: ', start, 'end: ', end)
 
                     // --- 2. NEW OVERLAP CHECK INTERCEPTION ---
                     let isOverlapping = false;

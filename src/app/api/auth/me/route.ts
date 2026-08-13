@@ -1,231 +1,102 @@
-"use server";
+// File: src/app/api/auth/me/route.ts
 
-import { createClient } from "@/utils/supabase/server";
-import { hash, compare } from "bcrypt-ts";
-import { Resend } from "resend";
-import crypto from "crypto";
-import { retryDuration } from "@/data/globalExports";
-import { VerifyEmailNotification } from "@/utils/templates/email-templates";
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { createPublicClient } from "@/utils/supabase/server";
+import jwt from "jsonwebtoken";
 import { Redis } from "@upstash/redis";
+import { Ratelimit } from "@upstash/ratelimit";
 
-const SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT || "12");
-const resend = new Resend(process.env.RESEND_API_KEY);
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
-export async function createTenantClient(newTenantClient: any) {
-  let userEmail = "";
+const limiter = new Ratelimit({
+  redis: redis,
+  limiter: Ratelimit.slidingWindow(60, "1 m"),
+  analytics: false,
+});
+
+export async function GET(request: Request) {
+  const startTime = Date.now();
 
   try {
-    const supabase = await createClient();
-    const hashedPassword = await hash(newTenantClient.password, SALT_ROUNDS);
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("user_session");
 
-    userEmail = newTenantClient.email;
+    if (!sessionCookie) {
+      return NextResponse.json({ user: null }, { status: 200 });
+    }
 
-    // 1. Generate a secure 6-digit OTP
-    const otp = crypto.randomInt(100000, 999999).toString();
-    const otpValidityMinutes = retryDuration / 60;
-    const otpExpiresAt = new Date(Date.now() + otpValidityMinutes * 60 * 1000).toISOString();
+    let decoded: any;
+    try {
+      decoded = jwt.verify(sessionCookie.value, JWT_SECRET!);
+    } catch (err) {
+      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    }
 
-    // 2. Insert user along with their active OTP credentials
-    const { error, data } = await supabase
-      .from("fleetmaster_clients")
-      .insert({
-        ...newTenantClient,
-        password: hashedPassword,
-        otp_code: otp,
-        otp_expires_at: otpExpiresAt
-      })
-      .select('*')
-      .single();
+    // --- NON-BLOCKING BACKGROUND RATE LIMIT CHECK ---
+    const ip = request.headers.get("x-forwarded-for") || "127.0.0.1";
+    limiter.limit(`rate_auth_${ip}`).then(({ success }) => {
+      if (!success) console.warn(`Rate limit triggered for IP: ${ip}`);
+    }).catch((e) => console.error("Rate limit check error:", e));
 
-    if (error) {
-      console.error("Supabase insert error:", error);
+    const targetAccountType = decoded.accountType || decoded.role;
+    const normalizedType =
+      targetAccountType === "admin" || targetAccountType === "client"
+        ? targetAccountType
+        : "client";
 
-      let friendlyMessage = "An unexpected error occurred while creating the account. Please try again.";
+    const cacheKey = `user:profile:${decoded.id}:${normalizedType}`;
+    let userAccount: any = null;
 
-      if (error.code === '23505') {
-        if (error.message.includes("email") || error.details?.includes("email")) {
-          friendlyMessage = "An account with this email address already exists. Sign in or use a different email.";
-        } else if (error.message.includes("phone") || error.details?.includes("phone")) {
-          friendlyMessage = "This phone number is already registered.";
-        } else {
-          friendlyMessage = "A user with these details already exists. Please check your information and try again.";
-        }
+    // 1. FAST REDIS LOOKUP
+    try {
+      const rawCachedUser = await redis.get(cacheKey);
+      if (rawCachedUser) {
+        userAccount = typeof rawCachedUser === "string" ? JSON.parse(rawCachedUser) : rawCachedUser;
+      }
+    } catch (redisError) {
+      console.error("Redis session lookup failed, falling back to DB:", redisError);
+    }
+
+    // 2. CACHE MISS -> FAST SUPABASE LOOKUP
+    if (!userAccount) {
+      const supabase = createPublicClient();
+      const tableName = normalizedType === "admin" ? "fleetmaster_admins" : "fleetmaster_clients";
+
+      const { data, error } = await supabase
+        .from(tableName)
+        .select(`id, first_name, last_name, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, fleetmaster_tenants(*)`)
+        .eq("id", decoded.id)
+        .maybeSingle();
+
+      if (error || !data) {
+        return NextResponse.json({ error: "User profile no longer exists" }, { status: 404 });
       }
 
-      return {
-        data: null,
-        success: false,
-        error: { message: friendlyMessage }
-      };
+      userAccount = data;
+
+      // Write back to Redis
+      redis.set(cacheKey, JSON.stringify(userAccount), { ex: 900 }).catch((e) =>
+        console.error("Redis write failure:", e)
+      );
     }
 
-    // Invalidate Redis profile cache if it somehow existed
-    if (data?.id) {
-      const cacheKey = `user:profile:${data.id}:client`;
-      await redis.del(cacheKey).catch((e) => console.error("Redis deletion error:", e));
-    }
-
-    // 3. Dispatch the verification email via Resend
-    const { error: mailError } = await resend.emails.send({
-      from: "FleetMaster <onboarding@resend.dev>",
-      to: userEmail,
-      subject: `${otp} is your verification code`,
-      html: VerifyEmailNotification(otp, otpValidityMinutes),
-    });
-
-    return {
-      data: data,
-      success: true,
-      error: { message: mailError ? `Account created successfully, verify your account to proceed:` : 'Account created successfully' }
-    };
-
-  } catch (err: any) {
-    console.error("New Tenant Admin Creation failure:", err);
-    return {
-      data: null,
-      success: false,
-      error: { message: err.message || "A system connection error occurred." }
-    };
-  }
-}
-
-export async function updateProfileDetails({ id, profileDetails, role = "client" }: { id: string; profileDetails: any; role?: string }) {
-  try {
-    if (!id) {
-      return { success: false, error: { message: "User ID is required." } };
-    }
-
-    const supabase = await createClient();
-    const tableName = role === "admin" ? "fleetmaster_admins" : "fleetmaster_clients";
-
-    const { data, error } = await supabase
-      .from(tableName)
-      .update({ ...profileDetails, updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Supabase update error (updateProfileDetails):", error);
-      return { data: null, success: false, error: { message: error.message || "Failed to update profile." } };
-    }
-
-    // --- REDIS CACHE INVALIDATION ---
-    // Wipe both potential namespace keys to ensure stale data is cleared immediately
-    const clientCacheKey = `user:profile:${id}:client`;
-    const adminCacheKey = `user:profile:${id}:admin`;
-    
-    await Promise.all([
-      redis.del(clientCacheKey),
-      redis.del(adminCacheKey),
-    ]).catch((e) => console.error("Redis invalidation failure:", e));
-
-    return { data, error: null, success: true };
-  } catch (err: any) {
-    console.error("Unexpected error (updateProfileDetails):", err);
-    return { data: null, success: false, error: { message: err.message || "An unexpected error occurred." } };
-  }
-}
-
-export async function updatePassword(id: string, profileDetails: any, role = "client") {
-  try {
-    if (!id) {
-      return { success: false, error: { message: "User ID is required." } };
-    }
-
-    const { old_password, confirm_password, ...restDetails } = profileDetails;
-
-    if (!old_password || !confirm_password) {
-      return {
-        success: false,
-        error: { message: "Both current and new passwords are required." },
-      };
-    }
-
-    const supabase = await createClient();
-    const tableName = role === "admin" ? "fleetmaster_admins" : "fleetmaster_clients";
-
-    // 1. Fetch current stored password hash
-    const { data: user, error: fetchError } = await supabase
-      .from(tableName)
-      .select("password_hash")
-      .eq("id", id)
-      .single();
-
-    if (fetchError || !user) {
-      return {
-        success: false,
-        error: { message: "User account not found." },
-      };
-    }
-
-    // 2. Verify old password against stored hash
-    const isPasswordValid = await compare(
-      old_password,
-      user.password_hash
+    return NextResponse.json(
+      { user: userAccount },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
+        },
+      }
     );
-
-    if (!isPasswordValid) {
-      return {
-        success: false,
-        error: { message: "Incorrect current password." },
-      };
-    }
-
-    // 3. Hash the new password
-    const newPasswordHash = await hash(confirm_password, 10);
-
-    // 4. Update password and profile details safely
-    const { data, error: updateError } = await supabase
-      .from(tableName)
-      .update({
-        ...restDetails,
-        password_hash: newPasswordHash,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error("Supabase update error (updatePassword):", updateError);
-      return {
-        success: false,
-        error: { message: "Failed to update password. Please try again." },
-      };
-    }
-
-    // --- REDIS CACHE INVALIDATION ---
-    const clientCacheKey = `user:profile:${id}:client`;
-    const adminCacheKey = `user:profile:${id}:admin`;
-    
-    await Promise.all([
-      redis.del(clientCacheKey),
-      redis.del(adminCacheKey),
-    ]).catch((e) => console.error("Redis password invalidation failure:", e));
-
-    return { success: true, data, error: null };
-  } catch (err: any) {
-    console.error("Unexpected error (updatePassword):", err);
-    return {
-      success: false,
-      error: { message: err.message || "An unexpected error occurred." },
-    };
+  } catch (err) {
+    console.error("Session verification routing crash:", err);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
-}
-
-export async function fetchClientsForTenant(tenantId: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("fleetmaster_clients")
-    .select(`id, first_name, last_name, country, created_at`)
-    .eq("tenant_id", tenantId)
-    .order('created_at', { ascending: false });
-
-  return { data, success: !error, error };
 }

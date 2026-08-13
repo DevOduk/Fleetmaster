@@ -29,7 +29,7 @@ export async function getAllTenants() {
   const { data, error } = await supabase
     .from("fleetmaster_tenants")
     .select(
-      "id, slug, name, phone, about, email, country, county, yards, timezone, tenant_logo, subscription_status, created_at, expiry_date"
+      `id, slug, name, phone, about, email, country, county, yards, timezone, tenant_logo, subscription_status,subscription_plan, created_at, expiry_date, admins:fleetmaster_admins(*)`
     )
     .order("created_at", { ascending: false });
 
@@ -68,7 +68,7 @@ export async function fetchTenantDetails(tenantId: string) {
 
   const { data, error } = await supabase
     .from("fleetmaster_tenants")
-    .select("*")
+    .select(`*, admins:fleetmaster_admins(*), yards:fleetmaster_yards(*)`)
     .eq("id", tenantId)
     .single();
 
@@ -146,6 +146,81 @@ export async function updateTenantDetails(tenantId: string, updatedData: any) {
     // Invalidate global tenant list & tenant specific details
     await redis.del("tenants:all");
     await redis.del(`tenants:details:${tenantId}`);
+  }
+
+  return { data, error, success: !error };
+}
+
+export async function updateTenantYardDetails(yardId: string, tenantId: string, yardData: any) {
+  const supabase = await createClient();
+
+  // Directly update the specific yard row without checking first
+  const { data, error } = await supabase
+    .from("fleetmaster_yards")
+    .update({
+      title: yardData.title,
+      description: yardData.description,
+      image_url: yardData.image_url,
+      location: yardData.location,
+      last_updated: new Date(),
+    })
+    .eq("id", yardId)
+    .select()
+    .single();
+
+  if (!error) {
+    // Invalidate global tenant list & tenant specific details concurrently
+    await Promise.all([
+      redis.del("tenants:all"),
+      redis.del(`tenants:details:${tenantId}`),
+    ]);
+  }
+
+  return { data, error, success: !error };
+}
+
+export async function createTenantYard(tenantId: string, yardData: any) {
+  const supabase = await createClient();
+
+  // Insert a single new yard row tied to the tenant
+  const { data, error } = await supabase
+    .from("fleetmaster_yards")
+    .insert({
+      tenant_id: tenantId,
+      title: yardData.title,
+      description: yardData.description,
+      image_url: yardData.image_url,
+      location: yardData.location,
+      created_at: new Date(),
+      last_updated: new Date(),
+    })
+    .select()
+    .single();
+
+  if (!error) {
+    // Invalidate global tenant list & tenant specific details concurrently
+    await Promise.all([
+      redis.del("tenants:all"),
+      redis.del(`tenants:details:${tenantId}`),
+    ]);
+  }
+
+  return { data, error, success: !error };
+}
+
+export async function deleteTenantYard(tenantId: string, yardId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("fleetmaster_yards")
+    .delete()
+    .eq('id', yardId);
+
+  if (!error) {
+    await Promise.all([
+      redis.del("tenants:all"),
+      redis.del(`tenants:details:${tenantId}`),
+    ]);
   }
 
   return { data, error, success: !error };
