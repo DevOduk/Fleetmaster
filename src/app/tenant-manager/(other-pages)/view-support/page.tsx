@@ -1,8 +1,6 @@
 // src/app/admin-site/(others-pages)/support/page.tsx
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import SupportTicketsDashboard, {
-  SupportTicket,
-} from "@/components/support/SupportTicketsDashboard";
+import SupportTicketsDashboard from "@/components/support/SupportTicketsDashboard";
 import { getSupportTickets } from "@/utils/fetchTickets";
 import { Metadata } from "next";
 
