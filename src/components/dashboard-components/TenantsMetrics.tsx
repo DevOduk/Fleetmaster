@@ -35,14 +35,23 @@ export const TenantsMetrics = ({ tenants }: SystemUsersProps) => {
   const { loading: loadingVehicles } = useManagerFleet();
 
   const allTenants = tenants?.length || 0;
-  const active = tenants?.filter((tenant) => tenant.subscription_status === 'Active').length;
-  const expired = tenants?.filter((tenant) => tenant.subscription_status !== 'Active').length;
+  const active = tenants?.filter(
+    (tenant) => tenant.subscription_status === "Active",
+  ).length;
+  const expired = tenants?.filter(
+    (tenant) => tenant.subscription_status !== "Active",
+  ).length;
 
   const metrics = [
     {
       title: "All Tenants",
       value: `${allTenants.toLocaleString()} +`,
-      icon: <PeopleAltOutlinedIcon fontSize="large" className="text-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1 dark:text-white/90" />,
+      icon: (
+        <PeopleAltOutlinedIcon
+          fontSize="large"
+          className="rounded border border-gray-300 p-1 text-gray-800 dark:border-gray-700 dark:text-white/90"
+        />
+      ),
       badgeColor: "success" as const,
       badgeIcon: <ArrowUpIcon className="text-success-500" />,
       badgeText: "0.0%",
@@ -52,7 +61,12 @@ export const TenantsMetrics = ({ tenants }: SystemUsersProps) => {
     {
       title: "Active",
       value: `${active} +`,
-      icon: <VerifiedUserOutlinedIcon fontSize="large" className="text-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1 dark:text-white/90" />,
+      icon: (
+        <VerifiedUserOutlinedIcon
+          fontSize="large"
+          className="rounded border border-gray-300 p-1 text-gray-800 dark:border-gray-700 dark:text-white/90"
+        />
+      ),
       badgeColor: "error" as const,
       badgeIcon: <ArrowDownIcon className="text-error-500" />,
       badgeText: "9.05%",
@@ -62,7 +76,12 @@ export const TenantsMetrics = ({ tenants }: SystemUsersProps) => {
     {
       title: "Expired",
       value: `${expired} +`,
-      icon: <GppBadOutlinedIcon fontSize="large" className="text-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1 dark:text-white/90" />,
+      icon: (
+        <GppBadOutlinedIcon
+          fontSize="large"
+          className="rounded border border-gray-300 p-1 text-gray-800 dark:border-gray-700 dark:text-white/90"
+        />
+      ),
       badgeColor: "success" as const,
       badgeIcon: <ArrowUpIcon />,
       badgeText: "0.0%",
@@ -72,7 +91,12 @@ export const TenantsMetrics = ({ tenants }: SystemUsersProps) => {
     {
       title: "Subscription Rate",
       value: `${(100).toFixed(1)} %`,
-      icon: <TrendingUpOutlinedIcon fontSize="large" className="text-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1 dark:text-white/90" />,
+      icon: (
+        <TrendingUpOutlinedIcon
+          fontSize="large"
+          className="rounded border border-gray-300 p-1 text-gray-800 dark:border-gray-700 dark:text-white/90"
+        />
+      ),
       badgeColor: "error" as const,
       badgeIcon: <ArrowDownIcon className="text-error-500" />,
       badgeText: "9.05%",
@@ -82,19 +106,22 @@ export const TenantsMetrics = ({ tenants }: SystemUsersProps) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 md:gap-6">
-      {(!loadingVehicles && !loading) ? (
-        metrics.map((metric, index) => (
+    <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2 2xl:grid-cols-4">
+      {!loadingVehicles && !loading ? (
+        metrics.map((metric, index) =>
           metric.isReady ? (
-            <div key={index} className="rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/3 md:p-6 space-y-3">
-              <div className="flex gap-3 items-center">
+            <div
+              key={index}
+              className="space-y-3 rounded-2xl border border-gray-200 bg-white px-5 pt-5 md:p-6 dark:border-gray-800 dark:bg-white/3"
+            >
+              <div className="flex items-center gap-3">
                 <span className="text-xl font-bold text-gray-200 dark:text-gray-300">
                   {metric.title}
                 </span>
               </div>
-              <div className="flex items-center justify-between mt-3">
+              <div className="mt-3 flex items-center justify-between">
                 <div>
-                  <h4 className="mt-2 font-bold text-gray-800 flex gap-2 items-center text-title-sm dark:text-white/90">
+                  <h4 className="text-title-sm mt-2 flex items-center gap-2 font-bold text-gray-800 dark:text-white/90">
                     {/* {metric.icon} */}
                     {metric.value}
                   </h4>
@@ -104,83 +131,66 @@ export const TenantsMetrics = ({ tenants }: SystemUsersProps) => {
                   {metric.badgeText}
                 </Badge>
               </div>
-              <div className="text-sm mt-3 text-gray-500 dark:text-gray-400">
+              <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
                 {metric.description}
               </div>
             </div>
           ) : (
-            <div key={index} className="rounded-2xl animate-pulse border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/5 md:p-6">
-              <div className="flex items-center justify-center w-12 h-12 bg-gray-550 rounded-xl dark:bg-gray-700">
-              </div>
-              <div className="flex items-end justify-between mt-5">
+            <div
+              key={index}
+              className="animate-pulse rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/5"
+            >
+              <div className="bg-gray-550 flex h-12 w-12 items-center justify-center rounded-xl dark:bg-gray-700"></div>
+              <div className="mt-5 flex items-end justify-between">
                 <div>
-                  <div className="h-4 dark:bg-white/7 bg-gray-100 w-23">
-                  </div>
-                  <div className="flex mt-4 items-center justify-center w-32 h-8 bg-gray-50 dark:bg-gray-700">
-                  </div>
+                  <div className="h-4 w-23 bg-gray-100 dark:bg-white/7"></div>
+                  <div className="mt-4 flex h-8 w-32 items-center justify-center bg-gray-50 dark:bg-gray-700"></div>
                 </div>
-                <div className="bg-gray-700 w-13 h-5 rounded-xl">
-                </div>
+                <div className="h-5 w-13 rounded-xl bg-gray-700"></div>
               </div>
             </div>
-          )
-        ))
+          ),
+        )
       ) : (
         <>
-          <div className="rounded-2xl animate-pulse border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/5 md:p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-50 rounded-xl dark:bg-gray-700">
-            </div>
-            <div className="flex items-end justify-between mt-5">
+          <div className="animate-pulse rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-700"></div>
+            <div className="mt-5 flex items-end justify-between">
               <div>
-                <div className="h-4 dark:bg-white/7 bg-gray-100 w-23">
-                </div>
-                <div className="flex mt-4 items-center justify-center w-32 h-8 bg-gray-50 dark:bg-gray-700">
-                </div>
+                <div className="h-4 w-23 bg-gray-100 dark:bg-white/7"></div>
+                <div className="mt-4 flex h-8 w-32 items-center justify-center bg-gray-50 dark:bg-gray-700"></div>
               </div>
-              <div className="bg-gray-700 w-13 h-5 rounded-xl">
-              </div>
+              <div className="h-5 w-13 rounded-xl bg-gray-700"></div>
             </div>
           </div>
-          <div className="rounded-2xl animate-pulse border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/5 md:p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-50 rounded-xl dark:bg-gray-700">
-            </div>
-            <div className="flex items-end justify-between mt-5">
+          <div className="animate-pulse rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-700"></div>
+            <div className="mt-5 flex items-end justify-between">
               <div>
-                <div className="h-4 dark:bg-white/7 bg-gray-100 w-23">
-                </div>
-                <div className="flex mt-4 items-center justify-center w-32 h-8 bg-gray-50 dark:bg-gray-700">
-                </div>
+                <div className="h-4 w-23 bg-gray-100 dark:bg-white/7"></div>
+                <div className="mt-4 flex h-8 w-32 items-center justify-center bg-gray-50 dark:bg-gray-700"></div>
               </div>
-              <div className="bg-gray-700 w-13 h-5 rounded-xl">
-              </div>
+              <div className="h-5 w-13 rounded-xl bg-gray-700"></div>
             </div>
           </div>
-          <div className="rounded-2xl animate-pulse border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/5 md:p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-50 rounded-xl dark:bg-gray-700">
-            </div>
-            <div className="flex items-end justify-between mt-5">
+          <div className="animate-pulse rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-700"></div>
+            <div className="mt-5 flex items-end justify-between">
               <div>
-                <div className="h-4 dark:bg-white/7 bg-gray-100 w-23">
-                </div>
-                <div className="flex mt-4 items-center justify-center w-32 h-8 bg-gray-50 dark:bg-gray-700">
-                </div>
+                <div className="h-4 w-23 bg-gray-100 dark:bg-white/7"></div>
+                <div className="mt-4 flex h-8 w-32 items-center justify-center bg-gray-50 dark:bg-gray-700"></div>
               </div>
-              <div className="bg-gray-700 w-13 h-5 rounded-xl">
-              </div>
+              <div className="h-5 w-13 rounded-xl bg-gray-700"></div>
             </div>
           </div>
-          <div className="rounded-2xl animate-pulse border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/5 md:p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-50 rounded-xl dark:bg-gray-700">
-            </div>
-            <div className="flex items-end justify-between mt-5">
+          <div className="animate-pulse rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-700"></div>
+            <div className="mt-5 flex items-end justify-between">
               <div>
-                <div className="h-4 dark:bg-white/7 bg-gray-100 w-23">
-                </div>
-                <div className="flex mt-4 items-center justify-center w-32 h-8 bg-gray-50 dark:bg-gray-700">
-                </div>
+                <div className="h-4 w-23 bg-gray-100 dark:bg-white/7"></div>
+                <div className="mt-4 flex h-8 w-32 items-center justify-center bg-gray-50 dark:bg-gray-700"></div>
               </div>
-              <div className="bg-gray-700 w-13 h-5 rounded-xl">
-              </div>
+              <div className="h-5 w-13 rounded-xl bg-gray-700"></div>
             </div>
           </div>
         </>

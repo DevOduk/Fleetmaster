@@ -14,7 +14,9 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [theme, setTheme] = useState<Theme>("light");
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -48,7 +50,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (theme === "system") {
       // Apply immediately based on current OS setting
       applySystemTheme(mediaQuery);
-      
+
       // Listen for OS setting changes dynamically while on the site
       mediaQuery.addEventListener("change", applySystemTheme);
     } else {

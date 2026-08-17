@@ -2,19 +2,18 @@
 
 import { Avatar, Backdrop, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
-import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined"
+import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined";
 import { handleImageFileUpload } from "@/utils/uploads/imageUpload";
 import { useToast } from "@/context/ToastContext";
 import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import Link from "next/link";
-import Select from '@/components/form/Select';
+import Select from "@/components/form/Select";
 import { allCountriesDB, languages, timezones } from "@/data/globalExports";
 import { createTenantAdmin } from "@/app/actions/admin";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
-
 
 export default function NewUserCard() {
   const [profileDetails, setProfileDetails] = useState(null);
@@ -22,9 +21,6 @@ export default function NewUserCard() {
   const [backDrop, setBackDrop] = useState(false);
   const { profile } = useUser();
   const router = useRouter();
-
-
-
 
   const handleInputChange = (field: string, value: string) => {
     setProfileDetails((prev: any) => ({ ...prev, [field]: value }));
@@ -40,7 +36,7 @@ export default function NewUserCard() {
   };
 
   const handleSave = async () => {
-    // proceed to add user profile details 
+    // proceed to add user profile details
     if (
       !profileDetails ||
       !profileDetails?.first_name?.trim() ||
@@ -54,95 +50,119 @@ export default function NewUserCard() {
       !profileDetails?.password?.trim() ||
       !profileDetails?.confirm_password?.trim()
     ) {
-      showToast('Fill out al the required fields!', 'error')
+      showToast("Fill out al the required fields!", "error");
       return;
     }
     if (profileDetails?.confirm_password !== profileDetails?.password) {
-      showToast('Passwords do not match!', 'error')
+      showToast("Passwords do not match!", "error");
       return;
     }
 
-    setBackDrop(true)
+    setBackDrop(true);
     const { confirm_password, ...cleanProfile } = profileDetails;
 
-    const res = await createTenantAdmin({ ...cleanProfile, tenant_id: profile?.tenant_id });
+    const res = await createTenantAdmin({
+      ...cleanProfile,
+      tenant_id: profile?.tenant_id,
+    });
 
     if (res.error) {
-      showToast(res.error.message || "An error occured while creating user. Try again later!", 'error');
+      showToast(
+        res.error.message ||
+          "An error occured while creating user. Try again later!",
+        "error",
+      );
     }
     if (res.success) {
-      showToast('Account created successfully!', 'success')
+      showToast("Account created successfully!", "success");
 
       setTimeout(() => {
         router.push(`/system-users`);
       }, 4000);
     }
-    setBackDrop(false)
+    setBackDrop(false);
   };
 
   const allTimezones = () => {
-    return timezones.flatMap(t =>
-      t.regions.map(region => ({
-        value: `(${t.timezone.replace('GMT', 'UTC')}) ${region}`,
-        label: `(${t.timezone.replace('GMT', 'UTC')}) ${region}`
-      }))
+    return timezones.flatMap((t) =>
+      t.regions.map((region) => ({
+        value: `(${t.timezone.replace("GMT", "UTC")}) ${region}`,
+        label: `(${t.timezone.replace("GMT", "UTC")}) ${region}`,
+      })),
     );
   };
   const allCountries = () => {
-    return allCountriesDB.flatMap(c => ({
+    return allCountriesDB.flatMap((c) => ({
       value: c.country,
-      label: c.country
-    })
-    );
+      label: c.country,
+    }));
   };
-  console.log(profileDetails)
+  console.log(profileDetails);
 
   return (
     <>
       <Backdrop
-        sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
         open={backDrop}
         onClick={() => null}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
 
-      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+      <div className="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
-            <label className="w-fit p-2 relative cursor-pointer h-fit overflow-hidden border border-gray-200 dark:border-gray-800">
+          <div className="flex w-full flex-col items-center gap-6 xl:flex-row">
+            <label className="relative h-fit w-fit cursor-pointer overflow-hidden border border-gray-200 p-2 dark:border-gray-800">
               <Avatar
                 sx={{
                   width: 80,
-                  height: 80
+                  height: 80,
                 }}
                 src={profileDetails?.profile_pic}
                 alt={profileDetails?.first_name}
               />
-              <input className="hidden" type="file" accept="image/*" onChange={async (e) => {
-                const image = await handleImageFileUpload(e, showToast);
-                setProfileDetails((prev) => ({ ...prev, profile_pic: image }))
-              }} />
-              <BorderColorOutlinedIcon color="primary" className="absolute right-0 bottom-0" />
+              <input
+                className="hidden"
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  const image = await handleImageFileUpload(e, showToast);
+                  setProfileDetails((prev) => ({
+                    ...prev,
+                    profile_pic: image,
+                  }));
+                }}
+              />
+              <BorderColorOutlinedIcon
+                color="primary"
+                className="absolute right-0 bottom-0"
+              />
             </label>
             <div className="order-3 xl:order-2">
-              <h4 className="mb-2 text-lg font-semibold text-center text-gray-600 dark:text-gray-400 xl:text-left">
-                {profileDetails?.first_name || "First Name"} {profileDetails?.last_name || "Last Nname"}
+              <h4 className="mb-2 text-center text-lg font-semibold text-gray-600 xl:text-left dark:text-gray-400">
+                {profileDetails?.first_name || "First Name"}{" "}
+                {profileDetails?.last_name || "Last Nname"}
               </h4>
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
-                <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                <p className="text-sm text-gray-500 italic dark:text-gray-400">
                   {profileDetails?.role || "User Role"}
                 </p>
-                <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                <div className="hidden h-3.5 w-px bg-gray-300 xl:block dark:bg-gray-700"></div>
+                <p className="text-sm text-gray-500 italic dark:text-gray-400">
                   {profileDetails?.country || "Country"}
                 </p>
               </div>
             </div>
-            <div className="flex items-center order-2 gap-2 grow xl:order-3 xl:justify-end">
+            <div className="order-2 flex grow items-center gap-2 xl:order-3 xl:justify-end">
               <a
                 target="_blank"
-                rel="noreferrer" href={profileDetails?.socials?.facebook || 'https://www.facebook.com/'} className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+                rel="noreferrer"
+                href={
+                  profileDetails?.socials?.facebook ||
+                  "https://www.facebook.com/"
+                }
+                className="shadow-theme-xs flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
+              >
                 <svg
                   className="fill-current"
                   width="20"
@@ -158,8 +178,12 @@ export default function NewUserCard() {
                 </svg>
               </a>
 
-              <a href={profileDetails?.socials?.x || 'https://x.com/'} target="_blank"
-                rel="noreferrer" className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+              <a
+                href={profileDetails?.socials?.x || "https://x.com/"}
+                target="_blank"
+                rel="noreferrer"
+                className="shadow-theme-xs flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
+              >
                 <svg
                   className="fill-current"
                   width="20"
@@ -175,8 +199,15 @@ export default function NewUserCard() {
                 </svg>
               </a>
 
-              <a href={profileDetails?.socials?.linkedin || "https://www.linkedin.com/company/"} target="_blank"
-                rel="noreferrer" className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+              <a
+                href={
+                  profileDetails?.socials?.linkedin ||
+                  "https://www.linkedin.com/company/"
+                }
+                target="_blank"
+                rel="noreferrer"
+                className="shadow-theme-xs flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
+              >
                 <svg
                   className="fill-current"
                   width="20"
@@ -192,8 +223,14 @@ export default function NewUserCard() {
                 </svg>
               </a>
 
-              <a href={profileDetails?.socials?.instagram || 'https://instagram.com/'} target="_blank"
-                rel="noreferrer" className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+              <a
+                href={
+                  profileDetails?.socials?.instagram || "https://instagram.com/"
+                }
+                target="_blank"
+                rel="noreferrer"
+                className="shadow-theme-xs flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
+              >
                 <svg
                   className="fill-current"
                   width="20"
@@ -213,47 +250,122 @@ export default function NewUserCard() {
         </div>
       </div>
 
-      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
-
-
-        <div className="no-scrollbar relative w-full overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+      <div className="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
+        <div className="no-scrollbar relative w-full overflow-y-auto rounded-3xl bg-white p-4 lg:p-11 dark:bg-gray-900">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
               Personal Information
             </h4>
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+            <p className="mb-6 text-sm text-gray-500 lg:mb-7 dark:text-gray-400">
               Update your details to keep your profile up-to-date.
             </p>
           </div>
           <form className="flex flex-col">
-
             <div className="mt-7">
-              <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
+              <h5 className="mb-5 text-lg font-medium text-gray-800 lg:mb-6 dark:text-white/90">
                 Personal Information
               </h5>
 
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <EditableInput placeholder="John" type="text" label="First Name" value={profileDetails?.first_name} onChange={(v) => handleInputChange("first_name", v)} />
-                <EditableInput placeholder="Doe" type="text" label="Last Name" value={profileDetails?.last_name} onChange={(v) => handleInputChange("last_name", v)} />
-                <EditableInput placeholder="example@email.com" type="email" label="Email Address" value={profileDetails?.email} onChange={(v) => handleInputChange("email", v)} />
-                <EditableInput type="tel" placeholder="310-555-0123" label="Phone" value={profileDetails?.phone} onChange={(v) => handleInputChange("phone", v)} />
-                <EditableInput type="select" placeholder="Select admin role" label="Role" options={["General Manager", "Fleet Manager", "Operations Manager", "Head of Sales", "Sales Executive", "Customer Support"].map(v => { return { value: v, label: v } })} value={profileDetails?.bio} onChange={(v) => handleInputChange("role", v)} />
-                <EditableInput placeholder="Write a short bio about yourself" type="text" label="Bio" value={profileDetails?.bio} onChange={(v) => handleInputChange("bio", v)} />
+                <EditableInput
+                  placeholder="John"
+                  type="text"
+                  label="First Name"
+                  value={profileDetails?.first_name}
+                  onChange={(v) => handleInputChange("first_name", v)}
+                />
+                <EditableInput
+                  placeholder="Doe"
+                  type="text"
+                  label="Last Name"
+                  value={profileDetails?.last_name}
+                  onChange={(v) => handleInputChange("last_name", v)}
+                />
+                <EditableInput
+                  placeholder="example@email.com"
+                  type="email"
+                  label="Email Address"
+                  value={profileDetails?.email}
+                  onChange={(v) => handleInputChange("email", v)}
+                />
+                <EditableInput
+                  type="tel"
+                  placeholder="310-555-0123"
+                  label="Phone"
+                  value={profileDetails?.phone}
+                  onChange={(v) => handleInputChange("phone", v)}
+                />
+                <EditableInput
+                  type="select"
+                  placeholder="Select admin role"
+                  label="Role"
+                  options={[
+                    "General Manager",
+                    "Fleet Manager",
+                    "Operations Manager",
+                    "Head of Sales",
+                    "Sales Executive",
+                    "Customer Support",
+                  ].map((v) => {
+                    return { value: v, label: v };
+                  })}
+                  value={profileDetails?.bio}
+                  onChange={(v) => handleInputChange("role", v)}
+                />
+                <EditableInput
+                  placeholder="Write a short bio about yourself"
+                  type="text"
+                  label="Bio"
+                  value={profileDetails?.bio}
+                  onChange={(v) => handleInputChange("bio", v)}
+                />
               </div>
             </div>
 
             <div className="px-2 pt-3">
               <div>
-                <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
+                <h5 className="mb-5 text-lg font-medium text-gray-800 lg:mb-6 dark:text-white/90">
                   Social Links
                 </h5>
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                  <EditableInput placeholder="https://www.facebook.com/" type="text" label="Facebook" value={profileDetails?.socials?.facebook || "https://www.facebook.com/"} onChange={(v) => handleSocialsInputChange("facebook", v)} />
-                  <EditableInput placeholder="https://www.x.com/" type="text" label="x.com" value={profileDetails?.socials?.x || "https://www.x.com/"} onChange={(v) => handleSocialsInputChange("x", v)} />
-                  <EditableInput placeholder="https://www.linkedin.com/" type="text" label="Linkedin" value={profileDetails?.socials?.linkedin || "https://www.linkedin.com/"} onChange={(v) => handleSocialsInputChange("linkedin", v)} />
-                  <EditableInput placeholder="https://www.instagram.com/" type="text" label="Instagram" value={profileDetails?.socials?.instagram || "https://www.instagram.com/"} onChange={(v) => handleSocialsInputChange("instagram", v)} />
-
+                  <EditableInput
+                    placeholder="https://www.facebook.com/"
+                    type="text"
+                    label="Facebook"
+                    value={
+                      profileDetails?.socials?.facebook ||
+                      "https://www.facebook.com/"
+                    }
+                    onChange={(v) => handleSocialsInputChange("facebook", v)}
+                  />
+                  <EditableInput
+                    placeholder="https://www.x.com/"
+                    type="text"
+                    label="x.com"
+                    value={profileDetails?.socials?.x || "https://www.x.com/"}
+                    onChange={(v) => handleSocialsInputChange("x", v)}
+                  />
+                  <EditableInput
+                    placeholder="https://www.linkedin.com/"
+                    type="text"
+                    label="Linkedin"
+                    value={
+                      profileDetails?.socials?.linkedin ||
+                      "https://www.linkedin.com/"
+                    }
+                    onChange={(v) => handleSocialsInputChange("linkedin", v)}
+                  />
+                  <EditableInput
+                    placeholder="https://www.instagram.com/"
+                    type="text"
+                    label="Instagram"
+                    value={
+                      profileDetails?.socials?.instagram ||
+                      "https://www.instagram.com/"
+                    }
+                    onChange={(v) => handleSocialsInputChange("instagram", v)}
+                  />
                 </div>
               </div>
             </div>
@@ -261,56 +373,97 @@ export default function NewUserCard() {
         </div>
       </div>
 
-
-      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
-        <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
+      <div className="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
+        <div className="no-scrollbar relative w-full overflow-y-auto rounded-3xl bg-white p-4 lg:p-11 dark:bg-gray-900">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
               Address
             </h4>
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+            <p className="mb-6 text-sm text-gray-500 lg:mb-7 dark:text-gray-400">
               Update user details to keep your profile up-to-date.
             </p>
           </div>
           <form className="flex flex-col">
-            <div className="px-2 overflow-y-auto custom-scrollbar">
+            <div className="custom-scrollbar overflow-y-auto px-2">
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <EditableInput placeholder="Select Country" type="select" options={allCountries()} label="Country" value={profileDetails?.country} onChange={(v) => handleInputChange("country", v)} />
-                <EditableInput placeholder="Arizona" type="text" label="City/State" value={profileDetails?.city} onChange={(v) => handleInputChange("city", v)} />
-                <EditableInput placeholder="E9108" type="text" label="Postal Address" value={profileDetails?.postal_code} onChange={(v) => handleInputChange("postal_code", v)} />
-                <EditableInput placeholder="Select user timezone" type="select" label="Timezone" options={allTimezones()} value={profileDetails?.timezone} onChange={(v) => handleInputChange("timezone", v)} />
-                <EditableInput placeholder="Select user primary language" type="select" options={languages} label="Language" value={profileDetails?.language} onChange={(v) => handleInputChange("language", v)} />
+                <EditableInput
+                  placeholder="Select Country"
+                  type="select"
+                  options={allCountries()}
+                  label="Country"
+                  value={profileDetails?.country}
+                  onChange={(v) => handleInputChange("country", v)}
+                />
+                <EditableInput
+                  placeholder="Arizona"
+                  type="text"
+                  label="City/State"
+                  value={profileDetails?.city}
+                  onChange={(v) => handleInputChange("city", v)}
+                />
+                <EditableInput
+                  placeholder="E9108"
+                  type="text"
+                  label="Postal Address"
+                  value={profileDetails?.postal_code}
+                  onChange={(v) => handleInputChange("postal_code", v)}
+                />
+                <EditableInput
+                  placeholder="Select user timezone"
+                  type="select"
+                  label="Timezone"
+                  options={allTimezones()}
+                  value={profileDetails?.timezone}
+                  onChange={(v) => handleInputChange("timezone", v)}
+                />
+                <EditableInput
+                  placeholder="Select user primary language"
+                  type="select"
+                  options={languages}
+                  label="Language"
+                  value={profileDetails?.language}
+                  onChange={(v) => handleInputChange("language", v)}
+                />
               </div>
             </div>
           </form>
-
         </div>
       </div>
 
-
-      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
-        <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
+      <div className="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
+        <div className="no-scrollbar relative w-full overflow-y-auto rounded-3xl bg-white p-4 lg:p-11 dark:bg-gray-900">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
               Security
             </h4>
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Pick a strong password to keep you safe            </p>
+            <p className="mb-6 text-sm text-gray-500 lg:mb-7 dark:text-gray-400">
+              Pick a strong password to keep you safe{" "}
+            </p>
           </div>
           <form className="flex flex-col">
-            <div className="px-2 overflow-y-auto custom-scrollbar">
+            <div className="custom-scrollbar overflow-y-auto px-2">
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <EditableInput placeholder="Enter password" type="password" label="Password" value={profileDetails?.password} onChange={(v) => handleInputChange("password", v)} />
-                <EditableInput placeholder="Confirm password" type="password" label="Confirm Password" value={profileDetails?.confirm_password} onChange={(v) => handleInputChange("confirm_password", v)} />
+                <EditableInput
+                  placeholder="Enter password"
+                  type="password"
+                  label="Password"
+                  value={profileDetails?.password}
+                  onChange={(v) => handleInputChange("password", v)}
+                />
+                <EditableInput
+                  placeholder="Confirm password"
+                  type="password"
+                  label="Confirm Password"
+                  value={profileDetails?.confirm_password}
+                  onChange={(v) => handleInputChange("confirm_password", v)}
+                />
               </div>
             </div>
           </form>
-
         </div>
       </div>
 
-
-      <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+      <div className="mt-6 flex items-center gap-3 px-2 lg:justify-end">
         <Link href="/profile" className="mr-2">
           <Button size="sm" variant="outline">
             Cancel
@@ -324,17 +477,48 @@ export default function NewUserCard() {
   );
 }
 
-
-function EditableInput({ label, value, onChange, type = "text", disabled, placeholder, options }: { label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean; placeholder?: string; options?: any[]; }) {
+function EditableInput({
+  label,
+  value,
+  onChange,
+  type = "text",
+  disabled,
+  placeholder,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  disabled?: boolean;
+  placeholder?: string;
+  options?: any[];
+}) {
   return (
-    <div className="col-span-2 lg:col-span-1 space-y-1 flex flex-col">
-      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">{label}</Label>
-      {
-        type === "select" ? <>
-          <Select value={value || ""} defaultValue={value || ""} placeholder={placeholder} onChange={(e) => onChange(e)} options={(options || [])} />
-        </> :
-          <Input placeholder={placeholder} disabled={disabled} type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="h-9" />
-      }
-    </div >
+    <div className="col-span-2 flex flex-col space-y-1 lg:col-span-1">
+      <Label className="mb-3 text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+        {label}
+      </Label>
+      {type === "select" ? (
+        <>
+          <Select
+            value={value || ""}
+            defaultValue={value || ""}
+            placeholder={placeholder}
+            onChange={(e) => onChange(e)}
+            options={options || []}
+          />
+        </>
+      ) : (
+        <Input
+          placeholder={placeholder}
+          disabled={disabled}
+          type={type}
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-9"
+        />
+      )}
+    </div>
   );
 }

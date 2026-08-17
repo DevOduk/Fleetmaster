@@ -1,6 +1,6 @@
 // src/app/api/vehicles/route.ts
-import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
 
 export async function GET() {
   try {
@@ -8,10 +8,10 @@ export async function GET() {
 
     // Fetch every single row and column from the vehicles table
     const { data, error } = await supabase
-      .from('fleetmaster_bookings')
-      .select('*')
-      // exclude all reserved vehicles from bookings object 
-      .neq('booking_status', 'Reserved')
+      .from("fleetmaster_bookings")
+      .select("*")
+      // exclude all reserved vehicles from bookings object
+      .neq("booking_status", "Reserved");
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -41,6 +41,9 @@ export async function GET() {
 
     return NextResponse.json(bookings, { status: 200 });
   } catch (err) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

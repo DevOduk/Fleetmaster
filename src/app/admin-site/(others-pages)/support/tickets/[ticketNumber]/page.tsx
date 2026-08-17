@@ -9,7 +9,9 @@ type PageProps = {
 };
 
 // 1. Generate dynamic metadata
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { ticketNumber } = await params;
   return {
     title: `Support Ticket #${ticketNumber} | FleetMaster Support`,
@@ -21,18 +23,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ManageTicketPage({ params }: PageProps) {
   // Await the params (required in Next.js 15+)
   const { ticketNumber } = await params;
-  
+
   const displayTicketNumber = `#${ticketNumber}`;
-  
-  const pages = [
-    { label: 'Support', href: '/support' }
-  ];
+
+  const pages = [{ label: "Support", href: "/support" }];
 
   return (
     <div className="space-y-6">
-      <PageBreadcrumb items={pages} pageTitle={`Ticket ${displayTicketNumber}`} />
+      <PageBreadcrumb
+        items={pages}
+        pageTitle={`Ticket ${displayTicketNumber}`}
+      />
       <br />
-      
+
       <ClientTicketView />
     </div>
   );

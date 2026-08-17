@@ -48,7 +48,7 @@ export default async function AdminLayout({
     } catch (e) {
       console.warn(
         "Server layout profile pre-fetch skip or invalid token signature:",
-        e
+        e,
       );
     }
   }

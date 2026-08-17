@@ -1,7 +1,10 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { ClientWelcomeEmail, WelcomeEmail } from "@/utils/templates/email-templates";
+import {
+  ClientWelcomeEmail,
+  WelcomeEmail,
+} from "@/utils/templates/email-templates";
 import { Redis } from "@upstash/redis";
 import { Resend } from "resend";
 
@@ -10,9 +13,9 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const redis =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
     ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
     : null;
 
 const CACHE_TTL = 300; // 5 minutes cache TTL
@@ -27,7 +30,11 @@ export async function getNotifications(userId: string) {
   // 1. Attempt Cache Read
   if (redis) {
     try {
-      const cached = await redis.get<{ success: boolean; data: any; error: any }>(cacheKey);
+      const cached = await redis.get<{
+        success: boolean;
+        data: any;
+        error: any;
+      }>(cacheKey);
 
       // Upstash Redis automatically parses JSON if stringified, but handling string/object fallback avoids double-serialization bugs
       if (cached) {
@@ -79,9 +86,16 @@ export async function invalidateNotificationCache(userId: string) {
   }
 }
 
-export async function sendWelcomeNotification(userEmail: string, tenant: any, userName: string) {
+export async function sendWelcomeNotification(
+  userEmail: string,
+  tenant: any,
+  userName: string,
+) {
   if (!userEmail || !tenant) {
-    return { success: false, error: { message: "Recipient email & headers is required" } };
+    return {
+      success: false,
+      error: { message: "Recipient email & headers is required" },
+    };
   }
 
   const displayName = userName || "there";
@@ -104,8 +118,6 @@ export async function sendWelcomeNotification(userEmail: string, tenant: any, us
   return { success: true, data };
 }
 
-
-
 export async function markNotificationAsSeen(notificationId: number) {
   if (!notificationId) {
     return { success: false, error: "Missing required ID parameter!" };
@@ -115,11 +127,9 @@ export async function markNotificationAsSeen(notificationId: number) {
 
   const { error } = await supabase
     .from("fleetmaster_notifications")
-    .update(
-      {
-        seen: true
-      }
-    )
+    .update({
+      seen: true,
+    })
     .eq("id", notificationId);
 
   if (error) {

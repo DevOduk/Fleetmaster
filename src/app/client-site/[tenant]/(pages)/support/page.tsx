@@ -3,16 +3,16 @@ import SecondaryHero from "@/components/marketing-components/SecondaryHero";
 import { Metadata } from "next";
 import { createPublicClient } from "@/utils/supabase/server";
 
-
 interface PageProps {
   params: Promise<{
     tenant: string;
   }>;
 }
 
-
 // 1. Dynamic Server-Side Metadata Generation
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const tenantSlug = resolvedParams.tenant;
 
@@ -38,7 +38,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 export default function page() {
-  const pages = [{ label: 'Home', href: '/' }, { label: 'Support', href: '/support' }];
+  const pages = [
+    { label: "Home", href: "/" },
+    { label: "Support", href: "/support" },
+  ];
 
   return (
     <div className="space-y-8">
@@ -49,7 +52,7 @@ export default function page() {
         description="Need help? Our support team is here to assist you. Browse through your support tickets, check their status, and get the assistance you need to keep your fleet running smoothly."
       />
       <br />
-      <div className="container mx-auto mt-5 max-w-6xl min-h-screen">
+      <div className="container mx-auto mt-5 min-h-screen max-w-6xl">
         <Support />
       </div>
     </div>

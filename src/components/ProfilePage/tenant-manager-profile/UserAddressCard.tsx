@@ -11,27 +11,25 @@ export default function AdminAddressCard() {
     const encoder = new TextEncoder();
     const byteArray = encoder.encode(id);
     const rawHex = Array.from(byteArray)
-      .map(byte => byte.toString(16).padStart(2, '0'))
-      .join('');
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
 
     // 2. Enforce exactly 8 characters (pad if too short, slice if too long)
-    const standardizedHex = rawHex.padEnd(12, '0').slice(0, 12);
+    const standardizedHex = rawHex.padEnd(12, "0").slice(0, 12);
 
     // 3. Append the commercial FM suffix (e.g., FleetMaster telemetry flag)
     return `FM-${standardizedHex}`;
   };
   return (
     <>
-      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+      <div className="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
         <div className="flex items-center justify-between">
-          <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+          <h4 className="text-lg font-semibold text-gray-800 lg:mb-6 dark:text-white/90">
             Address
           </h4>
 
-          <Link href="/account/edit" className=''>
-            <button
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-theme-xs hover:bg-gray-50 hover:text-blue-800 dark:border-gray-700 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-white/3 dark:hover:text-blue-200 lg:inline-flex lg:w-auto"
-            >
+          <Link href="/account/edit" className="">
+            <button className="shadow-theme-xs flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-gray-50 hover:text-blue-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-white/3 dark:hover:text-blue-200">
               <svg
                 className="fill-current"
                 width="18"

@@ -26,7 +26,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <span className="loader-custom"></span>
       </div>
     );
@@ -35,8 +35,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const mainContentMargin = isMobileOpen
     ? "ml-0"
     : isExpanded || isHovered
-    ? "lg:ml-[290px]"
-    : "lg:ml-[90px]";
+      ? "lg:ml-[290px]"
+      : "lg:ml-[90px]";
 
   return (
     <div className="min-h-screen xl:flex">
@@ -52,9 +52,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         <AppHeader />
 
         {/* Page Content */}
-        <div className="p-4 mx-auto max-w-screen-2xl md:p-6">
-          {children}
-        </div>
+        <div className="mx-auto max-w-screen-2xl p-4 md:p-6">{children}</div>
 
         {/* Footer */}
         <AppFooter />

@@ -1,6 +1,13 @@
 "use client";
 import { fetchAllVehicles, updateVehicleDetails } from "@/app/actions/vehicles";
-import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+  useMemo,
+} from "react";
 
 // Define the shape of our context
 interface ManagerFleetContextType {
@@ -10,13 +17,13 @@ interface ManagerFleetContextType {
   updateVehicle: (id: number, updatedVehicle: any) => void;
 }
 
-const ManagerFleetContext = createContext<ManagerFleetContextType | undefined>(undefined);
+const ManagerFleetContext = createContext<ManagerFleetContextType | undefined>(
+  undefined,
+);
 
 export const ManagerFleetProvider = ({ children }: { children: ReactNode }) => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
-
-
 
   useEffect(() => {
     async function getAll() {
@@ -37,24 +44,21 @@ export const ManagerFleetProvider = ({ children }: { children: ReactNode }) => {
     getAll();
   }, []);
 
-
   // Helper function to update a single vehicle by ID
   const updateVehicle = async (id: number, updatedVehicle: any) => {
-
     const response = await updateVehicleDetails(id, updatedVehicle);
     if (response.success) {
       setVehicles(response.data as any[]);
     } else {
       console.error("API Error fetching vehicles:", response.error);
     }
-    setVehicles((prev) =>
-      prev.map((v) => (v.id === id ? updatedVehicle : v))
-    );
+    setVehicles((prev) => prev.map((v) => (v.id === id ? updatedVehicle : v)));
   };
 
-
   return (
-    <ManagerFleetContext.Provider value={{ vehicles, loading, setVehicles, updateVehicle }}>
+    <ManagerFleetContext.Provider
+      value={{ vehicles, loading, setVehicles, updateVehicle }}
+    >
       {children}
     </ManagerFleetContext.Provider>
   );
@@ -63,6 +67,9 @@ export const ManagerFleetProvider = ({ children }: { children: ReactNode }) => {
 // Custom hook for easy access
 export const useManagerFleet = () => {
   const context = useContext(ManagerFleetContext);
-  if (!context) throw new Error("useManagerFleet must be used within a ManagerFleetProvider");
+  if (!context)
+    throw new Error(
+      "useManagerFleet must be used within a ManagerFleetProvider",
+    );
   return context;
 };

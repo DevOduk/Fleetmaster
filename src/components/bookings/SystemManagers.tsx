@@ -39,7 +39,9 @@ interface SystemUsersProps {
 const SystemManagers = () => {
   const [initialUsers, setIinitialUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const isDarkMode = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
+  const isDarkMode =
+    typeof window !== "undefined" &&
+    document.documentElement.classList.contains("dark");
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -58,11 +60,10 @@ const SystemManagers = () => {
         setIinitialUsers((res as { data: AdminUser[] }).data);
       }
       setLoading(false);
-    }
+    };
 
     getAdmins();
-  }, [])
-
+  }, []);
 
   // Apply dark mode styles to leaflet
   useEffect(() => {
@@ -104,7 +105,6 @@ const SystemManagers = () => {
   const startIndex = initialUsers.length === 0 ? 0 : indexStart + 1;
   const endIndex = Math.min(activePage * itemsPerPage, initialUsers.length);
 
-
   const handlePageChange = (page: number) => {
     const nextParams = new URLSearchParams(searchParams.toString());
     if (page > 1) {
@@ -118,18 +118,21 @@ const SystemManagers = () => {
   return (
     <div>
       <div className="space-y-6">
-        <div className="flex justify-between py-3 items-center">
+        <div className="flex items-center justify-between py-3">
           <div>
-            <p className="font-medium text-gray-800 mb-2 text-theme-sm dark:text-white/90">
-              View all system users and manage them. Click Create New User to add a new user with admin rights.
+            <p className="text-theme-sm mb-2 font-medium text-gray-800 dark:text-white/90">
+              View all system users and manage them. Click Create New User to
+              add a new user with admin rights.
             </p>
-            <span className="text-gray-500 text-start text-theme-sm dark:text-gray-400">
+            <span className="text-theme-sm text-start text-gray-500 dark:text-gray-400">
               {initialUsers.length} Users
             </span>
           </div>
           <Link href="/bookings/new">
-            <Button variant="success" size="sm"
-              className="flex items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+            <Button
+              variant="success"
+              size="sm"
+              className="bg-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg p-2 px-3 font-medium text-white"
             >
               Create New Admin
             </Button>
@@ -137,31 +140,52 @@ const SystemManagers = () => {
         </div>
 
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
-          <div className="max-w-full overflow-x-auto custom-scrollbar">
-            <div className="min-w-275 min-h-100">
+          <div className="custom-scrollbar max-w-full overflow-x-auto">
+            <div className="min-h-100 min-w-275">
               <Table>
                 {/* Table Header */}
                 <TableHeader className="border-b border-gray-100 dark:border-white/5">
                   <TableRow>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    <TableCell
+                      isHeader
+                      className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                    >
                       User Name
                     </TableCell>
-                    <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    <TableCell
+                      isHeader
+                      className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                    >
                       About
                     </TableCell>
-                    <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    <TableCell
+                      isHeader
+                      className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                    >
                       Email
                     </TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    <TableCell
+                      isHeader
+                      className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                    >
                       Phone
                     </TableCell>
-                    <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    <TableCell
+                      isHeader
+                      className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                    >
                       Role
                     </TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    <TableCell
+                      isHeader
+                      className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                    >
                       Last Seen
                     </TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    <TableCell
+                      isHeader
+                      className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                    >
                       Action
                     </TableCell>
                   </TableRow>
@@ -171,73 +195,99 @@ const SystemManagers = () => {
                 <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
-                        <div className="flex flex-col py-4 items-center justify-center gap-3 w-full text-gray-500 text-theme-sm dark:text-gray-400">
+                      <TableCell
+                        colSpan={7}
+                        className="border-b border-gray-200 px-5 py-4 dark:border-gray-800"
+                      >
+                        <div className="text-theme-sm flex w-full flex-col items-center justify-center gap-3 py-4 text-gray-500 dark:text-gray-400">
                           <CircularProgress color="secondary" size="small" />
                           <span>Loading users...</span>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ) : (
-                    // 3. Loop through your live initialUsers data dynamically
-                    initialUsers.slice(startIndex - 1, endIndex).length > 0 ? initialUsers.slice(startIndex - 1, endIndex).map((user, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="px-5 py-4 sm:px-6 text-start">
-                          <div className="flex items-center gap-3 min-w-45">
-                            <Avatar
-                              className="w-25 object-fit-cover object-center"
-                              style={{ objectFit: 'cover', objectPosition: 'center' }}
-                              src={user.profile_pic || undefined}
-                            />
-                            <div>
-                              <span className="block font-medium uppercase text-gray-800 text-theme-sm dark:text-white/90">
-                                {user.first_name || "N/A"}
-                              </span>
-                              <span className="block text-gray-500 text-theme-xs pt-2 dark:text-gray-400">
-                                {user.first_name} {user.last_name}
-                              </span>
+                  ) : // 3. Loop through your live initialUsers data dynamically
+                  initialUsers.slice(startIndex - 1, endIndex).length > 0 ? (
+                    initialUsers
+                      .slice(startIndex - 1, endIndex)
+                      .map((user, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="px-5 py-4 text-start sm:px-6">
+                            <div className="flex min-w-45 items-center gap-3">
+                              <Avatar
+                                className="object-fit-cover w-25 object-center"
+                                style={{
+                                  objectFit: "cover",
+                                  objectPosition: "center",
+                                }}
+                                src={user.profile_pic || undefined}
+                              />
+                              <div>
+                                <span className="text-theme-sm block font-medium text-gray-800 uppercase dark:text-white/90">
+                                  {user.first_name || "N/A"}
+                                </span>
+                                <span className="text-theme-xs block pt-2 text-gray-500 dark:text-gray-400">
+                                  {user.first_name} {user.last_name}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400 max-w-90 truncate">
-                          {user.bio || "No bio available"}
-                        </TableCell>
-                        <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          {user.email ? (
-                            <a className="text-brand-500 hover:underline" href={`mailto:${user.email}`}>
-                              {user.email}
-                            </a>
-                          ) : (
-                            <span>—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          {user.phone || "—"}
-                        </TableCell>
-                        <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          {/* <Badge variant={user.role === 'super_admin' ? 'success' : 'primary'}> */}
-                          {user.role}
-                          {/* </Badge> */}
-                        </TableCell>
-                        <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
-                          {user.created_at ? new Date(user.created_at).toLocaleString() : "—"}
-                        </TableCell>
-                        <TableCell className="px-4 flex gap-3 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                          <Link href={`/bookings/${user.id}/edit`}>
-                            <Button size="sm" variant="success-outline" endIcon={<EditOutlinedIcon fontSize="small" className="m-0" />}>
-                              Update
-                            </Button>
-                          </Link>
-                          <Link href={`/bookings/${user.id}`}>
-                            <Button variant="primary" size="sm"
-                              className="flex text-nowrap items-center justify-center p-2 px-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
-                            >
-                              View User
-                            </Button>
-                          </Link>
-                        </TableCell>
-                      </TableRow>
-                    )) : <>There was a problem with the page oyu requested!</>
+                          </TableCell>
+                          <TableCell className="text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {user.bio || "No bio available"}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {user.email ? (
+                              <a
+                                className="text-brand-500 hover:underline"
+                                href={`mailto:${user.email}`}
+                              >
+                                {user.email}
+                              </a>
+                            ) : (
+                              <span>—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {user.phone || "—"}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {/* <Badge variant={user.role === 'super_admin' ? 'success' : 'primary'}> */}
+                            {user.role}
+                            {/* </Badge> */}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
+                            {user.created_at
+                              ? new Date(user.created_at).toLocaleString()
+                              : "—"}
+                          </TableCell>
+                          <TableCell className="text-theme-sm flex gap-3 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                            <Link href={`/bookings/${user.id}/edit`}>
+                              <Button
+                                size="sm"
+                                variant="success-outline"
+                                endIcon={
+                                  <EditOutlinedIcon
+                                    fontSize="small"
+                                    className="m-0"
+                                  />
+                                }
+                              >
+                                Update
+                              </Button>
+                            </Link>
+                            <Link href={`/bookings/${user.id}`}>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                className="bg-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg p-2 px-3 font-medium text-nowrap text-white"
+                              >
+                                View User
+                              </Button>
+                            </Link>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                  ) : (
+                    <>There was a problem with the page oyu requested!</>
                   )}
                 </TableBody>
               </Table>
@@ -247,9 +297,10 @@ const SystemManagers = () => {
 
         {/* Pagination Controls Visibility Rule */}
         {!loading && (
-          <div className="flex items-center justify-between pb-3 pt-8 border-t border-gray-100 dark:border-gray-800 mt-4">
-            <span className="dark:text-white text-gray-800 text-sm">
-              Showing {startIndex} to {endIndex} of {initialUsers.length} results
+          <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-8 pb-3 dark:border-gray-800">
+            <span className="text-sm text-gray-800 dark:text-white">
+              Showing {startIndex} to {endIndex} of {initialUsers.length}{" "}
+              results
             </span>
             <Pagination
               onPageChange={handlePageChange}

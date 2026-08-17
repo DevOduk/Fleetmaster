@@ -4,7 +4,7 @@ export async function POST() {
   try {
     const response = NextResponse.json(
       { success: true, message: "Logged out successfully" },
-      { status: 200 }
+      { status: 200 },
     );
 
     // 1. Overwrite the cookie to destroy the session instantly
@@ -17,7 +17,10 @@ export async function POST() {
       maxAge: 0, // Tells the browser to delete the cookie immediately
       path: "/",
       // If handling cross-subdomains locally/prod, keep the domain scoped:
-      domain: process.env.NODE_ENV === "production" ? ".fleetmaster.com" : ".localhost",
+      domain:
+        process.env.NODE_ENV === "production"
+          ? ".fleetmaster.com"
+          : ".localhost",
     });
 
     return response;
@@ -25,7 +28,7 @@ export async function POST() {
     console.error("Logout error exception:", err);
     return NextResponse.json(
       { error: "Internal Server Error during logout" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

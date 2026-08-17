@@ -39,7 +39,7 @@ export const AdminCalendarWrapper = ({
   // Calculate all booked date strings for this vehicle
   const bookedDates = useMemo(() => {
     if (loading) return;
-    
+
     return bookings?.flatMap((booking) => {
       const start = dayjs(booking.rental_start);
       const end = dayjs(booking.rental_end);
@@ -54,33 +54,38 @@ export const AdminCalendarWrapper = ({
     });
   }, [vehicleId, bookings]);
 
-
-
-  const theme = useMemo(() => createTheme({
-    palette: {
-      mode: isDark ? "dark" : "light",
-      primary: { main: "#3b82f6" },
-      background: { paper: "transparent", default: "transparent" },
-    },
-  }), [isDark]);
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: isDark ? "dark" : "light",
+          primary: { main: "#3b82f6" },
+          background: { paper: "transparent", default: "transparent" },
+        },
+      }),
+    [isDark],
+  );
 
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        {loading ? <div className="w-full flex-col h-90 mb-5 gap-3 border-gray-600 rounded-2xl flex items-center justify-center text-green-500 text-center">
-          <CircularProgress size={25} color="success" />
-          Just a moment! Assessing booked dates ...
-        </div> :
+        {loading ? (
+          <div className="mb-5 flex h-90 w-full flex-col items-center justify-center gap-3 rounded-2xl border-gray-600 text-center text-green-500">
+            <CircularProgress size={25} color="success" />
+            Just a moment! Assessing booked dates ...
+          </div>
+        ) : (
           <DateCalendar
             defaultValue={dayjs(dateString)}
             value={null}
             displayWeekNumber
             readOnly
             slotProps={{
-              day: (ownerState) => ({
-                // We inject the date string into a custom data attribute
-                "data-date": ownerState.day.format("YYYY-MM-DD"),
-              } as any),
+              day: (ownerState) =>
+                ({
+                  // We inject the date string into a custom data attribute
+                  "data-date": ownerState.day.format("YYYY-MM-DD"),
+                }) as any,
             }}
             sx={{
               width: "100%",
@@ -98,27 +103,39 @@ export const AdminCalendarWrapper = ({
               }),
               // Target any button that has a 'data-date' matching our booked list
               // This is the trick: We use a template literal to build a CSS selector
-              ...bookedDates?.reduce((acc, date) => ({
-                ...acc,
-                [`& button[data-date="${date}"]`]: {
-                  backgroundColor: "green !important",
-                  color: "#ffffff !important",
-                  borderRadius: "50%",
-                  fontWeight: "bold",
-                  opacity: "1 !important",
-                  "&:hover": {
+              ...bookedDates?.reduce(
+                (acc, date) => ({
+                  ...acc,
+                  [`& button[data-date="${date}"]`]: {
                     backgroundColor: "green !important",
+                    color: "#ffffff !important",
+                    borderRadius: "50%",
+                    fontWeight: "bold",
+                    opacity: "1 !important",
+                    "&:hover": {
+                      backgroundColor: "green !important",
+                    },
                   },
-                },
-              }), {}),
+                }),
+                {},
+              ),
 
               // Standard Theme Styles
-              "& .MuiPickersCalendarHeader-label": { color: isDark ? "#f3f4f6" : "inherit" },
-              "& .MuiTypography-root": { color: isDark ? "#f3f4f6" : "inherit" },
-              "& .MuiDayCalendar-weekDayLabel": { color: isDark ? "#9ca3af" : "inherit" },
-              "& .MuiPickersArrowSwitcher-root button": { color: isDark ? "#f3f4f6" : "inherit" }
+              "& .MuiPickersCalendarHeader-label": {
+                color: isDark ? "#f3f4f6" : "inherit",
+              },
+              "& .MuiTypography-root": {
+                color: isDark ? "#f3f4f6" : "inherit",
+              },
+              "& .MuiDayCalendar-weekDayLabel": {
+                color: isDark ? "#9ca3af" : "inherit",
+              },
+              "& .MuiPickersArrowSwitcher-root button": {
+                color: isDark ? "#f3f4f6" : "inherit",
+              },
             }}
-          />}
+          />
+        )}
       </LocalizationProvider>
     </ThemeProvider>
   );

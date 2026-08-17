@@ -19,8 +19,12 @@ async function invalidateCachePattern(pattern: string) {
   try {
     let cursor = 0;
     do {
-      const [nextCursor, keys] = await redis.scan(cursor, { match: pattern, count: 100 });
-      cursor = typeof nextCursor === "number" ? nextCursor : parseInt(nextCursor, 10);
+      const [nextCursor, keys] = await redis.scan(cursor, {
+        match: pattern,
+        count: 100,
+      });
+      cursor =
+        typeof nextCursor === "number" ? nextCursor : parseInt(nextCursor, 10);
 
       if (keys && keys.length > 0) {
         await redis.del(...keys);
@@ -63,7 +67,9 @@ export async function fetchAllVehicles() {
 
   // 3. Store in Redis
   try {
-    await redis.set(cacheKey, JSON.stringify(formattedData), { ex: CACHE_TTL_SECONDS });
+    await redis.set(cacheKey, JSON.stringify(formattedData), {
+      ex: CACHE_TTL_SECONDS,
+    });
   } catch (cacheErr) {
     console.error("Redis write error in fetchAllVehicles:", cacheErr);
   }
@@ -100,7 +106,10 @@ export async function fetchVehicleDetails(id: number) {
   try {
     await redis.set(cacheKey, JSON.stringify(data), { ex: CACHE_TTL_SECONDS });
   } catch (cacheErr) {
-    console.error(`Redis write error in fetchVehicleDetails (${id}):`, cacheErr);
+    console.error(
+      `Redis write error in fetchVehicleDetails (${id}):`,
+      cacheErr,
+    );
   }
 
   return { data, error: null };
@@ -136,7 +145,10 @@ export async function deleteVehicle(id: number, profile: any) {
   if (!profile || !profile.role || profile.role === "Client") {
     return {
       success: false,
-      error: { message: "Unauthorized action detected! Please verify access & try again." },
+      error: {
+        message:
+          "Unauthorized action detected! Please verify access & try again.",
+      },
     };
   }
 
@@ -152,7 +164,7 @@ export async function deleteVehicle(id: number, profile: any) {
     .eq("vehicle_id", id)
     .or(
       `rental_end.gt.${currentDateStr},` +
-        `and(rental_end.eq.${currentDateStr},rental_time.gte.${currentTimeStr})`
+        `and(rental_end.eq.${currentDateStr},rental_time.gte.${currentTimeStr})`,
     );
 
   if (bookingError) {
@@ -165,7 +177,10 @@ export async function deleteVehicle(id: number, profile: any) {
   if (conflictingBookings && conflictingBookings.length > 0) {
     return {
       success: false,
-      error: { message: "Cannot delete this vehicle because it has active or upcoming rental sessions." },
+      error: {
+        message:
+          "Cannot delete this vehicle because it has active or upcoming rental sessions.",
+      },
     };
   }
 

@@ -6,9 +6,5 @@ export default function AdminRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="admin-root-wrapper">
-      {children}
-    </div>
-  );
+  return <div className="admin-root-wrapper">{children}</div>;
 }

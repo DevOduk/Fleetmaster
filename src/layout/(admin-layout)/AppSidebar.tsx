@@ -1,34 +1,39 @@
 "use client";
-import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../../context/SidebarContext";
-import {
-  ChevronDownIcon,
-  HorizontaLDots,
-} from "../../icons/index";
+import { ChevronDownIcon, HorizontaLDots } from "../../icons/index";
 import SidebarWidget from "./SidebarWidget";
-import DashboardCustomizeOutlinedIcon from '@mui/icons-material/DashboardCustomizeOutlined';
-import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
-import DirectionsCarFilledOutlinedIcon from '@mui/icons-material/DirectionsCarFilledOutlined';
-import TrendingDownOutlinedIcon from "@mui/icons-material/TrendingDownOutlined"
-import NavigationOutlinedIcon from '@mui/icons-material/NavigationOutlined';
-import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
-import ContrastOutlinedIcon from '@mui/icons-material/ContrastOutlined';
-import FeedbackOutlinedIcon from '@mui/icons-material/FeedbackOutlined';
-import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
-import WysiwygOutlinedIcon from '@mui/icons-material/WysiwygOutlined';
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined"
-import EmojiTransportationOutlinedIcon from "@mui/icons-material/EmojiTransportationOutlined"
+import DashboardCustomizeOutlinedIcon from "@mui/icons-material/DashboardCustomizeOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined";
+import TrendingDownOutlinedIcon from "@mui/icons-material/TrendingDownOutlined";
+import NavigationOutlinedIcon from "@mui/icons-material/NavigationOutlined";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import ContrastOutlinedIcon from "@mui/icons-material/ContrastOutlined";
+import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
+import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
+import WysiwygOutlinedIcon from "@mui/icons-material/WysiwygOutlined";
+import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
+import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import EmojiTransportationOutlinedIcon from "@mui/icons-material/EmojiTransportationOutlined";
 import { useAdminFleet } from "@/context/AdminFleetContext";
 import { useAdminBooking } from "@/context/AdminBookingContext";
 import { useUser } from "@/context/UserContext";
 import SidebarExpiryWidget from "./SidebarExpiryWidget";
-import { getExpiryString, getRemainingDays } from "@/components/company-profile/ExpiryBanner";
-
+import {
+  getExpiryString,
+  getRemainingDays,
+} from "@/components/company-profile/ExpiryBanner";
 
 type NavItem = {
   name: string;
@@ -36,7 +41,7 @@ type NavItem = {
   path?: string;
   pro?: boolean;
   count?: [boolean, number?];
-  new?: boolean
+  new?: boolean;
   subItems?: {
     name: string;
     path: string;
@@ -75,7 +80,7 @@ export const navItems: NavItem[] = [
     icon: <DirectionsCarFilledOutlinedIcon />,
     name: " Vehicles",
     path: "/vehicles",
-    count: [true]
+    count: [true],
   },
   {
     icon: <TrendingDownOutlinedIcon />,
@@ -116,11 +121,6 @@ export const navItems: NavItem[] = [
 ];
 
 export const othersItems: NavItem[] = [
-  {
-    icon: <ContrastOutlinedIcon />,
-    name: "Preferences",
-    path: "/preferences",
-  },
   {
     icon: <FeedbackOutlinedIcon />,
     name: "Feedback",
@@ -181,7 +181,12 @@ export const accountItems: NavItem[] = [
     name: "Company",
     subItems: [
       { name: "Profile", path: "/company-profile", pro: false },
-      { name: "Subscriptions", path: "/company-profile/subscription", pro: false, new: false },
+      {
+        name: "Subscriptions",
+        path: "/company-profile/subscription",
+        pro: false,
+        new: false,
+      },
     ],
   },
   {
@@ -226,7 +231,6 @@ const AppSidebar: React.FC = () => {
   const { bookings } = useAdminBooking();
   const { vehicles } = useAdminFleet();
 
-
   const hydratedNavItems = useMemo(() => {
     return navItems.map((nav) => {
       // Create a copy so we don't mutate the original exported constant
@@ -254,7 +258,7 @@ const AppSidebar: React.FC = () => {
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" | "others" | "account"
+    menuType: "main" | "others" | "account",
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -262,19 +266,22 @@ const AppSidebar: React.FC = () => {
           {nav.subItems ? (
             <button
               onClick={() => handleSubmenuToggle(index, menuType)}
-              className={`menu-item group  ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                ? "menu-item-active"
-                : "menu-item-inactive"
-                } cursor-pointer ${!isExpanded && !isHovered
+              className={`menu-item group ${
+                openSubmenu?.type === menuType && openSubmenu?.index === index
+                  ? "menu-item-active"
+                  : "menu-item-inactive"
+              } cursor-pointer ${
+                !isExpanded && !isHovered
                   ? "lg:justify-center"
                   : "lg:justify-start"
-                }`}
+              }`}
             >
               <span
-                className={` ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? "menu-item-icon-active"
-                  : "menu-item-icon-inactive"
-                  }`}
+                className={` ${
+                  openSubmenu?.type === menuType && openSubmenu?.index === index
+                    ? "menu-item-icon-active"
+                    : "menu-item-icon-inactive"
+                }`}
               >
                 {nav.icon}
               </span>
@@ -283,11 +290,12 @@ const AppSidebar: React.FC = () => {
               )}
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
-                  className={`ml-auto w-5 h-5 transition-transform duration-200  ${openSubmenu?.type === menuType &&
+                  className={`ml-auto h-5 w-5 transition-transform duration-200 ${
+                    openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
-                    ? "rotate-180 text-brand-500"
-                    : ""
-                    }`}
+                      ? "text-brand-500 rotate-180"
+                      : ""
+                  }`}
                 />
               )}
             </button>
@@ -295,14 +303,16 @@ const AppSidebar: React.FC = () => {
             nav.path && (
               <Link
                 href={nav.path}
-                className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
-                  }`}
+                className={`menu-item group ${
+                  isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                }`}
               >
                 <span
-                  className={`${isActive(nav.path)
-                    ? "menu-item-icon-active"
-                    : "menu-item-icon-inactive"
-                    }`}
+                  className={`${
+                    isActive(nav.path)
+                      ? "menu-item-icon-active"
+                      : "menu-item-icon-inactive"
+                  }`}
                 >
                   {nav.icon}
                 </span>
@@ -312,20 +322,22 @@ const AppSidebar: React.FC = () => {
 
                 {nav.pro && (
                   <span
-                    className={`ml-auto ${isActive('/')
-                      ? "menu-dropdown-badge-active"
-                      : "menu-dropdown-badge-inactive"
-                      } menu-dropdown-badge `}
+                    className={`ml-auto ${
+                      isActive("/")
+                        ? "menu-dropdown-badge-active"
+                        : "menu-dropdown-badge-inactive"
+                    } menu-dropdown-badge`}
                   >
                     pro
                   </span>
                 )}
                 {nav.count?.[0] && (
                   <span
-                    className={`ml-auto ${isActive('/')
-                      ? "menu-dropdown-badge-active"
-                      : "menu-dropdown-badge-inactive"
-                      } menu-dropdown-badge `}
+                    className={`ml-auto ${
+                      isActive("/")
+                        ? "menu-dropdown-badge-active"
+                        : "menu-dropdown-badge-inactive"
+                    } menu-dropdown-badge`}
                   >
                     {nav.count?.[1] || 0}
                   </span>
@@ -346,34 +358,37 @@ const AppSidebar: React.FC = () => {
                     : "0px",
               }}
             >
-              <ul className="mt-2 space-y-1 ml-9">
+              <ul className="mt-2 ml-9 space-y-1">
                 {nav.subItems.map((subItem) => (
                   <li key={subItem.name}>
                     <Link
                       href={subItem.path}
-                      className={`menu-dropdown-item ${isActive(subItem.path)
-                        ? "menu-dropdown-item-active"
-                        : "menu-dropdown-item-inactive"
-                        }`}
+                      className={`menu-dropdown-item ${
+                        isActive(subItem.path)
+                          ? "menu-dropdown-item-active"
+                          : "menu-dropdown-item-inactive"
+                      }`}
                     >
                       {subItem.name}
-                      <span className="flex items-center gap-1 ml-auto">
+                      <span className="ml-auto flex items-center gap-1">
                         {subItem.new && (
                           <span
-                            className={`ml-auto ${isActive(subItem.path)
-                              ? "menu-dropdown-badge-active"
-                              : "menu-dropdown-badge-inactive"
-                              } menu-dropdown-badge `}
+                            className={`ml-auto ${
+                              isActive(subItem.path)
+                                ? "menu-dropdown-badge-active"
+                                : "menu-dropdown-badge-inactive"
+                            } menu-dropdown-badge`}
                           >
                             new
                           </span>
                         )}
                         {subItem.pro && (
                           <span
-                            className={`ml-auto ${isActive(subItem.path)
-                              ? "menu-dropdown-badge-active"
-                              : "menu-dropdown-badge-inactive"
-                              } menu-dropdown-badge `}
+                            className={`ml-auto ${
+                              isActive(subItem.path)
+                                ? "menu-dropdown-badge-active"
+                                : "menu-dropdown-badge-inactive"
+                            } menu-dropdown-badge`}
                           >
                             pro
                           </span>
@@ -381,10 +396,11 @@ const AppSidebar: React.FC = () => {
 
                         {subItem.count?.[0] && (
                           <span
-                            className={`ml-auto ${isActive('/bookings')
-                              ? "menu-dropdown-badge-active"
-                              : "menu-dropdown-badge-inactive"
-                              } menu-dropdown-badge `}
+                            className={`ml-auto ${
+                              isActive("/bookings")
+                                ? "menu-dropdown-badge-active"
+                                : "menu-dropdown-badge-inactive"
+                            } menu-dropdown-badge`}
                           >
                             {subItem.count?.[1] || 0}
                           </span>
@@ -406,7 +422,7 @@ const AppSidebar: React.FC = () => {
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {}
+    {},
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -417,7 +433,12 @@ const AppSidebar: React.FC = () => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
     ["main", "others", "account"].forEach((menuType) => {
-      const items = menuType === "main" ? hydratedNavItems : menuType === "others" ? othersItems : accountItems;
+      const items =
+        menuType === "main"
+          ? hydratedNavItems
+          : menuType === "others"
+            ? othersItems
+            : accountItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
@@ -452,7 +473,10 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "others" | "account") => {
+  const handleSubmenuToggle = (
+    index: number,
+    menuType: "main" | "others" | "account",
+  ) => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -471,109 +495,102 @@ const AppSidebar: React.FC = () => {
   const daysLeft = getRemainingDays(tenant?.expiry_date);
   const expiryString = getExpiryString(tenant?.expiry_date);
 
-  const isExpired = tenant?.subscription_status === 'Expired' || daysLeft <= 0;
+  const isExpired = tenant?.subscription_status === "Expired" || daysLeft <= 0;
   const isExpiringSoon = daysLeft > 0 && daysLeft <= 14; // <= 14 days (2 weeks)
 
   // ✅ FIX: Only show expiry widget if the plan is actually Expired or Expiring Soon AND sidebar is visible
-  const shouldShowExpiryWidget = isSidebarVisible && (isExpired || isExpiringSoon);
+  const shouldShowExpiryWidget =
+    isSidebarVisible && (isExpired || isExpiringSoon);
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        ${isExpanded || isMobileOpen
-          ? "w-72.5"
-          : isHovered
-            ? "w-72.5"
-            : "w-22.5"
-        }
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0`}
+      className={`fixed top-0 left-0 z-50 mt-16 flex h-screen flex-col border-r border-gray-200 bg-white px-5 text-gray-900 transition-all duration-300 ease-in-out lg:mt-0 dark:border-gray-800 dark:bg-gray-900 ${
+        isExpanded || isMobileOpen ? "w-72.5" : isHovered ? "w-72.5" : "w-22.5"
+      } ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`py-8 flex  ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-          }`}
+        className={`flex py-8 ${
+          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+        }`}
       >
         <Link href="/">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
-              {
-                profile?.fleetmaster_tenants?.subscription_plan === "Expert" ? (
-                  <>
-                    <Image
-                      width={154}
-                      height={32}
-                      className="dark:hidden"
-                      src="/images/logo/logo_expert.svg"
-                      alt="Logo"
-                    />
-                    <Image
-                      width={154}
-                      height={32}
-                      className="hidden dark:block"
-                      src="/images/logo/logo_expert_dark.svg"
-                      alt="Logo"
-                    />
-                  </>
-                ) :
-                  profile?.fleetmaster_tenants?.subscription_plan === "Pro" ? (
-                    <>
-
-                      <Image
-                        width={154}
-                        height={32}
-                        className="dark:hidden"
-                        src="/images/logo/logo_pro.svg"
-                        alt="Logo"
-                      />
-                      <Image
-                        width={154}
-                        height={32}
-                        className="hidden dark:block"
-                        src="/images/logo/logo_pro_dark.svg"
-                        alt="Logo"
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <Image
-                        width={154}
-                        height={32}
-                        className="dark:hidden"
-                        src="/images/logo/logo.svg"
-                        alt="Logo"
-                      />
-                      <Image
-                        width={154}
-                        height={32}
-                        className="hidden dark:block"
-                        src="/images/logo/logo-dark.svg"
-                        alt="Logo"
-                      />
-                    </>
-                  )
-              }
+              {profile?.fleetmaster_tenants?.subscription_plan === "Expert" ? (
+                <>
+                  <Image
+                    width={154}
+                    height={32}
+                    className="dark:hidden"
+                    src="/images/logo/logo_expert.svg"
+                    alt=""
+                  />
+                  <Image
+                    width={154}
+                    height={32}
+                    className="hidden dark:block"
+                    src="/images/logo/logo_expert_dark.svg"
+                    alt=""
+                  />
+                </>
+              ) : profile?.fleetmaster_tenants?.subscription_plan === "Pro" ? (
+                <>
+                  <Image
+                    width={154}
+                    height={32}
+                    className="dark:hidden"
+                    src="/images/logo/logo_pro.svg"
+                    alt=""
+                  />
+                  <Image
+                    width={154}
+                    height={32}
+                    className="hidden dark:block"
+                    src="/images/logo/logo_pro_dark.svg"
+                    alt=""
+                  />
+                </>
+              ) : (
+                <>
+                  <Image
+                    width={154}
+                    height={32}
+                    className="dark:hidden"
+                    src="/images/logo/logo.svg"
+                    alt=""
+                  />
+                  <Image
+                    width={154}
+                    height={32}
+                    className="hidden dark:block"
+                    src="/images/logo/logo-dark.svg"
+                    alt=""
+                  />
+                </>
+              )}
             </>
           ) : (
             <Image
               src="/images/logo/logo-icon.svg"
-              alt="Logo"
+              alt=""
               width={32}
               height={32}
             />
           )}
         </Link>
       </div>
-      <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+      <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-5 text-gray-400 ${!isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "justify-start"
-                  }`}
+                className={`mb-4 flex text-xs leading-5 text-gray-400 uppercase ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Menu"
@@ -586,10 +603,11 @@ const AppSidebar: React.FC = () => {
 
             <div className="">
               <h2
-                className={`mb-4 text-xs uppercase flex leading-5 text-gray-400 ${!isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "justify-start"
-                  }`}
+                className={`mb-4 flex text-xs leading-5 text-gray-400 uppercase ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Settings"
@@ -602,10 +620,11 @@ const AppSidebar: React.FC = () => {
 
             <div className="">
               <h2
-                className={`mb-4 text-xs uppercase flex leading-5 text-gray-400 ${!isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "justify-start"
-                  }`}
+                className={`mb-4 flex text-xs leading-5 text-gray-400 uppercase ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Account"
@@ -618,7 +637,6 @@ const AppSidebar: React.FC = () => {
           </div>
         </nav>
 
-
         {/* Expiry Widget: Shows if Expired, Expiring in <14 days, OR Sidebar is opened/hovered */}
         {shouldShowExpiryWidget && (
           <SidebarExpiryWidget
@@ -628,10 +646,7 @@ const AppSidebar: React.FC = () => {
         )}
 
         {/* Standard Widget */}
-        {isSidebarVisible && (
-          <SidebarWidget plan={tenant?.subscription_plan} />
-        )}
-
+        {isSidebarVisible && <SidebarWidget plan={tenant?.subscription_plan} />}
       </div>
     </aside>
   );

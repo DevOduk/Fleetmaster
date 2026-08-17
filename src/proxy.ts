@@ -1,77 +1,83 @@
 // // src/proxy.ts
 
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import * as jose from 'jose';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import * as jose from "jose";
 import { Redis } from "@upstash/redis";
 
 const JWT_SECRET = process.env.JWT_SECRET
   ? new TextEncoder().encode(process.env.JWT_SECRET)
   : null;
 
-const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
-  ? new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-  })
-  : null;
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
 
 export async function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
 
-  const rawHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
-  const hostname = rawHost.split(':')[0].toLowerCase();
+  const rawHost =
+    req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
+  const hostname = rawHost.split(":")[0].toLowerCase();
   const pathname = url.pathname;
 
   // 1. SKIP INTERNAL ASSETS & RSC ROUTER PAYLOADS
   if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
-    pathname.includes('.') ||
-    req.headers.get('x-nextjs-data') ||
-    req.headers.get('rsc') === '1' ||
-    req.headers.get('next-router-prefetch') === '1' ||
-    req.headers.has('next-router-state-tree')
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.includes(".") ||
+    req.headers.get("x-nextjs-data") ||
+    req.headers.get("rsc") === "1" ||
+    req.headers.get("next-router-prefetch") === "1" ||
+    req.headers.has("next-router-state-tree")
   ) {
     return NextResponse.next();
   }
 
   // 2. IDENTIFY SUBDOMAIN / ROUTING SLUG
-  let subdomain = '';
-  const rawBaseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'fleetmaster-lemon.vercel.app';
-  const baseDomain = rawBaseDomain.split(':')[0].toLowerCase();
+  let subdomain = "";
+  const rawBaseDomain =
+    process.env.NEXT_PUBLIC_BASE_DOMAIN || "fleetmaster-lemon.vercel.app";
+  const baseDomain = rawBaseDomain.split(":")[0].toLowerCase();
 
-  const isVercelDomain = hostname.endsWith('.vercel.app');
-  const pathSegments = pathname.split('/').filter(Boolean); // e.g. ["client-site", "oduk"]
+  const isVercelDomain = hostname.endsWith(".vercel.app");
+  const pathSegments = pathname.split("/").filter(Boolean); // e.g. ["client-site", "oduk"]
 
-  if (hostname.includes('localhost')) {
-    const parts = hostname.split('.');
-    if (parts.length > 1 && parts[parts.length - 1] === 'localhost') {
-      subdomain = parts.slice(0, -1).join('.');
+  if (hostname.includes("localhost")) {
+    const parts = hostname.split(".");
+    if (parts.length > 1 && parts[parts.length - 1] === "localhost") {
+      subdomain = parts.slice(0, -1).join(".");
     }
   } else if (isVercelDomain) {
     // Vercel app environment (path-based routing)
-    if (pathSegments[0] === 'client-site' && pathSegments[1]) {
+    if (pathSegments[0] === "client-site" && pathSegments[1]) {
       subdomain = pathSegments[1];
-    } else if (pathSegments[0] === 'admin-site') {
-      subdomain = 'app';
-    } else if (pathSegments[0] === 'tenant-manager') {
-      subdomain = 'dashboard';
+    } else if (pathSegments[0] === "admin-site") {
+      subdomain = "app";
+    } else if (pathSegments[0] === "tenant-manager") {
+      subdomain = "dashboard";
     }
   } else if (baseDomain && hostname.endsWith(`.${baseDomain}`)) {
     // Production / Custom domain (subdomain routing)
-    subdomain = hostname.replace(`.${baseDomain}`, '');
+    subdomain = hostname.replace(`.${baseDomain}`, "");
   }
 
   // 3. ROOT DOMAIN / NO SUBDOMAIN HANDLER
   // Only block raw direct folder access if we are on a PRODUCTION custom domain, NOT Vercel.
-  if (!isVercelDomain && (!subdomain || subdomain === 'www' || hostname === baseDomain)) {
+  if (
+    !isVercelDomain &&
+    (!subdomain || subdomain === "www" || hostname === baseDomain)
+  ) {
     if (
-      pathname.startsWith('/admin-site') ||
-      pathname.startsWith('/tenant-manager') ||
-      pathname.startsWith('/client-site')
+      pathname.startsWith("/admin-site") ||
+      pathname.startsWith("/tenant-manager") ||
+      pathname.startsWith("/client-site")
     ) {
-      url.pathname = '/404';
+      url.pathname = "/404";
       return NextResponse.rewrite(url);
     }
     return NextResponse.next();
@@ -84,27 +90,33 @@ export async function proxy(req: NextRequest) {
 
   // 4. SUBDOMAIN ROUTING MAPPER & REDIS LOOKUP
   let targetPathname = pathname;
-  let tenantDataString = '';
-  let tenantId = '';
+  let tenantDataString = "";
+  let tenantId = "";
 
-  if (subdomain === 'app') {
+  if (subdomain === "app") {
     targetPathname = isVercelDomain ? pathname : `/admin-site${pathname}`;
-  } else if (subdomain === 'dashboard') {
+  } else if (subdomain === "dashboard") {
     targetPathname = isVercelDomain ? pathname : `/tenant-manager${pathname}`;
   } else {
     if (!isVercelDomain) {
-      const cleanPath = pathname === '/' ? '' : pathname;
+      const cleanPath = pathname === "/" ? "" : pathname;
       targetPathname = `/client-site/${subdomain}${cleanPath}`;
     }
 
     if (redis) {
       try {
-        const rawTenant: any = await redis.get(`tenant_slug:${subdomain.toLowerCase().trim()}`);
+        const rawTenant: any = await redis.get(
+          `tenant_slug:${subdomain.toLowerCase().trim()}`,
+        );
         if (rawTenant) {
-          const parsedTenant = typeof rawTenant === 'string' ? JSON.parse(rawTenant) : rawTenant;
+          const parsedTenant =
+            typeof rawTenant === "string" ? JSON.parse(rawTenant) : rawTenant;
           if (parsedTenant && parsedTenant.id) {
             tenantId = parsedTenant.id;
-            tenantDataString = typeof rawTenant === 'string' ? rawTenant : JSON.stringify(rawTenant);
+            tenantDataString =
+              typeof rawTenant === "string"
+                ? rawTenant
+                : JSON.stringify(rawTenant);
           }
         }
       } catch (e) {
@@ -114,24 +126,29 @@ export async function proxy(req: NextRequest) {
   }
 
   // 5. SECURITY INTERCEPTOR
-  const isSignInPage = pathname.includes('/signin') || pathname.includes('/signup');
-  const isRegisterPage = pathname.includes('/register');
+  const isSignInPage =
+    pathname.includes("/signin") || pathname.includes("/signup");
+  const isRegisterPage = pathname.includes("/register");
 
-  const isPrivateTenantAdmin = targetPathname.startsWith('/admin-site') && !isSignInPage && !isRegisterPage;
-  const isPrivateAdmin = targetPathname.startsWith('/tenant-manager') && !isSignInPage;
+  const isPrivateTenantAdmin =
+    targetPathname.startsWith("/admin-site") &&
+    !isSignInPage &&
+    !isRegisterPage;
+  const isPrivateAdmin =
+    targetPathname.startsWith("/tenant-manager") && !isSignInPage;
 
   if ((isPrivateTenantAdmin || isPrivateAdmin) && JWT_SECRET) {
     const sessionToken = req.cookies.get("user_session")?.value;
     const managerSessionToken = req.cookies.get("admin_session")?.value;
 
     // Dynamically construct sign-in path depending on domain type
-    let signInPath = '/signin';
+    let signInPath = "/signin";
     if (isVercelDomain) {
-      if (pathSegments[0] === 'admin-site') {
-        signInPath = '/admin-site/signin';
-      } else if (pathSegments[0] === 'tenant-manager') {
-        signInPath = '/tenant-manager/signin';
-      } else if (pathSegments[0] === 'client-site' && pathSegments[1]) {
+      if (pathSegments[0] === "admin-site") {
+        signInPath = "/admin-site/signin";
+      } else if (pathSegments[0] === "tenant-manager") {
+        signInPath = "/tenant-manager/signin";
+      } else if (pathSegments[0] === "client-site" && pathSegments[1]) {
         signInPath = `/client-site/${pathSegments[1]}/signin`;
       }
     }
@@ -147,9 +164,11 @@ export async function proxy(req: NextRequest) {
     try {
       if (isPrivateTenantAdmin && sessionToken) {
         const { payload } = await jose.jwtVerify(sessionToken, JWT_SECRET);
-        const userRole = (payload.accountType || payload.role || "").toString().toLowerCase();
+        const userRole = (payload.accountType || payload.role || "")
+          .toString()
+          .toLowerCase();
 
-        if (!userRole.includes('admin')) {
+        if (!userRole.includes("admin")) {
           return NextResponse.redirect(new URL(signInPath, req.url));
         }
       }
@@ -173,8 +192,8 @@ export async function proxy(req: NextRequest) {
   const requestHeaders = new Headers(req.headers);
 
   if (tenantId) {
-    requestHeaders.set('x-tenant-id', tenantId);
-    requestHeaders.set('x-tenant-data', tenantDataString);
+    requestHeaders.set("x-tenant-id", tenantId);
+    requestHeaders.set("x-tenant-data", tenantDataString);
   }
 
   const response = NextResponse.rewrite(url, {
@@ -184,8 +203,8 @@ export async function proxy(req: NextRequest) {
   });
 
   if (tenantId) {
-    response.headers.set('x-tenant-id', tenantId);
-    response.headers.set('x-tenant-data', tenantDataString);
+    response.headers.set("x-tenant-id", tenantId);
+    response.headers.set("x-tenant-data", tenantDataString);
   }
 
   return response;

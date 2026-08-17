@@ -2,16 +2,16 @@ import LeasingCheck from "@/components/client-components/LeasingCheck";
 import { Metadata } from "next";
 import { createPublicClient } from "@/utils/supabase/server";
 
-
 interface PageProps {
   params: Promise<{
     tenant: string;
   }>;
 }
 
-
 // 1. Dynamic Server-Side Metadata Generation
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const tenantSlug = resolvedParams.tenant;
 
@@ -37,10 +37,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-
 export default function Page() {
-
-  return (
-    <LeasingCheck />
-  );
+  return <LeasingCheck />;
 }

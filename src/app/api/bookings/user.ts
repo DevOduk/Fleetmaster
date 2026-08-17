@@ -1,28 +1,25 @@
 // src/app/api/vehicles/route.ts
-import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+
+import { NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
 
 export async function GET(request: Request) {
   try {
-    
-        const body = await request.json();
+    const body = await request.json();
 
-        const {
-            userID
-        } = body;
+    const { userID } = body;
     const supabase = await createClient();
 
     // Fetch every single row and column from the vehicles table
     const { data, error } = await supabase
-      .from('fleetmaster_bookings')
-      .select('*')
-      .eq('user_id', userID)
-      .maybeSingle()
+      .from("fleetmaster_bookings")
+      .select("*")
+      .eq("user_id", userID)
+      .maybeSingle();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
 
     const bookings = data.map((booking) => ({
       id: booking.id,
@@ -47,6 +44,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json(bookings, { status: 200 });
   } catch (err) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: err.status + "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

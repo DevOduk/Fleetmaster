@@ -1,24 +1,24 @@
 "use client";
-import EditBookingForm from '@/components/bookings/EditBooking';
-import SecondaryHero from '@/components/marketing-components/SecondaryHero';
-import { use } from 'react';
+import EditBookingForm from "@/components/bookings/EditBooking";
+import SecondaryHero from "@/components/marketing-components/SecondaryHero";
+import { use } from "react";
 
 interface VehiclePageProps {
   params: Promise<{ bookingID: string }>;
 }
 
-
 const EditBookingsPage = ({ params }: VehiclePageProps) => {
   const resolvedParams = use(params);
   const bookingID = resolvedParams.bookingID;
-
-
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Bookings", href: "/bookings" },
     { label: "Booking " + bookingID, href: "/bookings/" + bookingID },
-    { label: "Update Booking " + bookingID, href: "/bookings/" + bookingID + '/edit' },
+    {
+      label: "Update Booking " + bookingID,
+      href: "/bookings/" + bookingID + "/edit",
+    },
   ];
 
   return (
@@ -29,7 +29,7 @@ const EditBookingsPage = ({ params }: VehiclePageProps) => {
         highlightedText={"Booking #" + bookingID}
         description="Monitor your fleet performance and track your active rentals."
       />
-      <div className="space-y-6 container mx-auto">
+      <div className="container mx-auto space-y-6">
         <EditBookingForm BookingID={parseInt(bookingID)} />
       </div>
     </main>

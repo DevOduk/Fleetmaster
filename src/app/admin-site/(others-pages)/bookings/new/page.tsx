@@ -2,21 +2,42 @@ import CreateNewBookingForm from "@/components/bookings/CreateBooking";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon } from "@/icons";
-import { Metadata } from "next";
 import Link from "next/link";
+import { Metadata } from "next";
+import { getAdminTenant } from "@/utils/getAdminTenant";
 
-export const metadata: Metadata = {
-  title:
-    "Create New Booking | FleetManager Admin Dashboard - Best tool for Fleet Management",
-  description: "FleetManager is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { tenantData } = await getAdminTenant();
+
+  let title;
+  const tenantName = tenantData?.name;
+  let tenantDescription = tenantData?.about;
+
+  // Fallback to DB query if header data isn't present
+  if (tenantName) {
+    title = `New Booking | ${tenantName}: FleetMaster - Premium Car Rental & Fleet Solutions Software`;
+    tenantDescription =
+      tenantDescription ||
+      `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
+  } else {
+    title = `New Booking | FleetMaster - Premium Car Rental & Fleet Solutions Software`;
+  }
+
+  return {
+    title: title,
+    description: tenantDescription,
+    openGraph: {
+      title: `${tenantName || "FleetMaster"} - Official Admin Website`,
+      description: tenantDescription,
+    },
+  };
+}
 
 export default function NewBooking() {
   return (
     <div>
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
-        <div className="flex gap-3 items-center mb-4">
-
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 lg:p-6 dark:border-gray-800 dark:bg-white/3">
+        <div className="mb-4 flex items-center gap-3">
           <Link href="/bookings" className="mr-2">
             <Button size="sm" variant="danger-outline">
               <ChevronLeftIcon />

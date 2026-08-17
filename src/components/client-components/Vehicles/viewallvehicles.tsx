@@ -8,297 +8,344 @@ import { useEffect, useState } from "react";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import Pagination from "@/components/tables/Pagination";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Link from 'next/link';
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
-import DoNotDisturbAltOutlinedIcon from '@mui/icons-material/DoNotDisturbAltOutlined';
+import Link from "next/link";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
+import DoNotDisturbAltOutlinedIcon from "@mui/icons-material/DoNotDisturbAltOutlined";
 import { useBooking } from "@/context/BookingContext";
 import dayjs from "dayjs";
 import DeliveryBanner from "../DeliveryBanner";
 
 interface Filters {
-    category: string;
-    make: string;
-    model: string;
-    minYear: number;
-    maxYear: number;
-    minPrice: number;
-    maxPrice: number;
-    driverType: string;
-    location: string;
-    start: string;
-    end: string;
+  category: string;
+  make: string;
+  model: string;
+  minYear: number;
+  maxYear: number;
+  minPrice: number;
+  maxPrice: number;
+  driverType: string;
+  location: string;
+  start: string;
+  end: string;
 }
 
 interface ViewAllVehiclesProps {
-    tenant: string;
-    filters: Filters;
-    loading?: boolean;
+  tenant: string;
+  filters: Filters;
+  loading?: boolean;
+  resetFilters: any;
 }
 
-export default function ViewAllVehicles({ tenant, filters, loading = true }: ViewAllVehiclesProps) {
-    const searchParams = useSearchParams();
-    const { vehicles } = useFleet();
-    const { bookings } = useBooking();
-    const router = useRouter();
-    const pathname = usePathname();
+export default function ViewAllVehicles({
+  tenant,
+  filters,
+  loading = true,
+  resetFilters,
+}: ViewAllVehiclesProps) {
+  const searchParams = useSearchParams();
+  const { vehicles } = useFleet();
+  const { bookings } = useBooking();
+  const router = useRouter();
+  const pathname = usePathname();
 
+  console.log("tenant fleet: ", vehicles);
 
-    console.log('tenant fleet: ', vehicles)
+  const [isOpen, setIsOpen] = useState(false);
+  const [sortBy, setSortBy] = useState("Recommended");
+  const [isSorting, setIsSorting] = useState(false);
 
-    const [isOpen, setIsOpen] = useState(false);
-    const [sortBy, setSortBy] = useState('Recommended');
-    const [isSorting, setIsSorting] = useState(false);
+  // Read the current page straight from the URL param (Single source of truth)
+  const urlPage = parseInt(searchParams.get("page") || "1", 10);
 
-    // Read the current page straight from the URL param (Single source of truth)
-    const urlPage = parseInt(searchParams.get("page") || "1", 10);
+  function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    e.stopPropagation();
+    setIsOpen((prev) => !prev);
+  }
 
-    function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-        e.stopPropagation();
-        setIsOpen((prev) => !prev);
-    }
+  function closeDropdown() {
+    setIsOpen(false);
+  }
 
-    function closeDropdown() {
-        setIsOpen(false);
-    }
+  const isShowingLoaders = loading || isSorting;
 
-    const isShowingLoaders = loading || isSorting;
+  // --- 1. FILTER LOGIC ---
+  const filteredVehicles = vehicles.filter((vehicle) => {
+    const matchesLocation =
+      filters.location && filters.location !== "Countrywide"
+        ? vehicle.location === filters.location
+        : true;
 
-    // --- 1. FILTER LOGIC ---
-    const filteredVehicles = vehicles.filter((vehicle) => {
-        const matchesLocation = (filters.location && filters.location !== "Countrywide")
-            ? vehicle.location === filters.location
-            : true;
+    // If driverType filter is set to "All" or not specified, show all. Otherwise, match the type strictly.
+    const matchesDriverType =
+      filters.driverType && filters.driverType !== "All"
+        ? vehicle.driver_type === filters.driverType
+        : true;
 
-        // If driverType filter is set to "All" or not specified, show all. Otherwise, match the type strictly.
-        const matchesDriverType = (filters.driverType && filters.driverType !== "All")
-            ? vehicle.driver_type === filters.driverType
-            : true;
-
-        const matchesCategory = filters.category ? vehicle.category === filters.category : true;
-        const matchesMake = filters.make ? vehicle.make === filters.make : true;
-        const matchesModel = filters.model ? vehicle.model === filters.model : true;
-        const matchesYear = (filters.minYear ? vehicle.year >= filters.minYear : true) &&
-            (filters.maxYear ? vehicle.year <= filters.maxYear : true);
-        const matchesPrice = (filters.minPrice ? vehicle.daily_rate >= filters.minPrice : true) &&
-            (filters.maxPrice ? vehicle.daily_rate <= filters.maxPrice : true);
-
-        return matchesLocation && matchesDriverType && matchesCategory && matchesMake && matchesModel && matchesYear && matchesPrice;
-    });
-
-    // --- 2. SORT LOGIC ---
-    const sortedVehicles = [...filteredVehicles].sort((a, b) => {
-        switch (sortBy) {
-            case 'Price: Low to High':
-                return a.daily_rate - b.daily_rate;
-            case 'Price: High to Low':
-                return b.daily_rate - a.daily_rate;
-            case 'Year: Newest First':
-                return b.year - a.year;
-            case 'Year: Oldest First':
-                return a.year - b.year;
-            default:
-                return 0;
-        }
-    });
-
-    // --- 3. PAGINATION MATH MATRICS ---
-    const itemsPerPage = 12;
-    const totalPages = Math.max(1, Math.ceil(sortedVehicles.length / itemsPerPage));
-
-    // Fallback safeguard to handle bounds correctly if users apply filters that shrink the page footprint
-    const activePage = Math.max(1, Math.min(urlPage, totalPages));
-
-    const indexStart = (activePage - 1) * itemsPerPage;
-    const indexEnd = indexStart + itemsPerPage;
-    const paginatedVehicles = sortedVehicles.slice(indexStart, indexEnd);
-
-    const startIndex = sortedVehicles.length === 0 ? 0 : indexStart + 1;
-    const endIndex = Math.min(activePage * itemsPerPage, sortedVehicles.length);
-
-    // --- 4. ACTION INTERCEPTORS ---
-    const handleSortChange = (option: string) => {
-        closeDropdown();
-        if (option === sortBy) return;
-
-        setIsSorting(true);
-        setTimeout(() => {
-            setSortBy(option);
-            setIsSorting(false);
-        }, 1000);
-    };
-
-    const handlePageChange = (page: number) => {
-        const nextParams = new URLSearchParams(searchParams.toString());
-        if (page > 1) {
-            nextParams.set("page", page.toString());
-        } else {
-            nextParams.delete("page");
-        }
-        router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
-    };
-
-    // --- 5. DEBOUNCED FILTER URL SYNC ---
-    useEffect(() => {
-        const delayDebounceFn = setTimeout(() => {
-            const nextParams = new URLSearchParams(searchParams.toString());
-
-            // Wipe out standard page index offset when new user filters change layout length
-            nextParams.delete("page");
-
-            Object.entries(filters).forEach(([key, value]) => {
-                if (value !== undefined && value !== null && value !== "" && value !== 0) {
-                    nextParams.set(key, value.toString());
-                } else {
-                    nextParams.delete(key);
-                }
-            });
-
-            router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
-        }, 300);
-
-        return () => clearTimeout(delayDebounceFn);
-    }, [filters]);
-
-
-    const bookedDates = (id: number) => {
-        const vehicleBookings = bookings.filter((b) => b.vehicle_id === id);
-
-        return vehicleBookings.flatMap((booking) => {
-            const start = dayjs(booking.rental_start);
-            const end = dayjs(booking.rental_end);
-            const days = [];
-            let current = start;
-
-            while (current.isBefore(end) || current.isSame(end, "day")) {
-                days.push(current.format("YYYY-MM-DD"));
-                current = current.add(1, "day");
-            }
-            return days;
-        });
-    };
-
-    const selectedDates = () => {
-        const start = dayjs(filters.start);
-        const end = dayjs(filters.end);
-
-        let current = start;
-        const days = [];
-
-        while (current.isBefore(end) || current.isSame(end, "day")) {
-            days.push(current.format("YYYY-MM-DD"));
-            current = current.add(1, "day");
-        }
-        return days;
-    };
-    const availableVehicles = vehicles.filter((vehicle) => {
-        // 1. Turn the array into a Set for instant lookup speeds
-        const bookedSet = new Set(bookedDates(vehicle.id));
-        const selected = selectedDates();
-
-        // 2. Instantly check if there's an overlap
-        const isOverlap = selected.some((date) => bookedSet.has(date));
-
-        return !isOverlap;
-    });
-
+    const matchesCategory = filters.category
+      ? vehicle.category === filters.category
+      : true;
+    const matchesMake = filters.make ? vehicle.make === filters.make : true;
+    const matchesModel = filters.model ? vehicle.model === filters.model : true;
+    const matchesYear =
+      (filters.minYear ? vehicle.year >= filters.minYear : true) &&
+      (filters.maxYear ? vehicle.year <= filters.maxYear : true);
+    const matchesPrice =
+      (filters.minPrice ? vehicle.daily_rate >= filters.minPrice : true) &&
+      (filters.maxPrice ? vehicle.daily_rate <= filters.maxPrice : true);
 
     return (
-        <div>
-            <div className="py-3 flex items-center justify-between">
-                {/* Text updates gracefully depending on which action is running */}
-                <h4 className="text-black dark:text-white">
-                    {loading ? "Searching Fleet..." : isSorting ? "Sorting Results..." : `All Results (${sortedVehicles.length})`}
-                </h4>
-
-                <div className="relative">
-                    <button
-                        className="p-2 flex items-center gap-1 text-black dark:text-white m-0 disabled:opacity-50"
-                        onClick={toggleDropdown}
-                        disabled={isShowingLoaders}
-                    >
-                        <SwapVertOutlinedIcon /> Sort ({sortBy})
-                    </button>
-                    <Dropdown
-                        isOpen={isOpen}
-                        onClose={closeDropdown}
-                        className="absolute right-0 mt-2.5 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark z-50"
-                    >
-                        <ul className="flex flex-col gap-1 border-b border-gray-200 dark:border-gray-800">
-                            {['Recommended', 'Price: Low to High', 'Price: High to Low', 'Year: Newest First', 'Year: Oldest First'].map((option) => (
-                                <li key={option}>
-                                    <DropdownItem
-                                        onItemClick={() => handleSortChange(option)}
-                                        tag="a"
-                                        className="flex items-center gap-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300 cursor-pointer"
-                                    >
-                                        {option}
-                                    </DropdownItem>
-                                </li>
-                            ))}
-                        </ul>
-                    </Dropdown>
-                </div>
-            </div>
-
-            <div key={tenant} data-tenant={tenant} className="grid grid-cols-1 xl:grid-cols-3 md:grid-cols-2 gap-3">
-                <DeliveryBanner />
-
-                {isShowingLoaders ? (
-                    Array.from({ length: 6 }).map((_, index) => (
-                        <VehicleSkeleton key={`skeleton-${index}`} />
-                    ))
-                ) : sortedVehicles.slice(startIndex - 1, endIndex).length > 0 ? (
-                    sortedVehicles.slice(startIndex - 1, endIndex).map((VehicleDetails) => (
-                        <VehicleItem
-                            key={VehicleDetails.id || VehicleDetails.licensePlate}
-                            VehicleDetails={VehicleDetails}
-                            isBooked={!availableVehicles?.some(v => v.id === VehicleDetails.id)}
-                            filters={filters}
-                        />
-                    ))
-                ) : (
-                    <div className="flex w-full col-span-full flex-col items-center justify-center min-h-[60vh] p-6 text-center">
-                        {/* Icon with subtle background pulse */}
-                        <div className="relative mb-6">
-                            <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-2xl animate-pulse" />
-                            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                                <DoNotDisturbAltOutlinedIcon color='error' sx={{ fontSize: '3rem' }} />
-                            </div>
-                        </div>
-
-                        {/* Text Content */}
-                        <h1 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
-                            No matches found
-                        </h1>
-                        <p className="mb-8 max-w-sm text-gray-500 dark:text-gray-500 text-sm">
-                            No vehicles matched the selected criteria.
-                        </p>
-
-                        {/* Action Button */}
-                        <Link
-                            href="/vehicles"
-                            className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-blue-700 active:scale-95 shadow-lg shadow-blue-500/25"
-                        >
-                            <ArrowBackOutlinedIcon className="h-4 w-4" />
-                            Reset Filters
-                        </Link>
-                    </div>
-                )}
-            </div>
-
-            {/* Pagination Controls Visibility Rule */}
-            {!isShowingLoaders && (
-                <div className="flex items-center justify-between pb-3 pt-8 border-t border-gray-100 dark:border-gray-800 mt-4">
-                    <span className="dark:text-white text-gray-800 text-sm">
-                        Showing {startIndex} to {endIndex} of {sortedVehicles.length} results
-                    </span>
-                    <Pagination
-                        onPageChange={handlePageChange}
-                        currentPage={activePage}
-                        totalPages={totalPages}
-                    />
-                </div>
-            )}
-        </div>
+      matchesLocation &&
+      matchesDriverType &&
+      matchesCategory &&
+      matchesMake &&
+      matchesModel &&
+      matchesYear &&
+      matchesPrice
     );
+  });
+
+  // --- 2. SORT LOGIC ---
+  const sortedVehicles = [...filteredVehicles].sort((a, b) => {
+    switch (sortBy) {
+      case "Price: Low to High":
+        return a.daily_rate - b.daily_rate;
+      case "Price: High to Low":
+        return b.daily_rate - a.daily_rate;
+      case "Year: Newest First":
+        return b.year - a.year;
+      case "Year: Oldest First":
+        return a.year - b.year;
+      default:
+        return 0;
+    }
+  });
+
+  // --- 3. PAGINATION MATH MATRICS ---
+  const itemsPerPage = 12;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(sortedVehicles.length / itemsPerPage),
+  );
+
+  // Fallback safeguard to handle bounds correctly if users apply filters that shrink the page footprint
+  const activePage = Math.max(1, Math.min(urlPage, totalPages));
+
+  const indexStart = (activePage - 1) * itemsPerPage;
+  const indexEnd = indexStart + itemsPerPage;
+  const paginatedVehicles = sortedVehicles.slice(indexStart, indexEnd);
+
+  const startIndex = sortedVehicles.length === 0 ? 0 : indexStart + 1;
+  const endIndex = Math.min(activePage * itemsPerPage, sortedVehicles.length);
+
+  // --- 4. ACTION INTERCEPTORS ---
+  const handleSortChange = (option: string) => {
+    closeDropdown();
+    if (option === sortBy) return;
+
+    setIsSorting(true);
+    setTimeout(() => {
+      setSortBy(option);
+      setIsSorting(false);
+    }, 1000);
+  };
+
+  const handlePageChange = (page: number) => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (page > 1) {
+      nextParams.set("page", page.toString());
+    } else {
+      nextParams.delete("page");
+    }
+    router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
+  };
+
+  // --- 5. DEBOUNCED FILTER URL SYNC ---
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      const nextParams = new URLSearchParams(searchParams.toString());
+
+      // Wipe out standard page index offset when new user filters change layout length
+      nextParams.delete("page");
+
+      Object.entries(filters).forEach(([key, value]) => {
+        if (
+          value !== undefined &&
+          value !== null &&
+          value !== "" &&
+          value !== 0
+        ) {
+          nextParams.set(key, value.toString());
+        } else {
+          nextParams.delete(key);
+        }
+      });
+
+      router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [filters]);
+
+  const bookedDates = (id: number) => {
+    const vehicleBookings = bookings.filter((b) => b.vehicle_id === id);
+
+    return vehicleBookings.flatMap((booking) => {
+      const start = dayjs(booking.rental_start);
+      const end = dayjs(booking.rental_end);
+      const days = [];
+      let current = start;
+
+      while (current.isBefore(end) || current.isSame(end, "day")) {
+        days.push(current.format("YYYY-MM-DD"));
+        current = current.add(1, "day");
+      }
+      return days;
+    });
+  };
+
+  const selectedDates = () => {
+    const start = dayjs(filters.start);
+    const end = dayjs(filters.end);
+
+    let current = start;
+    const days = [];
+
+    while (current.isBefore(end) || current.isSame(end, "day")) {
+      days.push(current.format("YYYY-MM-DD"));
+      current = current.add(1, "day");
+    }
+    return days;
+  };
+  const availableVehicles = vehicles.filter((vehicle) => {
+    // 1. Turn the array into a Set for instant lookup speeds
+    const bookedSet = new Set(bookedDates(vehicle.id));
+    const selected = selectedDates();
+
+    // 2. Instantly check if there's an overlap
+    const isOverlap = selected.some((date) => bookedSet.has(date));
+
+    return !isOverlap;
+  });
+
+  return (
+    <div>
+      <div className="flex items-center justify-between py-3">
+        {/* Text updates gracefully depending on which action is running */}
+        <h4 className="text-black dark:text-white">
+          {loading
+            ? "Searching Fleet..."
+            : isSorting
+              ? "Sorting Results..."
+              : `All Results (${sortedVehicles.length})`}
+        </h4>
+
+        <div className="relative">
+          <button
+            className="m-0 flex items-center gap-1 p-2 text-black disabled:opacity-50 dark:text-white"
+            onClick={toggleDropdown}
+            disabled={isShowingLoaders}
+          >
+            <SwapVertOutlinedIcon /> Sort ({sortBy})
+          </button>
+          <Dropdown
+            isOpen={isOpen}
+            onClose={closeDropdown}
+            className="shadow-theme-lg dark:bg-gray-dark absolute right-0 z-50 mt-2.5 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-800"
+          >
+            <ul className="flex flex-col gap-1 border-b border-gray-200 dark:border-gray-800">
+              {[
+                "Recommended",
+                "Price: Low to High",
+                "Price: High to Low",
+                "Year: Newest First",
+                "Year: Oldest First",
+              ].map((option) => (
+                <li key={option}>
+                  <DropdownItem
+                    onItemClick={() => handleSortChange(option)}
+                    tag="a"
+                    className="group text-theme-sm flex cursor-pointer items-center gap-3 rounded-lg py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+                  >
+                    {option}
+                  </DropdownItem>
+                </li>
+              ))}
+            </ul>
+          </Dropdown>
+        </div>
+      </div>
+
+      <div
+        key={tenant}
+        data-tenant={tenant}
+        className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
+      >
+        <DeliveryBanner />
+
+        {isShowingLoaders ? (
+          Array.from({ length: 6 }).map((_, index) => (
+            <VehicleSkeleton key={`skeleton-${index}`} />
+          ))
+        ) : sortedVehicles.slice(startIndex - 1, endIndex).length > 0 ? (
+          sortedVehicles
+            .slice(startIndex - 1, endIndex)
+            .map((VehicleDetails) => (
+              <VehicleItem
+                key={VehicleDetails.id || VehicleDetails.licensePlate}
+                VehicleDetails={VehicleDetails}
+                isBooked={
+                  !availableVehicles?.some((v) => v.id === VehicleDetails.id)
+                }
+                filters={filters}
+              />
+            ))
+        ) : (
+          <div className="col-span-full flex min-h-[60vh] w-full flex-col items-center justify-center p-6 text-center">
+            {/* Icon with subtle background pulse */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 animate-pulse rounded-full bg-blue-500/20 blur-2xl" />
+              <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                <DoNotDisturbAltOutlinedIcon
+                  color="error"
+                  sx={{ fontSize: "3rem" }}
+                />
+              </div>
+            </div>
+
+            {/* Text Content */}
+            <h1 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
+              No matches found
+            </h1>
+            <p className="mb-8 max-w-sm text-sm text-gray-500 dark:text-gray-500">
+              No vehicles matched the selected criteria.
+            </p>
+
+            {/* Action Button */}
+            <button
+              onClick={resetFilters}
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-700 active:scale-95"
+            >
+              <ArrowBackOutlinedIcon className="h-4 w-4" />
+              Reset Filters
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination Controls Visibility Rule */}
+      {!isShowingLoaders && (
+        <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-8 pb-3 dark:border-gray-800">
+          <span className="text-sm text-gray-800 dark:text-white">
+            Showing {startIndex} to {endIndex} of {sortedVehicles.length}{" "}
+            results
+          </span>
+          <Pagination
+            onPageChange={handlePageChange}
+            currentPage={activePage}
+            totalPages={totalPages}
+          />
+        </div>
+      )}
+    </div>
+  );
 }

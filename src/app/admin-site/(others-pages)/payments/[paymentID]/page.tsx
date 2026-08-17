@@ -12,7 +12,11 @@ export const metadata: Metadata = {
   // description: "FleetManager is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
 };
 
-export default async function ViewExpense({ params }: { params: Promise<{ paymentID: string }> }) {
+export default async function ViewExpense({
+  params,
+}: {
+  params: Promise<{ paymentID: string }>;
+}) {
   const { paymentID } = await params;
   let payment = null;
   const res = await fetchPaymentDetails(paymentID);
@@ -23,9 +27,8 @@ export default async function ViewExpense({ params }: { params: Promise<{ paymen
 
   return (
     <div>
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
-        <div className="flex gap-3 items-center mb-4">
-
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 lg:p-6 dark:border-gray-800 dark:bg-white/3">
+        <div className="mb-4 flex items-center gap-3">
           <Link href="/payments" className="mr-2">
             <Button size="sm" variant="danger-outline">
               <ChevronLeftIcon />

@@ -3,7 +3,13 @@ import React, { useState } from "react";
 import ComponentCard from "../../common/ComponentCard";
 import Button from "../../ui/button/Button";
 
-type Position = "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
+type Position =
+  | "top-left"
+  | "top-center"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right";
 type Size = "small" | "medium" | "large";
 
 interface PopupPosition {
@@ -16,7 +22,7 @@ interface PopupPosition {
 
 const getPositionStyles = (position: Position): PopupPosition => {
   const baseSpacing = "20px";
-  
+
   switch (position) {
     case "top-left":
       return { top: baseSpacing, left: baseSpacing };
@@ -27,7 +33,11 @@ const getPositionStyles = (position: Position): PopupPosition => {
     case "bottom-left":
       return { bottom: baseSpacing, left: baseSpacing };
     case "bottom-center":
-      return { bottom: baseSpacing, left: "50%", transform: "translateX(-50%)" };
+      return {
+        bottom: baseSpacing,
+        left: "50%",
+        transform: "translateX(-50%)",
+      };
     case "bottom-right":
       return { bottom: baseSpacing, right: baseSpacing };
     default:
@@ -80,10 +90,10 @@ export default function InteractiveAlertPopup() {
                 <button
                   key={sizeOption}
                   onClick={() => handleSizeChange(sizeOption)}
-                  className={`px-4 py-2 rounded-lg font-medium transition capitalize ${
+                  className={`rounded-lg px-4 py-2 font-medium capitalize transition ${
                     size === sizeOption
-                      ? "bg-brand-500 text-white shadow-theme-xs"
-                      : "bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+                      ? "bg-brand-500 shadow-theme-xs text-white"
+                      : "border border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                   }`}
                 >
                   {sizeOption}
@@ -102,19 +112,19 @@ export default function InteractiveAlertPopup() {
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => handlePositionClick("top-left")}
-                  className="px-4 py-2 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 transition shadow-theme-xs"
+                  className="bg-brand-500 hover:bg-brand-600 shadow-theme-xs rounded-lg px-4 py-2 font-medium text-white transition"
                 >
                   Top Left
                 </button>
                 <button
                   onClick={() => handlePositionClick("top-center")}
-                  className="px-4 py-2 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 transition shadow-theme-xs"
+                  className="bg-brand-500 hover:bg-brand-600 shadow-theme-xs rounded-lg px-4 py-2 font-medium text-white transition"
                 >
                   Top Center
                 </button>
                 <button
                   onClick={() => handlePositionClick("top-right")}
-                  className="px-4 py-2 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 transition shadow-theme-xs"
+                  className="bg-brand-500 hover:bg-brand-600 shadow-theme-xs rounded-lg px-4 py-2 font-medium text-white transition"
                 >
                   Top Right
                 </button>
@@ -124,19 +134,19 @@ export default function InteractiveAlertPopup() {
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => handlePositionClick("bottom-left")}
-                  className="px-4 py-2 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 transition shadow-theme-xs"
+                  className="bg-brand-500 hover:bg-brand-600 shadow-theme-xs rounded-lg px-4 py-2 font-medium text-white transition"
                 >
                   Bottom Left
                 </button>
                 <button
                   onClick={() => handlePositionClick("bottom-center")}
-                  className="px-4 py-2 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 transition shadow-theme-xs"
+                  className="bg-brand-500 hover:bg-brand-600 shadow-theme-xs rounded-lg px-4 py-2 font-medium text-white transition"
                 >
                   Bottom Center
                 </button>
                 <button
                   onClick={() => handlePositionClick("bottom-right")}
-                  className="px-4 py-2 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 transition shadow-theme-xs"
+                  className="bg-brand-500 hover:bg-brand-600 shadow-theme-xs rounded-lg px-4 py-2 font-medium text-white transition"
                 >
                   Bottom Right
                 </button>
@@ -145,12 +155,14 @@ export default function InteractiveAlertPopup() {
           </div>
 
           {/* Preview Area */}
-          <div className="relative mt-8 min-h-96 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-600 overflow-hidden">
+          <div className="relative mt-8 min-h-96 overflow-hidden rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
             <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-gray-500 dark:text-gray-400 text-center">
+              <p className="text-center text-gray-500 dark:text-gray-400">
                 Popup Preview Area
                 <br />
-                <span className="text-xs">Current: {size} size at {position}</span>
+                <span className="text-xs">
+                  Current: {size} size at {position}
+                </span>
               </p>
             </div>
 
@@ -212,7 +224,8 @@ export default function InteractiveAlertPopup() {
                   </div>
                   <div className="pt-3">
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Your action was completed successfully. This popup will automatically close in a few seconds.
+                      Your action was completed successfully. This popup will
+                      automatically close in a few seconds.
                     </p>
                   </div>
                 </div>
@@ -223,7 +236,8 @@ export default function InteractiveAlertPopup() {
           {/* Current Settings Display */}
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              <span className="font-semibold">Current Settings:</span> {size} size popup at {position}
+              <span className="font-semibold">Current Settings:</span> {size}{" "}
+              size popup at {position}
             </p>
           </div>
         </div>

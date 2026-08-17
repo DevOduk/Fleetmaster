@@ -12,8 +12,6 @@ import { Avatar, CircularProgress } from "@mui/material";
 import "leaflet/dist/leaflet.css";
 import Pagination from "../tables/Pagination";
 import Link from "next/link";
-import Button from "../ui/button/Button";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowRightIcon, PlusIcon } from "@/icons";
 import { getExpiryString } from "../company-profile/ExpiryBanner";
@@ -45,7 +43,9 @@ interface SystemUsersProps {
 
 // 2. Fixed the parameter mapping here
 const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
-  const isDarkMode = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
+  const isDarkMode =
+    typeof window !== "undefined" &&
+    document.documentElement.classList.contains("dark");
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -85,7 +85,10 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
 
   // --- 3. PAGINATION MATH MATRICS ---
   const itemsPerPage = 10;
-  const totalPages = Math.max(1, Math.ceil(initialTenants.length / itemsPerPage));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(initialTenants.length / itemsPerPage),
+  );
 
   // Fallback safeguard to handle bounds correctly if users apply filters that shrink the page footprint
   const activePage = Math.max(1, Math.min(urlPage, totalPages));
@@ -96,7 +99,6 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
 
   const startIndex = initialTenants.length === 0 ? 0 : indexStart + 1;
   const endIndex = Math.min(activePage * itemsPerPage, initialTenants.length);
-
 
   const handlePageChange = (page: number) => {
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -111,64 +113,99 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
   return (
     <div>
       <div className="space-y-6">
-        <div className="flex justify-between py-3 items-center">
+        <div className="flex items-center justify-between py-3">
           <div>
-            <p className="font-medium text-gray-800 mb-2 text-theme-sm dark:text-white/90">
-              View all system users and manage them. Click Create New User to add a new user with admin rights.
+            <p className="text-theme-sm mb-2 font-medium text-gray-800 dark:text-white/90">
+              View all system users and manage them. Click Create New User to
+              add a new user with admin rights.
             </p>
-            <span className="text-gray-500 text-start text-theme-sm dark:text-gray-400">
+            <span className="text-theme-sm text-start text-gray-500 dark:text-gray-400">
               {initialTenants.length} Tenants
             </span>
           </div>
           <Link target="_blank" href="/register">
-            <button
-              className="flex text-nowrap items-center justify-center p-2 px-4 font-medium text-white rounded-lg bg-green-600 border border-green-600 text-theme-sm hover:bg-green-700"
-            >
+            <button className="text-theme-sm flex items-center justify-center rounded-lg border border-green-600 bg-green-600 p-2 px-4 font-medium text-nowrap text-white hover:bg-green-700">
               New Tenant <PlusIcon />
             </button>
           </Link>
         </div>
 
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
-          <div className="max-w-full overflow-x-auto custom-scrollbar">
+          <div className="custom-scrollbar max-w-full overflow-x-auto">
             <Table>
               {/* Table Header */}
               <TableHeader className="border-b border-gray-100 dark:border-white/5">
                 <TableRow>
-                  <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                  >
                     Tenant Information
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                  >
                     About
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                  >
                     Sub-Domain
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                  >
                     Email
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                  >
                     Phone
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                  >
                     Yards
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                  >
                     Admins
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                  >
                     Date Created
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                  >
                     Plan
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                  >
                     Status
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 text-nowrap font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                  >
                     Expiry Date
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                  >
                     Action
                   </TableCell>
                 </TableRow>
@@ -178,89 +215,120 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
               <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
-                      <div className="flex flex-col py-4 items-center justify-center gap-3 w-full text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell
+                      colSpan={7}
+                      className="border-b border-gray-200 px-5 py-4 dark:border-gray-800"
+                    >
+                      <div className="text-theme-sm flex w-full flex-col items-center justify-center gap-3 py-4 text-gray-500 dark:text-gray-400">
                         <CircularProgress color="secondary" size="small" />
                         <span>Loading tenants...</span>
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  // 3. Loop through your live initialTenants data dynamically
-                  initialTenants.slice(startIndex - 1, endIndex).length > 0 ? initialTenants.slice(startIndex - 1, endIndex).map((tenant, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="px-5 py-4 sm:px-6 text-start">
-                        <div className="flex items-center gap-3 min-w-45">
-                          <Avatar
-                            className="w-25 border object-fit-cover object-center"
-                            style={{ objectFit: 'cover', objectPosition: 'center' }}
-                            src={tenant.tenant_logo || undefined}
-                          />
-                          <div>
-                            <span className="block font-medium uppercase text-gray-800 text-theme-sm dark:text-white/90">
-                              {tenant.slug || "N/A"}
-                            </span>
-                            <span className="block text-gray-500 text-theme-xs text-nowrap pt-2 dark:text-gray-400">
-                              {tenant.name}
-                            </span>
+                ) : // 3. Loop through your live initialTenants data dynamically
+                initialTenants.slice(startIndex - 1, endIndex).length > 0 ? (
+                  initialTenants
+                    .slice(startIndex - 1, endIndex)
+                    .map((tenant, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="px-5 py-4 text-start sm:px-6">
+                          <div className="flex min-w-45 items-center gap-3">
+                            <Avatar
+                              className="object-fit-cover w-25 border object-center"
+                              style={{
+                                objectFit: "cover",
+                                objectPosition: "center",
+                              }}
+                              src={tenant.tenant_logo || undefined}
+                            />
+                            <div>
+                              <span className="text-theme-sm block font-medium text-gray-800 uppercase dark:text-white/90">
+                                {tenant.slug || "N/A"}
+                              </span>
+                              <span className="text-theme-xs block pt-2 text-nowrap text-gray-500 dark:text-gray-400">
+                                {tenant.name}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400 max-w-90 min-w-45 truncate">
-                        {tenant.about || "No bio available"}
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        {tenant.slug ? (
-                          <a target="_blank" className="text-brand-500 hover:underline text-sm" href={`https://${tenant.slug}.fleetmaster.co.ke`}>
-                            [ Open ]
-                          </a>
-                        ) : (
-                          <span>—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        {tenant.email ? (
-                          <a className="text-brand-500 hover:underline" href={`mailto:${tenant.email}`}>
-                            {tenant.email}
-                          </a>
-                        ) : (
-                          <span>—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        {tenant.phone || "—"}
-                      </TableCell>
-                      <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        {tenant.yards?.length || 0}
-                      </TableCell>
-                      <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        {(tenant.admins?.length || 0)} {(tenant.admins?.length || 0) === 1 ? 'admin' : 'admins'}
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
-                        {tenant.created_at ? new Date(tenant.created_at).toLocaleString() : "—"}
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
-                        {tenant.subscription_plan}
-                      </TableCell>
-                      <TableCell className="px-4 text-nowrap py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        <Badge variant='light' color={tenant.subscription_status === 'Active' ? 'success' : tenant.subscription_status === 'Not Active' ? 'error' : 'warning'}>
-                          {tenant.subscription_status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
-                        {tenant.expiry_date ? getExpiryString(tenant.expiry_date) : "—"}
-                      </TableCell>
-                      <TableCell className="px-4 flex gap-3 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        <Link href={`/tenants/${tenant.id}`}>
-                          <button
-                            className="flex text-nowrap items-center justify-center p-2 px-4 font-medium text-white rounded-lg bg-brand-500 border border-brand-500 text-theme-sm hover:bg-brand-600"
+                        </TableCell>
+                        <TableCell className="text-theme-sm max-w-90 min-w-45 truncate px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                          {tenant.about || "No bio available"}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                          {tenant.slug ? (
+                            <a
+                              target="_blank"
+                              className="text-brand-500 text-sm hover:underline"
+                              href={`https://${tenant.slug}.fleetmaster.co.ke`}
+                            >
+                              [ Open ]
+                            </a>
+                          ) : (
+                            <span>—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                          {tenant.email ? (
+                            <a
+                              className="text-brand-500 hover:underline"
+                              href={`mailto:${tenant.email}`}
+                            >
+                              {tenant.email}
+                            </a>
+                          ) : (
+                            <span>—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                          {tenant.phone || "—"}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                          {tenant.yards?.length || 0}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                          {tenant.admins?.length || 0}{" "}
+                          {(tenant.admins?.length || 0) === 1
+                            ? "admin"
+                            : "admins"}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
+                          {tenant.created_at
+                            ? new Date(tenant.created_at).toLocaleString()
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
+                          {tenant.subscription_plan}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                          <Badge
+                            variant="light"
+                            color={
+                              tenant.subscription_status === "Active"
+                                ? "success"
+                                : tenant.subscription_status === "Not Active"
+                                  ? "error"
+                                  : "warning"
+                            }
                           >
-                            View Tenant <ArrowRightIcon />
-                          </button>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  )) : <>There was a problem with the page oyu requested!</>
+                            {tenant.subscription_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
+                          {tenant.expiry_date
+                            ? getExpiryString(tenant.expiry_date)
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="text-theme-sm flex gap-3 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                          <Link href={`/tenants/${tenant.id}`}>
+                            <button className="bg-brand-500 border-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg border p-2 px-4 font-medium text-nowrap text-white">
+                              View <ArrowRightIcon />
+                            </button>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                ) : (
+                  <>There was a problem with the page oyu requested!</>
                 )}
               </TableBody>
             </Table>
@@ -269,9 +337,10 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
 
         {/* Pagination Controls Visibility Rule */}
         {!loading && (
-          <div className="flex items-center justify-between pb-3 pt-8 border-t border-gray-100 dark:border-gray-800 mt-4">
-            <span className="dark:text-white text-gray-800 text-sm">
-              Showing {startIndex} to {endIndex} of {initialTenants.length} results
+          <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-8 pb-3 dark:border-gray-800">
+            <span className="text-sm text-gray-800 dark:text-white">
+              Showing {startIndex} to {endIndex} of {initialTenants.length}{" "}
+              results
             </span>
             <Pagination
               onPageChange={handlePageChange}

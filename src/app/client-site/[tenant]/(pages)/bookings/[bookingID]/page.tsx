@@ -1,25 +1,20 @@
-"use client";
-
-import ViewBooking from '@/components/bookings/ViewBooking';
-import SecondaryHero from '@/components/marketing-components/SecondaryHero';
-import { use } from 'react';
+import ViewBooking from "@/components/bookings/ViewBooking";
+import SecondaryHero from "@/components/marketing-components/SecondaryHero";
+import { use } from "react";
 
 interface VehiclePageProps {
   params: Promise<{ bookingID: string }>;
 }
 
-
 const VehiclePage = async ({ params }: VehiclePageProps) => {
-  const resolvedParams = use(params);
+  const resolvedParams = await (params);
   const bookingID = resolvedParams.bookingID;
 
   const pages = [
-    { label: 'Home', href: '/' },
-    { label: 'My Bookings', href: '/bookings' },
-    { label: 'Booking #' + bookingID, href: '/bookings/' + bookingID }
+    { label: "Home", href: "/" },
+    { label: "My Bookings", href: "/bookings" },
+    { label: "Booking #" + bookingID, href: "/bookings/" + bookingID },
   ];
-
-
 
   return (
     <main className="space-y-7">
@@ -31,7 +26,6 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
       />
 
       <ViewBooking BookingID={Number(bookingID)} />
-
     </main>
   );
 };

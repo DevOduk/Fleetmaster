@@ -5,16 +5,16 @@ import SignInForm from "@/components/auth/SignInForm";
 import { Metadata } from "next";
 import { createPublicClient } from "@/utils/supabase/server";
 
-
 interface PageProps {
   params: Promise<{
     tenant: string;
   }>;
 }
 
-
 // 1. Dynamic Server-Side Metadata Generation
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const tenantSlug = resolvedParams.tenant;
 
@@ -40,10 +40,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function SignIn({ 
-  params 
-}: { 
-  params: Promise<{ tenant: string }> 
+export default async function SignIn({
+  params,
+}: {
+  params: Promise<{ tenant: string }>;
 }) {
   const resolvedParams = await params;
   let tenant = resolvedParams.tenant;
@@ -53,7 +53,7 @@ export default async function SignIn({
     const host = headersList.get("host") || "";
     const parts = host.split(".");
     if (parts.length > 2) {
-       tenant = parts[0];
+      tenant = parts[0];
     }
   }
 

@@ -1,32 +1,31 @@
-import React from 'react'
-import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined"
-import Link from 'next/link';
-
+import React from "react";
+import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined";
+import Link from "next/link";
 
 interface Pages {
-    label: string;
-    href: string;
+  label: string;
+  href: string;
 }
 
 interface SecondaryHeroProps {
-    title: string;
-    highlightedText?: string;
-    description?: string;
-    pages?: Pages[];
-    children?: React.ReactNode;
+  title: string;
+  highlightedText?: string;
+  description?: string;
+  pages?: Pages[];
+  children?: React.ReactNode;
 }
 
 export default function SecondaryHero({
-    title,
-    highlightedText,
-    description,
-    pages,
-    children
+  title,
+  highlightedText,
+  description,
+  pages,
+  children,
 }: SecondaryHeroProps) {
-    return (
-        <div className='hero select-none bg-gray-200 dark:bg-gray-950 relative overflow-hidden mb-5'>
-            {/* Background Masked Image */}
-            {/* <div
+  return (
+    <div className="hero relative mb-5 overflow-hidden bg-gray-200 select-none dark:bg-gray-950">
+      {/* Background Masked Image */}
+      {/* <div
                 className="absolute top-0 right-0 w-full h-full bg-cover bg-right lg:bg-center opacity-40 lg:opacity-100 mix-blend-multiply lg:mix-blend-normal pointer-events-none"
                 style={{
                     backgroundImage: `url('/images/product/BMW-MY26-X6-cosy-1-extended.jpg')`,
@@ -35,53 +34,58 @@ export default function SecondaryHero({
                 }}
             /> */}
 
-            {/* Content Area */}
-            <main className="max-w-7xl relative mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
-                <div className="max-w-3xl space-y-4">
-                    {pages && (
-                        <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest">
-                            {pages.map((page, index) => {
-                                const isLast = index === pages.length - 1;
-                                return (
-                                    <React.Fragment key={index}>
-                                        {index > 0 && <span className="text-gray-400 dark:text-gray-600"><KeyboardArrowRightOutlinedIcon fontSize='small' /></span>}
-                                        {isLast ? (
-                                            <span className="text-gray-400 dark:text-gray-400 cursor-default">
-                                                {page.label}
-                                            </span>
-                                        ) : (
-                                            <Link href={page.href} className="text-amber-500 hover:text-amber-600 transition-colors">
-                                                {page.label}
-                                            </Link>
-                                        )}
-                                    </React.Fragment>
-                                );
-                            })}
-                        </div>
+      {/* Content Area */}
+      <main className="relative mx-auto max-w-7xl px-4 pt-16 pb-10 sm:px-6 lg:px-8">
+        <div className="max-w-3xl space-y-4">
+          {pages && (
+            <div className="flex items-center gap-1 text-[10px] font-bold tracking-widest uppercase">
+              {pages.map((page, index) => {
+                const isLast = index === pages.length - 1;
+                return (
+                  <React.Fragment key={index}>
+                    {index > 0 && (
+                      <span className="text-gray-400 dark:text-gray-600">
+                        <KeyboardArrowRightOutlinedIcon fontSize="small" />
+                      </span>
                     )}
-
-                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight leading-[1.1] text-black dark:text-white mb-3">
-                        {title}{" "}
-                        {highlightedText && (
-                            <span className="bg-linear-to-r from-brand-500 to-indigo-500 bg-clip-text text-transparent">
-                                {highlightedText}
-                            </span>
-                        )}
-                    </h1>
-
-                    {description && (
-                        <p className="text-small text-gray-600 dark:text-gray-500 font-normal leading-relaxed max-w-2xl">
-                            {description}
-                        </p>
+                    {isLast ? (
+                      <span className="cursor-default text-gray-400 dark:text-gray-400">
+                        {page.label}
+                      </span>
+                    ) : (
+                      <Link
+                        href={page.href}
+                        className="text-amber-500 transition-colors hover:text-amber-600"
+                      >
+                        {page.label}
+                      </Link>
                     )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          )}
 
-                    {children && (
-                        <div className="flex items-center gap-4">
-                            {children}
-                        </div>
-                    )}
-                </div>
-            </main>
+          <h1 className="mb-3 text-2xl leading-[1.1] font-bold tracking-tight text-black sm:text-3xl dark:text-white">
+            {title}{" "}
+            {highlightedText && (
+              <span className="from-brand-500 bg-linear-to-r to-indigo-500 bg-clip-text text-transparent">
+                {highlightedText}
+              </span>
+            )}
+          </h1>
+
+          {description && (
+            <p className="text-small max-w-2xl leading-relaxed font-normal text-gray-600 dark:text-gray-500">
+              {description}
+            </p>
+          )}
+
+          {children && (
+            <div className="flex items-center gap-4">{children}</div>
+          )}
         </div>
-    )
+      </main>
+    </div>
+  );
 }

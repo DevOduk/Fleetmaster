@@ -2,27 +2,50 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import EditCompanyInfoCard from "@/components/company-profile/EditCompanyInfoCard";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon } from "@/icons";
-import { Metadata } from "next";
 import Link from "next/link";
+import { Metadata } from "next";
+import { getAdminTenant } from "@/utils/getAdminTenant";
 
-export const metadata: Metadata = {
-  title:
-    "Edit Company Profile | FleetMaster Admin Dashboard - Best tool for Fleet Management",
-  description: "FleetMaster is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { tenantData } = await getAdminTenant();
+
+  let title;
+  const tenantName = tenantData?.name;
+  let tenantDescription = tenantData?.about;
+
+  // Fallback to DB query if header data isn't present
+  if (tenantName) {
+    title = `Update Company Profile | ${tenantName}: FleetMaster - Premium Car Rental & Fleet Solutions Software`;
+    tenantDescription =
+      tenantDescription ||
+      `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
+  } else {
+    title = `Update Company Profile | FleetMaster - Premium Car Rental & Fleet Solutions Software`;
+  }
+
+  return {
+    title: title,
+    description: tenantDescription,
+    openGraph: {
+      title: `${tenantName || "FleetMaster"} - Official Admin Website`,
+      description: tenantDescription,
+    },
+  };
+}
 
 export default function Profile() {
   return (
     <div>
-      <PageBreadcrumb items={
-        [
+      <PageBreadcrumb
+        items={[
           {
-            label: 'Company Profile',
-            href: '/company-profile'
-          }
-        ]
-      } pageTitle="Edit Company Profile" />
-      <div className="flex gap-3 items-center mb-6 ">
+            label: "Company Profile",
+            href: "/company-profile",
+          },
+        ]}
+        pageTitle="Edit Company Profile"
+      />
+      <div className="mb-6 flex items-center gap-3">
         <Link href="/company-profile" className="mr-2">
           <Button size="sm" variant="danger-outline">
             <ChevronLeftIcon />

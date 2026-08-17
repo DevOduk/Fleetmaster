@@ -1,4 +1,4 @@
-// admin-site/(other-pages)/layout 
+// admin-site/(other-pages)/layout
 "use client";
 
 import React, { useEffect } from "react";
@@ -8,7 +8,7 @@ import AppHeader from "@/layout/(admin-layout)/AppHeader";
 import AppSidebar from "@/layout/(admin-layout)/AppSidebar";
 import Backdrop from "@/layout/(admin-layout)/Backdrop";
 import AppFooter from "@/layout/(admin-layout)/AppFooter";
-import { Toaster } from 'sonner';
+import { Toaster } from "sonner";
 import { useSettings } from "@/context/SettingsContext";
 import { useUser } from "@/context/UserContext";
 import CompanySubscriptionsCard from "@/components/company-profile/CompanySubscriptionsCard";
@@ -48,27 +48,30 @@ export default function OthersPagesLayout({
     }
 
     // C. Production Custom Domain Multi-tenant Fallback Layout (e.g., app.fleetmaster.co.ke)
-    if (!hostname.startsWith("app.") && !hostname.startsWith("dashboard.") && hostname !== "localhost") {
+    if (
+      !hostname.startsWith("app.") &&
+      !hostname.startsWith("dashboard.") &&
+      hostname !== "localhost"
+    ) {
       window.location.href = `${protocol}//app.${hostname}${port}/signin`;
       return;
     }
     // Standard absolute fallback string execution path
-    router.replace('/signin');
+    router.replace("/signin");
   };
 
   useEffect(() => {
     if (loading) return;
-    if (window.location.href.includes('/register')) return;
+    if (window.location.href.includes("/register")) return;
 
     if (!profile) {
       executeAbsoluteAuthRedirect();
     }
   }, [profile, router, loading]);
 
-
   if (loading) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-50 transition-colors duration-200 dark:bg-gray-900">
         <span className="loader-custom"></span>
       </div>
     );
@@ -79,8 +82,8 @@ export default function OthersPagesLayout({
   if (!profile) {
     return null;
   }
-  if (profile?.role === 'Client') {
-    router.replace('/signin');
+  if (profile?.role === "Client") {
+    router.replace("/signin");
     return null;
   }
 
@@ -101,15 +104,19 @@ export default function OthersPagesLayout({
         <Backdrop />
 
         {/* Main Content Area */}
-        <div className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
+        <div
+          className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}
+        >
           {/* Header */}
           <AppHeader />
 
           {/* Page Content */}
-          <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
-            {
-              profile?.fleetmaster_tenants?.subscription_status === 'Expired' ? <CompanySubscriptionsCard /> : (children)
-            }
+          <div className="mx-auto max-w-(--breakpoint-2xl) p-4 md:p-6">
+            {profile?.fleetmaster_tenants?.subscription_status === "Expired" ? (
+              <CompanySubscriptionsCard />
+            ) : (
+              children
+            )}
           </div>
 
           {/* Footer */}

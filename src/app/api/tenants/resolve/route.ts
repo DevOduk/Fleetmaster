@@ -10,7 +10,7 @@ const RESERVED_SLUGS = new Set([
   "tenant-manager",
   "api",
   "fleetmaster-lemon",
-  "localhost"
+  "localhost",
 ]);
 
 export async function GET(request: Request) {
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     if (!targetSlug || RESERVED_SLUGS.has(targetSlug)) {
       return NextResponse.json(
         { error: "Invalid or reserved tenant workspace slug", tenant: null },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -55,8 +55,11 @@ export async function GET(request: Request) {
 
     if (!tenant) {
       return NextResponse.json(
-        { error: `Requested fleet tenant workspace '${targetSlug}' does not exist`, tenant: null },
-        { status: 404 }
+        {
+          error: `Requested fleet tenant workspace '${targetSlug}' does not exist`,
+          tenant: null,
+        },
+        { status: 404 },
       );
     }
 
@@ -70,14 +73,13 @@ export async function GET(request: Request) {
         headers: {
           "Cache-Control": "public, s-maxage=300, stale-while-revalidate=59",
         },
-      }
+      },
     );
-
   } catch (err) {
     console.error("Tenant resolution endpoint crash:", err);
     return NextResponse.json(
       { error: "Internal Server Error", tenant: null },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

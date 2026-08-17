@@ -1,12 +1,13 @@
 import { createPublicClient } from "@/utils/supabase/server";
 import { Redis } from "@upstash/redis";
 
-const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-  : null;
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
 
 const CACHE_TTL_SECONDS = 60 * 60 * 24; // 24 Hours
 
@@ -20,7 +21,9 @@ export async function getCachedTenant(slug: string) {
     try {
       const cachedTenant = await redis.get(redisKey);
       if (cachedTenant) {
-        return typeof cachedTenant === "string" ? JSON.parse(cachedTenant) : cachedTenant;
+        return typeof cachedTenant === "string"
+          ? JSON.parse(cachedTenant)
+          : cachedTenant;
       }
     } catch (err) {
       console.error("Redis fetch error in getCachedTenant:", err);
@@ -32,7 +35,7 @@ export async function getCachedTenant(slug: string) {
     const supabase = createPublicClient();
     const { data: tenant, error } = await supabase
       .from("fleetmaster_tenants")
-      .select("*")
+      .select(`*, admins:fleetmaster_admins(*), yards:fleetmaster_yards(*)`)
       .eq("slug", normalizedSlug)
       .eq("subscription_status", "Active")
       .maybeSingle();
@@ -44,9 +47,13 @@ export async function getCachedTenant(slug: string) {
     // 3. WRITE BACK TO REDIS SO PROXY / ROUTE CAN FIND IT INSTANTLY
     if (redis) {
       try {
-        await redis.set(redisKey, JSON.stringify(tenant), { ex: CACHE_TTL_SECONDS });
+        await redis.set(redisKey, JSON.stringify(tenant), {
+          ex: CACHE_TTL_SECONDS,
+        });
         if (tenant.id) {
-          await redis.set(`tenant_id:${tenant.id}`, JSON.stringify(tenant), { ex: CACHE_TTL_SECONDS });
+          await redis.set(`tenant_id:${tenant.id}`, JSON.stringify(tenant), {
+            ex: CACHE_TTL_SECONDS,
+          });
         }
       } catch (err) {
         console.error("Redis set error in getCachedTenant:", err);

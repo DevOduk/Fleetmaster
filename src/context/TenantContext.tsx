@@ -16,7 +16,10 @@ interface TenantProviderProps {
   initialTenant?: any | null;
 }
 
-export function TenantProvider({ children, initialTenant = null }: TenantProviderProps) {
+export function TenantProvider({
+  children,
+  initialTenant = null,
+}: TenantProviderProps) {
   const [tenant, setTenant] = useState<any | null>(initialTenant);
   const [loading, setLoading] = useState(!initialTenant);
   const [error, setError] = useState<string | null>(null);

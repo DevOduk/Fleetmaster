@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 
 const VectorMap = dynamic(
   () => import("@react-jvectormap/core").then((mod) => mod.VectorMap),
-  { ssr: false }
+  { ssr: false },
 );
 
 // Define the component props
@@ -48,7 +48,7 @@ const style = {
 const CountryMap: React.FC<CountryMapProps> = ({ mapColor, countries }) => {
   return (
     <VectorMap
-    key={JSON.stringify(countries)}
+      key={JSON.stringify(countries)}
       map={worldMill}
       backgroundColor="transparent"
       markerStyle={
@@ -65,7 +65,7 @@ const CountryMap: React.FC<CountryMapProps> = ({ mapColor, countries }) => {
           return {
             ...country,
             style: style,
-          }
+          };
         }) as Marker[]
         // [
         //   {

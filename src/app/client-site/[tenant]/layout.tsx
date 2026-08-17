@@ -6,9 +6,5 @@ export default function TenantRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="tenant-root-wrapper">
-      {children}
-    </div>
-  );
+  return <div className="tenant-root-wrapper">{children}</div>;
 }

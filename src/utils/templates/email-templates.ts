@@ -1,5 +1,5 @@
 export function WelcomeEmail(displayName: string) {
-  const appUrl = 'http://app.localhost:3000';
+  const appUrl = "http://app.localhost:3000";
   return `
     <div style="font-family: sans-serif; padding: 24px; max-width: 480px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
       <h2 style="color: #0f172a; margin-bottom: 16px;">Welcome to FleetMaster, ${displayName}!</h2>
@@ -64,7 +64,10 @@ export function EmailChangeNotification(displayName: string) {
     `;
 }
 
-export function VerifyEmailNotification(otp: string, otpValidityMinutes: number) {
+export function VerifyEmailNotification(
+  otp: string,
+  otpValidityMinutes: number,
+) {
   return `
         <div style="font-family: sans-serif; padding: 24px; max-width: 480px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
           <h2 style="color: #0f172a; margin-bottom: 16px;">Verify your identity</h2>
@@ -76,4 +79,3 @@ export function VerifyEmailNotification(otp: string, otpValidityMinutes: number)
         </div>
       `;
 }
-

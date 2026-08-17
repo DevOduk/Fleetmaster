@@ -21,7 +21,10 @@ export async function GET() {
     try {
       decoded = jwt.verify(sessionCookie.value, JWT_SECRET);
     } catch (err) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Invalid or expired token" },
+        { status: 401 },
+      );
     }
 
     const supabase = await createClient();
@@ -33,16 +36,18 @@ export async function GET() {
       .maybeSingle();
 
     if (!adminAccount) {
-      return NextResponse.json({ error: "Admin profile no longer exists" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Admin profile no longer exists" },
+        { status: 404 },
+      );
     }
 
-
-
-
     return NextResponse.json({ user: adminAccount }, { status: 200 });
-
   } catch (err) {
     console.error("Session verification routing crash:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

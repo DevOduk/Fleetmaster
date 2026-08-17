@@ -1,20 +1,20 @@
-"use client"
-import React, { useState } from 'react'
+"use client";
+import React, { useState } from "react";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { ChevronDownIcon, EnvelopeIcon } from "@/icons";
-import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined"
-import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined"
-import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined"
-import CarRepairOutlinedIcon from "@mui/icons-material/CarRepairOutlined"
-import Select from '@/components/form/Select';
-import { useFleet } from '@/context/FleetContext';
-import { useRouter } from 'next/navigation';
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined"
-import dayjs from 'dayjs';
-import { DefaultCategories } from '../categories';
-
+import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined";
+import CarRepairOutlinedIcon from "@mui/icons-material/CarRepairOutlined";
+import Select from "@/components/form/Select";
+import { useFleet } from "@/context/FleetContext";
+import { useRouter } from "next/navigation";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import dayjs from "dayjs";
+import { DefaultCategories } from "../categories";
+import CarModelsByBrand from "@/data/carMakeModels";
 
 interface SearchParams {
   location: string;
@@ -25,8 +25,10 @@ interface SearchParams {
   end: string;
 }
 
-
-const syncTimeToDateString = (dateTarget: string, sourceDateTime: string): string => {
+const syncTimeToDateString = (
+  dateTarget: string,
+  sourceDateTime: string,
+): string => {
   if (!sourceDateTime || !dateTarget) return dateTarget;
 
   // Extract the time portion (everything after the 'T')
@@ -39,29 +41,37 @@ const syncTimeToDateString = (dateTarget: string, sourceDateTime: string): strin
   return `${dateComponent}T${timeComponent}`;
 };
 
-export default function SearchForm({ tenant }: { tenant: any; }) {
+export default function SearchForm({ tenant }: { tenant: any }) {
   const router = useRouter();
   const [search, setSearch] = useState<number>(0);
 
-  const fallbackStart = dayjs().add(1, 'day').format('YYYY-MM-DD[T]HH:mm');
+  const fallbackStart = dayjs().add(1, "day").format("YYYY-MM-DD[T]HH:mm");
 
   // 2 days after tomorrow (3 days total) at the exact same hour and minute
-  const fallbackEnd = dayjs().add(3, 'day').format('YYYY-MM-DD[T]HH:mm');
-  const [searchParams, setSearchParams] = useState<SearchParams>({ location: '', category: '', make: '', model: '', start: fallbackStart, end: fallbackEnd });
+  const fallbackEnd = dayjs().add(3, "day").format("YYYY-MM-DD[T]HH:mm");
+  const [searchParams, setSearchParams] = useState<SearchParams>({
+    location: "",
+    category: "",
+    make: "",
+    model: "",
+    start: fallbackStart,
+    end: fallbackEnd,
+  });
   const { vehicles } = useFleet();
 
-  const allCategories = vehicles.map(v => v.category);
-  const allMakes = vehicles.map(v => v.make);
+  const allCategories = vehicles.map((v) => v.category);
+  const allMakes = vehicles.map((v) => v.make);
   const modelsForMake = (make: string) => {
-    const vehicleModels = vehicles.filter(v => v.make === make);
+    const vehicleModels = vehicles.filter((v) => v.make === make);
 
-    return vehicleModels.map(v => v.model);
-  }
+    return vehicleModels.map((v) => v.model);
+  };
 
-  const allYards = tenant?.yards?.map(y => y.title) || [];
+  const allYards = tenant?.yards?.map((y) => y.title) || [];
 
-
-  const categories = [...new Set([...allCategories, ...DefaultCategories])];
+  const categories = [
+    ...new Set([...allCategories, ...DefaultCategories]),
+  ].sort();
   const makes = [...new Set(allMakes)];
 
   const searchQuery = new URLSearchParams(searchParams as any).toString();
@@ -73,27 +83,43 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
     router.push(`/vehicles?${searchQuery}`);
   };
 
-
   return (
-    <form onSubmit={handleSubmit} className="p-7 min-h-[70vh] justify-center flex flex-col mb-2">
+    <form
+      onSubmit={handleSubmit}
+      className="mb-2 flex min-h-[70vh] flex-col justify-center p-7"
+    >
       {/* <h1 className="text-2xl font-bold">Welcome, {tenant}!</h1> */}
-      <p className="text-amber-500">Welcome to {tenant?.name || 'the number 1 Car Hire'}, {tenant?.country || 'Kenya'}</p>
-      <h1 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white max-w-[80%]">Affordable, Reliable & Efficient Car Hire Services in {tenant?.country || 'Kenya'}</h1>
-      <p className="text-sm text-gray-500 dark:text-gray-400">Choose your preferred vehicle brand and category below to find the ideal ride for your journey. Visit our yard or make a booking online for delivery (See yard location on Map)</p>
+      <p className="text-amber-500">
+        Welcome to {tenant?.name || "the number 1 Car Hire"},{" "}
+        {tenant?.country || "Kenya"}
+      </p>
+      <h1 className="mt-4 mb-3 max-w-[80%] text-3xl font-bold text-black dark:text-white">
+        Affordable, Reliable & Efficient Car Hire Services in{" "}
+        {tenant?.country || "Kenya"}
+      </h1>
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        Choose your preferred vehicle brand and category below to find the ideal
+        ride for your journey. Visit our yard or make a booking online for
+        delivery (See yard location on Map)
+      </p>
 
-      <div className="flex items-center gap-3 mt-4">
-        {
-          ["General Search", "Special Search"].map((s, i) => (
-            <Button onClick={(e) => {
+      <div className="mt-4 flex items-center gap-3">
+        {["General Search", "Special Search"].map((s, i) => (
+          <Button
+            onClick={(e) => {
               e.preventDefault();
               setSearch(i);
-            }} key={s} variant={i === search ? "primary" : "outline"} size="sm">{s}</Button>
-          ))
-        }
+            }}
+            key={s}
+            variant={i === search ? "primary" : "outline"}
+            size="sm"
+          >
+            {s}
+          </Button>
+        ))}
         {/* <Button size="sm" variant="outline">Special Search</Button> */}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
-
+      <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
         <div>
           <Label>Location</Label>
           <div className="relative">
@@ -102,13 +128,15 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
               placeholder="Select Location"
               value={searchParams.location}
               className="pl-15.5"
-              onChange={(e) => setSearchParams({ ...searchParams, location: e })}
+              onChange={(e) =>
+                setSearchParams({ ...searchParams, location: e })
+              }
             />
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+            <span className="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
               <LocationOnOutlinedIcon />
             </span>
 
-            <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+            <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
               <ChevronDownIcon />
             </span>
           </div>
@@ -121,20 +149,21 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
               placeholder="Select category"
               className="pl-15.5"
               value={searchParams.category}
-              onChange={(e) => setSearchParams({ ...searchParams, category: e })}
+              onChange={(e) =>
+                setSearchParams({ ...searchParams, category: e })
+              }
             />
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+            <span className="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
               <WidgetsOutlinedIcon />
             </span>
 
-            <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+            <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
               <ChevronDownIcon />
             </span>
           </div>
         </div>
-        {
-          search === 1 && <>
-
+        {search === 1 && (
+          <>
             <div>
               <Label>Make</Label>
               <div className="relative">
@@ -145,17 +174,22 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
                 name="make"
               /> */}
                 <Select
-                  options={makes.map((c) => ({ value: c, label: c }))}
+                  options={Object.keys(CarModelsByBrand || {}).map((brand) => ({
+                    value: brand,
+                    label: brand,
+                  }))}
                   placeholder="Select Make"
                   className="pl-15.5"
                   value={searchParams.make}
-                  onChange={(e) => setSearchParams({ ...searchParams, make: e })}
+                  onChange={(e) =>
+                    setSearchParams({ ...searchParams, make: e })
+                  }
                 />
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                <span className="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
                   <DirectionsCarFilledOutlinedIcon />
                 </span>
 
-                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                   <ChevronDownIcon />
                 </span>
               </div>
@@ -164,34 +198,48 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
               <Label>Model</Label>
               <div className="relative">
                 <Select
-                  options={modelsForMake(searchParams.make).map((c) => ({ value: c, label: c }))}
+                  options={(CarModelsByBrand[searchParams?.make] || [])?.map(
+                    (model) => ({
+                      value: model,
+                      label: searchParams?.make + " " + model,
+                    }),
+                  )}
                   placeholder="Select Model"
                   className="pl-15.5"
                   value={searchParams.model}
-                  onChange={(e) => setSearchParams({ ...searchParams, model: e })}
+                  onChange={(e) =>
+                    setSearchParams({ ...searchParams, model: e })
+                  }
                 />
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                <span className="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
                   <CarRepairOutlinedIcon />
                 </span>
 
-                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                   <ChevronDownIcon />
                 </span>
               </div>
             </div>
           </>
-        }
+        )}
         <div>
           <Label>Start Date</Label>
           <div className="relative">
             <Input
               type="datetime-local"
               className="pl-15.5"
-              value={searchParams.start ? dayjs(searchParams.start).format('YYYY-MM-DDTHH:mm') : ''}
+              value={
+                searchParams.start
+                  ? dayjs(searchParams.start).format("YYYY-MM-DDTHH:mm")
+                  : ""
+              }
               onChange={(e) => {
                 const newStart = e.target.value; // e.g., "2026-06-22T14:30"
                 // Force the existing end date to adopt this new start time
-                const updatedEnd = syncTimeToDateString(searchParams.end, newStart);
+                const updatedEnd = syncTimeToDateString(
+                  searchParams.end,
+                  newStart,
+                );
 
                 setSearchParams({
                   ...searchParams,
@@ -201,7 +249,7 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
               }}
               name="start_date"
             />
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+            <span className="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
               <CalendarMonthOutlinedIcon />
             </span>
           </div>
@@ -213,11 +261,18 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
             <Input
               type="datetime-local"
               className="pl-15.5"
-              value={searchParams.end ? dayjs(searchParams.end).format('YYYY-MM-DDTHH:mm') : ''}
+              value={
+                searchParams.end
+                  ? dayjs(searchParams.end).format("YYYY-MM-DDTHH:mm")
+                  : ""
+              }
               onChange={(e) => {
                 const newEnd = e.target.value; // e.g., "2026-06-25T16:00"
                 // Force the existing start date to adopt this new end time
-                const updatedStart = syncTimeToDateString(searchParams.start, newEnd);
+                const updatedStart = syncTimeToDateString(
+                  searchParams.start,
+                  newEnd,
+                );
 
                 setSearchParams({
                   ...searchParams,
@@ -227,16 +282,21 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
               }}
               name="end_date"
             />
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+            <span className="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
               <CalendarMonthOutlinedIcon />
             </span>
           </div>
         </div>
       </div>
 
-      <Button variant="primary" size="sm" className="mt-4 w-full gap-5" type="submit">
+      <Button
+        variant="primary"
+        size="sm"
+        className="mt-4 w-full gap-5"
+        type="submit"
+      >
         Continue
-        <span className="relative pointer-events-none">
+        <span className="pointer-events-none relative">
           <svg
             className="fill-white dark:fill-white"
             width="17"
@@ -255,5 +315,5 @@ export default function SearchForm({ tenant }: { tenant: any; }) {
         </span>
       </Button>
     </form>
-  )
+  );
 }

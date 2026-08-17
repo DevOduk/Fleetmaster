@@ -1,3 +1,4 @@
+// File: src/context/UserContext.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -8,14 +9,32 @@ import { applyThemeVariables } from "@/components/ThemeInitializer";
 interface UserContextType {
   profile: any | null;
   loading: boolean;
-  login: (role: 'client' | 'admin', email: string, password: string, tenant: string) => Promise<{ success: boolean; error?: string; emailVerified?: boolean; phoneVerified?: boolean; id?: string }>;
+  login: (
+    role: "client" | "admin",
+    email: string,
+    password: string,
+    tenant: string,
+  ) => Promise<{
+    success: boolean;
+    error?: string;
+    emailVerified?: boolean;
+    phoneVerified?: boolean;
+    id?: string;
+    is_otp: boolean;
+  }>;
   logout: () => void;
   setProfile: React.Dispatch<React.SetStateAction<any | null>>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export function UserProvider({ children, initialUser = null }: { children: React.ReactNode; initialUser: any }) {
+export function UserProvider({
+  children,
+  initialUser = null,
+}: {
+  children: React.ReactNode;
+  initialUser: any;
+}) {
   // Populate the profile state with the full server-side profile object immediately
   const [profile, setProfile] = useState<any | null>(initialUser);
 
@@ -32,18 +51,34 @@ export function UserProvider({ children, initialUser = null }: { children: React
     if (initialUser) {
       setLoading(false);
       applyThemeVariables(initialUser?.fleetmaster_tenants?.color || "#465fff");
-      localStorage.setItem("brand-color", initialUser?.fleetmaster_tenants?.color || "#465fff");
+      localStorage.setItem(
+        "brand-color",
+        initialUser?.fleetmaster_tenants?.color || "#465fff",
+      );
       return;
     }
 
     async function checkSession() {
+      // If profile is already populated (e.g. just logged in), skip checkSession
+      if (profile) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         const response = await fetch("/api/auth/me");
+        const contentType = response.headers.get("content-type");
 
-        if (response.ok) {
+        if (
+          response.ok &&
+          contentType &&
+          contentType.includes("application/json")
+        ) {
           const data = await response.json();
-          setProfile(data.user);
+          if (data?.user) {
+            setProfile(data.user);
+          }
         }
       } catch (err) {
         console.error("Failed to restore session:", err);
@@ -51,30 +86,58 @@ export function UserProvider({ children, initialUser = null }: { children: React
         setLoading(false);
       }
     }
+
     checkSession();
     applyThemeVariables(initialUser?.fleetmaster_tenants?.color || "#465fff");
-    localStorage.setItem("brand-color", initialUser?.fleetmaster_tenants?.color || "#465fff");
+    localStorage.setItem(
+      "brand-color",
+      initialUser?.fleetmaster_tenants?.color || "#465fff",
+    );
   }, [initialUser]); // Listen to initial data streams safely
 
-  const login = async (role: 'client' | 'admin', email: string, password: string, tenant: string) => {
+  const login = async (
+    role: "client" | "admin",
+    email: string,
+    password: string,
+    tenant: string,
+  ) => {
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role, email, password, tenant }),
       });
-
       const data = await response.json();
 
       if (response.ok) {
         setProfile(data.user);
         applyThemeVariables(data.user?.fleetmaster_tenants?.color);
-        return { success: true, emailVerified: data.user?.verification_status?.email, phoneVerified: data.user?.phone_verified, id: data.user?.id };
+        return {
+          success: true,
+          emailVerified: data.user?.verification_status?.email,
+          phoneVerified: data.user?.phone_verified,
+          id: data.user?.id,
+          is_otp: data.user?.is_otp,
+        };
       } else {
-        return { success: false, error: data.error };
+        return {
+          success: false,
+          error: data.error,
+          emailVerified: false,
+          phoneVerified: false,
+          id: undefined,
+          is_otp: false,
+        };
       }
-    } catch (err) {
-      return { success: false, error: "Network connection failure" };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err?.message || "An unexpected error occurred",
+        emailVerified: false,
+        phoneVerified: false,
+        id: undefined,
+        is_otp: false,
+      };
     }
   };
 
@@ -82,9 +145,9 @@ export function UserProvider({ children, initialUser = null }: { children: React
     const response = await fetch("/api/auth/logout", { method: "POST" });
     if (response.ok) {
       setProfile(null);
-      showToast('You have been logged out successfully!', 'info');
+      showToast("You have been logged out successfully!", "info");
       setTimeout(() => {
-        router.push('/');
+        router.push("/");
       }, 3000);
       return { success: true };
     } else {
@@ -93,7 +156,9 @@ export function UserProvider({ children, initialUser = null }: { children: React
   };
 
   return (
-    <UserContext.Provider value={{ profile, loading, login, logout, setProfile }}>
+    <UserContext.Provider
+      value={{ profile, loading, login, logout, setProfile }}
+    >
       {children}
     </UserContext.Provider>
   );

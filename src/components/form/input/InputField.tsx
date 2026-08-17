@@ -1,7 +1,15 @@
 import React, { FC } from "react";
 
 interface InputProps {
-  type?: "text" | "number" | "email" | "password" | "date" | "time" | "datetime-local" | string;
+  type?:
+    | "text"
+    | "number"
+    | "email"
+    | "password"
+    | "date"
+    | "time"
+    | "datetime-local"
+    | string;
   id?: string;
   name?: string;
   placeholder?: string;
@@ -60,8 +68,8 @@ const Input: FC<InputProps> = ({
         id={id}
         name={name}
         placeholder={placeholder}
-        value={value}
-        defaultValue={defaultValue}
+        value={value ?? ""}
+        {...(type !== "tel" && { defaultValue })}
         onChange={onChange}
         min={min}
         max={max}
@@ -79,8 +87,8 @@ const Input: FC<InputProps> = ({
             error
               ? "text-error-500"
               : success
-              ? "text-success-500"
-              : "text-gray-500"
+                ? "text-success-500"
+                : "text-gray-500"
           }`}
         >
           {hint}

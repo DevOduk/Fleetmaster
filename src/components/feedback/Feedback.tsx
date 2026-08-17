@@ -2,10 +2,10 @@
 import React, { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import ComponentCard from "../common/ComponentCard";
-import Rating from '@mui/material/Rating';
+import Rating from "@mui/material/Rating";
 import Label from "../form/Label";
 import TextArea from "../form/input/TextArea";
-import { useTheme } from '@mui/material/styles';
+import { useTheme } from "@mui/material/styles";
 import { useUser } from "@/context/UserContext"; // Adjust this hook import to your real location
 import { submitUserFeedback } from "@/app/actions/feedback";
 import { useToast } from "@/context/ToastContext";
@@ -24,7 +24,10 @@ const Feedback: React.FC = () => {
 
   // Submission indicator states
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [statusMessage, setStatusMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const isDarkMode =
     typeof window !== "undefined" &&
@@ -58,15 +61,24 @@ const Feedback: React.FC = () => {
   const handleSubmit = async () => {
     // 1. Guard check: make sure description text exists
     if (!description.trim()) {
-      showToast('Please enter a valid description before submitting.', 'error')
-      setStatusMessage({ type: "error", text: "Please enter a valid description before submitting." });
+      showToast("Please enter a valid description before submitting.", "error");
+      setStatusMessage({
+        type: "error",
+        text: "Please enter a valid description before submitting.",
+      });
       return;
     }
 
     // 2. Guard check: Make sure context has fully loaded the user profile
     if (!profile) {
-      showToast('User profile context not loaded. Please log in again.', 'error');
-      setStatusMessage({ type: "error", text: "User profile context not loaded. Please log in again." });
+      showToast(
+        "User profile context not loaded. Please log in again.",
+        "error",
+      );
+      setStatusMessage({
+        type: "error",
+        text: "User profile context not loaded. Please log in again.",
+      });
       return;
     }
 
@@ -84,28 +96,38 @@ const Feedback: React.FC = () => {
         id: profile.id,
         tenant_id: profile.tenant_id,
         role: profile.role,
-      }
+      },
     );
 
     setIsSubmitting(false);
 
     if (result.success) {
-      showToast('Your feedback has been sent successfully.', 'success');
-      setStatusMessage({ type: "success", text: "Thank you! Your feedback has been saved successfully." });
+      showToast("Your feedback has been sent successfully.", "success");
+      setStatusMessage({
+        type: "success",
+        text: "Thank you! Your feedback has been saved successfully.",
+      });
       setDescription("");
       setRating(0);
     } else {
-      showToast('Failed to submit feedback.', 'error');
-      setStatusMessage({ type: "error", text: result.error || "Failed to submit feedback." });
+      showToast("Failed to submit feedback.", "error");
+      setStatusMessage({
+        type: "error",
+        text: result.error || "Failed to submit feedback.",
+      });
     }
   };
 
   return (
     <div>
-      <div className="space-y-6 mx-auto max-w-6xl">
+      <div className="mx-auto max-w-6xl space-y-6">
         <ComponentCard title="Submit Feedback">
-          <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90 mb-4">
-            Writing review as <span className="text-brand-500 font-semibold">{profile?.first_name} {profile?.last_name}</span> ({profile?.fleetmaster_tenants?.name || "Loading Company..."})
+          <p className="text-theme-sm mb-4 font-medium text-gray-800 dark:text-white/90">
+            Writing review as{" "}
+            <span className="text-brand-500 font-semibold">
+              {profile?.first_name} {profile?.last_name}
+            </span>{" "}
+            ({profile?.fleetmaster_tenants?.name || "Loading Company..."})
           </p>
 
           <div className="space-y-4">
@@ -116,16 +138,18 @@ const Feedback: React.FC = () => {
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder="e.g Excellent customer service"
-                className="w-full mt-1 p-2.5 border rounded-lg bg-transparent border-gray-200 dark:border-white/10 text-theme-sm text-gray-800 dark:text-white/90 outline-none focus:border-brand-500"
+                className="text-theme-sm focus:border-brand-500 mt-1 w-full rounded-lg border border-gray-200 bg-transparent p-2.5 text-gray-800 outline-none dark:border-white/10 dark:text-white/90"
               />
             </div>
 
             {/* Evaluation Score Selection */}
             <div>
               <Label>Pick Your Rating</Label>
-              <div className="flex flex-col justify-center items-center py-3 gap-3">
+              <div className="flex flex-col items-center justify-center gap-3 py-3">
                 <div>
-                  <h3 className="text-purple-600 text-2xl font-bold">({rating.toFixed(1)})</h3>
+                  <h3 className="text-2xl font-bold text-purple-600">
+                    ({rating.toFixed(1)})
+                  </h3>
                 </div>
                 <Rating
                   name="feedback-rating"
@@ -133,11 +157,14 @@ const Feedback: React.FC = () => {
                   onChange={(_, newValue) => setRating(newValue)}
                   size="large"
                   max={5}
-                  precision={.5}
+                  precision={0.5}
                   sx={{
-                    '& .MuiRating-iconEmpty': {
-                      color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : '#cbd5e1'
-                    }
+                    "& .MuiRating-iconEmpty": {
+                      color:
+                        theme.palette.mode === "dark"
+                          ? "rgba(255,255,255,0.2)"
+                          : "#cbd5e1",
+                    },
                   }}
                 />
               </div>
@@ -156,10 +183,13 @@ const Feedback: React.FC = () => {
 
             {/* Notification alert response box */}
             {statusMessage && (
-              <div className={`p-3 rounded-lg text-theme-sm ${statusMessage.type === "success"
-                ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
-                : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                }`}>
+              <div
+                className={`text-theme-sm rounded-lg p-3 ${
+                  statusMessage.type === "success"
+                    ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                    : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                }`}
+              >
                 {statusMessage.text}
               </div>
             )}
@@ -168,8 +198,9 @@ const Feedback: React.FC = () => {
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className={`flex mt-3 ms-auto items-center justify-center p-2 px-4 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600 transition-all ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+              className={`bg-brand-500 text-theme-sm hover:bg-brand-600 ms-auto mt-3 flex items-center justify-center rounded-lg p-2 px-4 font-medium text-white transition-all ${
+                isSubmitting ? "cursor-not-allowed opacity-50" : ""
+              }`}
             >
               {isSubmitting ? "Processing Submission..." : "Submit Feedback"}
             </button>

@@ -44,7 +44,7 @@ export default async function RootAdminLayout({
             : "client";
 
         const cacheKey = `user:profile:${decoded.id}:${normalizedType}`;
-        
+
         // Upstash Redis automatically parses JSON if it was set as an object/stringified JSON
         const cachedProfile = await redis.get(cacheKey);
 
@@ -78,9 +78,7 @@ export default async function RootAdminLayout({
       <SettingsProvider>
         <AdminFleetProvider initialVehicles={initialVehicles}>
           <AdminBookingProvider>
-            <SidebarProvider>
-              {children}
-            </SidebarProvider>
+            <SidebarProvider>{children}</SidebarProvider>
           </AdminBookingProvider>
         </AdminFleetProvider>
       </SettingsProvider>

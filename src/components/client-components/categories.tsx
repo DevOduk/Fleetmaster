@@ -6,60 +6,67 @@ import { defaultVehicleImages } from "./hero/slider";
 import Link from "next/link";
 
 interface Tenant {
-    tenantData: any;
+  tenantData: any;
 }
 
-export const DefaultCategories = [
-    "Premium SUV",
-    "Economy",
-    "Compact",
-];
+export const DefaultCategories = ["Premium SUV", "Economy", "Compact"];
 
 export default function ViewAllCategories({ tenantData }: Tenant) {
-    const { vehicles } = useFleet();
+  const { vehicles } = useFleet();
 
-    const myVehicles = vehicles?.filter((v) => v.tenant_id == tenantData?.id) || [];
+  const myVehicles =
+    vehicles?.filter((v) => v.tenant_id == tenantData?.id) || [];
 
-    const enrichedCategories = Array.from(
-        new Map(myVehicles.map(v => [v.category, v])).values()
-    ).map(v => ({
-        category: v.category,
-        image_url: v.image_url,
-    }));
+  const enrichedCategories = Array.from(
+    new Map(myVehicles.map((v) => [v.category, v])).values(),
+  ).map((v) => ({
+    category: v.category,
+    image_url: v.image_url,
+  }));
 
-    const existingCategoryNames = new Set(enrichedCategories.map(c => c.category));
+  const existingCategoryNames = new Set(
+    enrichedCategories.map((c) => c.category),
+  );
 
-    const fallbackCategories = defaultVehicleImages
-        .map((image, i) => ({
-            category: DefaultCategories[i],
-            image_url: image,
-        }))
-        .filter(item => !existingCategoryNames.has(item.category));
+  const fallbackCategories = defaultVehicleImages
+    .map((image, i) => ({
+      category: DefaultCategories[i],
+      image_url: image,
+    }))
+    .filter((item) => !existingCategoryNames.has(item.category));
 
-    const allMyCategories = [...enrichedCategories, ...fallbackCategories];
+  const allMyCategories = [...enrichedCategories, ...fallbackCategories];
 
-    return (
-        <div key={tenantData?.id} datatype={tenantData?.slug} className="grid mt-5 grid-cols-2 lg:grid-cols-3 m-auto gap-3 container mb-5">
-            {
-             allMyCategories.slice(0, 6).map((item) => (
-                <Link key={item.category} href={`/vehicles?category=${item.category}`} >
-                    <div className="mb-3 dark:bg-gray-500/10 bg-gray-500/3 shadow rounded-2xl">
-                        <div className='relative'>
-                            <Box
-                                className='flex gap-2 text-white bg-blend-darken font-bold items-end p-3 w-full h-full rounded-xl'
-                                sx={{ position: 'absolute', bottom: 0, right: 0, background: 'linear-gradient(to top, black, transparent)' }}
-                            >
-                                {item.category}
-                            </Box>
-                            <img
-                                src={item.image_url}
-                                alt={item.category}
-                                className="w-full object-cover rounded-xl aspect-4/3"
-                            />
-                        </div>
-                    </div>
-                </Link>
-            ))}
-        </div>
-    );
+  return (
+    <div
+      key={tenantData?.id}
+      datatype={tenantData?.slug}
+      className="container m-auto mt-5 mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3"
+    >
+      {allMyCategories.slice(0, 6).map((item) => (
+        <Link key={item.category} href={`/vehicles?category=${item.category}`}>
+          <div className="mb-3 rounded-2xl bg-gray-500/3 shadow dark:bg-gray-500/10">
+            <div className="relative">
+              <Box
+                className="flex h-full w-full items-end gap-2 rounded-xl p-3 font-bold text-white bg-blend-darken"
+                sx={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  background: "linear-gradient(to top, black, transparent)",
+                }}
+              >
+                {item.category}
+              </Box>
+              <img
+                src={item.image_url}
+                alt={item.category}
+                className="aspect-4/3 w-full rounded-xl object-cover"
+              />
+            </div>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
 }

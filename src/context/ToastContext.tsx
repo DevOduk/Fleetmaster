@@ -1,6 +1,11 @@
 "use client";
 
-import { Alert, AlertColor, Snackbar, SnackbarCloseReason } from "@mui/material";
+import {
+  Alert,
+  AlertColor,
+  Snackbar,
+  SnackbarCloseReason,
+} from "@mui/material";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 // 1. Explicitly structure your dynamic interface properties
@@ -28,7 +33,6 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     severity: "success", // Safe fallback initialization
   });
 
-
   // 2. High-utility trigger method for clean component-level calling
   const showToast = (message: string, severity: AlertColor = "success") => {
     setToast({ open: true, message, severity });
@@ -40,14 +44,16 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
 
   const handleCloseToast = (
     event?: React.SyntheticEvent | Event,
-    reason?: SnackbarCloseReason
+    reason?: SnackbarCloseReason,
   ) => {
     if (reason === "clickaway") return;
     hideToast();
   };
 
   return (
-    <ToastContext.Provider value={{ showToast, hideToast, loading, setLoading }}>
+    <ToastContext.Provider
+      value={{ showToast, hideToast, loading, setLoading }}
+    >
       {children}
 
       <Snackbar

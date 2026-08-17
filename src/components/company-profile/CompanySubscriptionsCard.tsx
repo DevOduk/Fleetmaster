@@ -1,15 +1,24 @@
 "use client";
 
-import { fetchTenantDetails, fetchTenantSubscriptions, updateTenantDetails } from "@/app/actions/tenant";
+import {
+  fetchTenantDetails,
+  fetchTenantSubscriptions,
+  updateTenantDetails,
+} from "@/app/actions/tenant";
 import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import ComponentCard from "../common/ComponentCard";
 import ExpiryBanner, { getExpiryString } from "./ExpiryBanner";
 import Input from "../form/input/InputField";
-import { FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material";
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import MobileScreenShareOutlinedIcon from "@mui/icons-material/MobileScreenShareOutlined"
+import {
+  FormControl,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import MobileScreenShareOutlinedIcon from "@mui/icons-material/MobileScreenShareOutlined";
 import Button from "../ui/button/Button";
 import { subscriptionPlans } from "@/data/globalExports";
 import { useModal } from "@/hooks/useModal";
@@ -29,14 +38,13 @@ interface Subscription {
   date: string;
 }
 
-
 export default function CompanySubscriptionsCard() {
   const { profile } = useUser();
   const [company, setCompany] = useState<any>(null);
   const [loadingCompany, setLoadingCompany] = useState<boolean>(true);
   const [selectedIndex, setSelectedIndex] = useState(1);
-  const [mpesaNumber, setMpesaNumber] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('m-pesa');
+  const [mpesaNumber, setMpesaNumber] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("m-pesa");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const [error, setError] = useState(null);
@@ -44,14 +52,17 @@ export default function CompanySubscriptionsCard() {
   const { showToast } = useToast();
 
   const defaultSubscription: Subscription = {
-    label: 'Free Trial Plan',
-    value: 'Welcome to fleetmaster crm dashboard where you can manage your rental fleet with ease!',
+    label: "Free Trial Plan",
+    value:
+      "Welcome to fleetmaster crm dashboard where you can manage your rental fleet with ease!",
     amount: 0,
-    method: 'M-PESA',
-    date: company?.created_at || profile?.fleetmaster_tenants?.created_at
+    method: "M-PESA",
+    date: company?.created_at || profile?.fleetmaster_tenants?.created_at,
   };
 
-  const [subscriptionsList, setSubScriptionsList] = useState<Subscription[]>([defaultSubscription]);
+  const [subscriptionsList, setSubScriptionsList] = useState<Subscription[]>([
+    defaultSubscription,
+  ]);
 
   useEffect(() => {
     const getTenantDetails = async () => {
@@ -63,7 +74,7 @@ export default function CompanySubscriptionsCard() {
         const res = await fetchTenantDetails(profile.tenant_id);
         const subRes = await fetchTenantSubscriptions(profile.tenant_id);
 
-        console.log(subRes)
+        console.log(subRes);
         setCompany(res.data);
         setSubScriptionsList([...(subRes.data || []), defaultSubscription]);
 
@@ -82,28 +93,37 @@ export default function CompanySubscriptionsCard() {
     setError(null);
 
     if (!profile) {
-      showToast('Please sign in to your account to renew subscription!', 'error');
+      showToast(
+        "Please sign in to your account to renew subscription!",
+        "error",
+      );
       return;
     }
-    if (paymentMethod === 'm-pesa' && !mpesaNumber) {
-      showToast('Please enter a valid M-Pesa phone number!', 'error');
+    if (paymentMethod === "m-pesa" && !mpesaNumber) {
+      showToast("Please enter a valid M-Pesa phone number!", "error");
       return;
     }
 
     setIsPaying(true);
 
-    if (paymentMethod === 'm-pesa') {
-      showToast('Processing your security checks...', 'info');
+    if (paymentMethod === "m-pesa") {
+      showToast("Processing your security checks...", "info");
 
-      let sanitizedNumber = mpesaNumber.replace(/\D/g, '');
-      if (sanitizedNumber.startsWith('0')) {
+      let sanitizedNumber = mpesaNumber.replace(/\D/g, "");
+      if (sanitizedNumber.startsWith("0")) {
         sanitizedNumber = `254${sanitizedNumber.substring(1)}`;
-      } else if (sanitizedNumber.startsWith('7') || sanitizedNumber.startsWith('1')) {
+      } else if (
+        sanitizedNumber.startsWith("7") ||
+        sanitizedNumber.startsWith("1")
+      ) {
         sanitizedNumber = `254${sanitizedNumber}`;
       }
 
       if (sanitizedNumber.length !== 12) {
-        showToast('Please enter a valid 9 or 10-digit M-Pesa phone number.', 'error');
+        showToast(
+          "Please enter a valid 9 or 10-digit M-Pesa phone number.",
+          "error",
+        );
         setIsPaying(false);
         return;
       }
@@ -118,44 +138,59 @@ export default function CompanySubscriptionsCard() {
 
       try {
         // --- 1. CALL YOUR CUSTOM DARAJA STK ROUTE ---
-        const res = await fetch('/api/mpesa/stk', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/mpesa/stk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             amount: Number(grandTotalAmount),
             phoneNumber: sanitizedNumber,
-          })
+          }),
         });
 
         const data = await res.json();
-        console.log('Daraja STK Response: ', data);
+        console.log("Daraja STK Response: ", data);
 
         if (!res.ok || data.ResponseCode !== "0") {
-          throw new Error(data.errorMessage || data.ResponseDescription || 'Failed to dispatch M-Pesa push.');
+          throw new Error(
+            data.errorMessage ||
+              data.ResponseDescription ||
+              "Failed to dispatch M-Pesa push.",
+          );
         }
 
         const targetCheckoutId = data.CheckoutRequestID;
 
         if (!targetCheckoutId) {
-          throw new Error('No tracking CheckoutRequestID returned from M-Pesa gateway.');
+          throw new Error(
+            "No tracking CheckoutRequestID returned from M-Pesa gateway.",
+          );
         }
 
-        showToast('STK Push Request Sent! Please enter your M-Pesa PIN', 'info');
+        showToast(
+          "STK Push Request Sent! Please enter your M-Pesa PIN",
+          "info",
+        );
 
         safetyTimeoutId = setTimeout(() => {
           clearPollingTimers();
           setIsPaying(false);
-          setError({ message: 'Payment verification timed out. Please check your Phone and try again.' });
-          showToast('Payment verification timed out. Please check your Phone and try again', 'error');
+          setError({
+            message:
+              "Payment verification timed out. Please check your Phone and try again.",
+          });
+          showToast(
+            "Payment verification timed out. Please check your Phone and try again",
+            "error",
+          );
         }, 65000);
 
         // --- 2. POLL DARAJA STATUS ENDPOINT ---
         intervalId = setInterval(async () => {
           try {
-            const statusRes = await fetch('/api/mpesa/status', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ checkoutRequestID: targetCheckoutId })
+            const statusRes = await fetch("/api/mpesa/status", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ checkoutRequestID: targetCheckoutId }),
             });
 
             const statusData = await statusRes.json();
@@ -163,36 +198,47 @@ export default function CompanySubscriptionsCard() {
             // Daraja returns ResultCode ('0' = Success, non-zero or user cancellation handles failure)
             const resultCode = statusData.ResultCode;
             const responseCode = statusData.ResponseCode;
-            console.log('Daraja status check poll: ', resultCode, responseCode, statusData);
+            console.log(
+              "Daraja status check poll: ",
+              resultCode,
+              responseCode,
+              statusData,
+            );
 
             // If ResultCode is 0, payment succeeded
             if (resultCode === "0") {
               clearPollingTimers();
               setIsPaying(false);
-              showToast('Payment Confirmed! Your subscription renewal has been processed successfully.', 'success');
+              showToast(
+                "Payment Confirmed! Your subscription renewal has been processed successfully.",
+                "success",
+              );
               successModal.openModal();
               setPaymentSuccess(true);
 
-              const mpesaRef = statusData.MpesaReceiptNumber || targetCheckoutId;
+              const mpesaRef =
+                statusData.MpesaReceiptNumber || targetCheckoutId;
 
               const newPayment = {
                 tenant_id: profile?.tenant_id,
                 intasend_invoice_id: targetCheckoutId,
-                provider: 'M-PESA',
+                provider: "M-PESA",
                 provider_reference: mpesaRef,
                 amount: Number(grandTotalAmount),
-                currency: 'KES',
+                currency: "KES",
                 account_number: sanitizedNumber,
                 payment_ref: mpesaRef,
                 user_id: profile.id,
-                status: 'Success',
+                status: "Success",
                 message: `Subscription renewal for package: ${subscriptionPlans[selectedIndex]?.name}`,
               };
 
               await createPayment(newPayment);
 
               // 1. Determine the base date to add 30 days to
-              const currentExpiry = company?.expiry_date ? new Date(company.expiry_date).getTime() : 0;
+              const currentExpiry = company?.expiry_date
+                ? new Date(company.expiry_date).getTime()
+                : 0;
               const now = new Date().getTime();
 
               // If current expiry is in the future, add 30 days to it. Otherwise, add to today.
@@ -201,61 +247,75 @@ export default function CompanySubscriptionsCard() {
               const newExpiryTimestamp = baseTime + thirtyDaysInMs;
 
               // 2. Convert to ISO string for Supabase timestamptz compatibility
-              const newExpiryIsoString = new Date(newExpiryTimestamp).toISOString();
+              const newExpiryIsoString = new Date(
+                newExpiryTimestamp,
+              ).toISOString();
 
-              await updateTenantDetails(
-                profile?.tenant_id,
-                {
-                  ...company,
-                  subscription_status: 'Active',
-                  subscription_plan: subscriptionPlans[selectedIndex]?.name,
-                  expiry_date: newExpiryIsoString
-                }
-              );
+              await updateTenantDetails(profile?.tenant_id, {
+                ...company,
+                subscription_status: "Active",
+                subscription_plan: subscriptionPlans[selectedIndex]?.name,
+                expiry_date: newExpiryIsoString,
+              });
 
               const subRes = await fetchTenantSubscriptions(profile.tenant_id);
-              setSubScriptionsList([...(subRes.data || []), defaultSubscription]);
-
-            } else if (resultCode && resultCode !== "0" && resultCode !== "4999") {
+              console.log("subscriptions res: ", subRes);
+              setSubScriptionsList([
+                ...(subRes.data || []),
+                defaultSubscription,
+              ]);
+            } else if (
+              resultCode &&
+              resultCode !== "0" &&
+              resultCode !== "4999"
+            ) {
               // ResultCode exists and is not 0 (User canceled, insufficient funds, etc.)
               clearPollingTimers();
               setIsPaying(false);
-              const failReason = statusData.ResultDesc || 'Transaction was canceled or failed.';
-              showToast(failReason, 'error');
+              const failReason =
+                statusData.ResultDesc || "Transaction was canceled or failed.";
+              showToast(failReason, "error");
               setError({ message: failReason });
 
               const newPayment = {
                 tenant_id: profile.tenant_id,
                 intasend_invoice_id: targetCheckoutId,
-                provider: 'M-PESA',
+                provider: "M-PESA",
                 provider_reference: targetCheckoutId,
                 amount: Number(grandTotalAmount),
-                currency: 'KES',
+                currency: "KES",
                 account_number: sanitizedNumber,
                 payment_ref: targetCheckoutId,
                 user_id: profile.id,
-                status: 'Failed',
-                message: 'Subscription renewal failure: ' + failReason,
+                status: "Failed",
+                message: "Subscription renewal failure: " + failReason,
               };
 
               await createPayment(newPayment);
             }
             // If ResultCode is undefined, it means transaction is still processing on Safaricom's side; keep polling.
           } catch (pollErr) {
-            console.error("Error during background status poll checking:", pollErr);
+            console.error(
+              "Error during background status poll checking:",
+              pollErr,
+            );
           }
         }, mpesaPollingIterval);
-
       } catch (err: any) {
         setError(err);
         console.error("Direct STK Push Failed:", err);
-        showToast(err.message || 'M-Pesa STK verification failed.', 'error');
+        showToast(err.message || "M-Pesa STK verification failed.", "error");
         setIsPaying(false);
       }
     } else {
-      showToast('Card payment checkout not available! Consult support.', 'error');
+      showToast(
+        "Card payment checkout not available! Consult support.",
+        "error",
+      );
       setIsPaying(false);
-      setError({ message: 'Card payment checkout not available! Consult support.' })
+      setError({
+        message: "Card payment checkout not available! Consult support.",
+      });
 
       return;
     }
@@ -452,10 +512,6 @@ export default function CompanySubscriptionsCard() {
   //   }
   // };
 
-
-
-
-
   useEffect(() => {
     if (!document.getElementById("intasend-inline-sdk")) {
       const script = document.createElement("script");
@@ -466,68 +522,77 @@ export default function CompanySubscriptionsCard() {
     }
   }, []);
 
-
   if (!profile || !profile.tenant_id || loadingCompany) {
     return (
-      <div className="w-full mx-auto p-6 space-y-6 animate-pulse">
+      <div className="mx-auto w-full animate-pulse space-y-6 p-6">
         {/* Header Section Placeholder */}
-        <div className="flex items-center justify-between pb-6 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-6 dark:border-gray-800">
           <div className="space-y-2">
-            <div className="h-6 w-48 bg-gray-200 rounded-md dark:bg-gray-600"></div>
-            <div className="h-4 w-32 bg-gray-100 rounded-md dark:bg-gray-600"></div>
+            <div className="h-6 w-48 rounded-md bg-gray-200 dark:bg-gray-600"></div>
+            <div className="h-4 w-32 rounded-md bg-gray-100 dark:bg-gray-600"></div>
           </div>
-          <div className="h-10 w-28 bg-gray-200 rounded-lg dark:bg-gray-600"></div>
+          <div className="h-10 w-28 rounded-lg bg-gray-200 dark:bg-gray-600"></div>
         </div>
 
         {/* Metric Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="p-5 border border-gray-100 dark:border-gray-700 rounded-xl space-y-3">
-              <div className="h-4 w-34 bg-gray-100 rounded-md dark:bg-gray-600"></div>
-              <div className="h-8 w-19 bg-gray-200 rounded-md dark:bg-gray-600"></div>
+            <div
+              key={i}
+              className="space-y-3 rounded-xl border border-gray-100 p-5 dark:border-gray-700"
+            >
+              <div className="h-4 w-34 rounded-md bg-gray-100 dark:bg-gray-600"></div>
+              <div className="h-8 w-19 rounded-md bg-gray-200 dark:bg-gray-600"></div>
             </div>
           ))}
         </div>
 
         {/* Main Content Area / List Placeholder */}
-        <div className="border border-gray-100 dark:border-gray-800 rounded-xl p-4 space-y-4">
-          <div className="h-5 w-36 bg-gray-200 dark:bg-gray-500 rounded-md mb-2"></div>
+        <div className="space-y-4 rounded-xl border border-gray-100 p-4 dark:border-gray-800">
+          <div className="mb-2 h-5 w-36 rounded-md bg-gray-200 dark:bg-gray-500"></div>
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-gray-600 last:border-0">
-              <div className="flex items-center space-x-3 w-full">
-                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-full shrink-0"></div>
-                <div className="space-y-2 w-full max-w-[60%]">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded-md w-3/4"></div>
-                  <div className="h-3 bg-gray-100 dark:bg-gray-600 rounded-md w-1/2"></div>
+            <div
+              key={i}
+              className="flex items-center justify-between border-b border-gray-50 py-3 last:border-0 dark:border-gray-600"
+            >
+              <div className="flex w-full items-center space-x-3">
+                <div className="h-10 w-10 shrink-0 rounded-full bg-gray-200 dark:bg-gray-600"></div>
+                <div className="w-full max-w-[60%] space-y-2">
+                  <div className="h-4 w-3/4 rounded-md bg-gray-200 dark:bg-gray-600"></div>
+                  <div className="h-3 w-1/2 rounded-md bg-gray-100 dark:bg-gray-600"></div>
                 </div>
               </div>
-              <div className="h-4 w-12 bg-gray-100 rounded-md dark:bg-gray-600"></div>
+              <div className="h-4 w-12 rounded-md bg-gray-100 dark:bg-gray-600"></div>
             </div>
           ))}
         </div>
 
         {/* Subtle Loading Text Indicator */}
         <div className="flex items-center justify-center space-x-2 pt-2">
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-          <span className="text-xs text-gray-400 font-medium pl-1">Syncing workspace...</span>
+          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500 [animation-delay:-0.3s]"></div>
+          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500 [animation-delay:-0.15s]"></div>
+          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500"></div>
+          <span className="pl-1 text-xs font-medium text-gray-400">
+            Syncing workspace...
+          </span>
         </div>
       </div>
-
     );
   }
   if (!company) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 min-h-[70vh]">
-        <div className="text-4xl mb-4">🏢</div>
-        <h3 className="text-lg font-semibold text-red-600">Company Not Found</h3>
-        <p className="text-gray-500 max-w-sm mt-2">
-          We couldn't locate a profile associated with your account. If you believe this is an error, please contact support.
+      <div className="flex min-h-[70vh] flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-8 text-center dark:border-gray-600 dark:bg-gray-800">
+        <div className="mb-4 text-4xl">🏢</div>
+        <h3 className="text-lg font-semibold text-red-600">
+          Company Not Found
+        </h3>
+        <p className="mt-2 max-w-sm text-gray-500">
+          We couldn't locate a profile associated with your account. If you
+          believe this is an error, please contact support.
         </p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          className="mt-6 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
         >
           Refresh Page
         </button>
@@ -537,16 +602,18 @@ export default function CompanySubscriptionsCard() {
 
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-      <ExpiryBanner plan={company.subscription_plan} expiryDate={company.expiry_date} />
-
+      <ExpiryBanner
+        plan={company.subscription_plan}
+        expiryDate={company.expiry_date}
+      />
 
       <Modal
         isOpen={successModal.isOpen}
         onClose={successModal.closeModal}
-        className="max-w-150 p-5 lg:p-10 z-99999"
+        className="z-99999 max-w-150 p-5 lg:p-10"
       >
         <div className="text-center">
-          <div className="relative flex items-center justify-center z-1 mb-7">
+          <div className="relative z-1 mb-7 flex items-center justify-center">
             <svg
               className="fill-success-50 dark:fill-success-500/15"
               width="90"
@@ -562,7 +629,7 @@ export default function CompanySubscriptionsCard() {
               />
             </svg>
 
-            <span className="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+            <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
               <svg
                 className="fill-success-600 dark:fill-success-500"
                 width="38"
@@ -580,22 +647,25 @@ export default function CompanySubscriptionsCard() {
               </svg>
             </span>
           </div>
-          <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90 sm:text-title-sm">
+          <h4 className="sm:text-title-sm mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
             Confirmed! Payment Successful.
           </h4>
           <p className="text-sm leading-6 text-gray-500 dark:text-gray-400">
-            Your payment was successful. A receipt and your subscription details have been sent to your email. If you have any questions, contact support.                </p>
+            Your payment was successful. A receipt and your subscription details
+            have been sent to your email. If you have any questions, contact
+            support.{" "}
+          </p>
 
-          <div className="flex items-center justify-center w-full gap-3 mt-7">
+          <div className="mt-7 flex w-full items-center justify-center gap-3">
             <a href="/">
-              <Button size="sm" variant="outline" endIcon={<ArrowRightIcon />} >
+              <Button size="sm" variant="outline" endIcon={<ArrowRightIcon />}>
                 Go to Dashboard
               </Button>
             </a>
             <button
               type="button"
               onClick={successModal.closeModal}
-              className="flex justify-center w-full px-4 py-3 text-sm font-medium text-white rounded-lg bg-success-500 shadow-theme-xs hover:bg-success-600 sm:w-auto"
+              className="bg-success-500 shadow-theme-xs hover:bg-success-600 flex w-full justify-center rounded-lg px-4 py-3 text-sm font-medium text-white sm:w-auto"
             >
               Okay, Got It
             </button>
@@ -608,82 +678,150 @@ export default function CompanySubscriptionsCard() {
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
             {company.tenant_logo ? (
-              <img src={company.tenant_logo} alt="Company Logo" className="h-full w-full object-contain p-1 bg-white" />
+              <img
+                src={company.tenant_logo}
+                alt="Company Logo"
+                className="h-full w-full bg-white object-contain p-1"
+              />
             ) : (
-              <span className="text-xl font-bold text-gray-400">{company.name?.charAt(0)}</span>
+              <span className="text-xl font-bold text-gray-400">
+                {company.name?.charAt(0)}
+              </span>
             )}
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">{company.name}</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+              {company.name}
+            </h2>
             <div className="flex items-center gap-2">
-              <p className="text-xs font-medium text-gray-500">{company.slug}.fleetmaster.co.ke {company.website && ` - ${company.website}`}</p>
+              <p className="text-xs font-medium text-gray-500">
+                {company.slug}.fleetmaster.co.ke{" "}
+                {company.website && ` - ${company.website}`}
+              </p>
               <span className="text-xs text-gray-400">|</span>
-              <p className="text-xs font-medium text-gray-500">{company.subscription_plan || "N/A"} Plan</p>
+              <p className="text-xs font-medium text-gray-500">
+                {company.subscription_plan || "N/A"} Plan
+              </p>
               <span className="text-xs text-gray-400">|</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${company.subscription_status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-600'}`}>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${company.subscription_status === "Active" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-gray-100 text-gray-600"}`}
+              >
                 {company.subscription_status || "Inactive"}
               </span>
               <span className="text-xs text-gray-400">|</span>
-              <p className="text-xs font-medium text-gray-500">{
-                getExpiryString(company.expiry_date)
-              }</p>
-
+              <p className="text-xs font-medium text-gray-500">
+                {getExpiryString(company.expiry_date)}
+              </p>
             </div>
           </div>
         </div>
-
       </div>
 
-      <div className="p-6 space-y-8">
+      <div className="space-y-8 p-6">
         {/* new  subscription */}
         <ComponentCard title="Contact Information">
-          <div className="text-gray-400">New subscriptions are automatically added to existing ones and features will update within 1 day</div>
+          <div className="text-gray-400">
+            New subscriptions are automatically added to existing ones and
+            features will update within 1 day
+          </div>
           <div className="grid grid-cols-1 gap-4 pt-4 sm:grid-cols-2 lg:grid-cols-3">
-            {
-              subscriptionPlans?.map((plan, index) => (
-                <div key={index}
-                  className={`relative cursor-pointer h-full flex flex-col rounded-2xl p-8 border border-brand-300 dark:border-brand-900 dark:text-white shadow-sm hover:-translate-y-5 ${selectedIndex === index ? '-translate-y-5 bg-brand-950' : 'bg-transparent'} transition-all`}
-                  style={{ opacity: selectedIndex === index ? 1 : 0.85 }}
-                  onClick={() => setSelectedIndex(index)}
+            {subscriptionPlans?.map((plan, index) => (
+              <div
+                key={index}
+                className={`border-brand-300 dark:border-brand-900 relative flex h-full cursor-pointer flex-col rounded-2xl border p-8 shadow-sm hover:-translate-y-5 dark:text-white ${selectedIndex === index ? "bg-brand-950 -translate-y-5" : "bg-transparent"} transition-all`}
+                style={{ opacity: selectedIndex === index ? 1 : 0.85 }}
+                onClick={() => setSelectedIndex(index)}
+              >
+                <h3
+                  className={`text-brand-500 uppercase ${selectedIndex === index ? "font-semibold text-white" : ""}`}
                 >
-                  <h3 className={`text-brand-500 uppercase ${selectedIndex === index ? 'text-white font-semibold' : ''}`}>{plan?.name}</h3>
-                  <p className={`mt-1 mb-5 text-xs text-muted  ${selectedIndex === index ? 'text-gray-300' : 'text-muted'}`}> {plan?.tagline}</p>
-                  <div className="mb-3">
-                    <span className="align-top text-sm text-gray-400">{plan?.currency}</span>
-                    <span className={`ml-1 text-4xl font-extrabold text- dark:text-white ${selectedIndex === index ? 'text-white' : 'text-black'}`}>{plan?.price}</span>
-                  </div>
-                  <div className="border-t pt-6 border-border">
-                    <p className={`mb-4 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground dark:text-gray-500  ${selectedIndex === index ? 'text-white' : 'text-black'}`}>{plan.featuresTitle}</p>
-                    <div className="space-y-2.5">
-                      {plan?.features.filter(f => f.included).map((feature, i) => (
+                  {plan?.name}
+                </h3>
+                <p
+                  className={`text-muted mt-1 mb-5 text-xs ${selectedIndex === index ? "text-gray-300" : "text-muted"}`}
+                >
+                  {" "}
+                  {plan?.tagline}
+                </p>
+                <div className="mb-3">
+                  <span className="align-top text-sm text-gray-400">
+                    {plan?.currency}
+                  </span>
+                  <span
+                    className={`text- ml-1 text-4xl font-extrabold dark:text-white ${selectedIndex === index ? "text-white" : "text-black"}`}
+                  >
+                    {plan?.price}
+                  </span>
+                </div>
+                <div className="border-border border-t pt-6">
+                  <p
+                    className={`text-muted-foreground mb-4 text-[10px] font-semibold tracking-wider uppercase dark:text-gray-500 ${selectedIndex === index ? "text-white" : "text-black"}`}
+                  >
+                    {plan.featuresTitle}
+                  </p>
+                  <div className="space-y-2.5">
+                    {plan?.features
+                      .filter((f) => f.included)
+                      .map((feature, i) => (
                         <div key={i} className="flex items-start gap-2.5">
                           {feature?.included ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check mt-0.5 shrink-0 text-brand-500" aria-hidden="true">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="lucide lucide-check text-brand-500 mt-0.5 shrink-0"
+                              aria-hidden="true"
+                            >
                               <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                           ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-minus mt-0.5 shrink-0 text-red-500" aria-hidden="true">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="lucide lucide-minus mt-0.5 shrink-0 text-red-500"
+                              aria-hidden="true"
+                            >
                               <path d="M5 12h14"></path>
                             </svg>
                           )}
-                          <span className={`text-[13px] ${selectedIndex === index ? 'text-gray-200' : 'text-muted'}`}>
+                          <span
+                            className={`text-[13px] ${selectedIndex === index ? "text-gray-200" : "text-muted"}`}
+                          >
                             <span
-                              className={`font-medium text-foreground ${!feature?.included ? 'line-through opacity-40' : ''}`}                        ><span className="font-semibold">{feature.highlightedText}</span> {feature.text}</span>
+                              className={`text-foreground font-medium ${!feature?.included ? "line-through opacity-40" : ""}`}
+                            >
+                              <span className="font-semibold">
+                                {feature.highlightedText}
+                              </span>{" "}
+                              {feature.text}
+                            </span>
                           </span>
                         </div>
                       ))}
-                    </div>
                   </div>
                 </div>
-              ))
-            }
+              </div>
+            ))}
           </div>
-          <div className="max-w-4xl container mx-auto">
-
-
+          <div className="container mx-auto max-w-4xl">
             {/* Billing Gateway Gateway Interface Config */}
-            <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Choose Payment Method</h4>
-            <FormControl component="fieldset" className="w-full mb-6">
+            <h4 className="mb-3 text-sm font-bold text-gray-900 dark:text-white">
+              Choose Payment Method
+            </h4>
+            <FormControl component="fieldset" className="mb-6 w-full">
               {/* Use ONE RadioGroup mapped directly to your state variable */}
               <RadioGroup
                 value={paymentMethod}
@@ -692,19 +830,25 @@ export default function CompanySubscriptionsCard() {
               >
                 {/* M-Pesa Option Layout Box */}
                 <div
-                  onClick={() => setPaymentMethod('m-pesa')}
-                  className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'm-pesa'
-                    ? 'border-brand-500 bg-brand-50/5'
-                    : 'border-gray-200 dark:border-gray-800'
-                    }`}
+                  onClick={() => setPaymentMethod("m-pesa")}
+                  className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${
+                    paymentMethod === "m-pesa"
+                      ? "border-brand-500 bg-brand-50/5"
+                      : "border-gray-200 dark:border-gray-800"
+                  }`}
                 >
                   <FormControlLabel
                     value="m-pesa"
                     control={<Radio size="small" />}
                     label={
                       <div className="flex items-center gap-2">
-                        <MobileScreenShareOutlinedIcon className="text-brand-500" fontSize="small" />
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">M-Pesa Instant PayBill</span>
+                        <MobileScreenShareOutlinedIcon
+                          className="text-brand-500"
+                          fontSize="small"
+                        />
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          M-Pesa Instant PayBill
+                        </span>
                       </div>
                     }
                   />
@@ -712,19 +856,25 @@ export default function CompanySubscriptionsCard() {
 
                 {/* Card Option Layout Box */}
                 <div
-                  onClick={() => setPaymentMethod('card')}
-                  className={`flex items-center justify-between border rounded-xl px-3 py-2 cursor-pointer bg-white dark:bg-gray-900 transition-colors ${paymentMethod === 'card'
-                    ? 'border-brand-500 bg-brand-50/5'
-                    : 'border-gray-200 dark:border-gray-800'
-                    }`}
+                  onClick={() => setPaymentMethod("card")}
+                  className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${
+                    paymentMethod === "card"
+                      ? "border-brand-500 bg-brand-50/5"
+                      : "border-gray-200 dark:border-gray-800"
+                  }`}
                 >
                   <FormControlLabel
                     value="card"
                     control={<Radio size="small" />}
                     label={
                       <div className="flex items-center gap-2">
-                        <CreditCardIcon className="text-brand-500" fontSize="small" />
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">Bank Instant Checkout (VISA/MASTER Card)</span>
+                        <CreditCardIcon
+                          className="text-brand-500"
+                          fontSize="small"
+                        />
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          Bank Instant Checkout (VISA/MASTER Card)
+                        </span>
                       </div>
                     }
                   />
@@ -733,7 +883,7 @@ export default function CompanySubscriptionsCard() {
             </FormControl>
 
             <div className="mt-4 mb-4 transition-all duration-200">
-              {paymentMethod === 'm-pesa' && (
+              {paymentMethod === "m-pesa" && (
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
                     M-Pesa Mobile Number
@@ -748,14 +898,14 @@ export default function CompanySubscriptionsCard() {
                       onChange={(e) => setMpesaNumber(e.target.value)}
                       disabled={isPaying}
                     />
-                    <span className="absolute left-0 top-1/2 flex text-sm h-11 w-13.75 dark:text-white -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                    <span className="absolute top-1/2 left-0 flex h-11 w-13.75 -translate-y-1/2 items-center justify-center border-r border-gray-200 text-sm dark:border-gray-800 dark:text-white">
                       +254
                     </span>
                   </div>
                 </div>
               )}
 
-              {paymentMethod === 'card' && (
+              {paymentMethod === "card" && (
                 <div className="space-y-4">
                   {/* Card Number Row */}
                   <div className="space-y-2">
@@ -767,10 +917,10 @@ export default function CompanySubscriptionsCard() {
                         type="text"
                         placeholder="Card number"
                         className="pl-15.5"
-                      // value={cardNumber}
-                      // onChange={(e) => setCardNumber(e.target.value)}
+                        // value={cardNumber}
+                        // onChange={(e) => setCardNumber(e.target.value)}
                       />
-                      <span className="absolute left-0 top-1/2 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                      <span className="absolute top-1/2 left-0 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
                         <svg
                           width="20"
                           height="20"
@@ -798,11 +948,11 @@ export default function CompanySubscriptionsCard() {
                       </label>
                       <Input
                         type="text"
-                        max={'5'}
+                        max={"5"}
                         placeholder="MM/YY"
-                        className="w-full text-center mt-2"
-                      // value={expiry}
-                      // onChange={(e) => handleExpiryChange(e.target.value)}
+                        className="mt-2 w-full text-center"
+                        // value={expiry}
+                        // onChange={(e) => handleExpiryChange(e.target.value)}
                       />
                     </div>
 
@@ -813,11 +963,11 @@ export default function CompanySubscriptionsCard() {
                       </label>
                       <Input
                         type="password"
-                        max={'4'}
+                        max={"4"}
                         placeholder="•••"
-                        className="w-full text-center tracking-widest mt-2"
-                      // value={cvv}
-                      // onChange={(e) => setCvv(e.target.value)}
+                        className="mt-2 w-full text-center tracking-widest"
+                        // value={cvv}
+                        // onChange={(e) => setCvv(e.target.value)}
                       />
                     </div>
                   </div>
@@ -825,25 +975,44 @@ export default function CompanySubscriptionsCard() {
               )}
             </div>
 
+            {isPaying && (
+              <Alert
+                title="Payment Processing!"
+                variant="info"
+                message="Your payment is being processed. Check your phone."
+              />
+            )}
+            {paymentSuccess && (
+              <Alert
+                title="Payment Confirmed!"
+                variant="success"
+                message="Your payment was successful. A receipt and your subscription details have been sent to your email. If you have any questions, contact support."
+              />
+            )}
 
-            {
-              isPaying && <Alert title='Payment Processing!' variant='info' message='Your payment is being processed. Check your phone.' />
-            }
-            {
-              paymentSuccess && <Alert title='Payment Confirmed!' variant='success' message='Your payment was successful. A receipt and your subscription details have been sent to your email. If you have any questions, contact support.' />
-            }
-
-            {
-              error && <Alert title='Payment Error!' variant='error' message={error?.message || 'An error occured. Please try again later!'} />
-            }
+            {error && (
+              <Alert
+                title="Payment Error!"
+                variant="error"
+                message={
+                  error?.message || "An error occured. Please try again later!"
+                }
+              />
+            )}
 
             {/* Dynamic Call-To-Action Operations Routing Grid */}
-            <div className="space-y-3 mt-4">
-              <Button onClick={createNewPayment} className="w-full intaSendPayButton" data-amount="10" data-currency="KES" size='md' disabled={isPaying || paymentSuccess}>
+            <div className="mt-4 space-y-3">
+              <Button
+                onClick={createNewPayment}
+                className="intaSendPayButton w-full"
+                data-amount="10"
+                data-currency="KES"
+                size="md"
+                disabled={isPaying || paymentSuccess}
+              >
                 {isPaying
                   ? "Processing Transaction..."
-                  : `Pay Now (Ksh. ${(grandTotalAmount).toLocaleString()})`
-                }
+                  : `Pay Now (Ksh. ${grandTotalAmount.toLocaleString()})`}
               </Button>
             </div>
           </div>
@@ -852,11 +1021,16 @@ export default function CompanySubscriptionsCard() {
         {/* Operational Settings */}
         <ComponentCard title="Subscription History">
           <div className="grid grid-cols-1 gap-4">
-            {
-              subscriptionsList?.map((c, i) => (
-                <DataPoint key={i} amount={c.amount} method={c.method} date={c.date} label={c.label} value={c.value} />
-              ))
-            }
+            {subscriptionsList?.map((c, i) => (
+              <DataPoint
+                key={i}
+                amount={c.amount}
+                method={c.method}
+                date={c.date}
+                label={c.label}
+                value={c.value}
+              />
+            ))}
           </div>
         </ComponentCard>
       </div>
@@ -864,8 +1038,12 @@ export default function CompanySubscriptionsCard() {
       {/* Footer / About Section */}
       {company.about && (
         <div className="border-t border-gray-100 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">About</p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">{company.about}</p>
+          <p className="mb-1 text-xs font-semibold tracking-wider text-gray-400 uppercase">
+            About
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            {company.about}
+          </p>
         </div>
       )}
     </div>
@@ -875,12 +1053,15 @@ export default function CompanySubscriptionsCard() {
 function DataPoint({ label, value, amount, method, date }: Subscription) {
   return (
     <div className="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800/30">
-      <span className="mb-2 text-[12px] font-bold uppercase tracking-widest text-gray-400">{label}</span>
-      <span className="text-xs text-brand-500 dark:text-brand-400 mb-2 flex items-center">
+      <span className="mb-2 text-[12px] font-bold tracking-widest text-gray-400 uppercase">
+        {label}
+      </span>
+      <span className="text-brand-500 dark:text-brand-400 mb-2 flex items-center text-xs">
         {value}
       </span>
-      <span className="text-sm text-gray-900 dark:text-gray-100 flex items-center">
-        Ksh. {amount.toLocaleString()} | {method} | {(new Date(date)).toLocaleString()}
+      <span className="flex items-center text-sm text-gray-900 dark:text-gray-100">
+        Ksh. {amount.toLocaleString()} | {method} |{" "}
+        {new Date(date).toLocaleString()}
       </span>
     </div>
   );

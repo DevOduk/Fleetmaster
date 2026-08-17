@@ -3,12 +3,13 @@
 import { createClient } from "@/utils/supabase/server";
 import { Redis } from "@upstash/redis";
 
-const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-  : null;
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
 
 const CACHE_TTL = 300; // 5 minutes cache TTL
 
@@ -51,7 +52,11 @@ export async function fetchExpenseDetails(id: string) {
 
   if (redis) {
     try {
-      const cached = await redis.get<{ data: any; error: any; success: boolean }>(cacheKey);
+      const cached = await redis.get<{
+        data: any;
+        error: any;
+        success: boolean;
+      }>(cacheKey);
       if (cached) return cached;
     } catch (e) {
       console.error(`Redis fetch error (fetchExpenseDetails - ${id}):`, e);
@@ -92,7 +97,7 @@ export async function createExpense(expenseDetails: any) {
   if (redis && !error) {
     try {
       const keysToInvalidate = ["expenses:all"];
-      
+
       if (expenseDetails?.tenant_id) {
         keysToInvalidate.push(`expenses:admin:${expenseDetails.tenant_id}`);
       }
@@ -111,10 +116,17 @@ export async function fetchExpensesForAdmin(tenantId: string) {
 
   if (redis) {
     try {
-      const cached = await redis.get<{ data: any; success: boolean; error: any }>(cacheKey);
+      const cached = await redis.get<{
+        data: any;
+        success: boolean;
+        error: any;
+      }>(cacheKey);
       if (cached) return cached;
     } catch (e) {
-      console.error(`Redis fetch error (fetchExpensesForAdmin - ${tenantId}):`, e);
+      console.error(
+        `Redis fetch error (fetchExpensesForAdmin - ${tenantId}):`,
+        e,
+      );
     }
   }
 
@@ -131,7 +143,10 @@ export async function fetchExpensesForAdmin(tenantId: string) {
     try {
       await redis.set(cacheKey, JSON.stringify(result), { ex: CACHE_TTL });
     } catch (e) {
-      console.error(`Redis set error (fetchExpensesForAdmin - ${tenantId}):`, e);
+      console.error(
+        `Redis set error (fetchExpensesForAdmin - ${tenantId}):`,
+        e,
+      );
     }
   }
 

@@ -1,6 +1,6 @@
 // src/utils/supabase/server.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 /**
  * Request-Scoped Supabase Client
@@ -21,14 +21,14 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // The `setAll` method can be ignored if the middleware is handling it
           }
         },
       },
-    }
+    },
   );
 }
 
@@ -51,6 +51,6 @@ export function createPublicClient() {
           // No-op: Public read queries do not mutate session cookies
         },
       },
-    }
+    },
   );
 }

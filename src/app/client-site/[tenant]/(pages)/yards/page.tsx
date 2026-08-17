@@ -1,9 +1,7 @@
-
 import ClientsYardView from "@/components/yards/ClientsYardView";
 
 import { Metadata } from "next";
 import { createPublicClient } from "@/utils/supabase/server";
-
 
 interface PageProps {
   params: Promise<{
@@ -11,9 +9,10 @@ interface PageProps {
   }>;
 }
 
-
 // 1. Dynamic Server-Side Metadata Generation
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const tenantSlug = resolvedParams.tenant;
 

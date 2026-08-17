@@ -21,16 +21,16 @@ export interface Vehicle {
   group: string;
   description: string;
   driverType?: "Self Drive" | "Chauffeured";
-  fuelType: "Petrol/Gasoline" | "Diesel" | "Hybrid" | "Electric" | "Petrol/Hybrid";
+  fuelType:
+    "Petrol/Gasoline" | "Diesel" | "Hybrid" | "Electric" | "Petrol/Hybrid";
   tracker: {
-    provider: string | null,
-    trackingApiUrl: string | null,
+    provider: string | null;
+    trackingApiUrl: string | null;
   };
-
 }
 
 export interface Booking {
-  tenantId: string,
+  tenantId: string;
   id: number;
   date: string;
   vehicleId: number;

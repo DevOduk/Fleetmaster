@@ -1,7 +1,7 @@
 import EditProfilePage from "@/components/ProfilePage/client-profile/EditProfilePage";
 import { Metadata } from "next";
 import { createPublicClient } from "@/utils/supabase/server";
-
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 
 interface PageProps {
   params: Promise<{
@@ -9,9 +9,10 @@ interface PageProps {
   }>;
 }
 
-
 // 1. Dynamic Server-Side Metadata Generation
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const tenantSlug = resolvedParams.tenant;
 
@@ -39,17 +40,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default function Profile() {
   return (
-    <div className="container min-h-screen max-w-6xl m-auto">
-      <div className="rounded-2xl mt-4 mb-4 border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
-        <div className="flex gap-3 items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Edit Profile
-          </h3>
-        </div>
+    <div className="container m-auto min-h-screen max-w-6xl">
+      <PageBreadcrumb
+        items={[
+          {
+            label: "Profile",
+            href: "/profile",
+          },
+        ]}
+        pageTitle="Edit Profile"
+      />
 
-        <div className="space-y-6">
-          <EditProfilePage />
-        </div>
+      <div className="space-y-6">
+        <EditProfilePage />
       </div>
     </div>
   );

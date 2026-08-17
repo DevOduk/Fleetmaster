@@ -5,7 +5,7 @@ import Label from "@/components/form/Label";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 import React, { useState } from "react";
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { useTenant } from "@/context/TenantContext";
 import { useToast } from "@/context/ToastContext";
 import { useRouter } from "next/navigation";
@@ -17,7 +17,7 @@ import { allCountriesDB } from "@/data/globalExports";
 export const countries = allCountriesDB.map((country) => ({
   code: country.code,
   label: country.phone,
-  country: country.country
+  country: country.country,
 }));
 
 export const formatToE164 = (phone: string, countryCode: string) => {
@@ -27,12 +27,11 @@ export const formatToE164 = (phone: string, countryCode: string) => {
     phoneNumber.isValid() &&
     phoneNumber.country === countryCode
   ) {
-    return phoneNumber.format('E.164');
+    return phoneNumber.format("E.164");
   }
 
   return null;
 };
-
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -40,43 +39,51 @@ export default function SignUpForm() {
   const { showToast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState('123456789');
+  const [confirmPassword, setConfirmPassword] = useState("123456789");
   const [formData, setFormData] = useState({
-    first_name: 'Austine',
-    last_name: 'Oduk',
-    email: 'austine.oduk@gmail.com',
-    phone: '768927608',
-    password: '123456789',
-    country: 'Kenya',
-  })
-  const [errorMessage, setErrorMessage] = useState('');
+    first_name: "Austine",
+    last_name: "Oduk",
+    email: "austine.oduk@gmail.com",
+    phone: "768927608",
+    password: "123456789",
+    country: "Kenya",
+  });
+  const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
 
   const handleCreateAccount = async () => {
     if (!tenant || !tenant?.id) {
-      showToast('An error occured while finding destination!', 'error');
+      showToast("An error occured while finding destination!", "error");
       return;
     }
 
-    if (!formData.first_name.trim() || !formData.last_name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.password.trim() || !confirmPassword.trim()) {
-      showToast('Please fill out all the required fields!', 'error');
+    if (
+      !formData.first_name.trim() ||
+      !formData.last_name.trim() ||
+      !formData.email.trim() ||
+      !formData.phone.trim() ||
+      !formData.password.trim() ||
+      !confirmPassword.trim()
+    ) {
+      showToast("Please fill out all the required fields!", "error");
       return;
     }
 
     if (formData.password.trim() !== confirmPassword.trim()) {
-      showToast('Passwords do not match!', 'error');
-      setErrorMessage('Passwords do not match!');
+      showToast("Passwords do not match!", "error");
+      setErrorMessage("Passwords do not match!");
       return;
     }
 
     if (!isChecked) {
-      showToast('Please read and agree to the Terms and Conditions!', 'error');
-      setErrorMessage('Please read and agree to the Terms and Conditions!');
+      showToast("Please read and agree to the Terms and Conditions!", "error");
+      setErrorMessage("Please read and agree to the Terms and Conditions!");
       return;
     }
     // 1. Find the country first
-    const selectedCountry = countries.find(c => c.country === formData.country);
+    const selectedCountry = countries.find(
+      (c) => c.country === formData.country,
+    );
 
     // 2. Defensive check
     if (!selectedCountry) {
@@ -86,34 +93,44 @@ export default function SignUpForm() {
     // 3. Format with safety
     const e164Phone = formatToE164(formData.phone, selectedCountry.code);
     if (e164Phone === null) {
-      showToast('Please enter a valid phone number!', 'error');
-      setErrorMessage('Please enter a valid phone number!');
+      showToast("Please enter a valid phone number!", "error");
+      setErrorMessage("Please enter a valid phone number!");
       return;
     }
 
     setIsLoading(true);
-    const res = await createTenantClient({ ...formData, tenant_id: tenant.id, phone: e164Phone });
+    const res = await createTenantClient({
+      ...formData,
+      tenant_id: tenant.id,
+      phone: e164Phone,
+    });
 
     if (res?.success && res?.data?.id) {
-      showToast(`Registration successful! Please verify your email.`, "success");
+      showToast(
+        `Registration successful! Please verify your email.`,
+        "success",
+      );
 
-      router.push(`/verify-email?v=${btoa(JSON.stringify({ email: formData.email, id: res.data.id }))}`);
+      router.push(
+        `/verify-email?v=${btoa(JSON.stringify({ email: formData.email, id: res.data.id }))}`,
+      );
     } else {
-      showToast(`Failed to register details: ${res?.error?.message || "An error occurred"}`, "error");
+      showToast(
+        `Failed to register details: ${res?.error?.message || "An error occurred"}`,
+        "error",
+      );
       setErrorMessage(res?.error?.message || "An error occurred");
       setIsLoading(false);
     }
-
-  }
+  };
 
   return (
-    <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
-      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-
+    <div className="no-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:w-1/2">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
         {/* signup block  */}
         <div>
           <div className="mb-5 sm:mb-8">
-            <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
+            <h1 className="text-title-sm sm:text-title-md mb-2 font-semibold text-gray-800 dark:text-white/90">
               Sign Up
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -122,7 +139,7 @@ export default function SignUpForm() {
           </div>
           <div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
-              <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+              <button className="inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
                 <svg
                   width="20"
                   height="20"
@@ -149,7 +166,7 @@ export default function SignUpForm() {
                 </svg>
                 Sign up with Google
               </button>
-              <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+              <button className="inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
                 <svg
                   width="21"
                   className="fill-current"
@@ -168,17 +185,19 @@ export default function SignUpForm() {
                 <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">
+                <span className="bg-white p-2 text-gray-400 sm:px-5 sm:py-2 dark:bg-gray-900">
                   Or
                 </span>
               </div>
             </div>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
 
-              handleCreateAccount();
-            }}>
+                handleCreateAccount();
+              }}
+            >
               <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   {/* <!-- First Name --> */}
@@ -191,21 +210,29 @@ export default function SignUpForm() {
                       id="fname"
                       name="fname"
                       value={formData.first_name}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, first_name: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          first_name: e.target.value,
+                        }))
+                      }
                       placeholder="Enter your first name"
                     />
                   </div>
                   {/* <!-- Last Name --> */}
                   <div className="sm:col-span-1">
-                    <Label>
-                      Last Name
-                    </Label>
+                    <Label>Last Name</Label>
                     <Input
                       type="text"
                       id="lname"
                       name="lname"
                       value={formData.last_name}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, last_name: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          last_name: e.target.value,
+                        }))
+                      }
 
                       placeholder="Enter your last name"
                     />
@@ -218,11 +245,19 @@ export default function SignUpForm() {
                   </Label>
                   <Input
                     type="email"
-                    error={!!errorMessage.includes("email")} hint={errorMessage.includes("email") ? errorMessage : undefined}
+                    error={!!errorMessage.includes("email")}
+                    hint={
+                      errorMessage.includes("email") ? errorMessage : undefined
+                    }
                     id="email"
                     name="email"
                     value={formData.email}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
                     placeholder="Enter your email"
                   />
                 </div>
@@ -232,28 +267,40 @@ export default function SignUpForm() {
                   <Label>
                     Phone<span className="text-error-500">*</span>
                   </Label>
-                  <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-2">
+                  <div className="relative grid grid-cols-1 gap-2 lg:grid-cols-2">
                     <Select
                       className="w-full"
-                      defaultValue={'Kenya'}
+                      defaultValue={"Kenya"}
                       value={formData.country}
-                      options={countries.map(c => {
+                      options={countries.map((c) => {
                         return {
                           value: c.country,
                           label: `${c.country} (${c.label})`,
-                        }
+                        };
                       })}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, country: e }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, country: e }))
+                      }
                     />
 
                     <Input
                       type="tel"
                       className="w-full"
                       id="phone"
-                      error={!!errorMessage.includes("phone")} hint={errorMessage.includes("phone") ? errorMessage : undefined}
+                      error={!!errorMessage.includes("phone")}
+                      hint={
+                        errorMessage.includes("phone")
+                          ? errorMessage
+                          : undefined
+                      }
                       name="phone"
                       value={formData.phone}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          phone: e.target.value,
+                        }))
+                      }
 
                       placeholder="555 555-0199"
                     />
@@ -261,20 +308,28 @@ export default function SignUpForm() {
                 </div>
                 {/* <!-- Password --> */}
                 <div>
-                  <Label>
-                    Password
-                  </Label>
+                  <Label>Password</Label>
                   <div className="relative">
                     <Input
                       placeholder="Enter your password"
                       value={formData.password}
                       type={showPassword ? "text" : "password"}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-                      error={!!errorMessage.includes("password")} hint={errorMessage.includes("password") ? errorMessage : undefined}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          password: e.target.value,
+                        }))
+                      }
+                      error={!!errorMessage.includes("password")}
+                      hint={
+                        errorMessage.includes("password")
+                          ? errorMessage
+                          : undefined
+                      }
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
+                      className="absolute top-1/2 right-4 z-30 -translate-y-1/2 cursor-pointer"
                     >
                       {showPassword ? (
                         <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
@@ -285,20 +340,23 @@ export default function SignUpForm() {
                   </div>
                 </div>
                 <div>
-                  <Label>
-                    Confirm Password
-                  </Label>
+                  <Label>Confirm Password</Label>
                   <div className="relative">
                     <Input
                       placeholder="Enter your password"
                       value={confirmPassword}
                       type={showPassword ? "text" : "password"}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      error={!!errorMessage.includes("password")} hint={errorMessage.includes("password") ? errorMessage : undefined}
+                      error={!!errorMessage.includes("password")}
+                      hint={
+                        errorMessage.includes("password")
+                          ? errorMessage
+                          : undefined
+                      }
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
+                      className="absolute top-1/2 right-4 z-30 -translate-y-1/2 cursor-pointer"
                     >
                       {showPassword ? (
                         <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
@@ -309,9 +367,9 @@ export default function SignUpForm() {
                   </div>
                 </div>
                 {/* <!-- Checkbox --> */}
-                <div className="flex items-center gap-3 cursor-pointer">
+                <div className="flex cursor-pointer items-center gap-3">
                   <Checkbox
-                    className="w-5 h-5"
+                    className="h-5 w-5"
                     checked={isChecked}
                     onChange={setIsChecked}
                   />
@@ -325,14 +383,23 @@ export default function SignUpForm() {
                       Terms and Conditions,
                     </a>{" "}
                     and our{" "}
-                    <a target="_blank" href="/privacy" className="text-blue-500">
+                    <a
+                      target="_blank"
+                      href="/privacy"
+                      className="text-blue-500"
+                    >
                       Privacy Policy
                     </a>
                   </p>
                 </div>
                 {/* <!-- Button --> */}
                 <div>
-                  <Button type="submit" variant="primary" disabled={isLoading} className="px-4! py-3! w-full text-sm">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={isLoading}
+                    className="w-full px-4! py-3! text-sm"
+                  >
                     {isLoading ? "Signing Up..." : "Sign Up"}
                   </Button>
                 </div>
@@ -340,7 +407,7 @@ export default function SignUpForm() {
             </form>
 
             <div className="mt-5">
-              <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
+              <p className="text-center text-sm font-normal text-gray-700 sm:text-start dark:text-gray-400">
                 Already have an account? &nbsp;
                 <Link
                   href="/signin"
@@ -352,7 +419,6 @@ export default function SignUpForm() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

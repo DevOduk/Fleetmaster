@@ -1,5 +1,5 @@
-import { cookies } from 'next/headers';
-import { notFound } from 'next/navigation';
+import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
 import ClientFooter from "@/layout/(client-layout)/ClientFooter";
 import ClientHeader from "@/layout/(client-layout)/ClientHeader";
 import { BookingProvider } from "@/context/BookingContext";
@@ -8,19 +8,20 @@ import { TenantProvider } from "@/context/TenantContext";
 import { UserProvider } from "@/context/UserContext";
 import { ToastProvider } from "@/context/ToastContext";
 import TenantLoadingScreenGuard from "./TenantLoadingScreenGuard";
-import { fetchVehiclesForTenant } from '@/app/actions/vehicles';
+import { fetchVehiclesForTenant } from "@/app/actions/vehicles";
 import { getCachedTenant } from "@/utils/tenant-cache";
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-  : null;
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
 
 export default async function TenantLayout({
   children,
@@ -58,13 +59,19 @@ export default async function TenantLayout({
     try {
       const decoded = jwt.verify(sessionCookie.value, JWT_SECRET) as any;
       const targetAccountType = decoded.accountType || decoded.role;
-      const normalizedType = targetAccountType === "admin" || targetAccountType === "client" ? targetAccountType : "client";
+      const normalizedType =
+        targetAccountType === "admin" || targetAccountType === "client"
+          ? targetAccountType
+          : "client";
 
       const cacheKey = `user:profile:${decoded.id}:${normalizedType}`;
       const cachedProfile = await redis.get(cacheKey);
 
       if (cachedProfile) {
-        serverUser = typeof cachedProfile === "string" ? JSON.parse(cachedProfile) : cachedProfile;
+        serverUser =
+          typeof cachedProfile === "string"
+            ? JSON.parse(cachedProfile)
+            : cachedProfile;
       }
     } catch (e) {
       console.warn("Server layout profile pre-fetch skipped:", e);
@@ -80,9 +87,7 @@ export default async function TenantLayout({
               <TenantLoadingScreenGuard>
                 <div>
                   <ClientHeader />
-                  <main className="flex-1 w-full">
-                    {children}
-                  </main>
+                  <main className="w-full flex-1">{children}</main>
                   <ClientFooter />
                 </div>
               </TenantLoadingScreenGuard>

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import {
   Table,
   TableBody,
@@ -11,13 +11,12 @@ import Link from "next/link";
 import { useManagerFleet } from "@/context/ManagerFleetContext";
 import { formatedValue } from "../ecommerce/MonthlyTarget";
 
-
 export default function RecentVehiscles() {
   const { vehicles, loading } = useManagerFleet();
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/3 sm:px-6">
-      <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-3 sm:px-6 dark:border-gray-800 dark:bg-white/3">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
             Recent Vehicles
@@ -25,45 +24,45 @@ export default function RecentVehiscles() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href={'/vehicles'}>
-            <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+          <Link href={"/vehicles"}>
+            <button className="text-theme-sm shadow-theme-xs inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
               See all
             </button>
           </Link>
         </div>
       </div>
-      <div className="max-w-full overflow-x-auto custom-scrollbar">
+      <div className="custom-scrollbar max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
-          <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
+          <TableHeader className="border-y border-gray-100 dark:border-gray-800">
             <TableRow>
               <TableCell
                 isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
               >
                 Vehicle Name
               </TableCell>
               <TableCell
                 isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
               >
                 Owner
               </TableCell>
               <TableCell
                 isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
               >
                 Category
               </TableCell>
               <TableCell
                 isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
               >
                 Amount
               </TableCell>
               <TableCell
                 isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
               >
                 Status
               </TableCell>
@@ -73,58 +72,66 @@ export default function RecentVehiscles() {
           {/* Table Body */}
 
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {
-              loading ? (
-                <>
-                  {[...Array(4)].map((i) => <TableRow key={i}>
-                    <TableCell className="w-full py-2" colSpan={4}><div className="dark:bg-gray-600 rounded bg-gray-300 mb-2 h-12 text-center animate-pulse"></div></TableCell>
-                  </TableRow>)}
-                </>
-              ) :
-                vehicles.length > 0 ? vehicles?.sort((a, b) => b.created_at - a.created_at).slice(0, 10).map((product, index) => (
+            {loading ? (
+              <>
+                {[...Array(4)].map((i) => (
+                  <TableRow key={i}>
+                    <TableCell className="w-full py-2" colSpan={4}>
+                      <div className="mb-2 h-12 animate-pulse rounded bg-gray-300 text-center dark:bg-gray-600"></div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </>
+            ) : vehicles.length > 0 ? (
+              vehicles
+                ?.sort((a, b) => b.created_at - a.created_at)
+                .slice(0, 10)
+                .map((product, index) => (
                   <TableRow key={index} className="">
                     <TableCell className="py-3">
                       <div className="flex items-center gap-3">
                         <img
                           src={product.image_url}
-                          className="h-11.25 w-17.5 object-cover rounded"
+                          className="h-11.25 w-17.5 rounded object-cover"
                           alt={product.make}
                         />
                         <div>
-                          <p className="font-medium text-nowrap text-gray-800 text-theme-sm dark:text-white/90">
+                          <p className="text-theme-sm font-medium text-nowrap text-gray-800 dark:text-white/90">
                             {product.make} {product.model} {product.year}
                           </p>
-                          <span className="text-gray-500 text-nowrap text-theme-xs dark:text-gray-400">
-                            {product.license_plate} | {product.min_rental_days} Days
+                          <span className="text-theme-xs text-nowrap text-gray-500 dark:text-gray-400">
+                            {product.license_plate} | {product.min_rental_days}{" "}
+                            Days
                           </span>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400 text-nowrap">
+                    <TableCell className="text-theme-sm py-3 text-nowrap text-gray-500 dark:text-gray-400">
                       {product.owner}
                     </TableCell>
-                    <TableCell className="py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="text-theme-sm py-3 text-nowrap text-gray-500 dark:text-gray-400">
                       {product.category}
                     </TableCell>
-                    <TableCell className="py-3 text-nowrap text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="text-theme-sm py-3 text-nowrap text-gray-500 dark:text-gray-400">
                       {formatedValue(product.daily_rate)} Ksh.
                     </TableCell>
-                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
                       <Badge
                         size="sm"
                         color={
-                          product.status === "Available"
-                            ? "success" : "error"
+                          product.status === "Available" ? "success" : "error"
                         }
                       >
                         {product.status}
                       </Badge>
                     </TableCell>
                   </TableRow>
-                )) : <TableRow>
-                  <TableCell>There are no vehicles!</TableCell>
-                </TableRow>
-            }
+                ))
+            ) : (
+              <TableRow>
+                <TableCell>There are no vehicles!</TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

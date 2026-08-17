@@ -1,12 +1,28 @@
 "use client";
 
 import { applyThemeVariables } from "@/components/ThemeInitializer";
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 
 interface AdminContextType {
   adminProfile: any | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; emailVerified?: boolean; phoneVerified?: boolean; id?: string }>;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{
+    success: boolean;
+    error?: string;
+    emailVerified?: boolean;
+    phoneVerified?: boolean;
+    id?: string;
+    is_otp: boolean;
+  }>;
   logout: () => void;
   setAdminProfile: React.Dispatch<React.SetStateAction<any | null>>;
 }
@@ -17,12 +33,14 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const [adminProfile, setAdminProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-
   useEffect(() => {
     // Apply when profile is loaded
     if (adminProfile?.fleetmaster_tenants?.color) {
       applyThemeVariables(adminProfile?.fleetmaster_tenants?.color);
-      localStorage.setItem("brand-color", adminProfile?.fleetmaster_tenants?.color);
+      localStorage.setItem(
+        "brand-color",
+        adminProfile?.fleetmaster_tenants?.color,
+      );
     }
   }, [adminProfile]);
 
@@ -56,12 +74,32 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         setAdminProfile(data.user);
-        return { success: true, emailVerified: data.user?.verification_status?.email, phoneVerified: data.user?.phone_verified, id: data.user?.id };
+        return {
+          success: true,
+          emailVerified: data.user?.verification_status?.email ?? false,
+          phoneVerified: data.user?.phone_verified ?? false,
+          id: data.user?.id,
+          is_otp: data.user?.is_otp ?? false,
+        };
       } else {
-        return { success: false, error: data.error };
+        return {
+          success: false,
+          error: data.error,
+          emailVerified: false,
+          phoneVerified: false,
+          id: undefined,
+          is_otp: false,
+        };
       }
     } catch (err) {
-      return { success: false, error: "Network connection failure" };
+      return {
+        success: false,
+        error: err,
+        emailVerified: false,
+        phoneVerified: false,
+        id: undefined,
+        is_otp: false,
+      };
     }
   };
 
@@ -71,7 +109,9 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AdminContext.Provider value={{ adminProfile, loading, login, logout, setAdminProfile }}>
+    <AdminContext.Provider
+      value={{ adminProfile, loading, login, logout, setAdminProfile }}
+    >
       {children}
     </AdminContext.Provider>
   );

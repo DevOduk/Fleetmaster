@@ -1,5 +1,11 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import { useUser } from "./UserContext";
 import { fetchVehiclesForTenant } from "@/app/actions/vehicles";
 
@@ -11,14 +17,19 @@ interface AdminFleetContextType {
   updateVehicle: (id: number, updatedVehicle: any) => void;
 }
 
-const AdminFleetContext = createContext<AdminFleetContextType | undefined>(undefined);
+const AdminFleetContext = createContext<AdminFleetContextType | undefined>(
+  undefined,
+);
 
 interface AdminFleetProviderProps {
   children: ReactNode;
   initialVehicles?: any[]; // Accept pre-fetched vehicles from Server Component layout
 }
 
-export const AdminFleetProvider = ({ children, initialVehicles = [] }: AdminFleetProviderProps) => {
+export const AdminFleetProvider = ({
+  children,
+  initialVehicles = [],
+}: AdminFleetProviderProps) => {
   // If the server provides vehicles, boot up state with them immediately
   const [vehicles, setVehicles] = useState<any[]>(initialVehicles);
 
@@ -53,18 +64,18 @@ export const AdminFleetProvider = ({ children, initialVehicles = [] }: AdminFlee
     }
 
     fetchAllVehicles();
-  // Pass primitives (tenant_id string & array length number) to prevent infinite object re-evaluation
+    // Pass primitives (tenant_id string & array length number) to prevent infinite object re-evaluation
   }, [adminProfile?.tenant_id, initialVehicles?.length]);
 
   // Helper function to update a single vehicle by ID
   const updateVehicle = (id: number, updatedVehicle: any) => {
-    setVehicles((prev) =>
-      prev.map((v) => (v.id === id ? updatedVehicle : v))
-    );
+    setVehicles((prev) => prev.map((v) => (v.id === id ? updatedVehicle : v)));
   };
 
   return (
-    <AdminFleetContext.Provider value={{ vehicles, loading, setVehicles, updateVehicle }}>
+    <AdminFleetContext.Provider
+      value={{ vehicles, loading, setVehicles, updateVehicle }}
+    >
       {children}
     </AdminFleetContext.Provider>
   );
@@ -73,6 +84,7 @@ export const AdminFleetProvider = ({ children, initialVehicles = [] }: AdminFlee
 // Custom hook for easy access
 export const useAdminFleet = () => {
   const context = useContext(AdminFleetContext);
-  if (!context) throw new Error("useAdminFleet must be used within an AdminFleetProvider");
+  if (!context)
+    throw new Error("useAdminFleet must be used within an AdminFleetProvider");
   return context;
 };

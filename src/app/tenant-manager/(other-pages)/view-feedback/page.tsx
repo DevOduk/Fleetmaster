@@ -1,16 +1,17 @@
 // src/app/admin-site/(others-pages)/feedbacks/page.tsx
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { createClient } from "@/utils/supabase/server";
-import ViewFeedbacks, { FeedbackLog } from "@/components/feedback/ViewFeedbacks";
+import ViewFeedbacks, {
+  FeedbackLog,
+} from "@/components/feedback/ViewFeedbacks";
 import { Metadata } from "next";
 
-export const dynamic = 'force-dynamic';
-
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title:
-    "Feedbacks | FleetMaster Dashboard - Best tool for Fleet Management",
-  description: "FleetMaster is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
+  title: "Feedbacks | FleetMaster Dashboard - Best tool for Fleet Management",
+  description:
+    "FleetMaster is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
 };
 
 async function getAllFeedbacks() {
@@ -20,7 +21,8 @@ async function getAllFeedbacks() {
     // Fetch feedback logs ordered by the most recent submission
     const { data, error } = await supabase
       .from("fleetmaster_feedbacks")
-      .select(`
+      .select(
+        `
         id, 
         user_id, 
         tenant_id, 
@@ -41,7 +43,8 @@ async function getAllFeedbacks() {
       profile_pic,
       email
     )
-      `)
+      `,
+      )
       .order("created_at", { ascending: false });
 
     if (error) {

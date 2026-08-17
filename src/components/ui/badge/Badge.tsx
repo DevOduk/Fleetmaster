@@ -3,13 +3,7 @@ import React from "react";
 type BadgeVariant = "light" | "solid";
 type BadgeSize = "sm" | "md";
 type BadgeColor =
-  | "primary"
-  | "success"
-  | "error"
-  | "warning"
-  | "info"
-  | "light"
-  | "dark";
+  "primary" | "success" | "error" | "warning" | "info" | "light" | "dark";
 
 interface BadgeProps {
   variant?: BadgeVariant; // Light or solid variant

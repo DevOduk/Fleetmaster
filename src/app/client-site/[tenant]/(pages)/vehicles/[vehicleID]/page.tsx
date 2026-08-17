@@ -1,14 +1,16 @@
-import type { Metadata } from 'next';
-import { createPublicClient } from '@/utils/supabase/server';
-import ViewVehiclePage from '@/components/client-components/Vehicles/ViewVehiclePage';
-import { fetchVehicleDetails } from '@/app/actions/vehicles';
+import type { Metadata } from "next";
+import { createPublicClient } from "@/utils/supabase/server";
+import ViewVehiclePage from "@/components/client-components/Vehicles/ViewVehiclePage";
+import { fetchVehicleDetails } from "@/app/actions/vehicles";
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string; tenant: string }>;
 }
 
 // 1. Dynamic Server-Side Metadata Generation
-export async function generateMetadata({ params }: VehiclePageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: VehiclePageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const tenantSlug = resolvedParams.tenant;
   const vehicleID = resolvedParams.vehicleID;
@@ -42,11 +44,8 @@ export async function generateMetadata({ params }: VehiclePageProps): Promise<Me
   };
 }
 
-
 const VehiclePage = ({ params }: VehiclePageProps) => {
-  return (
-    <ViewVehiclePage params={params} />
-  );
+  return <ViewVehiclePage params={params} />;
 };
 
 export default VehiclePage;

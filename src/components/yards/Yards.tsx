@@ -1,68 +1,24 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import Button from "../ui/button/Button";
 import { PlusIcon } from "@/icons";
 import { useUser } from "@/context/UserContext";
 import UpdateYardsModal from "./UpdateYardsModal";
-import { deleteTenantYard, fetchTenantDetails, updateTenantDetails } from "@/app/actions/tenant";
+import {
+  deleteTenantYard,
+  fetchTenantDetails,
+  updateTenantDetails,
+} from "@/app/actions/tenant";
 import { useToast } from "@/context/ToastContext";
 import { Avatar, Backdrop, CircularProgress } from "@mui/material";
 
-// --- Part 1: Client-Only Map Sub-Component ---
-// This safely loads and renders Leaflet elements ONLY in the browser environment.
-const SafeLeafletMap: React.FC<{
-  center: [number, number];
-  zoom: number;
-  yardsData: any[];
-  isDarkMode: boolean;
-}> = ({ center, zoom, yardsData, isDarkMode }) => {
-  // Lazily load leaflet assets only when running on the client
-  const { MapContainer, TileLayer, Marker, Popup } = require("react-leaflet");
-  const L = require("leaflet");
-  require("leaflet/dist/leaflet.css");
+import dynamic from "next/dynamic";
 
-  const defaultIcon = L.icon({
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
-  });
-
-  return (
-    <MapContainer
-      center={center}
-      zoom={zoom}
-      className="h-full rounded-2xl"
-      scrollWheelZoom={true}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      {yardsData?.map((yard: any, i: number) => {
-        if (!yard?.location || yard.location.length < 2) return null;
-        return (
-          <Marker key={i} position={[yard.location[0], yard.location[1]]} icon={defaultIcon}>
-            <Popup>
-              <div className="flex gap-3 items-center">
-                <img src={yard.image_url} alt={yard.title || "Yard"} className="w-20 h-auto mb-2" />
-                <div>
-                  <strong>{yard.title}</strong> <br />
-                  <span className="mt-1 text-sm/4 text-gray-400">{yard.description}</span>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        );
-      })}
-    </MapContainer>
-  );
-};
+// Dynamically load the client map component to ensure Leaflet/React-Leaflet are only evaluated in the browser
+const MapMulti = dynamic(() => import("./MapMulti"), { ssr: false });
 
 // --- Part 2: The Main Component Structure ---
 const YardsContent: React.FC = () => {
@@ -74,8 +30,6 @@ const YardsContent: React.FC = () => {
   const [loadingCompany, setLoadingCompany] = useState<boolean>(true);
   const [companyFormData, setCompanyFormData] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
-
-
 
   useEffect(() => {
     const getTenantDetails = async () => {
@@ -95,7 +49,6 @@ const YardsContent: React.FC = () => {
 
     getTenantDetails();
   }, [adminProfile?.tenant_id]);
-
 
   useEffect(() => {
     const checkDarkMode = () => {
@@ -127,19 +80,21 @@ const YardsContent: React.FC = () => {
     return () => observer.disconnect();
   }, [isDarkMode]);
 
-
   const handleDeleteYard = async (yard: any) => {
     if (!yard || !yard.id) {
       console.error("Invalid yard data for deletion:", yard);
       return;
     }
 
-    const confirmDelete = window.confirm(`Are you sure you want to delete this yard "${yard.title}"?`);
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete this yard "${yard.title}"?`,
+    );
     if (!confirmDelete) return;
 
-
     setIsSaving(true);
-    const updatedYards = companyFormData.yards.filter((y: any) => y.id !== yard.id);
+    const updatedYards = companyFormData.yards.filter(
+      (y: any) => y.id !== yard.id,
+    );
 
     const res = await deleteTenantYard(adminProfile.tenant_id, yard.id);
 
@@ -153,48 +108,56 @@ const YardsContent: React.FC = () => {
 
       setIsSaving(false);
     }
-  }
+  };
 
   const mainMapYards = companyFormData?.yards || [];
 
   if (!adminProfile || !adminProfile.tenant_id || loadingCompany) {
     return (
-      <div className="w-full mx-auto p-6 space-y-6 animate-pulse">
-        <div className="flex items-center justify-between pb-6 border-b border-gray-100 dark:border-gray-800">
+      <div className="mx-auto w-full animate-pulse space-y-6 p-6">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-6 dark:border-gray-800">
           <div className="space-y-2">
-            <div className="h-6 w-48 bg-gray-200 rounded-md dark:bg-gray-600"></div>
-            <div className="h-4 w-32 bg-gray-100 rounded-md dark:bg-gray-600"></div>
+            <div className="h-6 w-48 rounded-md bg-gray-200 dark:bg-gray-600"></div>
+            <div className="h-4 w-32 rounded-md bg-gray-100 dark:bg-gray-600"></div>
           </div>
-          <div className="h-10 w-28 bg-gray-200 rounded-lg dark:bg-gray-600"></div>
+          <div className="h-10 w-28 rounded-lg bg-gray-200 dark:bg-gray-600"></div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="p-5 border border-gray-100 dark:border-gray-700 rounded-xl space-y-3">
-              <div className="h-4 w-34 bg-gray-100 rounded-md dark:bg-gray-600"></div>
-              <div className="h-8 w-19 bg-gray-200 rounded-md dark:bg-gray-600"></div>
+            <div
+              key={i}
+              className="space-y-3 rounded-xl border border-gray-100 p-5 dark:border-gray-700"
+            >
+              <div className="h-4 w-34 rounded-md bg-gray-100 dark:bg-gray-600"></div>
+              <div className="h-8 w-19 rounded-md bg-gray-200 dark:bg-gray-600"></div>
             </div>
           ))}
         </div>
-        <div className="border border-gray-100 dark:border-gray-800 rounded-xl p-4 space-y-4">
-          <div className="h-5 w-36 bg-gray-200 dark:bg-gray-500 rounded-md mb-2"></div>
+        <div className="space-y-4 rounded-xl border border-gray-100 p-4 dark:border-gray-800">
+          <div className="mb-2 h-5 w-36 rounded-md bg-gray-200 dark:bg-gray-500"></div>
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-gray-600 last:border-0">
-              <div className="flex items-center space-x-3 w-full">
-                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-full shrink-0"></div>
-                <div className="space-y-2 w-full max-w-[60%]">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded-md w-3/4"></div>
-                  <div className="h-3 bg-gray-100 dark:bg-gray-600 rounded-md w-1/2"></div>
+            <div
+              key={i}
+              className="flex items-center justify-between border-b border-gray-50 py-3 last:border-0 dark:border-gray-600"
+            >
+              <div className="flex w-full items-center space-x-3">
+                <div className="h-10 w-10 shrink-0 rounded-full bg-gray-200 dark:bg-gray-600"></div>
+                <div className="w-full max-w-[60%] space-y-2">
+                  <div className="h-4 w-3/4 rounded-md bg-gray-200 dark:bg-gray-600"></div>
+                  <div className="h-3 w-1/2 rounded-md bg-gray-100 dark:bg-gray-600"></div>
                 </div>
               </div>
-              <div className="h-4 w-12 bg-gray-100 rounded-md dark:bg-gray-600"></div>
+              <div className="h-4 w-12 rounded-md bg-gray-100 dark:bg-gray-600"></div>
             </div>
           ))}
         </div>
         <div className="flex items-center justify-center space-x-2 pt-2">
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-          <span className="text-xs text-gray-400 font-medium pl-1">Syncing workspace...</span>
+          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500 [animation-delay:-0.3s]"></div>
+          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500 [animation-delay:-0.15s]"></div>
+          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500"></div>
+          <span className="pl-1 text-xs font-medium text-gray-400">
+            Syncing workspace...
+          </span>
         </div>
       </div>
     );
@@ -202,13 +165,19 @@ const YardsContent: React.FC = () => {
 
   if (!companyFormData) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 min-h-[70vh]">
-        <div className="text-4xl mb-4">🏢</div>
-        <h3 className="text-lg font-semibold text-red-600">Company Not Found</h3>
-        <p className="text-gray-500 max-w-sm mt-2">
-          We couldn't locate a profile associated with your account. If you believe this is an error, please contact support.
+      <div className="flex min-h-[70vh] flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-8 text-center dark:border-gray-600 dark:bg-gray-800">
+        <div className="mb-4 text-4xl">🏢</div>
+        <h3 className="text-lg font-semibold text-red-600">
+          Company Not Found
+        </h3>
+        <p className="mt-2 max-w-sm text-gray-500">
+          We couldn't locate a profile associated with your account. If you
+          believe this is an error, please contact support.
         </p>
-        <button onClick={() => window.location.reload()} className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-6 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+        >
           Refresh Page
         </button>
       </div>
@@ -230,21 +199,23 @@ const YardsContent: React.FC = () => {
       )}
 
       <Backdrop
-        sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
         open={isSaving}
         onClick={() => null}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
 
-
       <div className="grid grid-cols-12 gap-6">
         <div
-          className={`w-full col-span-12 lg:col-span-5 rounded-2xl border transition-colors duration-200 mt-4 h-100 ${isDarkMode ? "border-gray-800 bg-white/3" : "border-gray-200 bg-white"
-            }`}
+          className={`col-span-12 mt-4 h-100 w-full rounded-2xl border transition-colors duration-200 lg:col-span-5 ${
+            isDarkMode
+              ? "border-gray-800 bg-white/3"
+              : "border-gray-200 bg-white"
+          }`}
           style={{ aspectRatio: 1 }}
         >
-          <SafeLeafletMap
+          <MapMulti
             center={[-1.286389, 36.817223]}
             zoom={6}
             yardsData={mainMapYards}
@@ -252,50 +223,78 @@ const YardsContent: React.FC = () => {
           />
         </div>
 
-        <div className="py-3 col-span-12 lg:col-span-7">
+        <div className="col-span-12 py-3 lg:col-span-7">
           <div className="flex items-center justify-between">
-            <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+            <p className="text-theme-sm font-medium text-gray-800 dark:text-white/90">
               Below is a list of your working yards/locations:
             </p>
-            <Button onClick={() => setIsOpen(true)} variant="primary" size="sm">New Yard <PlusIcon /></Button>
+            <Button onClick={() => setIsOpen(true)} variant="primary" size="sm">
+              New Yard <PlusIcon />
+            </Button>
           </div>
           {mainMapYards.length > 0 ? (
-            <div className="grid gap-4 grid-cols-2">
-              {
-                mainMapYards.map((yard: any, i: number) => (
-                  <div key={i} className="rounded-xl relative border border-gray-100 p-4 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
-                    <img
-                      src={yard.image_url || "/images/brand/default-yard.png"}
-                      alt={yard.title || "Yard"}
-                      className="mb-2 h-auto aspect-video w-full rounded-lg object-cover"
-                    />
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">{yard.title}</p>
-                    <p className="mt-1text-sm mb-2 mt-1 truncate text-gray-500 line-clamp-2">{yard.description}</p>
-                    <p className="font-small text-xs text-gray-700 dark:text-gray-500">Lat: {yard.location?.[0]} | long: {yard.location?.[1]}</p>
+            <div className="grid grid-cols-2 gap-4">
+              {mainMapYards.map((yard: any, i: number) => (
+                <div
+                  key={i}
+                  className="relative rounded-xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/30"
+                >
+                  <img
+                    src={yard.image_url || "/images/brand/default-yard.png"}
+                    alt={yard.title || "Yard"}
+                    className="mb-2 aspect-video h-auto w-full rounded-lg object-cover"
+                  />
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">
+                    {yard.title}
+                  </p>
+                  <p className="mt-1text-sm mt-1 mb-2 line-clamp-2 truncate text-gray-500">
+                    {yard.description}
+                  </p>
+                  <p className="font-small text-xs text-gray-700 dark:text-gray-500">
+                    Lat: {yard.location?.[0]} | long: {yard.location?.[1]}
+                  </p>
 
-                    <div className="p-2 flex gap-4 absolute top-5 right-5 bg-white/50 dark:bg-gray-800/50 rounded-lg z-3">
-                      <BorderColorOutlinedIcon onClick={() => {
+                  <div className="absolute top-5 right-5 z-3 flex gap-4 rounded-lg bg-white/50 p-2 dark:bg-gray-800/50">
+                    <BorderColorOutlinedIcon
+                      onClick={() => {
                         setSelectedEvent(yard);
                         setIsOpen(true);
-                      }} fontSize="small" className="text-white cursor-pointer" />
-                      <DeleteOutlinedIcon onClick={() => {
+                      }}
+                      fontSize="small"
+                      className="cursor-pointer text-white"
+                    />
+                    <DeleteOutlinedIcon
+                      onClick={() => {
                         handleDeleteYard(yard);
-                      }} fontSize="small" color="error" className="cursor-pointer" />
-                    </div>
+                      }}
+                      fontSize="small"
+                      color="error"
+                      className="cursor-pointer"
+                    />
                   </div>
-                ))
-              }
+                </div>
+              ))}
             </div>
           ) : (
-            <div className="relative mt-3 border dark:border-gray-600 rounded-lg w-full gap-3 min-h-85 flex items-center justify-center flex-col text-gray-600 dark:text-gray-400">
-              <h5 className="text-2xl mb-0 font-bold text-red-500">Oops!</h5>
-              <p className="text-gray-600 text-sm dark:text-gray-400 mb-2">You don't seem to have any yard loctaions yet. Create one now!</p>
-              <Button onClick={() => setIsOpen(true)} variant="primary" size="sm">New Yard <PlusIcon /></Button>
+            <div className="relative mt-3 flex min-h-85 w-full flex-col items-center justify-center gap-3 rounded-lg border text-gray-600 dark:border-gray-600 dark:text-gray-400">
+              <h5 className="mb-0 text-2xl font-bold text-red-500">Oops!</h5>
+              <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
+                You don't seem to have any yard loctaions yet. Create one now!
+              </p>
+              <Button
+                onClick={() => setIsOpen(true)}
+                variant="primary"
+                size="sm"
+              >
+                New Yard <PlusIcon />
+              </Button>
             </div>
           )}
         </div>
       </div>
-      <p className="font-medium py-9 mt-3 text-gray-800 text-center text-theme-sm dark:text-white/90">You have  {mainMapYards.length} Yards. You can add unlimitted yards</p>
+      <p className="text-theme-sm mt-3 py-9 text-center font-medium text-gray-800 dark:text-white/90">
+        You have {mainMapYards.length} Yards. You can add unlimitted yards
+      </p>
     </div>
   );
 };
@@ -310,8 +309,10 @@ const Yards: React.FC = () => {
 
   if (!mounted) {
     return (
-      <div className="w-full h-96 flex items-center justify-center bg-gray-50 dark:bg-white/3 rounded-2xl animate-pulse">
-        <p className="text-gray-500 dark:text-gray-400">Loading fleet metrics and map parameters...</p>
+      <div className="flex h-96 w-full animate-pulse items-center justify-center rounded-2xl bg-gray-50 dark:bg-white/3">
+        <p className="text-gray-500 dark:text-gray-400">
+          Loading fleet metrics and map parameters...
+        </p>
       </div>
     );
   }

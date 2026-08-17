@@ -63,7 +63,8 @@ export async function fetchAllBookings() {
 
   try {
     const cached = await redis.get(cacheKey);
-    if (cached) return { success: true, data: parseCachedData(cached), source: "cache" };
+    if (cached)
+      return { success: true, data: parseCachedData(cached), source: "cache" };
   } catch (e) {
     console.error("Redis read error on fetchAllBookings:", e);
   }
@@ -87,10 +88,17 @@ export async function fetchAllBookings() {
 
 export async function fetchBookingDetails(id: number, tenantID: string) {
   // Strict guard: Prevent the network/database query entirely if tenantID is missing, invalid, or falsy
-  if (!tenantID || typeof tenantID !== 'string' || !tenantID.trim() || isNaN(Number(id))) {
+  if (
+    !tenantID ||
+    typeof tenantID !== "string" ||
+    !tenantID.trim() ||
+    isNaN(Number(id))
+  ) {
     return {
       data: null,
-      error: { message: "Unauthorized: Invalid or missing tenant credentials." }
+      error: {
+        message: "Unauthorized: Invalid or missing tenant credentials.",
+      },
     };
   }
 
@@ -98,7 +106,8 @@ export async function fetchBookingDetails(id: number, tenantID: string) {
 
   try {
     const cached = await redis.get(cacheKey);
-    if (cached) return { data: parseCachedData(cached), error: null, source: "cache" };
+    if (cached)
+      return { data: parseCachedData(cached), error: null, source: "cache" };
   } catch (e) {
     console.error("Redis read error on fetchBookingDetails:", e);
   }
@@ -121,13 +130,18 @@ export async function fetchBookingDetails(id: number, tenantID: string) {
   return { data, error, source: "db" };
 }
 
-
 export async function fetchBookingsForTenant(tenantId: string) {
   const cacheKey = `bookings:tenant:${tenantId}`;
 
   try {
     const cached = await redis.get(cacheKey);
-    if (cached) return { data: parseCachedData(cached), success: true, error: null, source: "cache" };
+    if (cached)
+      return {
+        data: parseCachedData(cached),
+        success: true,
+        error: null,
+        source: "cache",
+      };
   } catch (e) {
     console.error("Redis read error on fetchBookingsForTenant:", e);
   }
@@ -156,7 +170,13 @@ export async function fetchBookingsForVehicle(vehicleId: string) {
 
   try {
     const cached = await redis.get(cacheKey);
-    if (cached) return { data: parseCachedData(cached), success: true, error: null, source: "cache" };
+    if (cached)
+      return {
+        data: parseCachedData(cached),
+        success: true,
+        error: null,
+        source: "cache",
+      };
   } catch (e) {
     console.error("Redis read error on fetchBookingsForTenant:", e);
   }
@@ -185,7 +205,13 @@ export async function fetchBookingsForClient(userId: string) {
 
   try {
     const cached = await redis.get(cacheKey);
-    if (cached) return { data: parseCachedData(cached), success: true, error: null, source: "cache" };
+    if (cached)
+      return {
+        data: parseCachedData(cached),
+        success: true,
+        error: null,
+        source: "cache",
+      };
   } catch (e) {
     console.error("Redis read error on fetchBookingsForClient:", e);
   }

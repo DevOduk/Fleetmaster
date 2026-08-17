@@ -16,9 +16,9 @@ interface DropzoneComponentProps {
   accept?: Accept; // Make it optional so it easily falls back to images
 }
 
-const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ 
-  title, 
-  accept = defaultImageAccept 
+const DropzoneComponent: React.FC<DropzoneComponentProps> = ({
+  title,
+  accept = defaultImageAccept,
 }) => {
   const onDrop = (acceptedFiles: File[]) => {
     console.log("Files dropped:", acceptedFiles);
@@ -35,28 +35,27 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({
     .flat()
     .map((ext) => ext.replace(".", "").toUpperCase());
 
-  const dynamicFileString = acceptedExtensions.length > 0
-    ? acceptedExtensions.join(", ")
-    : "your files";
+  const dynamicFileString =
+    acceptedExtensions.length > 0
+      ? acceptedExtensions.join(", ")
+      : "your files";
 
   return (
     <ComponentCard title={title || "Dropzone"} className="mb-6">
-      <div className="transition border border-gray-300 border-dashed cursor-pointer dark:hover:border-brand-500 dark:border-gray-700 rounded-xl hover:border-brand-500">
+      <div className="dark:hover:border-brand-500 hover:border-brand-500 cursor-pointer rounded-xl border border-dashed border-gray-300 transition dark:border-gray-700">
         <form
           {...getRootProps()}
-          className={`dropzone rounded-xl m-0 border-dashed border-gray-300 p-7 lg:p-10
-            ${
-              isDragActive
-                ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
-                : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
-            }
-          `}
+          className={`dropzone m-0 rounded-xl border-dashed border-gray-300 p-7 lg:p-10 ${
+            isDragActive
+              ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
+              : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
+          } `}
           id="demo-upload"
         >
           {/* Hidden Input */}
           <input {...getInputProps()} />
 
-          <div className="dz-message flex flex-col items-center m-0">
+          <div className="dz-message m-0 flex flex-col items-center">
             {/* Icon Container */}
             <div className="mb-[22px] flex justify-center">
               <div className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
@@ -77,15 +76,15 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({
             </div>
 
             {/* Text Content */}
-            <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
+            <h4 className="text-theme-xl mb-3 font-semibold text-gray-800 dark:text-white/90">
               {title || "Drag and drop files here"}
             </h4>
 
-            <span className="text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
+            <span className="mb-5 block w-full max-w-[290px] text-center text-sm text-gray-700 dark:text-gray-400">
               Drag and drop your {dynamicFileString} here or browse
             </span>
 
-            <span className="font-medium underline text-theme-sm text-brand-500">
+            <span className="text-theme-sm text-brand-500 font-medium underline">
               Browse File
             </span>
           </div>

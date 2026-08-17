@@ -5,16 +5,16 @@ import ContactFormContainer from "@/components/client-components/ContactForm";
 import { Metadata } from "next";
 import { createPublicClient } from "@/utils/supabase/server";
 
-
 interface PageProps {
   params: Promise<{
     tenant: string;
   }>;
 }
 
-
 // 1. Dynamic Server-Side Metadata Generation
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const tenantSlug = resolvedParams.tenant;
 
@@ -43,17 +43,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default function Page() {
   const pages = [
     {
-      label: 'Home',
-      href: '/',
+      label: "Home",
+      href: "/",
     },
     {
-      label: 'Contact',
-      href: '/contact',
-    }
+      label: "Contact",
+      href: "/contact",
+    },
   ];
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Hero Section */}
       <SecondaryHero
         pages={pages}

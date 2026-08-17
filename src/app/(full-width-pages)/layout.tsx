@@ -9,8 +9,8 @@ export default function FullWidthPageLayout({
   return (
     <TenantProvider>
       <AdminProvider>
-          <div>{children}</div>
+        <div>{children}</div>
       </AdminProvider>
     </TenantProvider>
-  )
+  );
 }

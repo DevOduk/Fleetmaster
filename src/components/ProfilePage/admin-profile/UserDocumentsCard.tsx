@@ -1,26 +1,23 @@
 "use client";
 import Link from "next/link";
 import { CheckCircleIcon, DownloadIcon } from "@/icons";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined"
-import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined"
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import { useUser } from "@/context/UserContext";
-
 
 export default function UserDocumentsCard() {
   const { profile } = useUser();
 
   return (
     <>
-      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+      <div className="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
         <div className="flex items-center justify-between">
-          <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+          <h4 className="text-lg font-semibold text-gray-800 lg:mb-6 dark:text-white/90">
             Documents
           </h4>
 
-          <Link href="/profile/edit" className=''>
-            <button
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-theme-xs hover:bg-gray-50 hover:text-blue-800 dark:border-gray-700 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-white/3 dark:hover:text-blue-200 lg:inline-flex lg:w-auto"
-            >
+          <Link href="/profile/edit" className="">
+            <button className="shadow-theme-xs flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-gray-50 hover:text-blue-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-white/3 dark:hover:text-blue-200">
               <svg
                 className="fill-current"
                 width="18"
@@ -40,18 +37,21 @@ export default function UserDocumentsCard() {
             </button>
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32 relative">
+        <div className="relative grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
           <div>
             <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
               National ID/Passport Number
             </p>
-            <p className="text-sm flex items-center gap-3 justify-between font-medium text-gray-800 dark:text-white/90">
+            <p className="flex items-center justify-between gap-3 text-sm font-medium text-gray-800 dark:text-white/90">
               <span className="flex items-center gap-2">
-                <DownloadIcon style={{ width: 28, height: 28 }} />{profile?.national_id_number || "Not uploaded"}
+                <DownloadIcon style={{ width: 28, height: 28 }} />
+                {profile?.national_id_number || "Not uploaded"}
               </span>
-              {
-                profile.verification_status?.national_id ? <TaskAltOutlinedIcon className="text-green-500 mt-1" /> : <CancelOutlinedIcon className="text-red-500 mt-1" />
-              }
+              {profile.verification_status?.national_id ? (
+                <TaskAltOutlinedIcon className="mt-1 text-green-500" />
+              ) : (
+                <CancelOutlinedIcon className="mt-1 text-red-500" />
+              )}
             </p>
           </div>
 
@@ -59,30 +59,35 @@ export default function UserDocumentsCard() {
             <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
               Driving License Number
             </p>
-            <p className="text-sm flex items-center gap-3 justify-between font-medium text-gray-800 dark:text-white/90">
+            <p className="flex items-center justify-between gap-3 text-sm font-medium text-gray-800 dark:text-white/90">
               <span className="flex items-center gap-2">
-                <DownloadIcon style={{ width: 28, height: 28 }} />{profile?.dl_number || "Not uploaded"}
+                <DownloadIcon style={{ width: 28, height: 28 }} />
+                {profile?.dl_number || "Not uploaded"}
               </span>
 
-              {
-                profile.verification_status?.driving_license ? <TaskAltOutlinedIcon className="text-green-500 mt-1" /> : <CancelOutlinedIcon className="text-red-500 mt-1" />
-              }
+              {profile.verification_status?.driving_license ? (
+                <TaskAltOutlinedIcon className="mt-1 text-green-500" />
+              ) : (
+                <CancelOutlinedIcon className="mt-1 text-red-500" />
+              )}
             </p>
           </div>
 
-          <div className=''>
+          <div className="">
             <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
               KRA PIN
             </p>
-            <p className="text-sm flex items-center gap-3 justify-between font-medium text-gray-800 dark:text-white/90">
+            <p className="flex items-center justify-between gap-3 text-sm font-medium text-gray-800 dark:text-white/90">
               <span className="flex items-center gap-2">
                 <DownloadIcon style={{ width: 28, height: 28 }} />
                 {profile?.kra_pin_number || "Not uploaded"}
               </span>
 
-              {
-                profile.verification_status?.kra_pin ? <TaskAltOutlinedIcon className="text-green-500 mt-1" /> : <CancelOutlinedIcon className="text-red-500 mt-1" />
-              }
+              {profile.verification_status?.kra_pin ? (
+                <TaskAltOutlinedIcon className="mt-1 text-green-500" />
+              ) : (
+                <CancelOutlinedIcon className="mt-1 text-red-500" />
+              )}
             </p>
           </div>
         </div>

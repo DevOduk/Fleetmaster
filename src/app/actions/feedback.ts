@@ -15,22 +15,20 @@ interface SubmitFeedbackPayload {
 
 export async function submitUserFeedback(
   payload: SubmitFeedbackPayload,
-  userProfile: UserProfileParam
+  userProfile: UserProfileParam,
 ) {
   try {
     const supabase = await createClient();
 
     // Securely insert the data into the database using parameters straight from useUser()
-    const { error } = await supabase
-      .from("fleetmaster_feedbacks")
-      .insert({
-        user_id: userProfile.id,
-        tenant_id: userProfile.tenant_id,
-        user_role: userProfile.role || "User",
-        category: payload.category,
-        rating: payload.rating,
-        feedback_text: payload.feedback_text,
-      });
+    const { error } = await supabase.from("fleetmaster_feedbacks").insert({
+      user_id: userProfile.id,
+      tenant_id: userProfile.tenant_id,
+      user_role: userProfile.role || "User",
+      category: payload.category,
+      rating: payload.rating,
+      feedback_text: payload.feedback_text,
+    });
 
     if (error) throw error;
 

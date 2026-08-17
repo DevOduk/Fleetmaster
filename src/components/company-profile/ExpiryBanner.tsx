@@ -1,6 +1,6 @@
 "use client";
-import Link from 'next/link';
-import React, { useState, useEffect } from 'react';
+import Link from "next/link";
+import React, { useState, useEffect } from "react";
 
 export const getRemainingDays = (expiryDate?: string | Date): number => {
   if (!expiryDate) return 0;
@@ -33,14 +33,24 @@ export const getExpiryString = (expiryDate: string) => {
   const minutes = Math.floor((diff % msPerHour) / msPerMinute);
   const seconds = Math.floor((diff % msPerMinute) / msPerSecond);
 
-  if (months > 0) return `Expires in ${months} month${months > 1 ? 's' : ''} ${days} day${days !== 1 ? 's' : ''}`;
-  if (weeks > 0) return `Expires in ${weeks} week${weeks > 1 ? 's' : ''} ${days} day${days !== 1 ? 's' : ''}`;
-  if (days > 0) return `Expires in ${days} day${days !== 1 ? 's' : ''} ${hours} hour${hours !== 1 ? 's' : ''}`;
-  if (hours > 0) return `Expires in ${hours} hour${hours !== 1 ? 's' : ''} ${minutes} min${minutes !== 1 ? 's' : ''}`;
-  return `Expires in ${minutes} min${minutes !== 1 ? 's' : ''} ${seconds} sec${seconds !== 1 ? 's' : ''}`;
+  if (months > 0)
+    return `Expires in ${months} month${months > 1 ? "s" : ""} ${days} day${days !== 1 ? "s" : ""}`;
+  if (weeks > 0)
+    return `Expires in ${weeks} week${weeks > 1 ? "s" : ""} ${days} day${days !== 1 ? "s" : ""}`;
+  if (days > 0)
+    return `Expires in ${days} day${days !== 1 ? "s" : ""} ${hours} hour${hours !== 1 ? "s" : ""}`;
+  if (hours > 0)
+    return `Expires in ${hours} hour${hours !== 1 ? "s" : ""} ${minutes} min${minutes !== 1 ? "s" : ""}`;
+  return `Expires in ${minutes} min${minutes !== 1 ? "s" : ""} ${seconds} sec${seconds !== 1 ? "s" : ""}`;
 };
 
-function ExpiryBanner({ plan, expiryDate }: { plan: string, expiryDate: string }) {
+function ExpiryBanner({
+  plan,
+  expiryDate,
+}: {
+  plan: string;
+  expiryDate: string;
+}) {
   const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
@@ -56,14 +66,18 @@ function ExpiryBanner({ plan, expiryDate }: { plan: string, expiryDate: string }
   }, [expiryDate]);
 
   // Don't render anything if it's already expired or loading
-  if (!timeLeft || timeLeft.includes('week') || timeLeft.includes('month')) return null;
+  if (!timeLeft || timeLeft.includes("week") || timeLeft.includes("month"))
+    return null;
 
   return (
-    <div className="flex gap-2 justify-end p-6 items-center">
-      <span className="text-black italic text-sm dark:text-white">
+    <div className="flex items-center justify-end gap-2 p-6">
+      <span className="text-sm text-black italic dark:text-white">
         It is advisable to renew plan before expiry!
       </span>
-      <Link href='/company-profile/subscription' className="p-2 w-auto px-5 bg-red-500 text-white rounded-lg border-red-700">
+      <Link
+        href="/company-profile/subscription"
+        className="w-auto rounded-lg border-red-700 bg-red-500 p-2 px-5 text-white"
+      >
         {plan} Plan {timeLeft}
       </Link>
     </div>

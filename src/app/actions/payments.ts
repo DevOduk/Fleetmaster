@@ -18,8 +18,12 @@ async function invalidateCachePattern(pattern: string) {
   try {
     let cursor = 0;
     do {
-      const [nextCursor, keys] = await redis.scan(cursor, { match: pattern, count: 100 });
-      cursor = typeof nextCursor === "number" ? nextCursor : parseInt(nextCursor, 10);
+      const [nextCursor, keys] = await redis.scan(cursor, {
+        match: pattern,
+        count: 100,
+      });
+      cursor =
+        typeof nextCursor === "number" ? nextCursor : parseInt(nextCursor, 10);
 
       if (keys && keys.length > 0) {
         await redis.del(...keys);
@@ -55,7 +59,10 @@ export async function createPayment(newPayment: any) {
     return { data, success: !error, error };
   } catch (err: any) {
     console.error("Payment Creation failure:", err);
-    return { success: false, error: err.message || "Failed to record payment." };
+    return {
+      success: false,
+      error: err.message || "Failed to record payment.",
+    };
   }
 }
 
@@ -120,7 +127,10 @@ export async function fetchPaymentDetails(id: string) {
   try {
     await redis.set(cacheKey, JSON.stringify(data), { ex: CACHE_TTL_SECONDS });
   } catch (cacheErr) {
-    console.error(`Redis write error in fetchPaymentDetails (${id}):`, cacheErr);
+    console.error(
+      `Redis write error in fetchPaymentDetails (${id}):`,
+      cacheErr,
+    );
   }
 
   return { data, error: null, success: true };
@@ -136,7 +146,10 @@ export async function fetchPaymentsForAdmin(tenantId: string) {
       return { data: cachedData, success: true, error: null };
     }
   } catch (cacheErr) {
-    console.error(`Redis read error in fetchPaymentsForAdmin (${tenantId}):`, cacheErr);
+    console.error(
+      `Redis read error in fetchPaymentsForAdmin (${tenantId}):`,
+      cacheErr,
+    );
   }
 
   // 2. Fetch from Supabase on cache miss
@@ -155,7 +168,10 @@ export async function fetchPaymentsForAdmin(tenantId: string) {
   try {
     await redis.set(cacheKey, JSON.stringify(data), { ex: CACHE_TTL_SECONDS });
   } catch (cacheErr) {
-    console.error(`Redis write error in fetchPaymentsForAdmin (${tenantId}):`, cacheErr);
+    console.error(
+      `Redis write error in fetchPaymentsForAdmin (${tenantId}):`,
+      cacheErr,
+    );
   }
 
   return { data, success: true, error: null };
@@ -179,7 +195,7 @@ export async function fetchAllSubscriptionPayments() {
   const { data, error } = await supabase
     .from("fleetmaster_payments")
     .select(`*`)
-    .ilike('message', `Subscription renewal for package:%`)
+    .ilike("message", `Subscription renewal for package:%`)
     .order("created_at", { ascending: false });
 
   if (error) {

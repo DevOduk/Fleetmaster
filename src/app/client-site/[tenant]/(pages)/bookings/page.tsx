@@ -3,16 +3,16 @@ import ClientBookingContent from "@/components/marketing-components/ClientBookin
 import { Metadata } from "next";
 import { createPublicClient } from "@/utils/supabase/server";
 
-
 interface PageProps {
   params: Promise<{
     tenant: string;
   }>;
 }
 
-
 // 1. Dynamic Server-Side Metadata Generation
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const tenantSlug = resolvedParams.tenant;
 
@@ -38,10 +38,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-
 export default async function Page() {
-  const pages = [{ label: 'Home', href: '/' }, { label: 'My Bookings', href: '/bookings' }];
-  
+  const pages = [
+    { label: "Home", href: "/" },
+    { label: "My Bookings", href: "/bookings" },
+  ];
 
   return (
     <div className="min-h-screen py-8">
@@ -52,7 +53,7 @@ export default async function Page() {
         description="Monitor your fleet performance and track your active rentals."
       />
 
-      <ClientBookingContent  />
+      <ClientBookingContent />
     </div>
   );
 }

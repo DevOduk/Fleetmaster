@@ -20,8 +20,12 @@ async function invalidateCachePattern(pattern: string) {
   try {
     let cursor = 0;
     do {
-      const [nextCursor, keys] = await redis.scan(cursor, { match: pattern, count: 100 });
-      cursor = typeof nextCursor === "number" ? nextCursor : parseInt(nextCursor, 10);
+      const [nextCursor, keys] = await redis.scan(cursor, {
+        match: pattern,
+        count: 100,
+      });
+      cursor =
+        typeof nextCursor === "number" ? nextCursor : parseInt(nextCursor, 10);
 
       if (keys && keys.length > 0) {
         await redis.del(...keys);
@@ -49,7 +53,9 @@ export async function getAllAdmins() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_main_admins")
-    .select("id, phone, email, bio, first_name, last_name, role, profile_pic, created_at");
+    .select(
+      "id, phone, email, bio, first_name, last_name, role, profile_pic, created_at",
+    );
 
   if (error) {
     return { data, success: false, error };
@@ -92,7 +98,10 @@ export async function createTenantAdmin(newTenantAdmin: any) {
     return { data, success: !error, error };
   } catch (err: any) {
     console.error("New Tenant Admin Creation failure:", err);
-    return { success: false, error: err.message || "Failed to register admin." };
+    return {
+      success: false,
+      error: err.message || "Failed to register admin.",
+    };
   }
 }
 
@@ -113,7 +122,9 @@ export async function getTenantAdmins(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_admins")
-    .select("id, phone, email, bio, first_name, last_name, role, profile_pic, created_at")
+    .select(
+      "id, phone, email, bio, first_name, last_name, role, profile_pic, created_at",
+    )
     .eq("tenant_id", id);
 
   if (error) {

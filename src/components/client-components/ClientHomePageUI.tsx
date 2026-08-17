@@ -16,7 +16,7 @@ export default function ClientHomePageUI() {
 
   return (
     <div>
-      <div className="container m-auto grid grid-cols-1 xl:grid-cols-2 mt-3">
+      <div className="container m-auto mt-3 grid grid-cols-1 xl:grid-cols-2">
         <SearchForm tenant={tenantData} />
         <HeroSlider />
       </div>
@@ -27,17 +27,17 @@ export default function ClientHomePageUI() {
       <StatisticsBanner tenant={tenantData} />
       <br />
 
-      <div className="grid items-center container m-auto grid-cols-1 lg:grid-cols-12 gap-5 p-4">
+      <div className="container m-auto grid grid-cols-1 items-center gap-5 p-4 lg:grid-cols-12">
         <div className="lg:col-span-7">
           <ViewAllCategories tenantData={tenantData} />
         </div>
 
         <div className="lg:col-span-5">
           <h3 className="text-amber-500">ABOUT US</h3>
-          <h2 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white">
+          <h2 className="mt-4 mb-3 text-3xl font-bold text-black dark:text-white">
             Welcome to {tenantData?.name}
           </h2>
-          <p className="text-sm mb-4 text-gray-500 dark:text-gray-400 max-w-175">
+          <p className="mb-4 max-w-175 text-sm text-gray-500 dark:text-gray-400">
             {tenantData?.about ? (
               tenantData.about
             ) : (
@@ -51,11 +51,7 @@ export default function ClientHomePageUI() {
             )}
           </p>
 
-          <Button
-            variant="primary"
-            size="sm"
-            className="px-8! py-2! ml-auto"
-          >
+          <Button variant="primary" size="sm" className="ml-auto px-8! py-2!">
             Read More <ChevronRightIcon />
           </Button>
         </div>
@@ -63,26 +59,22 @@ export default function ClientHomePageUI() {
 
       <div>
         <h3 className="text-brand-500 text-center">Affordable and Reliable</h3>
-        <h2 className="text-3xl mt-4 mb-3 font-bold text-black text-center dark:text-white">
+        <h2 className="mt-4 mb-3 text-center text-3xl font-bold text-black dark:text-white">
           Explore All Vehicles
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-175 m-auto">
+        <p className="m-auto max-w-175 text-center text-sm text-gray-500 dark:text-gray-400">
           Browse our extensive collection of well-maintained vehicles. From
           compact cars to luxury sedans, we have the perfect vehicle for your
           needs.
         </p>
-        <div className="mt-5 container m-auto">
+        <div className="container m-auto mt-5">
           <ViewAllSnapshots tenant={tenantData?.slug} />
 
           <div className="flex items-center">
             <p className="text-gray-500 dark:text-gray-500">
               View our fleet across the country ...
             </p>
-            <Button
-              variant="primary"
-              size="sm"
-              className="px-8! py-2! ml-auto"
-            >
+            <Button variant="primary" size="sm" className="ml-auto px-8! py-2!">
               View All <ChevronRightIcon />
             </Button>
           </div>
@@ -92,10 +84,10 @@ export default function ClientHomePageUI() {
       <br />
       <div>
         <h3 className="text-brand-500 text-center">Available Countrywide</h3>
-        <h2 className="text-3xl mt-4 mb-3 font-bold text-black text-center dark:text-white">
+        <h2 className="mt-4 mb-3 text-center text-3xl font-bold text-black dark:text-white">
           Explore Our Locations
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-175 m-auto">
+        <p className="m-auto max-w-175 text-center text-sm text-gray-500 dark:text-gray-400">
           Browse our extensive collection of well-maintained vehicles across
           diverse locations. From compact cars to luxury sedans, we have the
           perfect vehicle for your needs.
@@ -103,15 +95,15 @@ export default function ClientHomePageUI() {
 
         <ViewAllLocations tenantData={tenantData} />
       </div>
-      <div className="border-gray-500 border-t container m-auto mb-5"></div>
+      <div className="container m-auto mb-5 border-t border-gray-500"></div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 p-4">
+      <div className="grid grid-cols-1 gap-3 p-4 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <h3 className="text-amber-500">For all Activities</h3>
-          <h2 className="text-3xl mt-4 mb-3 font-bold text-black dark:text-white">
+          <h2 className="mt-4 mb-3 text-3xl font-bold text-black dark:text-white">
             Explore all Categories
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-175">
+          <p className="max-w-175 text-sm text-gray-500 dark:text-gray-400">
             Browse our extensive collection of well-maintained vehicles across
             diverse locations. From compact cars to luxury sedans, we have the
             perfect vehicle for your needs.

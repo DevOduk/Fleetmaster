@@ -1,13 +1,35 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import { Metadata } from "next";
-import Feedback from "@/components/feedback/Feedback";
 import SystemLogs from "@/components/system/SystemLogs";
+import { Metadata } from "next";
+import { getAdminTenant } from "@/utils/getAdminTenant";
 
-export const metadata: Metadata = {
-  title:
-    "System Logs | FleetMaster - Best tool for Fleet Management",
-  // description: "FleetManager is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { tenantData } = await getAdminTenant();
+
+  let title;
+  const tenantName = tenantData?.name;
+  let tenantDescription = tenantData?.about;
+
+  // Fallback to DB query if header data isn't present
+  if (tenantName) {
+    title = `System Logs | ${tenantName}: FleetMaster - Premium Car Rental & Fleet Solutions Software`;
+    tenantDescription =
+      tenantDescription ||
+      `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
+  } else {
+    title = `System Logs | FleetMaster - Premium Car Rental & Fleet Solutions Software`;
+  }
+
+  return {
+    title: title,
+    description: tenantDescription,
+    openGraph: {
+      title: `${tenantName || "FleetMaster"} - Official Admin Website`,
+      description: tenantDescription,
+    },
+  };
+}
+
 export default function page() {
   return (
     <div>

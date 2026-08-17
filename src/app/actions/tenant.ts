@@ -29,7 +29,7 @@ export async function getAllTenants() {
   const { data, error } = await supabase
     .from("fleetmaster_tenants")
     .select(
-      `id, slug, name, phone, about, email, country, county, yards, timezone, tenant_logo, subscription_status,subscription_plan, created_at, expiry_date, admins:fleetmaster_admins(*)`
+      `id, slug, name, phone, about, email, country, county, timezone, tenant_logo, subscription_status,subscription_plan, created_at, expiry_date, admins:fleetmaster_admins(*), yards:fleetmaster_yards(*)`,
     )
     .order("created_at", { ascending: false });
 
@@ -42,7 +42,9 @@ export async function getAllTenants() {
 
   // 3. Store in Redis
   try {
-    await redis.set(cacheKey, JSON.stringify(result), { ex: CACHE_TTL_SECONDS });
+    await redis.set(cacheKey, JSON.stringify(result), {
+      ex: CACHE_TTL_SECONDS,
+    });
   } catch (cacheErr) {
     console.error("Redis write error in getAllTenants:", cacheErr);
   }
@@ -60,7 +62,10 @@ export async function fetchTenantDetails(tenantId: string) {
       return { data: cachedData, error: null, success: true };
     }
   } catch (cacheErr) {
-    console.error(`Redis read error in fetchTenantDetails (${tenantId}):`, cacheErr);
+    console.error(
+      `Redis read error in fetchTenantDetails (${tenantId}):`,
+      cacheErr,
+    );
   }
 
   // 2. Fetch from Supabase on cache miss
@@ -80,7 +85,10 @@ export async function fetchTenantDetails(tenantId: string) {
   try {
     await redis.set(cacheKey, JSON.stringify(data), { ex: CACHE_TTL_SECONDS });
   } catch (cacheErr) {
-    console.error(`Redis write error in fetchTenantDetails (${tenantId}):`, cacheErr);
+    console.error(
+      `Redis write error in fetchTenantDetails (${tenantId}):`,
+      cacheErr,
+    );
   }
 
   return { data, error: null, success: true };
@@ -96,7 +104,10 @@ export async function fetchTenantSubscriptions(tenantId: string) {
       return { data: cachedData, error: null, success: true };
     }
   } catch (cacheErr) {
-    console.error(`Redis read error in fetchTenantSubscriptions (${tenantId}):`, cacheErr);
+    console.error(
+      `Redis read error in fetchTenantSubscriptions (${tenantId}):`,
+      cacheErr,
+    );
   }
 
   // 2. Fetch from Supabase on cache miss
@@ -126,9 +137,14 @@ export async function fetchTenantSubscriptions(tenantId: string) {
 
   // 3. Store in Redis
   try {
-    await redis.set(cacheKey, JSON.stringify(subscriptions), { ex: CACHE_TTL_SECONDS });
+    await redis.set(cacheKey, JSON.stringify(subscriptions), {
+      ex: CACHE_TTL_SECONDS,
+    });
   } catch (cacheErr) {
-    console.error(`Redis write error in fetchTenantSubscriptions (${tenantId}):`, cacheErr);
+    console.error(
+      `Redis write error in fetchTenantSubscriptions (${tenantId}):`,
+      cacheErr,
+    );
   }
 
   return { data: subscriptions, error: null, success: true };
@@ -151,7 +167,11 @@ export async function updateTenantDetails(tenantId: string, updatedData: any) {
   return { data, error, success: !error };
 }
 
-export async function updateTenantYardDetails(yardId: string, tenantId: string, yardData: any) {
+export async function updateTenantYardDetails(
+  yardId: string,
+  tenantId: string,
+  yardData: any,
+) {
   const supabase = await createClient();
 
   // Directly update the specific yard row without checking first
@@ -214,7 +234,7 @@ export async function deleteTenantYard(tenantId: string, yardId: string) {
   const { data, error } = await supabase
     .from("fleetmaster_yards")
     .delete()
-    .eq('id', yardId);
+    .eq("id", yardId);
 
   if (!error) {
     await Promise.all([
@@ -251,14 +271,18 @@ export async function createNewTenant(newTenantData: any) {
       // Map common PostgreSQL / Supabase error codes to clear messages
       switch (error.code) {
         case "23505": // Unique constraint violation
-          const errText = `${error.details || ''} ${error.message || ''}`.toLowerCase();
+          const errText =
+            `${error.details || ""} ${error.message || ""}`.toLowerCase();
 
           if (errText.includes("slug")) {
-            customMessage = "A company with this subdomain/slug already exists.";
+            customMessage =
+              "A company with this subdomain/slug already exists.";
           } else if (errText.includes("email")) {
-            customMessage = "A company with this email address is already registered.";
+            customMessage =
+              "A company with this email address is already registered.";
           } else if (errText.includes("phone")) {
-            customMessage = "A company with this phone number is already registered.";
+            customMessage =
+              "A company with this phone number is already registered.";
           } else if (errText.includes("name")) {
             customMessage = "A company with this name is already registered.";
           } else {
@@ -270,7 +294,8 @@ export async function createNewTenant(newTenantData: any) {
           if (error.message?.includes("check_status_values")) {
             customMessage = "Invalid company status value provided.";
           } else {
-            customMessage = "One or more provided fields failed database validation rules.";
+            customMessage =
+              "One or more provided fields failed database validation rules.";
           }
           break;
 
@@ -285,7 +310,8 @@ export async function createNewTenant(newTenantData: any) {
           break;
 
         case "42P01": // Undefined table
-          customMessage = "Database table configuration error. Please contact support.";
+          customMessage =
+            "Database table configuration error. Please contact support.";
           break;
       }
 
@@ -305,7 +331,10 @@ export async function createNewTenant(newTenantData: any) {
       try {
         await redis.del("tenants:all");
       } catch (cacheErr) {
-        console.error("Redis cache invalidation error (createNewTenant):", cacheErr);
+        console.error(
+          "Redis cache invalidation error (createNewTenant):",
+          cacheErr,
+        );
       }
     }
 
@@ -320,7 +349,9 @@ export async function createNewTenant(newTenantData: any) {
       success: false,
       data: null,
       error: {
-        message: err.message || "An unexpected system error occurred while creating the company.",
+        message:
+          err.message ||
+          "An unexpected system error occurred while creating the company.",
       },
     };
   }

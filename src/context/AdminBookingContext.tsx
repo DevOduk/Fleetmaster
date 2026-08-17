@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import { useAdminFleet } from "./AdminFleetContext";
 import { useUser } from "./UserContext";
 import { fetchBookingsForTenant } from "@/app/actions/bookings";
@@ -14,7 +20,9 @@ interface AdminBookingContextType {
   newBooking: (booking: Omit<any, "id" | "date">) => Promise<boolean>; // Returns success flag to forms
 }
 
-const AdminBookingContext = createContext<AdminBookingContextType | undefined>(undefined);
+const AdminBookingContext = createContext<AdminBookingContextType | undefined>(
+  undefined,
+);
 
 export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
   const { profile: adminProfile } = useUser();
@@ -45,12 +53,12 @@ export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
 
   const reloadBookings = () => {
     fetchAllBookings();
-  }
+  };
 
   // 2. Update existing fields cleanly by ID
   const updateBooking = (id: number, updatedFields: Partial<any>) => {
     setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, ...updatedFields } : b))
+      prev.map((b) => (b.id === id ? { ...b, ...updatedFields } : b)),
     );
   };
 
@@ -72,7 +80,7 @@ export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
         const matchingVehicle = vehicles.find((v) => v.id === data.vehicleId);
         const hydratedBooking = {
           ...data,
-          vehicleDetails: matchingVehicle || null
+          vehicleDetails: matchingVehicle || null,
         };
 
         setBookings((prev) => [...prev, hydratedBooking]);
@@ -88,7 +96,16 @@ export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AdminBookingContext.Provider value={{ bookings, loading, setBookings, reloadBookings, updateBooking, newBooking }}>
+    <AdminBookingContext.Provider
+      value={{
+        bookings,
+        loading,
+        setBookings,
+        reloadBookings,
+        updateBooking,
+        newBooking,
+      }}
+    >
       {children}
     </AdminBookingContext.Provider>
   );
@@ -96,6 +113,9 @@ export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAdminBooking = () => {
   const context = useContext(AdminBookingContext);
-  if (!context) throw new Error("useAdminBooking must be used within an Admin BookingProvider");
+  if (!context)
+    throw new Error(
+      "useAdminBooking must be used within an Admin BookingProvider",
+    );
   return context;
 };

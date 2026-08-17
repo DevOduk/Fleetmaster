@@ -6,8 +6,10 @@ import "leaflet/dist/leaflet.css";
 
 // Fix for default marker icon
 const defaultIcon = L.icon({
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
@@ -15,8 +17,10 @@ const defaultIcon = L.icon({
 });
 // Fix for default marker icon
 const vehicleIcon = L.icon({
-  iconUrl: "https://cdn.iconscout.com/icon/premium/png-256-thumb/car-top-view-icon-svg-download-png-6071962.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  iconUrl:
+    "https://cdn.iconscout.com/icon/premium/png-256-thumb/car-top-view-icon-svg-download-png-6071962.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
   iconSize: [41, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
@@ -60,11 +64,10 @@ const Map: React.FC = () => {
 
   return (
     <div
-      className={`w-full rounded-2xl border transition-colors duration-200 h-100 ${isDarkMode
-          ? "border-gray-800 bg-white/3"
-          : "border-gray-200 bg-white"
-        }`}
-      style={{ height: '80vh' }}
+      className={`h-100 w-full rounded-2xl border transition-colors duration-200 ${
+        isDarkMode ? "border-gray-800 bg-white/3" : "border-gray-200 bg-white"
+      }`}
+      style={{ height: "80vh" }}
     >
       <MapContainer
         center={[-1.286389, 36.817223]}
@@ -79,12 +82,17 @@ const Map: React.FC = () => {
 
         <Marker position={[-1.286389, 36.817223]} icon={defaultIcon}>
           <Popup>
-            <div className="flex gap-3 items-center">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Kenyatta_International_Convention_Centre_02.jpg/1920px-Kenyatta_International_Convention_Centre_02.jpg" alt="Nairobi, Kenya" className="w-20 h-auto mb-2" />
+            <div className="flex items-center gap-3">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Kenyatta_International_Convention_Centre_02.jpg/1920px-Kenyatta_International_Convention_Centre_02.jpg"
+                alt="Nairobi, Kenya"
+                className="mb-2 h-auto w-20"
+              />
               <div>
-                <strong>Kisumu Yard, Kenya.</strong> <br /> <span className="mt-1 text-sm/4 text-gray-400">This is the location of our yard in Kisumu.
+                <strong>Kisumu Yard, Kenya.</strong> <br />{" "}
+                <span className="mt-1 text-sm/4 text-gray-400">
+                  This is the location of our yard in Kisumu.
                 </span>
-
               </div>
             </div>
           </Popup>
@@ -92,25 +100,37 @@ const Map: React.FC = () => {
 
         <Marker position={[-1.286389, 37.817223]} icon={vehicleIcon}>
           <Popup>
-            <div className="flex gap-3 items-center">
-              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0eOCJnkg2QkNR1waxpMW5obhuPNI5dHYcAA&s" alt="Nairobi, Kenya" className="w-20 h-auto mb-2" />
+            <div className="flex items-center gap-3">
+              <img
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0eOCJnkg2QkNR1waxpMW5obhuPNI5dHYcAA&s"
+                alt="Nairobi, Kenya"
+                className="mb-2 h-auto w-20"
+              />
               <div>
-                <strong>Nissab Note, KDW 102A.</strong> <br /> <span className="mt-1 text-sm/4 text-gray-400">VIN: ABC123 | Status: En Route | Speed: 60 km/h | Last Updated: 10 mins ago
+                <strong>Nissab Note, KDW 102A.</strong> <br />{" "}
+                <span className="mt-1 text-sm/4 text-gray-400">
+                  VIN: ABC123 | Status: En Route | Speed: 60 km/h | Last
+                  Updated: 10 mins ago
                 </span>
-
               </div>
             </div>
           </Popup>
         </Marker>
 
-        <Marker position={[0.5167, 35.7500]} icon={vehicleIcon}>
+        <Marker position={[0.5167, 35.75]} icon={vehicleIcon}>
           <Popup>
-            <div className="flex gap-3 items-center">
-              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4ZuUw0F519jRqP8Aw_GerVS9fLIiD7t1TIg&s" alt="Toyota Prado TX" className="w-20 h-auto mb-2" />
+            <div className="flex items-center gap-3">
+              <img
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4ZuUw0F519jRqP8Aw_GerVS9fLIiD7t1TIg&s"
+                alt="Toyota Prado TX"
+                className="mb-2 h-auto w-20"
+              />
               <div>
-                <strong>Toyota Prado TX, KDC 102A.</strong> <br /> <span className="mt-1 text-sm/4 text-gray-400">Vehicle: Toyota Prado TX | Location: Baringo | Status: Active | Last updated: 5 mins ago
+                <strong>Toyota Prado TX, KDC 102A.</strong> <br />{" "}
+                <span className="mt-1 text-sm/4 text-gray-400">
+                  Vehicle: Toyota Prado TX | Location: Baringo | Status: Active
+                  | Last updated: 5 mins ago
                 </span>
-
               </div>
             </div>
           </Popup>
@@ -118,25 +138,35 @@ const Map: React.FC = () => {
 
         <Marker position={[-0.091702, 34.767956]} icon={defaultIcon}>
           <Popup>
-            <div className="flex gap-3 items-center">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Kenyatta_International_Convention_Centre_02.jpg/1920px-Kenyatta_International_Convention_Centre_02.jpg" alt="Nairobi, Kenya" className="w-20 h-auto mb-2" />
+            <div className="flex items-center gap-3">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Kenyatta_International_Convention_Centre_02.jpg/1920px-Kenyatta_International_Convention_Centre_02.jpg"
+                alt="Nairobi, Kenya"
+                className="mb-2 h-auto w-20"
+              />
               <div>
-                <strong>Nairobi Yard, Kenya.</strong> <br /> <span className="mt-1 text-sm/4 text-gray-400">This is the location of our main yard in Nairobi.
+                <strong>Nairobi Yard, Kenya.</strong> <br />{" "}
+                <span className="mt-1 text-sm/4 text-gray-400">
+                  This is the location of our main yard in Nairobi.
                 </span>
-
               </div>
             </div>
           </Popup>
         </Marker>
 
-        <Marker position={[-4.043740, 39.658871]} icon={defaultIcon}>
+        <Marker position={[-4.04374, 39.658871]} icon={defaultIcon}>
           <Popup>
-            <div className="flex gap-3 items-center">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Kenyatta_International_Convention_Centre_02.jpg/1920px-Kenyatta_International_Convention_Centre_02.jpg" alt="Nairobi, Kenya" className="w-20 h-auto mb-2" />
+            <div className="flex items-center gap-3">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Kenyatta_International_Convention_Centre_02.jpg/1920px-Kenyatta_International_Convention_Centre_02.jpg"
+                alt="Nairobi, Kenya"
+                className="mb-2 h-auto w-20"
+              />
               <div>
-                <strong>Mombasa Yard, Kenya.</strong> <br /> <span className="mt-1 text-sm/4 text-gray-400">This is the location of our yard in Mombasa.
+                <strong>Mombasa Yard, Kenya.</strong> <br />{" "}
+                <span className="mt-1 text-sm/4 text-gray-400">
+                  This is the location of our yard in Mombasa.
                 </span>
-
               </div>
             </div>
           </Popup>

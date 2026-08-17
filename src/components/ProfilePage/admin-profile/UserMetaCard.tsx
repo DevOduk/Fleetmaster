@@ -2,46 +2,49 @@
 import { useUser } from "@/context/UserContext";
 import { Avatar } from "@mui/material";
 
-
 export default function UserMetaCard() {
   const { profile } = useUser();
 
   return (
     <>
-      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+      <div className="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
-            <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
+          <div className="flex w-full flex-col items-center gap-6 xl:flex-row">
+            <div className="h-20 w-20 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800">
               <Avatar
                 sx={{
                   width: 80,
-                  height: 80
+                  height: 80,
                 }}
                 src={profile?.profile_pic}
               />
             </div>
             <div className="order-3 xl:order-2">
-              <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
+              <h4 className="mb-2 text-center text-lg font-semibold text-gray-800 xl:text-left dark:text-white/90">
                 {profile?.first_name || "N/A ..."} {profile?.last_name || "N/A"}
               </h4>
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {profile?.role || "N/A"}
                 </p>
-                <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
+                <div className="hidden h-3.5 w-px bg-gray-300 xl:block dark:bg-gray-700"></div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {profile?.country || "N/A"}
                 </p>
-                <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
+                <div className="hidden h-3.5 w-px bg-gray-300 xl:block dark:bg-gray-700"></div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Joined {new Date(profile?.created_at).toLocaleString() || "N/A"}
+                  Joined{" "}
+                  {new Date(profile?.created_at).toLocaleString() || "N/A"}
                 </p>
               </div>
             </div>
-            <div className="flex items-center order-2 gap-2 grow xl:order-3 xl:justify-end">
+            <div className="order-2 flex grow items-center gap-2 xl:order-3 xl:justify-end">
               <a
                 target="_blank"
-                rel="noreferrer" href='https://www.facebook.com/PimjoHQ' className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+                rel="noreferrer"
+                href="https://www.facebook.com/PimjoHQ"
+                className="shadow-theme-xs flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
+              >
                 <svg
                   className="fill-current"
                   width="20"
@@ -57,8 +60,12 @@ export default function UserMetaCard() {
                 </svg>
               </a>
 
-              <a href='https://x.com/PimjoHQ' target="_blank"
-                rel="noreferrer" className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+              <a
+                href="https://x.com/PimjoHQ"
+                target="_blank"
+                rel="noreferrer"
+                className="shadow-theme-xs flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
+              >
                 <svg
                   className="fill-current"
                   width="20"
@@ -74,8 +81,12 @@ export default function UserMetaCard() {
                 </svg>
               </a>
 
-              <a href="https://www.linkedin.com/company/pimjo" target="_blank"
-                rel="noreferrer" className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+              <a
+                href="https://www.linkedin.com/company/pimjo"
+                target="_blank"
+                rel="noreferrer"
+                className="shadow-theme-xs flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
+              >
                 <svg
                   className="fill-current"
                   width="20"
@@ -91,8 +102,12 @@ export default function UserMetaCard() {
                 </svg>
               </a>
 
-              <a href='https://instagram.com/PimjoHQ' target="_blank"
-                rel="noreferrer" className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+              <a
+                href="https://instagram.com/PimjoHQ"
+                target="_blank"
+                rel="noreferrer"
+                className="shadow-theme-xs flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
+              >
                 <svg
                   className="fill-current"
                   width="20"

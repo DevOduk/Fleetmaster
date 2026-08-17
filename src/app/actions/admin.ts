@@ -8,7 +8,6 @@ import crypto from "crypto";
 import { Resend } from "resend";
 import { VerifyEmailNotification } from "@/utils/templates/email-templates";
 
-
 // Initialize Upstash Redis Client
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -26,7 +25,9 @@ export async function createTenantAdmin(newTenantAdmin: any) {
     // 1. Generate a secure 6-digit OTP
     const otp = crypto.randomInt(100000, 999999).toString();
     const otpValidityMinutes = retryDuration / 60;
-    const otpExpiresAt = new Date(Date.now() + otpValidityMinutes * 60 * 1000).toISOString();
+    const otpExpiresAt = new Date(
+      Date.now() + otpValidityMinutes * 60 * 1000,
+    ).toISOString();
     const hashedPassword = await hash(newTenantAdmin.password, SALT_ROUNDS);
 
     const { error, data } = await supabase
@@ -35,9 +36,11 @@ export async function createTenantAdmin(newTenantAdmin: any) {
         ...newTenantAdmin,
         password: hashedPassword, // Store the full hash
         otp_code: otp,
-        otp_expires_at: otpExpiresAt
+        otp_expires_at: otpExpiresAt,
       })
-      .select(`id, first_name, last_name, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, fleetmaster_tenants(*)`)
+      .select(
+        `id, first_name, last_name, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, fleetmaster_tenants(*)`,
+      )
       .single();
 
     if (!error && newTenantAdmin?.tenant_id) {
@@ -60,28 +63,39 @@ export async function createTenantAdmin(newTenantAdmin: any) {
     if (error) {
       console.error("Supabase insert error:", error);
 
-      let friendlyMessage = "An unexpected error occurred while creating the account. Please try again.";
+      let friendlyMessage =
+        "An unexpected error occurred while creating the account. Please try again.";
 
-      if (error.code === '23505') {
-        if (error.message.includes("email") || error.details?.includes("email")) {
-          friendlyMessage = "An account with this email address already exists. Sign in or use a different email.";
-        } else if (error.message.includes("phone") || error.details?.includes("phone")) {
+      if (error.code === "23505") {
+        if (
+          error.message.includes("email") ||
+          error.details?.includes("email")
+        ) {
+          friendlyMessage =
+            "An account with this email address already exists. Sign in or use a different email.";
+        } else if (
+          error.message.includes("phone") ||
+          error.details?.includes("phone")
+        ) {
           friendlyMessage = "This phone number is already registered.";
         } else {
-          friendlyMessage = "A user with these details already exists. Please check your information and try again.";
+          friendlyMessage =
+            "A user with these details already exists. Please check your information and try again.";
         }
       }
 
       return {
         data: null,
         success: false,
-        error: { message: friendlyMessage }
+        error: { message: friendlyMessage },
       };
     }
-
   } catch (err: any) {
     console.error("New Tenant Admin Creation failure:", err);
-    return { success: false, error: err.message || "Failed to register admin." };
+    return {
+      success: false,
+      error: err.message || "Failed to register admin.",
+    };
   }
 }
 
@@ -95,7 +109,10 @@ export async function getTenantAdmins(tenantId: string) {
       return { data: cachedData, success: true, error: null };
     }
   } catch (cacheErr) {
-    console.error(`Redis read error in getTenantAdmins (${tenantId}):`, cacheErr);
+    console.error(
+      `Redis read error in getTenantAdmins (${tenantId}):`,
+      cacheErr,
+    );
   }
 
   // 2. Fetch from Supabase on cache miss
@@ -103,7 +120,9 @@ export async function getTenantAdmins(tenantId: string) {
 
   const { data, error } = await supabase
     .from("fleetmaster_admins")
-    .select("id, phone, email, bio, first_name, last_name, role, profile_pic, created_at")
+    .select(
+      "id, phone, email, bio, first_name, last_name, role, profile_pic, created_at",
+    )
     .eq("tenant_id", tenantId);
 
   if (error) {
@@ -114,7 +133,10 @@ export async function getTenantAdmins(tenantId: string) {
   try {
     await redis.set(cacheKey, JSON.stringify(data), { ex: CACHE_TTL_SECONDS });
   } catch (cacheErr) {
-    console.error(`Redis write error in getTenantAdmins (${tenantId}):`, cacheErr);
+    console.error(
+      `Redis write error in getTenantAdmins (${tenantId}):`,
+      cacheErr,
+    );
   }
 
   return { data, success: true, error: null };
@@ -130,7 +152,10 @@ export async function getTenantAdminDetails(id: string) {
       return { data: cachedData, success: true, error: null };
     }
   } catch (cacheErr) {
-    console.error(`Redis read error in getTenantAdminDetails (${id}):`, cacheErr);
+    console.error(
+      `Redis read error in getTenantAdminDetails (${id}):`,
+      cacheErr,
+    );
   }
 
   // 2. Fetch from Supabase on cache miss
@@ -138,7 +163,9 @@ export async function getTenantAdminDetails(id: string) {
 
   const { data, error } = await supabase
     .from("fleetmaster_admins")
-    .select(`id, first_name, last_name, email, phone, created_at, city, verification_status, country, role, tenant_id, profile_pic, fleetmaster_tenants(*)`)
+    .select(
+      `id, first_name, last_name, email, phone, created_at, city, verification_status, country, role, tenant_id, profile_pic, fleetmaster_tenants(*)`,
+    )
     .eq("id", id)
     .single();
 
@@ -150,13 +177,22 @@ export async function getTenantAdminDetails(id: string) {
   try {
     await redis.set(cacheKey, JSON.stringify(data), { ex: CACHE_TTL_SECONDS });
   } catch (cacheErr) {
-    console.error(`Redis write error in getTenantAdminDetails (${id}):`, cacheErr);
+    console.error(
+      `Redis write error in getTenantAdminDetails (${id}):`,
+      cacheErr,
+    );
   }
 
   return { data, success: true, error: null };
 }
 
-export async function updateProfileDetails({ id, profileDetails }: { id: string; profileDetails: any }) {
+export async function updateProfileDetails({
+  id,
+  profileDetails,
+}: {
+  id: string;
+  profileDetails: any;
+}) {
   const supabase = await createClient();
 
   const { data, error } = await supabase

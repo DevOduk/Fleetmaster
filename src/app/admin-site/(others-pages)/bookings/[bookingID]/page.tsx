@@ -1,7 +1,5 @@
-"use client";
-import ViewBooking from '@/components/bookings/ViewBooking';
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import { use } from 'react';
+import ViewBooking from "@/components/bookings/ViewBooking";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 
 interface VehiclePageProps {
   params: Promise<{ bookingID: string }>;
@@ -9,11 +7,9 @@ interface VehiclePageProps {
 
 const breadcrumbItems = [{ label: "Bookings", href: "/bookings" }];
 
-const VehiclePage = ({ params }: VehiclePageProps) => {
-  const resolvedParams = use(params);
+const VehiclePage = async ({ params }: VehiclePageProps) => {
+  const resolvedParams = await params;
   const bookingID = resolvedParams.bookingID;
-
-
 
   return (
     <main className="space-y-6 p-6">
@@ -23,7 +19,6 @@ const VehiclePage = ({ params }: VehiclePageProps) => {
       />
 
       <ViewBooking BookingID={Number(bookingID)} />
-
     </main>
   );
 };

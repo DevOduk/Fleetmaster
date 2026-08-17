@@ -8,9 +8,12 @@ export default async function getDarajaAccessToken() {
   }
 
   const consumerKey = "hrbPWZT9zo6UcA6nejHkLyhMjVwbgiFjXUfTGMqzCTlajbuL";
-  const consumerSecret = "qiPA9BRqK5BVLgkfSxk9hpXFyYqim4PGvFmuvVeMPwOYsB5BC6R9GKYWLNQGlUPP";
+  const consumerSecret =
+    "qiPA9BRqK5BVLgkfSxk9hpXFyYqim4PGvFmuvVeMPwOYsB5BC6R9GKYWLNQGlUPP";
 
-  const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
+  const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString(
+    "base64",
+  );
 
   try {
     const response = await fetch(
@@ -20,13 +23,15 @@ export default async function getDarajaAccessToken() {
         headers: {
           Authorization: `Basic ${auth}`,
         },
-      }
+      },
     );
 
     const data = await response.json();
-    
+
     if (!response.ok || !data.access_token) {
-      throw new Error(data.errorMessage || "Failed to generate access token from Safaricom");
+      throw new Error(
+        data.errorMessage || "Failed to generate access token from Safaricom",
+      );
     }
 
     cachedToken = data.access_token;

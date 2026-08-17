@@ -1,13 +1,15 @@
 import CallToAction from "@/components/marketing-components/CallToAction";
 import SecondaryHero from "@/components/marketing-components/SecondaryHero";
 import TermsConditions from "@/components/marketing-components/Terms&Conditions";
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Tenant Merchant & Platform Service Agreement | FleetMaster - Fleet Management Solution",
-  description: "Review the core cloud SaaS infrastructure rules, diagnostic hardware liability exclusions, M-PESA webhook verification policies, and terms of service governing commercial operators.",
+  title:
+    "Tenant Merchant & Platform Service Agreement | FleetMaster - Fleet Management Solution",
+  description:
+    "Review the core cloud SaaS infrastructure rules, diagnostic hardware liability exclusions, M-PESA webhook verification policies, and terms of service governing commercial operators.",
 };
 
 export default function TenantTermsPage() {
@@ -18,7 +20,7 @@ export default function TenantTermsPage() {
   ];
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Hero Header Block */}
       <SecondaryHero
         pages={pages}
@@ -28,37 +30,53 @@ export default function TenantTermsPage() {
       />
 
       {/* Info Split Section */}
-      <div className="grid items-center container m-auto grid-cols-1 lg:grid-cols-12 gap-6 p-4 mt-8 mb-8">
+      <div className="container m-auto mt-8 mb-8 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
         <div className="lg:col-span-6">
           <img
-            className='rounded-xl w-full object-cover shadow-sm aspect-video'
-            alt='Fleet B2B Governance Framework'
-            src='/images/user/why-you-should-provide-terms-and-conditions-for-your-website.webp'
+            className="aspect-video w-full rounded-xl object-cover shadow-sm"
+            alt="Fleet B2B Governance Framework"
+            src="/images/user/why-you-should-provide-terms-and-conditions-for-your-website.webp"
           />
         </div>
 
         <div className="lg:col-span-6">
-          <h3 className="text-amber-500 font-semibold tracking-wider text-sm">B2B MERCHANT COMPLIANCE</h3>
-          <h2 className="text-3xl mt-2 mb-3 font-bold text-slate-900 dark:text-white">Securing System Integrations & Commercial Liabilities.</h2>
-          <p className="text-sm text-slate-600 dark:text-gray-400 leading-relaxed max-w-175">
-            Designed specifically for fleet rental merchants, safari operators, and automotive logistical agencies deploying FleetMaster software and sensor infrastructure across Kenya. Understand your configuration risks, payment verification parameters, and data sovereignty definitions.
-            <span className="uppercase text-brand-600">ensure due delligence before accepting a booking</span>
+          <h3 className="text-sm font-semibold tracking-wider text-amber-500">
+            B2B MERCHANT COMPLIANCE
+          </h3>
+          <h2 className="mt-2 mb-3 text-3xl font-bold text-slate-900 dark:text-white">
+            Securing System Integrations & Commercial Liabilities.
+          </h2>
+          <p className="max-w-175 text-sm leading-relaxed text-slate-600 dark:text-gray-400">
+            Designed specifically for fleet rental merchants, safari operators,
+            and automotive logistical agencies deploying FleetMaster software
+            and sensor infrastructure across Kenya. Understand your
+            configuration risks, payment verification parameters, and data
+            sovereignty definitions.
+            <span className="text-brand-600 uppercase">
+              ensure due delligence before accepting a booking
+            </span>
           </p>
 
-          <div className="flex mt-5 items-center gap-4 pt-2">
+          <div className="mt-5 flex items-center gap-4 pt-2">
             <Link
               href="/terms-conditions"
-              className="group px-5 py-3 bg-amber-600 text-white text-sm font-medium rounded-xl flex items-center gap-1 hover:bg-amber-700 transition-all shadow-md cursor-pointer"
+              className="group flex cursor-pointer items-center gap-1 rounded-xl bg-amber-600 px-5 py-3 text-sm font-medium text-white shadow-md transition-all hover:bg-amber-700"
             >
               Review Renter Clauses
-              <KeyboardArrowRightIcon className="text-sm transition-transform group-hover:translate-x-0.5" fontSize="small" />
+              <KeyboardArrowRightIcon
+                className="text-sm transition-transform group-hover:translate-x-0.5"
+                fontSize="small"
+              />
             </Link>
           </div>
         </div>
       </div>
 
       {/* Interactive Terms System */}
-      <div id="terms-root" className="border-t border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-900/40">
+      <div
+        id="terms-root"
+        className="border-t border-slate-200 bg-white dark:border-slate-800/60 dark:bg-slate-900/40"
+      >
         <TermsConditions />
       </div>
 

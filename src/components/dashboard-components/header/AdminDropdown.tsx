@@ -23,65 +23,77 @@ export default function AdminDropdown() {
     setIsOpen(false);
   }
 
-
   return (
     <div className="relative flex items-center">
-      {
-        profile ?
-          <button
-            onClick={toggleDropdown}
-            className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
+      {profile ? (
+        <button
+          onClick={toggleDropdown}
+          className="dropdown-toggle flex items-center text-gray-700 dark:text-gray-400"
+        >
+          <span className="mr-3 h-11 w-11 overflow-hidden rounded-full">
+            <Avatar
+              src={profile?.profile_pic}
+              alt={profile.first_name}
+              className="h-10 w-10"
+            />
+          </span>
+
+          <span className="text-theme-sm mr-1 block font-medium text-nowrap">
+            Hi {profile?.first_name}
+          </span>
+
+          <svg
+            className={`stroke-gray-500 transition-transform duration-200 dark:stroke-gray-400 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+            width="18"
+            height="20"
+            viewBox="0 0 18 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-              <Avatar
-                src={profile?.profile_pic}
-                alt={profile.first_name}
-                className="w-10 h-10"
-              />
-            </span>
-
-            <span className="block mr-1 text-nowrap font-medium text-theme-sm">Hi {profile?.first_name}</span>
-
-            <svg
-              className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-                }`}
-              width="18"
-              height="20"
-              viewBox="0 0 18 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M4.3125 8.65625L9 13.3437L13.6875 8.65625"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button> : <Link href="/signin" className="flex text-nowrap items-center gap-2 text-gray-600 dark:text-gray-400"><Avatar src="" /> Sign in</Link>
-      }
+            <path
+              d="M4.3125 8.65625L9 13.3437L13.6875 8.65625"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      ) : (
+        <Link
+          href="/signin"
+          className="flex items-center gap-2 text-nowrap text-gray-600 dark:text-gray-400"
+        >
+          <Avatar src="" /> Sign in
+        </Link>
+      )}
 
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
-        className="absolute right-0 top-full mt-2 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"      >
+        className="shadow-theme-lg dark:bg-gray-dark absolute top-full right-0 mt-2 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-800"
+      >
         <div>
-          <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-300">
-            {profile?.first_name} {profile?.last_name} ● <Badge size="sm" color="success">ACTIVE</Badge>
+          <span className="text-theme-sm block font-medium text-gray-700 dark:text-gray-300">
+            {profile?.first_name} {profile?.last_name} ●{" "}
+            <Badge size="sm" color="success">
+              ACTIVE
+            </Badge>
           </span>
-          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
+          <span className="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400">
             {profile?.email}
           </span>
         </div>
 
-        <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
+        <ul className="flex flex-col gap-1 border-b border-gray-200 pt-4 pb-3 dark:border-gray-800">
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
-              href="/account"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              href="/profile"
+              className="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               <svg
                 className="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
@@ -105,8 +117,8 @@ export default function AdminDropdown() {
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
-              href="/account/account-settings"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              href="/profile/account-settings"
+              className="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               <svg
                 className="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
@@ -131,7 +143,7 @@ export default function AdminDropdown() {
               onItemClick={closeDropdown}
               tag="a"
               href="/support"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              className="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               <svg
                 className="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
@@ -155,9 +167,9 @@ export default function AdminDropdown() {
         <div
           onClick={() => {
             logout();
-            router.push('signin')
+            router.push("signin");
           }}
-          className="flex cursor-pointer items-center gap-3 px-3 py-2 mt-3 font-medium text-red-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-red-500 dark:hover:bg-white/5 dark:hover:text-red-300"
+          className="group text-theme-sm mt-3 flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 font-medium text-red-700 hover:bg-gray-100 hover:text-gray-700 dark:text-red-500 dark:hover:bg-white/5 dark:hover:text-red-300"
         >
           <svg
             className="fill-red-500 group-hover:fill-red-700 dark:group-hover:fill-red-300"

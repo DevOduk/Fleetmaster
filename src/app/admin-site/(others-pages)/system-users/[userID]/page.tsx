@@ -4,14 +4,71 @@ import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon } from "@/icons";
 import { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { createPublicClient } from "@/utils/supabase/server";
 
-export const metadata: Metadata = {
-  title:
-    "Update System User Profile | FleetManager Admin Dashboard - Best tool for Fleet Management",
-  description: "FleetManager is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
-};
+// Helper function to safely extract and parse tenant data from headers
+async function getTenantFromHeaders() {
+  const headerList = await headers();
+  const tenantId = headerList.get("x-tenant-id");
+  const rawTenantData = headerList.get("x-tenant-data");
 
-export default async function Profile({ params }: { params: Promise<{ userID: string }> }) {
+  let tenantData = null;
+  if (rawTenantData) {
+    try {
+      tenantData = JSON.parse(rawTenantData);
+    } catch (e) {
+      console.error("Failed to parse x-tenant-data header:", e);
+    }
+  }
+
+  return { tenantId, tenantData };
+}
+
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+
+// 1. Dynamic Server-Side Metadata Generation
+export async function generateMetadata(): Promise<Metadata> {
+  const { tenantData } = await getTenantFromHeaders();
+
+  // If header tenant data exists, use it directly (saves a DB query)
+  let tenantName = tenantData?.name;
+  let tenantDescription = tenantData?.about;
+
+  // Fallback to DB query if header data isn't present
+  if (!tenantName) {
+    const supabase = createPublicClient();
+    const { data: tenant } = await supabase
+      .from("fleetmaster_tenants")
+      .select("name, about")
+      .limit(1)
+      .maybeSingle();
+
+    tenantName = tenant?.name || "FleetMaster";
+    tenantDescription =
+      tenant?.about ||
+      `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
+  } else {
+    tenantDescription =
+      tenantDescription ||
+      `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
+  }
+
+  return {
+    title: `System Users | ${tenantName}: FleetMaster - Premium Car Rental & Fleet Solutions Software`,
+    description: tenantDescription,
+    openGraph: {
+      title: `${tenantName} - Official Admin Website`,
+      description: tenantDescription,
+    },
+  };
+}
+
+export default async function Profile({
+  params,
+}: {
+  params: Promise<{ userID: string }>;
+}) {
   const { userID } = await params;
 
   // Fetch user profile data based on userID
@@ -20,31 +77,26 @@ export default async function Profile({ params }: { params: Promise<{ userID: st
 
   if (!profile) {
     return (
-      <div className="container min-h-[80vh] mx-auto p-5 text-gray-400">
+      <div className="container mx-auto min-h-[80vh] p-5 text-gray-400">
         User profile not found.
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
-        <div className="flex gap-3 items-center mb-4">
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 lg:p-6 dark:border-gray-800 dark:bg-white/3">
+      <PageBreadcrumb
+        items={[
+          {
+            label: "System Users",
+            href: "/system-users",
+          },
+        ]}
+        pageTitle="View Profile"
+      />
 
-          <Link href="/system-users" className="mr-2">
-            <Button size="sm" variant="danger-outline">
-              <ChevronLeftIcon />
-              Back to System Users
-            </Button>
-          </Link>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            View Profile
-          </h3>
-        </div>
-        
-        <div className="space-y-6">
-          <ProfilePage userProfile={profile} />
-        </div>
+      <div className="space-y-6">
+        <ProfilePage userProfile={profile} />
       </div>
     </div>
   );

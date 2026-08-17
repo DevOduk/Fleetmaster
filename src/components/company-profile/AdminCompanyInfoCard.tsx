@@ -5,8 +5,11 @@ import { useEffect, useState } from "react";
 import ComponentCard from "../common/ComponentCard";
 import ExpiryBanner, { getExpiryString } from "./ExpiryBanner";
 
-
-export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string }) {
+export default function AdminCompanyInfoCard({
+  TenantID,
+}: {
+  TenantID: string;
+}) {
   const [company, setCompany] = useState<any>(null);
   const [loadingCompany, setLoadingCompany] = useState<boolean>(true);
 
@@ -28,68 +31,77 @@ export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string })
     getTenantDetails();
   }, [TenantID]);
 
-
   if (!TenantID || loadingCompany) {
     return (
-      <div className="w-full mx-auto p-6 space-y-6 animate-pulse">
+      <div className="mx-auto w-full animate-pulse space-y-6 p-6">
         {/* Header Section Placeholder */}
-        <div className="flex items-center justify-between pb-6 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-6 dark:border-gray-800">
           <div className="space-y-2">
-            <div className="h-6 w-48 bg-gray-200 rounded-md dark:bg-gray-600"></div>
-            <div className="h-4 w-32 bg-gray-100 rounded-md dark:bg-gray-600"></div>
+            <div className="h-6 w-48 rounded-md bg-gray-200 dark:bg-gray-600"></div>
+            <div className="h-4 w-32 rounded-md bg-gray-100 dark:bg-gray-600"></div>
           </div>
-          <div className="h-10 w-28 bg-gray-200 rounded-lg dark:bg-gray-600"></div>
+          <div className="h-10 w-28 rounded-lg bg-gray-200 dark:bg-gray-600"></div>
         </div>
 
         {/* Metric Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="p-5 border border-gray-100 dark:border-gray-700 rounded-xl space-y-3">
-              <div className="h-4 w-34 bg-gray-100 rounded-md dark:bg-gray-600"></div>
-              <div className="h-8 w-19 bg-gray-200 rounded-md dark:bg-gray-600"></div>
+            <div
+              key={i}
+              className="space-y-3 rounded-xl border border-gray-100 p-5 dark:border-gray-700"
+            >
+              <div className="h-4 w-34 rounded-md bg-gray-100 dark:bg-gray-600"></div>
+              <div className="h-8 w-19 rounded-md bg-gray-200 dark:bg-gray-600"></div>
             </div>
           ))}
         </div>
 
         {/* Main Content Area / List Placeholder */}
-        <div className="border border-gray-100 dark:border-gray-800 rounded-xl p-4 space-y-4">
-          <div className="h-5 w-36 bg-gray-200 dark:bg-gray-500 rounded-md mb-2"></div>
+        <div className="space-y-4 rounded-xl border border-gray-100 p-4 dark:border-gray-800">
+          <div className="mb-2 h-5 w-36 rounded-md bg-gray-200 dark:bg-gray-500"></div>
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-gray-600 last:border-0">
-              <div className="flex items-center space-x-3 w-full">
-                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-full shrink-0"></div>
-                <div className="space-y-2 w-full max-w-[60%]">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded-md w-3/4"></div>
-                  <div className="h-3 bg-gray-100 dark:bg-gray-600 rounded-md w-1/2"></div>
+            <div
+              key={i}
+              className="flex items-center justify-between border-b border-gray-50 py-3 last:border-0 dark:border-gray-600"
+            >
+              <div className="flex w-full items-center space-x-3">
+                <div className="h-10 w-10 shrink-0 rounded-full bg-gray-200 dark:bg-gray-600"></div>
+                <div className="w-full max-w-[60%] space-y-2">
+                  <div className="h-4 w-3/4 rounded-md bg-gray-200 dark:bg-gray-600"></div>
+                  <div className="h-3 w-1/2 rounded-md bg-gray-100 dark:bg-gray-600"></div>
                 </div>
               </div>
-              <div className="h-4 w-12 bg-gray-100 rounded-md dark:bg-gray-600"></div>
+              <div className="h-4 w-12 rounded-md bg-gray-100 dark:bg-gray-600"></div>
             </div>
           ))}
         </div>
 
         {/* Subtle Loading Text Indicator */}
         <div className="flex items-center justify-center space-x-2 pt-2">
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-          <span className="text-xs text-gray-400 font-medium pl-1">Syncing workspace...</span>
+          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500 [animation-delay:-0.3s]"></div>
+          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500 [animation-delay:-0.15s]"></div>
+          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500"></div>
+          <span className="pl-1 text-xs font-medium text-gray-400">
+            Syncing workspace...
+          </span>
         </div>
       </div>
-
     );
   }
   if (!company) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl min-h-[70vh]">
-        <div className="text-4xl mb-4">🏢</div>
-        <h3 className="text-lg font-semibold text-red-600">Company Not Found</h3>
-        <p className="text-gray-500 max-w-m mt-2">
-          We couldn't locate a profile associated with your account. If you believe this is an error, please contact support.
+      <div className="flex min-h-[70vh] flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 p-8 text-center dark:border-gray-600">
+        <div className="mb-4 text-4xl">🏢</div>
+        <h3 className="text-lg font-semibold text-red-600">
+          Company Not Found
+        </h3>
+        <p className="max-w-m mt-2 text-gray-500">
+          We couldn't locate a profile associated with your account. If you
+          believe this is an error, please contact support.
         </p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          className="mt-6 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
         >
           Refresh Page
         </button>
@@ -104,21 +116,34 @@ export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string })
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
             {company.tenant_logo ? (
-              <img src={company.tenant_logo} alt="Company Logo" className="h-full w-full object-contain p-1 bg-white" />
+              <img
+                src={company.tenant_logo}
+                alt="Company Logo"
+                className="h-full w-full bg-white object-contain p-1"
+              />
             ) : (
-              <span className="text-xl font-bold text-gray-400">{company.name?.charAt(0)}</span>
+              <span className="text-xl font-bold text-gray-400">
+                {company.name?.charAt(0)}
+              </span>
             )}
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">{company.name}</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+              {company.name}
+            </h2>
             <div className="flex items-center gap-2">
               <p className="text-xs font-medium text-gray-500">
-                {company.slug}.fleetmaster.co.ke {company.website && ` - ${company.website}`}
-                </p>
+                {company.slug}.fleetmaster.co.ke{" "}
+                {company.website && ` - ${company.website}`}
+              </p>
               <span className="text-xs text-gray-400">|</span>
-              <p className="text-xs font-medium text-gray-500">{company.subscription_plan || "N/A"} Plan</p>
+              <p className="text-xs font-medium text-gray-500">
+                {company.subscription_plan || "N/A"} Plan
+              </p>
               <span className="text-xs text-gray-400">|</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${company.subscription_status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-600'}`}>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${company.subscription_status === "Active" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-gray-100 text-gray-600"}`}
+              >
                 {company.subscription_status || "Inactive"}
               </span>
               <span className="text-xs text-gray-400">|</span>
@@ -137,22 +162,37 @@ export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string })
         </Link> */}
       </div>
 
-      <ExpiryBanner plan={company.subscription_plan} expiryDate={company.expiry_date} />
+      <ExpiryBanner
+        plan={company.subscription_plan}
+        expiryDate={company.expiry_date}
+      />
 
-      <div className="p-6 space-y-8">
-        <h5 className="font-bold text-lg text-black dark:text-white">About</h5>
-        <p className="text-sm text-gray-600 dark:text-gray-300">{company.about || 'No about available.'}</p>
-        <h5 className="font-bold text-lg text-black dark:text-white">Description</h5>
-        <p className="text-sm text-gray-600 dark:text-gray-300">{company.description || 'No description available.'}</p>
+      <div className="space-y-8 p-6">
+        <h5 className="text-lg font-bold text-black dark:text-white">About</h5>
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          {company.about || "No about available."}
+        </p>
+        <h5 className="text-lg font-bold text-black dark:text-white">
+          Description
+        </h5>
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          {company.description || "No description available."}
+        </p>
 
         {/* Contact Details */}
         <ComponentCard title="Contact Information">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <DataPoint label="Email Address" value={company.email} />
             <DataPoint label="Primary Phone Number" value={company.phone} />
-            <DataPoint label="Location" value={`${company.county || 'N/A'}, ${company.country}`} />
+            <DataPoint
+              label="Location"
+              value={`${company.county || "N/A"}, ${company.country}`}
+            />
             <DataPoint label="City" value={`${company.city || "N/A"}`} />
-            <DataPoint label="Zip Code" value={`${company.zip_code || "N/A"}`} />
+            <DataPoint
+              label="Zip Code"
+              value={`${company.zip_code || "N/A"}`}
+            />
             <DataPoint label="Address" value={`${company.address || "N/A"}`} />
           </div>
         </ComponentCard>
@@ -163,29 +203,47 @@ export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string })
             <DataPoint label="Timezone" value={company.timezone} />
             <DataPoint label="Language" value={company.language} />
             <DataPoint label="Currency" value={company.currency} />
-            <DataPoint label="Buffer (Hours)" value={`${company.buffer || "N/A"} hrs`} />
-            <DataPoint label="Color Preference" value={`${company.color || "Default"}`} />
+            <DataPoint
+              label="Buffer (Hours)"
+              value={`${company.buffer || "N/A"} hrs`}
+            />
+            <DataPoint
+              label="Color Preference"
+              value={`${company.color || "Default"}`}
+            />
             <DataPoint label="Admins" value={`${company.color || "2"}`} />
           </div>
         </ComponentCard>
 
         {/* Operational Settings */}
-        <ComponentCard title={`Tenant Administrators (${company.admins?.length || 0} Users)`}>
+        <ComponentCard
+          title={`Tenant Administrators (${company.admins?.length || 0} Users)`}
+        >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {
-              company.admins?.length > 0 ? company.admins?.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((admin, i) => (
-                <>
-                  <div key={i} className="col-span-full text-md font-semibold text-brand-500">
-                    {i + 1}. {admin?.first_name} {admin?.last_name} {i === 0 && '(Super Admin)'}
-                  </div>
-                  <DataPoint label="Role" value={admin.role} />
-                  <DataPoint label="Email" value={admin.email} />
-                  <DataPoint label="Phone" value={admin.phone} />
-                  <DataPoint label="Country" value={admin.country} />
-                  <DataPoint label="Location" value={admin.city} />
-                </>
-              )) : 'We couldnt find admin details!'
-            }
+            {company.admins?.length > 0
+              ? company.admins
+                  ?.sort(
+                    (a, b) =>
+                      new Date(a.created_at).getTime() -
+                      new Date(b.created_at).getTime(),
+                  )
+                  .map((admin, i) => (
+                    <>
+                      <div
+                        key={i}
+                        className="text-md text-brand-500 col-span-full font-semibold"
+                      >
+                        {i + 1}. {admin?.first_name} {admin?.last_name}{" "}
+                        {i === 0 && "(Super Admin)"}
+                      </div>
+                      <DataPoint label="Role" value={admin.role} />
+                      <DataPoint label="Email" value={admin.email} />
+                      <DataPoint label="Phone" value={admin.phone} />
+                      <DataPoint label="Country" value={admin.country} />
+                      <DataPoint label="Location" value={admin.city} />
+                    </>
+                  ))
+              : "We couldnt find admin details!"}
           </div>
         </ComponentCard>
 
@@ -194,13 +252,21 @@ export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string })
           <ComponentCard title="Yards & Depots">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {company.yards.map((yard: any, idx: number) => (
-                <div key={idx} className="rounded-xl border border-gray-100 p-4 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                <div
+                  key={idx}
+                  className="rounded-xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/30"
+                >
                   <img
                     src={yard.imageUrl || "/images/brand/default-yard.png"}
                     alt={yard.title || "Yard"}
-                    className="mb-2 h-auto aspect-video w-full rounded-lg object-cover"
-                  />                  <p className="text-sm font-bold text-gray-900 dark:text-white">{yard.title}</p>
-                  <p className="mt-1 text-xs text-gray-500 line-clamp-2">{yard.description}</p>
+                    className="mb-2 aspect-video h-auto w-full rounded-lg object-cover"
+                  />{" "}
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">
+                    {yard.title}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-xs text-gray-500">
+                    {yard.description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -211,8 +277,12 @@ export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string })
       {/* Footer / About Section */}
       {company.about && (
         <div className="border-t border-gray-100 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">About</p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">{company.about}</p>
+          <p className="mb-1 text-xs font-semibold tracking-wider text-gray-400 uppercase">
+            About
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            {company.about}
+          </p>
         </div>
       )}
     </div>
@@ -222,9 +292,11 @@ export default function AdminCompanyInfoCard({ TenantID }: { TenantID: string })
 function DataPoint({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800/30">
-      <span className="mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">{label}</span>
+      <span className="mb-1 text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+        {label}
+      </span>
       <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-        {value || <span className="text-gray-300 font-normal italic">N/A</span>}
+        {value || <span className="font-normal text-gray-300 italic">N/A</span>}
       </span>
     </div>
   );

@@ -6,9 +6,9 @@ import { Redis } from "@upstash/redis";
 const redis =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
     ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
     : null;
 
 const TICKETS_CACHE_TTL = 60 * 60; // 1 Hour
@@ -28,22 +28,24 @@ interface SupportTicketPayload {
 
 export async function submitSupportRequest(
   payload: SupportTicketPayload,
-  userProfile: UserProfileParam
+  userProfile: UserProfileParam,
 ) {
   try {
     const supabase = await createClient();
 
-    const { error } = await supabase.from("fleetmaster_support_tickets").insert({
-      ticket_number: payload.ticket_number,
-      user_id: userProfile.id,
-      tenant_id: userProfile.tenant_id,
-      user_role: userProfile.role || "User",
-      subject: payload.subject,
-      description: payload.description,
-      category: payload.category,
-      priority: "Medium",
-      status: "Open",
-    });
+    const { error } = await supabase
+      .from("fleetmaster_support_tickets")
+      .insert({
+        ticket_number: payload.ticket_number,
+        user_id: userProfile.id,
+        tenant_id: userProfile.tenant_id,
+        user_role: userProfile.role || "User",
+        subject: payload.subject,
+        description: payload.description,
+        category: payload.category,
+        priority: "Medium",
+        status: "Open",
+      });
 
     if (error) throw error;
 
@@ -69,7 +71,10 @@ export async function fetchUserTickets(userId: string) {
       if (cachedData) {
         return {
           success: true,
-          data: typeof cachedData === "string" ? JSON.parse(cachedData) : cachedData,
+          data:
+            typeof cachedData === "string"
+              ? JSON.parse(cachedData)
+              : cachedData,
         };
       }
     } catch (e) {
@@ -90,7 +95,9 @@ export async function fetchUserTickets(userId: string) {
   // 3. Populate Redis Cache
   if (redis && data) {
     try {
-      await redis.set(cacheKey, JSON.stringify(data), { ex: TICKETS_CACHE_TTL });
+      await redis.set(cacheKey, JSON.stringify(data), {
+        ex: TICKETS_CACHE_TTL,
+      });
     } catch (e) {
       console.error("Redis set error in fetchUserTickets:", e);
     }
@@ -108,7 +115,10 @@ export async function getTicketDetails(ticketNumber: string) {
       const cachedData = await redis.get(cacheKey);
       if (cachedData) {
         return {
-          data: typeof cachedData === "string" ? JSON.parse(cachedData) : cachedData,
+          data:
+            typeof cachedData === "string"
+              ? JSON.parse(cachedData)
+              : cachedData,
           error: null,
         };
       }
@@ -122,7 +132,7 @@ export async function getTicketDetails(ticketNumber: string) {
   const { data, error } = await supabase
     .from("fleetmaster_support_tickets")
     .select(
-      "*, responses:fleetmaster_ticket_responses(*), admin:fleetmaster_main_admins (id, first_name, last_name)"
+      "*, responses:fleetmaster_ticket_responses(*), admin:fleetmaster_main_admins (id, first_name, last_name)",
     )
     .eq("ticket_number", ticketNumber)
     .single();
@@ -132,7 +142,9 @@ export async function getTicketDetails(ticketNumber: string) {
   // 3. Populate Redis Cache
   if (redis && data) {
     try {
-      await redis.set(cacheKey, JSON.stringify(data), { ex: TICKETS_CACHE_TTL });
+      await redis.set(cacheKey, JSON.stringify(data), {
+        ex: TICKETS_CACHE_TTL,
+      });
     } catch (e) {
       console.error("Redis set error in getTicketDetails:", e);
     }
@@ -148,7 +160,7 @@ export async function addSupportResponse(
   response: string,
   is_admin: boolean,
   ticketNumber?: string,
-  userId?: string
+  userId?: string,
 ) {
   const supabase = await createClient();
   const { error } = await supabase.from("fleetmaster_ticket_responses").insert({
@@ -183,12 +195,16 @@ export async function updateTicket(
   adminId: string,
   status: string,
   ticketNumber?: string,
-  userId?: string
+  userId?: string,
 ) {
   const supabase = await createClient();
   const { error, data } = await supabase
     .from("fleetmaster_support_tickets")
-    .update({ status, assigned_admin_id: adminId, updated_at: new Date().toISOString() })
+    .update({
+      status,
+      assigned_admin_id: adminId,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", ticketId);
 
   // Invalidate stale caches when ticket status or admin assignment changes

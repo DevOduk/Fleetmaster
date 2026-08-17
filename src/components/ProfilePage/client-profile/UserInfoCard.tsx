@@ -3,30 +3,26 @@ import React from "react";
 import { useModal } from "../../../hooks/useModal";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined"
-import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined"
-
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 
 export default function UserInfoCard() {
   const { isOpen, openModal, closeModal } = useModal();
   const { profile } = useUser();
-
 
   const handleSave = () => {
     // Handle save logic here
     closeModal();
   };
   return (
-    <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+    <div className="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
       <div className="flex items-center justify-between">
-        <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+        <h4 className="text-lg font-semibold text-gray-800 lg:mb-6 dark:text-white/90">
           Personal Information
         </h4>
 
-        <Link href="/profile/edit" className=''>
-          <button
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-theme-xs hover:bg-gray-50 hover:text-blue-800 dark:border-gray-700 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-white/3 dark:hover:text-blue-200 lg:inline-flex lg:w-auto"
-          >
+        <Link href="/profile/edit" className="">
+          <button className="shadow-theme-xs flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-gray-50 hover:text-blue-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-white/3 dark:hover:text-blue-200">
             <svg
               className="fill-current"
               width="18"
@@ -71,12 +67,20 @@ export default function UserInfoCard() {
             <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
               Email address
             </p>
-            <p className="text-sm flex items-center gap-5 justify-between font-medium text-gray-800 dark:text-white/90">
+            <p className="flex items-center justify-between gap-5 text-sm font-medium text-gray-800 dark:text-white/90">
               {profile?.email || "N/A"}
 
-              {
-                profile.verification_status?.email ? <TaskAltOutlinedIcon fontSize="small" className="text-green-500 mt-1" /> : <CancelOutlinedIcon fontSize="small" className="text-red-500 mt-1" />
-              }
+              {profile.verification_status?.email ? (
+                <TaskAltOutlinedIcon
+                  fontSize="small"
+                  className="mt-1 text-green-500"
+                />
+              ) : (
+                <CancelOutlinedIcon
+                  fontSize="small"
+                  className="mt-1 text-red-500"
+                />
+              )}
             </p>
           </div>
 
@@ -84,12 +88,20 @@ export default function UserInfoCard() {
             <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
               Phone
             </p>
-            <p className="text-sm flex items-center gap-5 justify-between font-medium text-gray-800 dark:text-white/90">
+            <p className="flex items-center justify-between gap-5 text-sm font-medium text-gray-800 dark:text-white/90">
               {profile?.phone || "N/A"}
 
-              {
-                profile.verification_status?.phone ? <TaskAltOutlinedIcon fontSize="small" className="text-green-500 mt-1" /> : <CancelOutlinedIcon fontSize="small" className="text-red-500 mt-1" />
-              }
+              {profile.verification_status?.phone ? (
+                <TaskAltOutlinedIcon
+                  fontSize="small"
+                  className="mt-1 text-green-500"
+                />
+              ) : (
+                <CancelOutlinedIcon
+                  fontSize="small"
+                  className="mt-1 text-red-500"
+                />
+              )}
             </p>
           </div>
 

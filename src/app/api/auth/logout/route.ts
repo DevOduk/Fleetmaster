@@ -8,9 +8,9 @@ const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
 const redis =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
     ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
     : null;
 
 export async function POST() {
@@ -28,13 +28,16 @@ export async function POST() {
         }
       } catch (jwtErr) {
         // Token might be expired or malformed; proceed safely with clearing cookies
-        console.warn("Non-blocking token decode failure during logout cache clearing:", jwtErr);
+        console.warn(
+          "Non-blocking token decode failure during logout cache clearing:",
+          jwtErr,
+        );
       }
     }
 
     const response = NextResponse.json(
       { success: true, message: "Logged out successfully" },
-      { status: 200 }
+      { status: 200 },
     );
 
     const isProd = process.env.NODE_ENV === "production";
@@ -70,7 +73,7 @@ export async function POST() {
     console.error("Logout error exception:", err);
     return NextResponse.json(
       { error: "Internal Server Error during logout" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

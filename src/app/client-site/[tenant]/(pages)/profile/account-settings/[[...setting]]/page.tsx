@@ -1,8 +1,6 @@
-import PageBreadCrumb from "@/components/common/PageBreadCrumb";
-import AccountSettings from "@/components/account/AccountSettings";
 import { Metadata } from "next";
 import { createPublicClient } from "@/utils/supabase/server";
-
+import AccountSeetingsWarapper from "./AccountSeetingsWarapper";
 
 interface PageProps {
   params: Promise<{
@@ -10,9 +8,10 @@ interface PageProps {
   }>;
 }
 
-
 // 1. Dynamic Server-Side Metadata Generation
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const tenantSlug = resolvedParams.tenant;
 
@@ -38,18 +37,36 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+export default async function SettingsPage({
+  params,
+}: {
+  params: Promise<{ setting: string }>;
+}) {
+  const resolvedParams = await params;
+  // Handle optional or missing [setting] segment, replacing underscores with spaces and capitalizing
+  const settingParam = resolvedParams?.setting;
+  const rawSetting = Array.isArray(settingParam)
+    ? settingParam[0]
+    : settingParam;
 
-export default function SettingsPage() {
+  // Format title: ensure rawSetting is a valid string before calling .replace()
+  const settingTitle =
+    typeof rawSetting === "string" && rawSetting.length > 0
+      ? rawSetting
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (char) => char.toUpperCase())
+      : "Accessibility";
+
   return (
     <div className="container m-auto min-h-screen">
-      <div className="rounded-2xl mt-4 mb-4 border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
-        <div className="flex gap-3 items-center mb-4">
+      <div className="mt-4 mb-4 rounded-2xl border border-gray-200 bg-white p-5 lg:p-6 dark:border-gray-800 dark:bg-white/3">
+        <div className="mb-4 flex items-center gap-3">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
             Account Settings
           </h3>
         </div>
         <div className="space-y-6">
-          <AccountSettings />
+          <AccountSeetingsWarapper currentSetting={settingTitle} />
         </div>
       </div>
     </div>

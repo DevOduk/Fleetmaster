@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import { Booking } from "@/data/mockFleetData";
 import { useFleet } from "./FleetContext";
 import { fetchBookingsForTenant } from "@/app/actions/bookings";
@@ -46,7 +52,7 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
   // 2. Update existing fields cleanly by ID
   const updateBooking = (id: number, updatedFields: Partial<Booking>) => {
     setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, ...updatedFields } : b))
+      prev.map((b) => (b.id === id ? { ...b, ...updatedFields } : b)),
     );
   };
 
@@ -68,7 +74,7 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
         const matchingVehicle = vehicles.find((v) => v.id === data.vehicleId);
         const hydratedBooking = {
           ...data,
-          vehicleDetails: matchingVehicle || null
+          vehicleDetails: matchingVehicle || null,
         };
 
         setBookings((prev) => [...prev, hydratedBooking]);
@@ -84,7 +90,9 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <BookingContext.Provider value={{ bookings, loading, setBookings, updateBooking, newBooking }}>
+    <BookingContext.Provider
+      value={{ bookings, loading, setBookings, updateBooking, newBooking }}
+    >
       {children}
     </BookingContext.Provider>
   );
@@ -92,7 +100,7 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
 
 export const useBooking = () => {
   const context = useContext(BookingContext);
-  if (!context) throw new Error("useBooking must be used within a BookingProvider");
+  if (!context)
+    throw new Error("useBooking must be used within a BookingProvider");
   return context;
 };
-
