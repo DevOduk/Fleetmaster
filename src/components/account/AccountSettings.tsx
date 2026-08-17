@@ -863,7 +863,7 @@ export function EditableInput({
 }: {
   label: string;
   value: string;
-  onChange: (v: string) => void;
+  onChange: any;
   type?: string;
   disabled?: boolean;
   placeholder?: string;
