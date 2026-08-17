@@ -141,7 +141,7 @@ const Calendar: React.FC = () => {
   useEffect(() => {
     const days = Math.ceil(
       (new Date(eventEndDate).getTime() - new Date(eventStartDate).getTime()) /
-        (1000 * 3600 * 24),
+      (1000 * 3600 * 24),
     );
     const minimum =
       vehicles.find((vehicle) => vehicle.id === bookingID)?.minRentalDays || 1;
@@ -528,9 +528,8 @@ const Calendar: React.FC = () => {
                             />
                             <span className="box mr-2 flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 dark:border-gray-700">
                               <span
-                                className={`h-2 w-2 rounded-full bg-white ${
-                                  eventLevel === key ? "block" : "hidden"
-                                }`}
+                                className={`h-2 w-2 rounded-full bg-white ${eventLevel === key ? "block" : "hidden"
+                                  }`}
                               ></span>
                             </span>
                           </span>
@@ -548,12 +547,11 @@ const Calendar: React.FC = () => {
                   Service Schedule
                 </h3>
                 <AdminCalendarWrapper
-                  isMarkedUnavailable={
-                    getVehicleDetails(bookingID)?.status === "Not Available"
-                  }
+                  isMarkedUnavailable={getVehicleDetails(bookingID)?.status === "Not Available"}
                   dateString={new Date().toISOString().split("T")[0]}
                   vehicleId={bookingID}
-                />
+                  bookings={[]}
+                  loading={false} />
               </div>
 
               {getVehicleDetails(bookingID)?.status === "Not Available" && (
@@ -685,7 +683,7 @@ const Calendar: React.FC = () => {
                           setEventEndDate(
                             new Date(
                               new Date(eventEndDate).getTime() +
-                                day * 24 * 60 * 60 * 1000,
+                              day * 24 * 60 * 60 * 1000,
                             )
                               .toISOString()
                               .split("T")[0],
@@ -782,17 +780,17 @@ const Calendar: React.FC = () => {
                     Total Payable: Ksh.{" "}
                     {selectedEvent
                       ? (
-                          getTotalAmount(
-                            getBookingDetails(bookingID)?.vehicleID,
-                            eventEndDate,
-                            eventStartDate,
-                          ) - getBookingDetails(bookingID)?.totalAmount
-                        ).toLocaleString()
-                      : getTotalAmount(
+                        getTotalAmount(
                           getBookingDetails(bookingID)?.vehicleID,
                           eventEndDate,
                           eventStartDate,
-                        ).toLocaleString()}
+                        ) - getBookingDetails(bookingID)?.totalAmount
+                      ).toLocaleString()
+                      : getTotalAmount(
+                        getBookingDetails(bookingID)?.vehicleID,
+                        eventEndDate,
+                        eventStartDate,
+                      ).toLocaleString()}
                   </p>
                 </div>
               )}
@@ -875,17 +873,17 @@ const Calendar: React.FC = () => {
                 style={{
                   cursor:
                     !bookingName ||
-                    !eventStartDate ||
-                    !eventEndDate ||
-                    !eventLevel ||
-                    !renterName ||
-                    !renterID ||
-                    !renterPhone ||
-                    eventDays < minDays ||
-                    processingPayment ||
-                    updatingBooking ||
-                    disableButton ||
-                    isSelectionOverlapping
+                      !eventStartDate ||
+                      !eventEndDate ||
+                      !eventLevel ||
+                      !renterName ||
+                      !renterID ||
+                      !renterPhone ||
+                      eventDays < minDays ||
+                      processingPayment ||
+                      updatingBooking ||
+                      disableButton ||
+                      isSelectionOverlapping
                       ? "not-allowed"
                       : "pointer",
                 }}
