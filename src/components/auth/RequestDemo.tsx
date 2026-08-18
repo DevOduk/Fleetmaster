@@ -14,14 +14,18 @@ export default function RequestDemo() {
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [email, setEmail] = useState("admin@gmail.com");
+  const [email, setEmail] = useState("");
 
   const handleSendDemoEmail = async () => {
-    if (!email) return showToast("Please enter a valid email", "warning");
+    if (!email || !email.includes(`@`)) return showToast("Please enter a valid email", "warning");
     setIsLoading(true);
 
     // Finalize registration
-    showToast("Demo has been sent to your email!", "success");
+    setTimeout(() => {
+      showToast("Demo has been sent to your email!", "success");
+
+      setIsLoading(false)
+    }, 1000);
   };
   return (
     <div className="flex w-full flex-1 flex-col lg:w-1/2">

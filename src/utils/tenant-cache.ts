@@ -4,9 +4,9 @@ import { Redis } from "@upstash/redis";
 const redis =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
     ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
     : null;
 
 const CACHE_TTL_SECONDS = 60 * 60 * 24; // 24 Hours
@@ -44,17 +44,16 @@ export async function getCachedTenant(slug: string) {
       return null;
     }
 
-    // 3. WRITE BACK TO REDIS SO PROXY / ROUTE CAN FIND IT INSTANTLY
+    // 3. WRITE BACK TO REDIS & MAP ID -> SLUG POINTER
     if (redis) {
       try {
-        await redis.set(redisKey, JSON.stringify(tenant), {
-          ex: CACHE_TTL_SECONDS,
-        });
-        if (tenant.id) {
-          await redis.set(`tenant_id:${tenant.id}`, JSON.stringify(tenant), {
-            ex: CACHE_TTL_SECONDS,
-          });
-        }
+        const stringifiedTenant = JSON.stringify(tenant);
+        await Promise.all([
+          redis.set(redisKey, stringifiedTenant, { ex: CACHE_TTL_SECONDS }),
+          tenant.id ? redis.set(`tenant_id:${tenant.id}`, stringifiedTenant, { ex: CACHE_TTL_SECONDS }) : Promise.resolve(),
+          // 🔑 CRITICAL BRIDGE: Map the ID directly to the slug name
+          tenant.id ? redis.set(`map:id_to_slug:${tenant.id}`, normalizedSlug, { ex: CACHE_TTL_SECONDS }) : Promise.resolve(),
+        ]);
       } catch (err) {
         console.error("Redis set error in getCachedTenant:", err);
       }
@@ -67,15 +66,31 @@ export async function getCachedTenant(slug: string) {
   }
 }
 
-/**
- * Call this function whenever a tenant updates their settings/profile to clear stale Redis entries.
- */
-export async function invalidateTenantCache(slug: string, tenantId?: string) {
+// Update invalidation to handle slug or ID seamlessly
+export async function invalidateTenantCache(slug?: string, tenantId?: string) {
   if (!redis) return;
   try {
-    const keysToDelete = [`tenant_slug:${slug.toLowerCase().trim()}`];
-    if (tenantId) keysToDelete.push(`tenant_id:${tenantId}`);
-    await redis.del(...keysToDelete);
+    const keysToDelete: string[] = [];
+
+    // If we only have an ID from admin side, try to find its corresponding slug via Redis pointer first
+    let resolvedSlug = slug;
+    if (!resolvedSlug && tenantId) {
+      resolvedSlug = await redis.get<string>(`map:id_to_slug:${tenantId}`);
+    }
+
+    if (resolvedSlug) {
+      keysToDelete.push(`tenant_slug:${resolvedSlug.toLowerCase().trim()}`);
+    }
+    if (tenantId) {
+      keysToDelete.push(`tenant_id:${tenantId}`);
+      keysToDelete.push(`map:id_to_slug:${tenantId}`);
+      keysToDelete.push(`tenants:details:${tenantId}`);
+    }
+    keysToDelete.push("tenants:all");
+
+    if (keysToDelete.length > 0) {
+      await redis.del(...keysToDelete);
+    }
   } catch (err) {
     console.error("Failed to invalidate tenant cache in Redis:", err);
   }

@@ -257,7 +257,7 @@ export default function AdminCompanyInfoCard({
                   className="rounded-xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/30"
                 >
                   <img
-                    src={yard.imageUrl || "/images/brand/default-yard.png"}
+                    src={yard.image_url || "/images/brand/default-yard.png"}
                     alt={yard.title || "Yard"}
                     className="mb-2 aspect-video h-auto w-full rounded-lg object-cover"
                   />{" "}

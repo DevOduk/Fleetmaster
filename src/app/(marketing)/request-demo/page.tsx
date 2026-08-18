@@ -1,6 +1,7 @@
 import RequestDemo from "@/components/auth/RequestDemo";
 import CallToAction from "@/components/marketing-components/CallToAction";
 import type { Metadata } from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Request Demo | FleetMaster - Fleet Hardware & GPS Trackers",
@@ -21,17 +22,21 @@ export default function RequestDemoPage() {
           </div>
 
           {/* Simulating Internal Dashboard Content */}
-          <div className="relative w-full">
-            <img
+          <div className="relative w-full aspect-video">
+            <Image
               src="/images/product/light_app.localhost.png"
               alt="Product Dashboard Mockup"
-              // sizes="(max-width: 1024px) 100vw, 50vw"
+              preload
+              fill
+              style={{ objectFit: 'cover' }}
               className="block w-full rounded rounded-t-xl border-0 object-cover object-top dark:hidden"
             />
-            <img
+            <Image
               src="/images/product/dark_app.localhost.png"
-              alt="Product Dashboard Mockup"
-              // sizes="(max-width: 1024px) 100vw, 50vw"
+              alt="Product Dashboard"
+              preload
+              fill
+              style={{ objectFit: 'cover' }}
               className="hidden w-full rounded rounded-t-xl border-0 object-cover object-top dark:block"
             />
           </div>

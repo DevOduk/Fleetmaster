@@ -10,6 +10,7 @@ import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturi
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import BluetoothDriveOutlinedIcon from "@mui/icons-material/BluetoothDriveOutlined";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Shop | FleetMaster - Fleet Hardware & GPS Trackers",
@@ -35,10 +36,13 @@ export default function ShopPage() {
 
       <div className="container m-auto mt-5 mb-5 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
         {/* 3. Swapped col-7 for col-span-7 */}
-        <div className="lg:col-span-6">
-          <img
+        <div className="lg:col-span-6 aspect-video relative">
+          <Image
             className="w-full rounded-xl"
             alt="What Next ..."
+            preload
+            fill
+            style={{ objectFit: 'cover' }}
             src={"/images/user/How-Does-GPS-Tracking-Work-on-Cars.webp"}
           />
         </div>
@@ -198,14 +202,13 @@ export default function ShopPage() {
                       {"10% Off"}
                     </span>
                   </span>
-                  <img
+                  <Image
                     src={product.imgSrc}
                     alt={product.title}
                     className="absolute inset-0 h-full w-full bg-gray-200 object-cover transition-transform duration-300 group-hover:scale-105"
-                    // onError={(e) => {
-                    //   // Hides image marker elements cleanly if file asset does not exist yet
-                    //   e.currentTarget.style.display = 'none';
-                    // }}
+                    preload
+                    fill
+                    style={{ objectFit: 'cover' }}
                   />
                 </div>
 

@@ -53,7 +53,7 @@ export async function fetchAllVehicles() {
 
   const { data, error } = await supabase
     .from("fleetmaster_vehicles")
-    .select(`*, tenant:fleetmaster_tenants(name)`)
+    .select(`*, tenant:fleetmaster_tenants(name), location:fleetmaster_yards(*)`)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -94,7 +94,7 @@ export async function fetchVehicleDetails(id: number) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_vehicles")
-    .select("*")
+    .select(`*, location:fleetmaster_yards(*)`)
     .eq("id", id)
     .single();
 
@@ -164,7 +164,7 @@ export async function deleteVehicle(id: number, profile: any) {
     .eq("vehicle_id", id)
     .or(
       `rental_end.gt.${currentDateStr},` +
-        `and(rental_end.eq.${currentDateStr},rental_time.gte.${currentTimeStr})`,
+      `and(rental_end.eq.${currentDateStr},rental_time.gte.${currentTimeStr})`,
     );
 
   if (bookingError) {

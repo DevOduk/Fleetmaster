@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState } from "react";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { clearTimeout } from "timers";
+import Image from "next/image";
 
 export const defaultVehicleImages = [
   "https://www.toyotawalton.com/wp-content/uploads/2025/01/Toyota-Land-Cruiser-Prado-used-vehicle-Toyota-walton.webp",
@@ -23,9 +24,9 @@ export default function HeroSlider() {
       : vehicles.length === 0
         ? defaultVehicleImages
         : [
-            ...vehicles.map((v) => v?.image_url).filter(Boolean),
-            ...defaultVehicleImages,
-          ];
+          ...vehicles.map((v) => v?.image_url).filter(Boolean),
+          ...defaultVehicleImages,
+        ];
 
   const triggerUserInteraction = () => {
     setResetToken((prev) => prev + 1);
@@ -53,14 +54,28 @@ export default function HeroSlider() {
     triggerUserInteraction(); // Wipes and resets the 5s timer frame immediately!
 
     if (sliderRef.current) {
-      const { scrollLeft, clientWidth } = sliderRef.current;
-      const scrollAmount =
-        direction === "left"
-          ? scrollLeft - clientWidth
-          : scrollLeft + clientWidth;
+      const { scrollLeft, clientWidth, scrollWidth } = sliderRef.current;
+      
+      let targetScrollLeft: number;
+
+      if (direction === "right") {
+        // Check if we are at or past the end of the scrollable area
+        if (scrollLeft + clientWidth >= scrollWidth - 1) {
+          targetScrollLeft = 0; // Loop back to the start
+        } else {
+          targetScrollLeft = scrollLeft + clientWidth;
+        }
+      } else {
+        // If going left and at the very beginning, wrap around to the end
+        if (scrollLeft <= 0) {
+          targetScrollLeft = scrollWidth - clientWidth;
+        } else {
+          targetScrollLeft = scrollLeft - clientWidth;
+        }
+      }
 
       sliderRef.current.scrollTo({
-        left: scrollAmount,
+        left: targetScrollLeft,
         behavior: "smooth",
       });
     }
@@ -120,13 +135,20 @@ export default function HeroSlider() {
         className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto scroll-smooth"
       >
         {allImageUrls.map((img, i) => (
-          <img
-            className="w-full min-w-full shrink-0 snap-start rounded-2xl object-cover object-center"
+          <div
             key={i}
-            alt={"vehicle " + i}
-            src={img}
-            style={{ filter: "brightness(70%)" }}
-          />
+            className="relative w-full min-w-full shrink-0 snap-start rounded-2xl overflow-hidden"
+          >
+            <Image
+              className="h-full w-full object-cover object-center"
+              alt={``}
+              src={img}
+              fill
+              sizes="100vw"
+              style={{ filter: "brightness(70%)" }}
+              priority={i === 0}
+            />
+          </div>
         ))}
       </div>
 
@@ -138,11 +160,10 @@ export default function HeroSlider() {
             <button
               key={`dot-${i}`}
               onClick={() => handleDotClick(i)}
-              className={`m-0 h-2 rounded-full transition-all duration-300 outline-none ${
-                isActive
+              className={`m-0 h-2 rounded-full transition-all duration-300 outline-none ${isActive
                   ? "w-6 bg-blue-500" // Highlighted Active Pill Indicator
                   : "w-2 bg-gray-500 hover:bg-gray-400" // Inactive point dot color
-              }`}
+                }`}
               aria-label={`Jump directly to panel view frame index number ${i + 1}`}
             />
           );

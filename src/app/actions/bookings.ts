@@ -1,6 +1,7 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
 import { Redis } from "@upstash/redis";
+import { sendBookingNotification } from "./notifications";
 
 // 1. Initialize Upstash Redis Client
 const redis = new Redis({
@@ -267,7 +268,7 @@ export async function updateBookingDetails(id: number, bookingDetails: any) {
   return { data, error, success: !error };
 }
 
-export async function createNewBooking(bookingDetails: any) {
+export async function createNewBooking(bookingDetails: any, userEmail: string, tenant: any, userName: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_bookings")
@@ -282,6 +283,7 @@ export async function createNewBooking(bookingDetails: any) {
       userId: bookingDetails?.user_id,
     });
   }
+  const { error: emailNotifError } = await sendBookingNotification(userEmail, tenant, bookingDetails, userName, bookingDetails?.user_id);
 
-  return { data, success: !error, error };
+  return { data, success: !error, error: { ...error, emailNotifError } };
 }

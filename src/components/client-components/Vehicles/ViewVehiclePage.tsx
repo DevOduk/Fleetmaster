@@ -26,28 +26,13 @@ import DeliveryBanner from "@/components/client-components/DeliveryBanner";
 import userVerified from "@/utils/clients/checkverification";
 import { fetchVehicleDetails } from "@/app/actions/vehicles";
 import { fetchBookingsForVehicle } from "@/app/actions/bookings";
+import { syncTimeToDateString } from "../hero/searchform";
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string; tenant: string }>;
 }
 
 const breadcrumbItems = [{ label: "Vehicles", href: "/vehicles" }];
-
-const syncTimeToDateString = (
-  dateTarget: string,
-  sourceDateTime: string,
-): string => {
-  if (!sourceDateTime || !dateTarget) return dateTarget;
-
-  // Extract the time portion (everything after the 'T')
-  const [, timeComponent] = sourceDateTime.split("T");
-  // Extract the date portion of the target string
-  const [dateComponent] = dateTarget.split("T");
-
-  if (!timeComponent || !dateComponent) return dateTarget;
-
-  return `${dateComponent}T${timeComponent}`;
-};
 
 export default function ViewVehiclePage({ params }: VehiclePageProps) {
   const router = useRouter();
@@ -61,10 +46,11 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
   const { tenant } = useTenant();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const fallbackStart = dayjs().add(1, "day").format("YYYY-MM-DD[T]HH:mm");
 
-  // 2 days after tomorrow (3 days total) at the exact same hour and minute
-  const fallbackEnd = dayjs().add(3, "day").format("YYYY-MM-DD[T]HH:mm");
+  // Generate tomorrow at a fixed 9:00 AM deterministically
+  const fallbackStart = dayjs().add(1, "day").hour(9).minute(0).second(0).millisecond(0).toDate().toString();
+  const fallbackEnd = dayjs().add(3, "day").hour(9).minute(0).second(0).millisecond(0).toDate().toString();
+
 
   const [start, setStart] = useState(
     searchParams.get("start") ? searchParams.get("start") : fallbackStart,
@@ -264,97 +250,6 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
       />
       <DeliveryBanner />
 
-      <div className="mt-3 mb-2 grid grid-cols-[1fr_auto_1fr] items-center gap-x-4 gap-y-3 rounded border border-gray-300 p-2 text-sm dark:border-gray-700">
-        {/* Row 1 */}
-        <h4 className="text-theme-l lg:text-l font-semibold text-gray-800 dark:text-white/90">
-          Total Amount:
-        </h4>
-        <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
-        <div className="m-0 p-0 text-right font-bold text-green-600 dark:text-green-400">
-          KSH. {grandTotalAmount.toLocaleString()}
-        </div>
-      </div>
-      <p
-        role="button"
-        className="text-brand-400 mt-0 mb-4 text-right text-xs font-medium underline"
-        onClick={() => setExpandBreakdown(!expandBreakdown)}
-      >
-        {expandBreakdown ? "Collapse" : "Expand"} Cost Breakdown?
-      </p>
-
-      {expandBreakdown && (
-        <div className="top-0 col-span-12 ms-auto mb-5 flex w-full flex-col gap-2 rounded-2xl bg-gray-200 lg:col-span-3 lg:w-130 dark:bg-gray-800">
-          <h4 className="modal-title text-theme-l lg:text-l mt-4 px-3 text-right font-semibold text-gray-800 dark:text-white/90">
-            Booking Summary
-          </h4>
-          <div className="mt-2 rounded-xl border border-gray-200 bg-white p-2 px-3 dark:border-gray-800 dark:bg-gray-900/30">
-            <h3 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Cost Breakdown
-            </h3>
-
-            {/* Grid Wrapper */}
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-4 gap-y-3 text-sm">
-              {/* Row 1 */}
-              <div className="text-left text-gray-500 dark:text-gray-400">
-                Duration
-              </div>
-              <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
-              <div className="text-right font-medium text-gray-800 dark:text-gray-200">
-                {dynamicDays} Days
-              </div>
-
-              {/* Row 2 */}
-              <div className="text-left text-gray-500 dark:text-gray-400">
-                Daily Rate
-              </div>
-              <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
-              <div className="text-right font-medium text-gray-800 dark:text-gray-200">
-                Ksh. {VehicleDetails?.daily_rate.toLocaleString()}
-              </div>
-
-              {/* Row 3 */}
-              <div className="text-left text-gray-500 dark:text-gray-400">
-                Delivery + Pickup fee
-              </div>
-              <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
-              <div className="text-right font-medium text-gray-800 dark:text-gray-200">
-                Ksh. 0
-              </div>
-
-              {/* Row 4 */}
-              <div className="text-left text-gray-500 dark:text-gray-400">
-                Rescue Plan
-              </div>
-              <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
-              <div className="text-right font-medium text-gray-800 dark:text-gray-200">
-                Ksh. {rescuePlanFee}
-              </div>
-
-              {/* Row 5 */}
-              <div className="text-left text-gray-500 dark:text-gray-400">
-                VAT 16%
-              </div>
-              <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
-              <div className="text-right font-medium text-gray-800 dark:text-gray-200">
-                Ksh. {vatAmount.toLocaleString()}
-              </div>
-
-              {/* Horizontal Divider Span across all 3 columns */}
-              <div className="col-span-3 my-1 border-t border-gray-200 dark:border-gray-800" />
-
-              {/* Grand Total Row */}
-              <div className="text-left font-bold text-gray-800 dark:text-gray-100">
-                Total
-              </div>
-              <div className="h-5 w-px bg-gray-300 dark:bg-gray-700" />
-              <div className="text-right text-base font-bold text-green-600 dark:text-green-500">
-                Ksh. {grandTotalAmount.toLocaleString()}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="grid grid-cols-12 gap-6">
         {/* Calendar Section: col-span-5 */}
         <div className="col-span-12 lg:col-span-5">
@@ -436,7 +331,100 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
         </div>
 
         {/* Details Section: col-span-7 */}
-        <div className="col-span-12 space-y-6 lg:col-span-7">
+        <div className="col-span-12 space-y-6 lg:col-span-7 relative">
+
+          <div className="mt-3 mb-2 grid grid-cols-[1fr_auto_1fr] items-center gap-x-4 gap-y-3 rounded border border-gray-300 p-2 text-sm dark:border-gray-700 sticky top-20 dark:bg-gray-800 bg-gray-50 z-10">
+            {/* Row 1 */}
+            <h4 className="text-theme-l lg:text-l font-semibold text-gray-800 dark:text-white/90">
+              Total Amount:
+            </h4>
+            <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
+            <div className="m-0 p-0 text-right font-bold text-green-600 dark:text-green-400">
+              KSH. {grandTotalAmount.toLocaleString()}
+            </div>
+          </div>
+
+          <p
+            role="button"
+            className="text-brand-400 mt-0 mb-4 text-right text-xs font-medium underline"
+            onClick={() => setExpandBreakdown(!expandBreakdown)}
+          >
+            {expandBreakdown ? "Collapse" : "Expand"} Cost Breakdown?
+          </p>
+
+          {expandBreakdown && (
+            <div className="top-0 ms-auto mb-5 flex w-full flex-col gap-2 rounded-2xl bg-gray-200 dark:bg-gray-800">
+              <h4 className="modal-title text-theme-l lg:text-l mt-4 px-3 text-right font-semibold text-gray-800 dark:text-white/90">
+                Booking Summary
+              </h4>
+              <div className="mt-2 rounded-xl border border-gray-200 bg-white p-2 px-3 dark:border-gray-800 dark:bg-gray-900/30">
+                <h3 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Cost Breakdown
+                </h3>
+
+                {/* Grid Wrapper */}
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-4 gap-y-3 text-sm">
+                  {/* Row 1 */}
+                  <div className="text-left text-gray-500 dark:text-gray-400">
+                    Duration
+                  </div>
+                  <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
+                  <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                    {dynamicDays} Days
+                  </div>
+
+                  {/* Row 2 */}
+                  <div className="text-left text-gray-500 dark:text-gray-400">
+                    Daily Rate
+                  </div>
+                  <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
+                  <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                    Ksh. {VehicleDetails?.daily_rate.toLocaleString()}
+                  </div>
+
+                  {/* Row 3 */}
+                  <div className="text-left text-gray-500 dark:text-gray-400">
+                    Delivery + Pickup fee
+                  </div>
+                  <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
+                  <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                    Ksh. 0
+                  </div>
+
+                  {/* Row 4 */}
+                  <div className="text-left text-gray-500 dark:text-gray-400">
+                    Rescue Plan
+                  </div>
+                  <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
+                  <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                    Ksh. {rescuePlanFee}
+                  </div>
+
+                  {/* Row 5 */}
+                  <div className="text-left text-gray-500 dark:text-gray-400">
+                    VAT 16%
+                  </div>
+                  <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
+                  <div className="text-right font-medium text-gray-800 dark:text-gray-200">
+                    Ksh. {vatAmount.toLocaleString()}
+                  </div>
+
+                  {/* Horizontal Divider Span across all 3 columns */}
+                  <div className="col-span-3 my-1 border-t border-gray-200 dark:border-gray-800" />
+
+                  {/* Grand Total Row */}
+                  <div className="text-left font-bold text-gray-800 dark:text-gray-100">
+                    Total
+                  </div>
+                  <div className="h-5 w-px bg-gray-300 dark:bg-gray-700" />
+                  <div className="text-right text-base font-bold text-green-600 dark:text-green-500">
+                    Ksh. {grandTotalAmount.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <div className="mb-6 flex items-start justify-between">
               <div>
@@ -451,11 +439,10 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
               </div>
               <div>
                 <span
-                  className={`font-sm mt-2 mb-1 rounded-full px-3 py-1 text-xs ${
-                    VehicleDetails?.status === "Available"
+                  className={`font-sm mt-2 mb-1 rounded-full px-3 py-1 text-xs ${VehicleDetails?.status === "Available"
                       ? "bg-green-100 text-green-700"
                       : "bg-amber-100 text-amber-700"
-                  }`}
+                    }`}
                 >
                   {VehicleDetails?.status}
                 </span>
@@ -538,7 +525,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
               <div>
                 <p className="text-gray-400">Location</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">
-                  {VehicleDetails?.location}
+                  {VehicleDetails?.location.title}
                 </p>
               </div>
 
@@ -591,8 +578,8 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
                   ) {
                     showToast(
                       "Please select a minimum of " +
-                        VehicleDetails?.min_rental_days +
-                        " days!",
+                      VehicleDetails?.min_rental_days +
+                      " days!",
                       "error",
                     );
                     return;

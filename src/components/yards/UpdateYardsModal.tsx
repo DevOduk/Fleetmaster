@@ -61,7 +61,7 @@ export default function UpdateYardsModal({
     let res;
     const newYards = isUpdate
       ? companyFormData.yards.map((y: any) =>
-          y.title === yardDetails.title ? updatedYard : y,
+          y.id === yardDetails.id ? updatedYard : y,
         )
       : [...(companyFormData.yards || []), updatedYard];
     if (isUpdate) {
@@ -179,7 +179,7 @@ export default function UpdateYardsModal({
             {isUpdloading ? (
               "Uploading image ..."
             ) : isUpdating ? (
-              "Saving ..."
+              "Saving details ..."
             ) : yardDetails ? (
               <>
                 Update Yard <CheckLineIcon />

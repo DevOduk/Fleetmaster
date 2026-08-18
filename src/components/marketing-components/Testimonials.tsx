@@ -56,7 +56,7 @@ export default function TestimonialsSection() {
         {testimonials.map((item, index) => (
           <div
             key={index}
-            className="flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-6 shadow-xs transition-all duration-200 hover:border-gray-200 sm:p-8 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+            className="flex flex-col justify-between rounded-2xl border border-gray-100 bg-gray-100 p-6 shadow-xs transition-all duration-200 hover:border-gray-200 sm:p-8 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
           >
             {/* Rating Row */}
             <div className="mb-4 flex items-center gap-0.5 text-amber-500">

@@ -225,7 +225,7 @@ export default function ClientHeader() {
                   }}
                   className="w-auto rounded object-cover"
                   src={tenant.tenant_logo}
-                  // alt={`${tenant.name} Logo`}
+                // alt={`${tenant.name} Logo`}
                 />
               ) : (
                 <div className="flex items-center gap-2 font-bold text-nowrap text-black dark:text-white">
@@ -277,9 +277,8 @@ export default function ClientHeader() {
           </div>
 
           <div
-            className={`${
-              isApplicationMenuOpen ? "flex w-full" : "hidden"
-            } shadow-theme-md ms-auto items-center justify-between gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0 lg:shadow-none`}
+            className={`${isApplicationMenuOpen ? "flex w-full" : "hidden"
+              } shadow-theme-md ms-auto items-center justify-between gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0 lg:shadow-none`}
           >
             <div className="hidden xl:block">
               <div>

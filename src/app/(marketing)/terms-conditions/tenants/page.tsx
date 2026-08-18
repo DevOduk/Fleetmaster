@@ -3,6 +3,7 @@ import SecondaryHero from "@/components/marketing-components/SecondaryHero";
 import TermsConditions from "@/components/marketing-components/Terms&Conditions";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -31,10 +32,13 @@ export default function TenantTermsPage() {
 
       {/* Info Split Section */}
       <div className="container m-auto mt-8 mb-8 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
-        <div className="lg:col-span-6">
-          <img
+        <div className="lg:col-span-6 aspect-video relative">
+          <Image
             className="aspect-video w-full rounded-xl object-cover shadow-sm"
             alt="Fleet B2B Governance Framework"
+            preload
+            fill
+            style={{ objectFit: 'cover' }}
             src="/images/user/why-you-should-provide-terms-and-conditions-for-your-website.webp"
           />
         </div>

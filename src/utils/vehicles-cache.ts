@@ -12,9 +12,9 @@ interface CachedVehiclesResult {
 const redis =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
     ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
     : null;
 
 const CACHE_TTL = 60 * 30; // 30 minutes in seconds
@@ -42,9 +42,10 @@ async function fetchAndCacheVehicles(
 
   const { data, error } = await supabase
     .from("fleetmaster_vehicles")
-    .select("*")
+    .select(`*, location:fleetmaster_yards(*)`)
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
+
 
   const result: CachedVehiclesResult = {
     data: (data ?? []) as Record<string, unknown>[],

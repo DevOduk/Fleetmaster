@@ -9,6 +9,7 @@ import LuggageOutlinedIcon from "@mui/icons-material/LuggageOutlined";
 import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined";
 import Button from "../ui/button/Button";
 import { defaultVehicleImages } from "./hero/slider";
+import Image from "next/image";
 
 interface Tenant {
   tenantData: any;
@@ -46,42 +47,48 @@ export default function ViewAllLocations({ tenantData }: Tenant) {
     >
       {tenantData?.yards?.length > 0
         ? tenantData?.yards?.slice(0, 6).map((VehicleDetails) => (
-            <div
-              key={VehicleDetails.id}
-              className="mb-3 rounded-2xl bg-gray-500/3 shadow dark:bg-gray-500/10"
-            >
-              <div className="relative">
-                <Box
-                  className="flex h-full w-full items-end gap-2 rounded-xl p-3 font-bold text-white bg-blend-darken"
-                  sx={{
-                    position: "absolute",
-                    bottom: 0,
-                    right: 0,
-                    background: "linear-gradient(to top, black, transparent)",
-                  }}
-                >
-                  {VehicleDetails.title}
-                </Box>
-                <img
-                  src={VehicleDetails.image_url}
-                  alt={`${VehicleDetails.title}`}
-                  className="aspect-video w-full rounded-xl object-cover"
-                />
-              </div>
-            </div>
-          ))
-        : defaultVehicleImages.map((_, i) => (
-            <div
-              key={i}
-              className="mb-3 aspect-video overflow-hidden rounded-2xl bg-gray-300 shadow dark:bg-gray-700"
-            >
-              <img
-                src={_}
-                alt=""
-                className="h-full w-full object-cover object-center"
+          <div
+            key={VehicleDetails.id}
+            className="mb-3 rounded-2xl bg-gray-500/3 shadow dark:bg-gray-500/10"
+          >
+            <div className="relative aspect-video w-full">
+              <Box
+                className="flex h-full w-full z-2 items-end gap-2 rounded-xl p-3 font-bold text-white bg-blend-darken"
+                sx={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  background: "linear-gradient(to top, black, transparent)",
+                }}
+              >
+                {VehicleDetails.title}
+              </Box>
+              <Image
+                src={VehicleDetails.image_url}
+                alt={``}
+                preload
+                fill
+                style={{ objectFit: 'cover' }}
+                className=" rounded-xl object-cover"
               />
             </div>
-          ))}
+          </div>
+        ))
+        : defaultVehicleImages.map((_, i) => (
+          <div
+            key={i}
+            className="mb-3 aspect-video relative overflow-hidden rounded-2xl bg-gray-300 shadow dark:bg-gray-700"
+          >
+            <Image
+              src={_}
+              alt=""
+              preload
+              fill
+              style={{ objectFit: 'cover' }}
+              className="h-full w-full object-cover object-center"
+            />
+          </div>
+        ))}
     </div>
   );
 }

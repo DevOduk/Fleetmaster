@@ -1,4 +1,5 @@
 "use client";
+
 import { use, useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -6,10 +7,12 @@ import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import { createClient } from "@/utils/supabase/client";
 import Button from "@/components/ui/button/Button";
-import DoneAllOutlinedIcon from "@mui/icons-material/DoneAllOutlined";
+import VehicleNotFound from "@/components/vehicles/NotFound";
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
+import { useFleet } from "@/context/FleetContext";
 import { useUser } from "@/context/UserContext";
+import { useTenant } from "@/context/TenantContext";
 import GppGoodOutlinedIcon from "@mui/icons-material/GppGoodOutlined";
 import MobileScreenShareOutlinedIcon from "@mui/icons-material/MobileScreenShareOutlined";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -38,17 +41,14 @@ import { useModal } from "@/hooks/useModal";
 import { ArrowRightIcon } from "@/icons";
 import Alert from "@/components/ui/alert/Alert";
 import { createPayment } from "@/app/actions/payments";
-import { useAdminFleet } from "@/context/AdminFleetContext";
-import Select from "../form/Select";
-import { PencilIcon, ChevronDownIcon } from "@/icons";
-import { mpesaPollingIterval } from "../company-profile/CompanySubscriptionsCard";
+import DeliveryBanner from "@/components/client-components/DeliveryBanner";
+import userVerified from "@/utils/clients/checkverification";
+import { mpesaPollingIterval } from "@/components/company-profile/CompanySubscriptionsCard";
 import { createNewBooking } from "@/app/actions/bookings";
-import { useAdminBooking } from "@/context/AdminBookingContext";
-import { syncTimeToDateString } from "../client-components/hero/searchform";
 import Image from "next/image";
 
 dayjs.extend(isBetween);
-const supabase = createClient();
+
 
 const modalStyle = {
   position: "absolute" as const,
@@ -62,18 +62,20 @@ const modalStyle = {
   border: 0,
 };
 
-const CreateNewBookingForm = () => {
+const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
   const searchParams = useSearchParams();
-  const { vehicles, loading } = useAdminFleet();
+  const { vehicles, loading } = useFleet();
   const { profile } = useUser();
+  const { tenant } = useTenant();
   const { showToast } = useToast();
-  const [mpesaNumber, setMpesaNumber] = useState("");
+  const [mpesaNumber, setMpesaNumber] = useState((profile?.phone) || "");
   const [isPaying, setIsPaying] = useState(false);
   const [error, setError] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const successModal = useModal();
-  const { isOpen, openModal, closeModal } = useModal();
-  const { reloadBookings } = useAdminBooking();
+  const fallbackStart = dayjs().add(1, "day").format("YYYY-MM-DD[T]HH:mm");
+  // 2 days after tomorrow (3 days total) at the exact same hour and minute
+  const fallbackEnd = dayjs().add(3, "day").format("YYYY-MM-DD[T]HH:mm");
 
   const token = searchParams.get("token");
   let decodedData = null;
@@ -85,10 +87,27 @@ const CreateNewBookingForm = () => {
     }
   }
 
+
+  const start = useMemo(() => {
+    return (
+      decodedData?.bookingInformation?.start ||
+      searchParams.get("start") ||
+      fallbackStart
+    );
+  }, [decodedData, searchParams, fallbackStart]);
+
+  const end = useMemo(() => {
+    return (
+      decodedData?.bookingInformation?.end ||
+      searchParams.get("end") ||
+      fallbackEnd
+    );
+  }, [decodedData, searchParams, fallbackEnd]);
+
   const [expandBreakdown, setExpandBreakdown] = useState(true);
   const [openPolicyModal, setOpenPolicyModal] = useState(false);
   const [policiesAccepted, setPoliciesAccepted] = useState(
-    localStorage.getItem("policiesAccepted")
+    localStorage?.getItem("policiesAccepted")
       ? JSON.parse(localStorage.getItem("policiesAccepted"))
       : false,
   );
@@ -96,87 +115,48 @@ const CreateNewBookingForm = () => {
   // Logistics Options State
   const [dropoffOption, setDropoffOption] = useState("same"); // 'same' | 'elsewhere'
   const [dropoffLocation, setDropoffLocation] = useState(""); // 'same' | 'elsewhere'
-  const [renterName, setRenterName] = useState("");
-  const [renterID, setRenterID] = useState("");
-  const [VehicleDetails, setVehicleDetails] = useState(null);
-  const fallbackStart = dayjs().add(1, "day").format("YYYY-MM-DD[T]HH:mm");
-  const fallbackEnd = dayjs().add(3, "day").format("YYYY-MM-DD[T]HH:mm");
 
   // Payment Setup State
   const [paymentMethod, setPaymentMethod] = useState("m-pesa");
-  const [selectedLocation, setSelectedLocation] =
-    useState<string>("Countrywide");
-  const [filters, setFilters] = useState<any>({
-    driverType: "All",
-    start: fallbackStart,
-    end: fallbackEnd,
-  });
-  const startDayString = dayjs(filters.start).format("YYYY-MM-DD"); // Outputs e.g., "2026-06-28"
-  const endDayString = dayjs(filters.end).format("YYYY-MM-DD"); // Outputs e.g., "2026-07-02"
-  const rentalTimeString = dayjs(filters.start).format("HH:mm"); // Outputs e.g., "18:30:00"
 
-  const allCategories = vehicles.map((v) => v.category);
-  const allMakes = vehicles.map((v) => v.make);
-  const allLocations = profile?.fleetmaster_tenants?.yards || [];
 
-  const modelsForMake = (make: string) => {
-    const vehicleModels = vehicles.filter((v) => v.make === make);
-    return vehicleModels.map((v) => v.model);
-  };
-
-  const categories = [...new Set(allCategories)];
-  const makes = [...new Set(allMakes)];
-  const locations = [
-    {
-      title: "Countrywide",
-      description:
-        "Find rental vehicles all over the country through our countrywide selection",
-      imageUrl:
-        "https://images.goway.com/production/hero_image/Amboseli_AdobeStock_568345335.jpeg?VersionId=sEzQrGblBaQDhMGlcsN_UCovnYeM0tUf",
-      location: [-1.286389, 36.817223],
-    },
-    ...allLocations,
-  ];
 
   // Prefer the secure payload parameters, fallback to finding it inside the local collections arrays
+  const VehicleDetails =
+    decodedData?.VehicleDetails ||
+    vehicles.find((v) => v.id === parseInt(vehicleID));
   const [pickupOption, setPickupOption] = useState(
-    VehicleDetails?.location || "",
-  ); // 'default' | 'nairobi' | 'airport' | 'outside'
+    VehicleDetails?.location?.title || '',
+  ); // 'default' | 'nairobi' | 'airport' | 'Outside Major Yards'
+
+  // Date Parsing Logic
+  const startDay = dayjs(start);
+  const endDay = dayjs(end);
+  const dayGap =
+    startDay.isValid() && endDay.isValid() ? endDay.diff(start, "day") : 0;
 
   // Extract calculated totalDays directly from token data or calculate from fields dynamically
-  const totalDays = useMemo(() => {
-    const startDay = dayjs(filters.start);
-    const endDay = dayjs(filters.end);
+  const totalDays =
+    decodedData?.bookingInformation?.totalDays || (dayGap <= 0 ? 1 : dayGap);
 
-    const dayGap =
-      startDay.isValid() && endDay.isValid()
-        ? endDay.diff(filters.start, "day")
-        : 0;
-
-    return dayGap <= 0 ? 1 : dayGap;
-  }, [filters]);
+  // Transform raw input or state into uniform, clean ISO date strings
+  const startDayString = dayjs(start).format("YYYY-MM-DD"); // Outputs e.g., "2026-06-28"
+  const endDayString = dayjs(end).format("YYYY-MM-DD"); // Outputs e.g., "2026-07-02"
+  const rentalTimeString = dayjs(start).format("HH:mm:ss"); // Outputs e.g., "18:30:00"
 
   // Cost Computations
-  const baseRateTotal = totalDays * VehicleDetails?.daily_rate || 0;
+  const baseRateTotal = totalDays * VehicleDetails.daily_rate;
 
   const getPickupFee = () => {
-    if (pickupOption === "nairobi") return 1000;
-    if (pickupOption === "airport") return 1500;
-    if (pickupOption === "outside") return 2000;
+    if (pickupOption === "Nairobi") return 1000;
+    if (pickupOption === "Airport (JKIA - NBO)") return 1500;
+    if (pickupOption === "Airport (Wilson Airport - WIL)") return 1500;
+    if (pickupOption === "Outside Major Yards") return 2000;
     return 0; // default branch
   };
   const getDropOffFee = () => {
     if (dropoffOption === "elsewhere") return 200;
     return 0; // default branch
-  };
-
-  const handleSave = () => {
-    // 1. Create the single source of truth for the updated state
-    const updatedFilters = { ...filters, location: selectedLocation };
-
-    // 2. Update your local React component state
-    setFilters(updatedFilters);
-    closeModal();
   };
 
   const pickupFee = getPickupFee();
@@ -219,12 +199,12 @@ const CreateNewBookingForm = () => {
 
     return sanitizedNumber;
   };
-
   const handleCheckoutSubmit = async () => {
     setError(null);
+    const buffer = Number(profile?.fleetmaster_tenants?.buffer);
 
-    if (!renterID || !renterName) {
-      showToast("Please enter renter Name and ID to place a booking!", "error");
+    if (!profile) {
+      showToast("Please sign in to your account to place a booking!", "error");
       return;
     }
     if (!policiesAccepted) {
@@ -238,37 +218,27 @@ const CreateNewBookingForm = () => {
       showToast("Please enter a valid M-Pesa phone number!", "error");
       return;
     }
-    if (!filters.start || !filters.end) {
-      showToast("Please enter a valid Start and End Date!", "error");
-      return;
-    }
-    if (totalDays < VehicleDetails?.min_rental_days) {
-      showToast(
-        `Please enter at least ${VehicleDetails?.min_rental_days} Days!`,
-        "error",
-      );
-      return;
-    }
-
     if (dropoffOption === "elsewhere" && dropoffLocation === "") {
       showToast("Please select a dropoff location to proceed!", "error");
       return;
     }
-    if (VehicleDetails?.status === "Not Available") {
+    if (VehicleDetails.status === "Not Available") {
       showToast(
         "This vehicle is not available for booking at the moment!",
         "error",
       );
       return;
     }
-    const sanitizedNumber = sanitizeMpesaNo(mpesaNumber);
 
     setIsPaying(true);
-    const firstName = renterName.split(" ")[0]; // Keeping your custom profile schema spelling
-    const lastName = renterName.split(" ")[1];
+    const firstName = profile?.first_name; // Keeping your custom profile schema spelling
+    const lastName = profile?.last_name;
 
     // --- BRANCH 1: ONE-CLICK DIRECT M-PESA STK PUSH (NO MODAL) ---
     if (paymentMethod === "m-pesa") {
+      // --- SANITIZE AND NORMALIZE PHONE NUMBER INPUT ---
+      const sanitizedNumber = sanitizeMpesaNo(mpesaNumber);
+
       let intervalId: NodeJS.Timeout | null = null;
       let safetyTimeoutId: NodeJS.Timeout | null = null;
       let hasHandledCompletion = false; // <-- Lock flag to prevent duplicate processing
@@ -278,9 +248,43 @@ const CreateNewBookingForm = () => {
         if (safetyTimeoutId) clearTimeout(safetyTimeoutId);
       };
 
-      showToast("Checking rental vehicle availability...", "info");
-
       try {
+        showToast("Checking rental vehicle availability...", "info");
+
+        const availabilityCheckRes = await fetch(
+          "/api/bookings/check-overlap",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              vehicleID,
+              rentalStart: startDayString, // Format: YYYY-MM-DD
+              rentalEnd: endDayString, // Format: YYYY-MM-DD
+              rentalTime: rentalTimeString, // Format: HH:MM
+              tenantID: profile?.tenant_id,
+              userID: profile?.id,
+              buffer,
+            }),
+          },
+        );
+
+        const availabilityCheckResdata = await availabilityCheckRes.json();
+        console.log("❌ Availability check response failed:", {
+          status: availabilityCheckRes.status,
+          statusText: availabilityCheckRes.statusText,
+          data: availabilityCheckResdata,
+        });
+
+        if (!availabilityCheckRes.ok || !availabilityCheckResdata.success) {
+          const errorMessage =
+            availabilityCheckResdata.error ||
+            availabilityCheckResdata.message ||
+            "This vehicle is booked for some of the selected days!";
+          showToast(errorMessage, "error");
+          setIsPaying(false);
+          return;
+        }
+
         const res = await fetch("/api/mpesa/stk", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -327,12 +331,6 @@ const CreateNewBookingForm = () => {
             const statusData = await statusRes.json();
             const resultCode = statusData.ResultCode;
             const responseCode = statusData.ResponseCode;
-            console.log(
-              "Daraja status check poll: ",
-              resultCode,
-              responseCode,
-              statusData,
-            );
 
             // Ignore intermediate processing states (e.g. "The service request has been accepted successfully" with no ResultCode yet)
             if (!resultCode || resultCode === "PROCESSING") {
@@ -356,12 +354,13 @@ const CreateNewBookingForm = () => {
               rental_time: rentalTimeString,
               rental_days: Number(totalDays),
               tenant_id: profile?.tenant_id,
-              user_id: null,
-              renter_id: renterID || "UNKNOWN",
+              user_id: profile?.id,
+              renter_id: profile?.national_id || "UNKNOWN",
               pickup_location: pickupOption,
               dropoff_location:
                 dropoffOption === "elsewhere" ? dropoffLocation : pickupOption,
               payment_method: "M-PESA",
+              payment_status: statusData.state,
               intasend_invoice_id: targetCheckoutId,
               payment_ref: mpesaRef,
             };
@@ -389,17 +388,19 @@ const CreateNewBookingForm = () => {
                   "Confirmed! Your booking has been processed successfully.",
               };
 
-              const bookingRes = await createNewBooking({
-                ...newBooking,
-                booking_status: "Booked",
-                payment_status: "COMPLETE",
-              });
+              const bookingRes = await createNewBooking(
+                {
+                  ...newBooking,
+                  booking_status: "Booked",
+                },
+                profile?.email,
+                tenant,
+                profile?.first_name
+              );
               const dbRes = await createPayment(newPayment);
 
               console.log("Database payment update response:", dbRes);
               console.log("Database booking insert response:", bookingRes);
-
-              reloadBookings(); // <-- Trigger a refresh of the bookings list in the parent component
             } else {
               const failReason =
                 statusData.ResultDesc || "Transaction was canceled or failed.";
@@ -423,8 +424,11 @@ const CreateNewBookingForm = () => {
               const bookingRes = await createNewBooking({
                 ...newBooking,
                 booking_status: "Reserved",
-                payment_status: "FAILED",
-              });
+              },
+                profile?.email,
+                tenant,
+                profile?.first_name
+              );
               const dbRes = await createPayment(newPayment);
 
               console.log("Database payment update response:", dbRes);
@@ -455,8 +459,6 @@ const CreateNewBookingForm = () => {
         showToast(err.message || "M-Pesa STK verification failed.", "error");
         setIsPaying(false);
       }
-
-      // --- BRANCH 2: SECURE CARD CHECKOUT via BACKEND INLINE MODAL ---
     } else {
       showToast(
         "Card payment checkout not available! Consult support.",
@@ -471,48 +473,27 @@ const CreateNewBookingForm = () => {
     }
   };
 
-  const filteredVehicles = useMemo(() => {
-    if (!filters) {
-      return vehicles;
+  useEffect(() => {
+    if (!document.getElementById("intasend-inline-sdk")) {
+      const script = document.createElement("script");
+      script.id = "intasend-inline-sdk";
+      script.src = "https://unpkg.com/intasend-checkout-sdk";
+      script.async = true;
+      document.body.appendChild(script);
     }
-    const filtered = vehicles.filter((vehicle) => {
-      const matchesLocation =
-        filters.location && filters.location !== "Countrywide"
-          ? vehicle.location === filters.location
-          : true;
+  }, []);
 
-      // If driverType filter is set to "All" or not specified, show all. Otherwise, match the type strictly.
-      const matchesDriverType =
-        filters.driverType && filters.driverType !== "All"
-          ? vehicle.driver_type === filters.driverType
-          : true;
-
-      const matchesCategory = filters.category
-        ? vehicle.category === filters.category
-        : true;
-      const matchesMake = filters.make ? vehicle.make === filters.make : true;
-      const matchesModel = filters.model
-        ? vehicle.model === filters.model
-        : true;
-      const matchesYear =
-        (filters.minYear ? vehicle.year >= filters.minYear : true) &&
-        (filters.maxYear ? vehicle.year <= filters.maxYear : true);
-      const matchesPrice =
-        (filters.minPrice ? vehicle.daily_rate >= filters.minPrice : true) &&
-        (filters.maxPrice ? vehicle.daily_rate <= filters.maxPrice : true);
-
-      return (
-        matchesLocation &&
-        matchesDriverType &&
-        matchesCategory &&
-        matchesMake &&
-        matchesModel &&
-        matchesYear &&
-        matchesPrice
-      );
-    });
-    return filtered;
-  }, [filters, vehicles]);
+  if (!decodedData || vehicleID != decodedData?.vehicleID) {
+    showToast(
+      "There was a critical error when resolving booking data!",
+      "error",
+    );
+    return (
+      <div className="h-screen max-w-screen py-6 text-center text-red-500">
+        Something went wrong!
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -529,12 +510,15 @@ const CreateNewBookingForm = () => {
     );
   }
 
-  // if (!VehicleDetails) {
-  //   return <VehicleNotFound />;
-  // }
+  if (!VehicleDetails) {
+    return <VehicleNotFound />;
+  }
 
   return (
     <main className="container m-auto p-6">
+      {/* Dynamic Header Promo Banner */}
+      <DeliveryBanner />
+
       <div className="space-y-5">
         {isPaying && (
           <Alert
@@ -564,655 +548,368 @@ const CreateNewBookingForm = () => {
 
       <div className="grid grid-cols-12 gap-6">
         {/* ================= LEFT SIDE: VEHICLE & LOGISTICS PRODUCTION PANEL (col-span-7) ================= */}
-        {VehicleDetails ? (
-          <div className="col-span-12 space-y-6 lg:col-span-7">
-            <div className="ms-auto mt-3 text-right text-gray-500 italic">
-              Remove and select another
-              <Button
-                onClick={() => setVehicleDetails(null)}
-                className="ms-5"
-                variant="danger"
-                size="sm"
-              >
-                Clear Selection
-              </Button>
+        <div className="col-span-12 space-y-6 lg:col-span-7">
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            {/* Header Identity Meta */}
+            <div className="mb-4 flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {VehicleDetails.year} {VehicleDetails.make}{" "}
+                  {VehicleDetails.model}
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Category: {VehicleDetails.category} | Class:{" "}
+                  {VehicleDetails.group}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                  Self Driven
+                </span>
+              </div>
             </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-              {/* Header Identity Meta */}
-              <div className="mb-4 flex items-start justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {VehicleDetails?.year} {VehicleDetails?.make}{" "}
-                    {VehicleDetails?.model}
-                  </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Category: {VehicleDetails?.category} | Class:{" "}
-                    {VehicleDetails?.group}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                    Self Driven
-                  </span>
-                </div>
-              </div>
 
-              {/* Media Presentation Display Canvas */}
-              <div className="relative mb-6 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-950">
-                <Box
-                  className="flex gap-2"
-                  sx={{ position: "absolute", top: 12, right: 12, zIndex: 10 }}
-                >
-                  <Chip
-                    size="small"
-                    sx={{
-                      px: 0.5,
-                      bgcolor: "rgba(0,0,0,0.6)",
-                      color: "#fff",
-                      backdropFilter: "blur(4px)",
-                    }}
-                    icon={
-                      <LocalGasStationOutlinedIcon
-                        fontSize="small"
-                        style={{ color: "#fff" }}
-                      />
-                    }
-                    label={VehicleDetails?.fuel_type}
-                  />
-                  <Chip
-                    size="small"
-                    sx={{
-                      px: 0.5,
-                      bgcolor: "rgba(0,0,0,0.6)",
-                      color: "#fff",
-                      backdropFilter: "blur(4px)",
-                    }}
-                    icon={
-                      <PeopleAltOutlinedIcon
-                        fontSize="small"
-                        style={{ color: "#fff" }}
-                      />
-                    }
-                    label={`${VehicleDetails?.seats} Seats`}
-                  />
-                </Box>
-                <img
-                  src={VehicleDetails?.image_url}
-                  alt={""}
-                  className="aspect-video w-full object-cover object-center"
+            {/* Media Presentation Display Canvas */}
+            <div className="relative mb-6 overflow-hidden aspect-video rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-950">
+              <Image
+                src={VehicleDetails.image_url}
+                alt={""}
+                preload
+                fill
+                style={{ objectFit: 'cover' }}
+                className="relative w-full object-cover object-center"
+              />
+              <Box
+                className="flex gap-2"
+                sx={{ position: "absolute", top: 12, right: 12 }}
+              >
+                <Chip
+                  size="small"
+                  className=""
+                  sx={{
+                    px: 0.5,
+                    py: 1.5,
+                    bgcolor: "rgba(0,0,0,0.6)",
+                    color: "#fff",
+                    backdropFilter: "blur(4px)",
+                  }}
+                  icon={
+                    <LocalGasStationOutlinedIcon
+                      fontSize="small"
+                      style={{ color: "#fff" }}
+                    />
+                  }
+                  label={VehicleDetails.fuel_type}
                 />
+                <Chip
+                  size="small"
+                  className=""
+                  sx={{
+                    px: 0.5,
+                    py: 1.5,
+                    bgcolor: "rgba(0,0,0,0.6)",
+                    color: "#fff",
+                    backdropFilter: "blur(4px)",
+                  }}
+                  icon={
+                    <PeopleAltOutlinedIcon
+                      fontSize="small"
+                      style={{ color: "#fff" }}
+                    />
+                  }
+                  label={`${VehicleDetails.seats} Seats`}
+                />
+              </Box>
+            </div>
+
+            {/* Core Specs Information Grid */}
+            <h3 className="mb-3 border-b border-gray-100 pb-2 text-base font-bold text-gray-900 dark:border-gray-800 dark:text-white">
+              Vehicle Specifications
+            </h3>
+            <div className="mb-6 grid grid-cols-2 gap-x-2 gap-y-4 text-sm sm:grid-cols-3">
+              <div>
+                <p className="text-xs text-gray-400">Body Style / Type</p>
+                <p className="mt-1 font-medium text-gray-900 dark:text-gray-200">
+                  {VehicleDetails.group || "SUV"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Transmission</p>
+                <p className="mt-1 font-medium text-gray-900 dark:text-gray-200">
+                  {VehicleDetails.transmission}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Fuel Category</p>
+                <p className="mt-1 font-medium text-gray-900 dark:text-gray-200">
+                  {VehicleDetails.fuel_type}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Luggage Allowance</p>
+                <p className="mt-1 font-medium text-gray-900 dark:text-gray-200">
+                  2 standard carry-ons
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Station Location</p>
+                <p className="mt-1 font-medium text-gray-900 dark:text-gray-200">
+                  {VehicleDetails.location?.title || ''}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Daily Base Rental Rate</p>
+                <p className="text-brand-500 mt-1 font-semibold">
+                  Ksh. {VehicleDetails.daily_rate.toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            {/* Logistics Configuration Layer */}
+            <h3 className="mb-3 border-t border-gray-100 pt-4 text-base font-bold text-gray-900 dark:border-gray-800 dark:text-white">
+              Logistics & Distribution Preferences
+            </h3>
+
+            <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  1. Select Pickup Type & Fleet Handover
+                </label>
+                <FormControl component="fieldset" className="w-full">
+                  <RadioGroup
+                    value={pickupOption}
+                    onChange={(e) => setPickupOption(e.target.value)}
+                    className="space-y-2"
+                  >
+                    <div
+                      className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === VehicleDetails?.location?.title || '' ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
+                    >
+                      <FormControlLabel
+                        value={VehicleDetails?.location?.title || ''}
+                        control={<Radio size="small" color="primary" />}
+                        label={
+                          <span className="text-sm dark:text-gray-200">
+                            Station Handover ({VehicleDetails?.location?.title || ''})
+                          </span>
+                        }
+                      />
+                      <span className="text-xs font-semibold text-gray-500">
+                        Free
+                      </span>
+                    </div>
+                    <div
+                      className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === "Nairobi" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
+                    >
+                      <FormControlLabel
+                        value="Nairobi"
+                        control={<Radio size="small" color="primary" />}
+                        label={
+                          <span className="text-sm dark:text-gray-200">
+                            Door Delivery within Nairobib (Work, Home, Office)
+                          </span>
+                        }
+                      />
+                      <span className="text-xs font-semibold text-blue-500">
+                        + Ksh 1,000
+                      </span>
+                    </div>
+                    <div
+                      className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === "Airport (JKIA - NBO)" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
+                    >
+                      <FormControlLabel
+                        value="Airport (JKIA - NBO)"
+                        control={<Radio size="small" color="primary" />}
+                        label={
+                          <span className="text-sm dark:text-gray-200">
+                            Airport Dropoff (JKIA - NBO)
+                          </span>
+                        }
+                      />
+                      <span className="text-xs font-semibold text-blue-500">
+                        + Ksh 1,500
+                      </span>
+                    </div>
+                    <div
+                      className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === "Airport (Wilson Airport - WIL)" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
+                    >
+                      <FormControlLabel
+                        value="Airport (Wilson Airport - WIL)"
+                        control={<Radio size="small" color="primary" />}
+                        label={
+                          <span className="text-sm dark:text-gray-200">
+                            Airport Dropoff (JKIA - NBO, Wilson Airport - WIL)
+                          </span>
+                        }
+                      />
+                      <span className="text-xs font-semibold text-blue-500">
+                        + Ksh 1,500
+                      </span>
+                    </div>
+                    <div
+                      className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === "Outside Major Yards" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
+                    >
+                      <FormControlLabel
+                        value="Outside Major Yards"
+                        control={<Radio size="small" color="primary" />}
+                        label={
+                          <span className="text-sm dark:text-gray-200">
+                            Outside Major Yards (Distances max 100km out)
+                          </span>
+                        }
+                      />
+                      <span className="text-xs font-semibold text-blue-500">
+                        + Ksh 2,000
+                      </span>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
               </div>
 
-              {/* Core Specs Information Grid */}
-              <h3 className="mb-3 border-b border-gray-100 pb-2 text-base font-bold text-gray-900 dark:border-gray-800 dark:text-white">
-                Vehicle Specifications
-              </h3>
-              <div className="mb-6 grid grid-cols-2 gap-x-2 gap-y-4 text-sm sm:grid-cols-3">
-                <div>
-                  <p className="text-xs text-gray-400">Body Style / Type</p>
-                  <p className="mt-1 font-medium text-gray-900 dark:text-gray-200">
-                    {VehicleDetails?.group || "SUV"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400">Transmission</p>
-                  <p className="mt-1 font-medium text-gray-900 dark:text-gray-200">
-                    {VehicleDetails?.transmission}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400">Fuel Category</p>
-                  <p className="mt-1 font-medium text-gray-900 dark:text-gray-200">
-                    {VehicleDetails?.fuel_type}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400">Luggage Allowance</p>
-                  <p className="mt-1 font-medium text-gray-900 dark:text-gray-200">
-                    2 standard carry-ons
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400">Station Location</p>
-                  <p className="mt-1 font-medium text-gray-900 dark:text-gray-200">
-                    {VehicleDetails?.location}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400">
-                    Daily Base Rental Rate
-                  </p>
-                  <p className="text-brand-500 mt-1 font-semibold">
-                    Ksh. {VehicleDetails?.daily_rate.toLocaleString()}
-                  </p>
-                </div>
+              <div className="border-t border-gray-200 pt-2 dark:border-gray-800">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  2. Drop-off Return Coordinates
+                </label>
+                <FormControl component="fieldset" className="w-full">
+                  <RadioGroup
+                    value={dropoffOption}
+                    onChange={(e) => setDropoffOption(e.target.value)}
+                    row
+                    className="gap-4"
+                  >
+                    <div
+                      className={`flex flex-1 items-center rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${dropoffOption === "same" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
+                    >
+                      <FormControlLabel
+                        value="same"
+                        control={<Radio size="small" color="primary" />}
+                        label={
+                          <span className="text-xs sm:text-sm dark:text-gray-200">
+                            Same Location Dropoff
+                          </span>
+                        }
+                      />
+                    </div>
+                    <div
+                      className={`flex flex-1 items-center rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${dropoffOption === "elsewhere" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
+                    >
+                      <FormControlLabel
+                        value="elsewhere"
+                        control={<Radio size="small" color="primary" />}
+                        label={
+                          <span className="text-xs sm:text-sm dark:text-gray-200">
+                            Specific Alternative Coordinate
+                          </span>
+                        }
+                      />
+                    </div>
+                  </RadioGroup>
+                </FormControl>
               </div>
+            </div>
 
-              {/* Logistics Configuration Layer */}
-              <h3 className="mb-3 border-t border-gray-100 pt-4 text-base font-bold text-gray-900 dark:border-gray-800 dark:text-white">
-                Logistics & Distribution Preferences
-              </h3>
-
-              <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    1. Select Pickup Type & Fleet Handover
-                  </label>
+            {dropoffOption === "elsewhere" ? (
+              <>
+                <p className="mt-3 mb-3 text-sm text-gray-500">
+                  Other yards you can return to:
+                </p>
+                {tenant ? (
                   <FormControl component="fieldset" className="w-full">
                     <RadioGroup
-                      value={pickupOption}
-                      onChange={(e) => setPickupOption(e.target.value)}
+                      value={dropoffLocation}
+                      onChange={(e) => setDropoffLocation(e.target.value)}
                       className="space-y-2"
                     >
-                      <div
-                        className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === VehicleDetails?.location ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
-                      >
-                        <FormControlLabel
-                          value={VehicleDetails?.location}
-                          control={<Radio size="small" color="primary" />}
-                          label={
-                            <span className="text-sm dark:text-gray-200">
-                              Station Handover ({VehicleDetails?.location})
-                            </span>
-                          }
-                        />
-                        <span className="text-xs font-semibold text-gray-500">
-                          Free
-                        </span>
-                      </div>
-                      <div
-                        className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === "nairobi" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
-                      >
-                        <FormControlLabel
-                          value="nairobi"
-                          control={<Radio size="small" color="primary" />}
-                          label={
-                            <span className="text-sm dark:text-gray-200">
-                              Door Delivery within Nairobi
-                            </span>
-                          }
-                        />
-                        <span className="text-xs font-semibold text-blue-500">
-                          + Ksh 1,000
-                        </span>
-                      </div>
-                      <div
-                        className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === "JKIA - NBO" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
-                      >
-                        <FormControlLabel
-                          value="JKIA - NBO"
-                          control={<Radio size="small" color="primary" />}
-                          label={
-                            <span className="text-sm dark:text-gray-200">
-                              Airport Dropoff (JKIA - NBO)
-                            </span>
-                          }
-                        />
-                        <span className="text-xs font-semibold text-blue-500">
-                          + Ksh 1,500
-                        </span>
-                      </div>
-                      <div
-                        className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === "Wilson Airport - WIL" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
-                      >
-                        <FormControlLabel
-                          value="Wilson Airport - WIL"
-                          control={<Radio size="small" color="primary" />}
-                          label={
-                            <span className="text-sm dark:text-gray-200">
-                              Airport Dropoff (JKIA - NBO, Wilson Airport - WIL)
-                            </span>
-                          }
-                        />
-                        <span className="text-xs font-semibold text-blue-500">
-                          + Ksh 1,500
-                        </span>
-                      </div>
-                      <div
-                        className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === "outside" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
-                      >
-                        <FormControlLabel
-                          value="outside"
-                          control={<Radio size="small" color="primary" />}
-                          label={
-                            <span className="text-sm dark:text-gray-200">
-                              Outside Major Yards (Distances max 100km out)
-                            </span>
-                          }
-                        />
-                        <span className="text-xs font-semibold text-blue-500">
-                          + Ksh 2,000
-                        </span>
-                      </div>
+                      {tenant?.yards.filter(
+                        (y) => y.title !== VehicleDetails?.location?.title || '',
+                      ).length > 0 ? (
+                        tenant?.yards
+                          .filter((y) => y.title !== VehicleDetails?.location?.title || '')
+                          .map((y) => (
+                            <div
+                              key={y.title}
+                              className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${dropoffLocation === y.title ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
+                            >
+                              <FormControlLabel
+                                value={y.title}
+                                control={<Radio size="small" color="primary" />}
+                                label={
+                                  <span className="text-sm dark:text-gray-200">
+                                    {y.title}
+                                  </span>
+                                }
+                              />
+                              <span className="text-brand-500 text-xs font-semibold">
+                                + Ksh 200
+                              </span>
+                            </div>
+                          ))
+                      ) : (
+                        <p className="nt-3 mt-4 mb-3 flex flex-1 items-center justify-center rounded-lg border border-red-500 bg-white px-3 py-7 text-center text-sm text-red-500 ring-1 ring-red-500 dark:bg-gray-900">
+                          No other yards found!
+                        </p>
+                      )}
                     </RadioGroup>
                   </FormControl>
-                </div>
-
-                <div className="border-t border-gray-200 pt-2 dark:border-gray-800">
-                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    2. Drop-off Return Coordinates
-                  </label>
-                  <FormControl component="fieldset" className="w-full">
-                    <RadioGroup
-                      value={dropoffOption}
-                      onChange={(e) => setDropoffOption(e.target.value)}
-                      row
-                      className="gap-4"
-                    >
-                      <div
-                        className={`flex flex-1 items-center rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${dropoffOption === "same" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
-                      >
-                        <FormControlLabel
-                          value="same"
-                          control={<Radio size="small" color="primary" />}
-                          label={
-                            <span className="text-xs sm:text-sm dark:text-gray-200">
-                              Same Location Dropoff
-                            </span>
-                          }
-                        />
-                      </div>
-                      <div
-                        className={`flex flex-1 items-center rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${dropoffOption === "elsewhere" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
-                      >
-                        <FormControlLabel
-                          value="elsewhere"
-                          control={<Radio size="small" color="primary" />}
-                          label={
-                            <span className="text-xs sm:text-sm dark:text-gray-200">
-                              Specific Alternative Coordinate
-                            </span>
-                          }
-                        />
-                      </div>
-                    </RadioGroup>
-                  </FormControl>
-                </div>
-              </div>
-
-              {dropoffOption === "elsewhere" ? (
-                <>
-                  <p className="mt-3 mb-3 text-sm text-gray-500">
-                    Other yards you can return to:
+                ) : (
+                  <p className="nt-3 mt-4 mb-3 flex flex-1 items-center justify-center rounded-lg border border-red-500 bg-white px-3 py-7 text-center text-sm text-red-500 ring-1 ring-red-500 dark:bg-gray-900">
+                    No other locations!
                   </p>
-                  {profile?.fleetmaster_tenants ? (
-                    <FormControl component="fieldset" className="w-full">
-                      <RadioGroup
-                        value={dropoffLocation}
-                        onChange={(e) => setDropoffLocation(e.target.value)}
-                        className="space-y-2"
-                      >
-                        {profile?.fleetmaster_tenants?.yards.filter(
-                          (y) => y.title !== VehicleDetails?.location,
-                        ).length > 0 ? (
-                          profile?.fleetmaster_tenants?.yards
-                            .filter((y) => y.title !== VehicleDetails?.location)
-                            .map((y) => (
-                              <div
-                                key={y.title}
-                                className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${dropoffLocation === y.title ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
-                              >
-                                <FormControlLabel
-                                  value={y.title}
-                                  control={
-                                    <Radio size="small" color="primary" />
-                                  }
-                                  label={
-                                    <span className="text-sm dark:text-gray-200">
-                                      {y.title}
-                                    </span>
-                                  }
-                                />
-                                <span className="text-brand-500 text-xs font-semibold">
-                                  + Ksh 200
-                                </span>
-                              </div>
-                            ))
-                        ) : (
-                          <p className="nt-3 mt-4 mb-3 flex flex-1 items-center justify-center rounded-lg border border-red-500 bg-white px-3 py-7 text-center text-sm text-red-500 ring-1 ring-red-500 dark:bg-gray-900">
-                            No other yards found!
-                          </p>
-                        )}
-                      </RadioGroup>
-                    </FormControl>
-                  ) : (
-                    <p className="nt-3 mt-4 mb-3 flex flex-1 items-center justify-center rounded-lg border border-red-500 bg-white px-3 py-7 text-center text-sm text-red-500 ring-1 ring-red-500 dark:bg-gray-900">
-                      No other locations!
-                    </p>
-                  )}
-                </>
-              ) : (
-                <>
-                  <p className="nt-3 mt-4 mb-3 flex flex-1 items-center rounded-lg border border-gray-500 bg-white px-3 py-3 text-sm text-gray-500 ring-1 ring-gray-500 dark:bg-gray-900 dark:text-gray-400">
-                    Dropoff at same location picked up ({pickupOption} -{" "}
-                    {filters.end.replace("T", ", ")})
-                  </p>
-                </>
-              )}
+                )}
+              </>
+            ) : (
+              <>
+                <p className="nt-3 mt-4 mb-3 flex flex-1 items-center rounded-lg border border-gray-500 bg-white px-3 py-3 text-sm text-gray-500 ring-1 ring-gray-500 dark:bg-gray-900 dark:text-gray-400">
+                  Dropoff at same location picked up ({pickupOption} -{" "}
+                  {end.replace("T", ", ")})
+                </p>
+              </>
+            )}
 
-              {/* Explicit Modal Checkpoint Anchor */}
-              <div
-                className={`mt-6 flex flex-col items-start justify-between gap-3 rounded-xl border bg-amber-50/50 p-4 transition-colors duration-200 sm:flex-row sm:items-center ${policiesAccepted
-                  ? "border-emerald-200 dark:border-emerald-900/50 dark:bg-emerald-950/20"
-                  : "border-red-200 dark:border-red-900/50 dark:bg-red-950/20"
-                  }`}
-              >
-                <div className="flex items-start gap-3">
-                  <InfoOutlinedIcon
-                    className={`mt-0.5 ${policiesAccepted
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-red-600 dark:text-red-400"
-                      }`}
-                  />
-                  <div>
-                    <h4
-                      className={`text-sm font-bold text-amber-900 ${policiesAccepted
-                        ? "dark:text-emerald-300"
-                        : "dark:text-red-300"
-                        }`}
-                    >
-                      Review Legal Rules & Handover Policies
-                    </h4>
-                    <p
-                      className={`mt-2 text-xs ${policiesAccepted
-                        ? "text-emerald-700 dark:text-emerald-400"
-                        : "text-red-700 dark:text-red-400"
-                        }`}
-                    >
-                      You must review and acknowledge the documentation,
-                      liability thresholds, and insurance policies prior to
-                      booking fulfillment.
-                    </p>
-                    <p
-                      className="text-brand-500 mt-2 cursor-pointer text-xs underline"
-                      onClick={() => setOpenPolicyModal(true)}
-                    >
-                      Read Key Info & Policies Checklist.
-                    </p>
-                  </div>
-                </div>
-                <Checkbox onChange={() => { }} checked={policiesAccepted} />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="col-span-12 space-y-6 text-gray-400 lg:col-span-7">
-            <div className="flex aspect-video items-center justify-center rounded-2xl border border-gray-400 p-3 dark:border-gray-600">
-              No Vehicle Selected!
-            </div>
-
-            <div className="mb-3 rounded-2xl bg-gray-500/3 shadow dark:bg-gray-500/10">
-              <div className="relative">
-                <Box
-                  className="flex h-full w-full items-end gap-2 rounded-xl p-4 font-bold text-white bg-blend-darken"
-                  sx={{
-                    position: "absolute",
-                    bottom: 0,
-                    right: 0,
-                    background: "linear-gradient(to top, black, transparent)",
-                  }}
-                >
-                  {locations?.find((l) => l.title === filters?.location)
-                    ?.title || "Countrywide"}
-                  <Box
-                    onClick={openModal}
-                    className="flex cursor-pointer items-end gap-2 rounded-lg bg-gray-900/40 p-1 px-2 text-sm font-medium text-green-400 bg-blend-darken"
-                    sx={{ position: "absolute", top: 10, right: 10 }}
-                  >
-                    <PencilIcon /> Change
-                  </Box>
-                </Box>
-                <img
-                  src={
-                    locations?.find((l) => l.title === filters?.location)
-                      ?.imageUrl ||
-                    "https://images.goway.com/production/hero_image/Amboseli_AdobeStock_568345335.jpeg?VersionId=sEzQrGblBaQDhMGlcsN_UCovnYeM0tUf"
-                  }
-                  alt={
-                    locations?.find((l) => l.title === filters?.location)
-                      ?.title || "Countrywide"
-                  }
-                  className="h-35 w-full rounded-xl object-cover"
+            {/* Explicit Modal Checkpoint Anchor */}
+            <div
+              className={`mt-6 flex flex-col items-start justify-between gap-3 rounded-xl border bg-amber-50/50 p-4 transition-colors duration-200 sm:flex-row sm:items-center ${policiesAccepted
+                ? "border-emerald-200 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+                : "border-red-200 dark:border-red-900/50 dark:bg-red-950/20"
+                }`}
+            >
+              <div className="flex items-start gap-3">
+                <InfoOutlinedIcon
+                  className={`mt-0.5 ${policiesAccepted
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-red-600 dark:text-red-400"
+                    }`}
                 />
-              </div>
-
-              <Modal
-                isOpen={isOpen}
-                onClose={() => {
-                  setFilters({ ...filters, location: "CountryWide" });
-                  closeModal();
-                }}
-                className="max-w-150 p-5 lg:p-10"
-              >
-                <h4 className="text-title-sm mb-7 font-semibold text-gray-800 dark:text-white/90">
-                  Change Location
-                </h4>
-                <div className="custom-scrollbar flex max-h-125 flex-col gap-3 overflow-auto">
-                  {locations.map((l, i) => (
-                    <div
-                      key={i}
-                      className={`relative rounded-2xl border-2 ${l.title === selectedLocation ? "border-green-500" : "border-transparent"}`}
-                    >
-                      <Box
-                        onClick={() => setSelectedLocation(l?.title)}
-                        className="z-9 flex h-full w-full cursor-pointer items-end gap-2 rounded-xl p-4 font-medium text-white bg-blend-darken"
-                        sx={{
-                          position: "absolute",
-                          bottom: 0,
-                          right: 0,
-                          background:
-                            "linear-gradient(to top, black, transparent)",
-                        }}
-                      >
-                        {l?.title}
-                        <Box
-                          className="flex cursor-pointer items-end gap-2 rounded-lg bg-gray-900/40 p-1 px-3 text-sm text-gray-100 bg-blend-darken"
-                          sx={{ position: "absolute", top: 10, right: 10 }}
-                        >
-                          {selectedLocation === l?.title ? (
-                            <span className="text-green-400">
-                              <DoneAllOutlinedIcon fontSize="small" /> Selected
-                            </span>
-                          ) : (
-                            <>Select</>
-                          )}
-                        </Box>
-                      </Box>
-                      <img
-                        src={l?.imageUrl}
-                        alt={''}
-                        className="h-35 w-full rounded-xl object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-8 flex w-full items-center justify-end gap-3">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      closeModal();
-                    }}
+                <div>
+                  <h4
+                    className={`text-sm font-bold text-red-800 ${policiesAccepted
+                      ? "dark:text-emerald-300"
+                      : "dark:text-red-500"
+                      }`}
                   >
-                    Close
-                  </Button>
-                  <Button size="sm" onClick={handleSave}>
-                    Save Changes
-                  </Button>
-                </div>
-              </Modal>
-            </div>
-
-            <div className="my-5 flex rounded-2xl bg-gray-500/5">
-              {["All", "Self Drive", "Chauffeured"].map((d, i) => (
-                <button
-                  key={d}
-                  onClick={() => setFilters({ ...filters, driverType: d })}
-                  className={
-                    filters?.driverType === d
-                      ? "small bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:bg-brand-300 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition"
-                      : "inline-flex w-full items-center justify-center gap-2 rounded-lg border-0 bg-transparent px-4 py-2 text-sm font-medium text-gray-500 transition"
-                  }
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <h4 className="text-xl font-semibold text-black dark:text-white">
-                  Filters
-                </h4>
-              </div>
-              {/* Category Dropdown */}
-              <div className="mb-2">
-                <Label>Category</Label>
-                <div className="relative">
-                  <Select
-                    value={filters?.category}
-                    defaultValue={filters?.category}
-                    options={categories.map((c) => ({ value: c, label: c }))}
-                    placeholder="Select category"
-                    onChange={(e) =>
-                      setFilters({ ...filters, category: e || "" })
-                    }
-                  />
-                  <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                    <ChevronDownIcon />
-                  </span>
+                    Review Legal Rules & Handover Policies
+                  </h4>
+                  <p
+                    className={`mt-2 text-xs ${policiesAccepted
+                      ? "text-emerald-700 dark:text-emerald-400"
+                      : "text-red-700 dark:text-red-400"
+                      }`}
+                  >
+                    You must review and acknowledge the documentation, liability
+                    thresholds, and insurance policies prior to booking
+                    fulfillment.
+                  </p>
+                  <p
+                    className="mt-2 cursor-pointer text-xs text-blue-500 underline"
+                    onClick={() => setOpenPolicyModal(true)}
+                  >
+                    Read Key Info & Policies Checklist.
+                  </p>
                 </div>
               </div>
-
-              {/* Make Dropdown */}
-              <div className="mb-2 flex w-full gap-2">
-                <div className="w-full">
-                  <Label>Make</Label>
-                  <div className="relative">
-                    <Select
-                      value={filters?.make}
-                      defaultValue={filters?.make}
-                      options={makes.map((c) => ({ value: c, label: c }))}
-                      placeholder="Select Make"
-                      onChange={(e) =>
-                        setFilters({ ...filters, make: e || "" })
-                      }
-                    />
-                    <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                      <ChevronDownIcon />
-                    </span>
-                  </div>
-                </div>
-
-                {/* Model Dropdown */}
-                <div className="w-full">
-                  <Label>Model</Label>
-                  <div className="relative">
-                    <Select
-                      value={filters?.model}
-                      defaultValue={filters?.model}
-                      options={modelsForMake(filters?.make).map((c) => ({
-                        value: c,
-                        label: c,
-                      }))}
-                      placeholder="Select Model"
-                      onChange={(e) =>
-                        setFilters({ ...filters, model: e || "" })
-                      }
-                    />
-                    <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                      <ChevronDownIcon />
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Year Range Inputs */}
-              <div className="mb-2">
-                <Label>Year</Label>
-                <div className="flex w-full gap-2">
-                  <div className="w-full">
-                    <div className="relative">
-                      <Select
-                        options={[
-                          { value: "2020", label: "2020" },
-                          { value: "2022", label: "2022" },
-                          { value: "2024", label: "2024" },
-                        ]}
-                        placeholder="Min Year"
-                        onChange={(e) =>
-                          setFilters({ ...filters, minYear: parseInt(e) || 0 })
-                        }
-                      />
-                      <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                        <ChevronDownIcon />
-                      </span>
-                    </div>
-                  </div>
-                  <div className="w-full">
-                    <div className="relative">
-                      <Select
-                        options={[
-                          { value: "2023", label: "2023" },
-                          { value: "2025", label: "2025" },
-                          { value: "2026", label: "2026" },
-                        ]}
-                        placeholder="Max Year"
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            maxYear: parseInt(e) || 2026,
-                          })
-                        }
-                      />
-                      <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                        <ChevronDownIcon />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Price Range Fields */}
-              <div className="mt-3 mb-2">
-                <Label>Matches ({filteredVehicles.length} found)</Label>
-                <div className="mt-3 flex w-full flex-col gap-3">
-                  {filteredVehicles.length > 0 ? (
-                    filteredVehicles.map((v) => (
-                      <div
-                        onClick={() => {
-                          setVehicleDetails(v);
-                          window.scrollTo(0, 0);
-                        }}
-                        className="flex w-full cursor-pointer items-center gap-3 p-2"
-                        key={v.id}
-                      >
-                        <div className="aspect-video w-30 relative">
-                          <Image
-                            src={v?.image_url}
-                            alt={``}
-                            preload
-                            fill
-                            style={{ objectFit: 'cover' }}
-                            className="rounded-lg object-cover object-center"
-                          />
-                        </div>
-                        <div>
-                          <p>{`${v.make} ${v.model} ${v.year} ${v.color[0]}`}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-500">{`${v.category} | ${v.daily_rate?.toLocaleString()}/=`}</p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-5 text-center text-red-500">
-                      Nothing to show!
-                    </div>
-                  )}
-                </div>
-              </div>
+              <Checkbox onChange={() => { }} checked={policiesAccepted} />
             </div>
           </div>
-        )}
+        </div>
 
         {/* ================= RIGHT SIDE: INVOICE & INTASEND GATEWAY (col-span-5) ================= */}
         <div className="col-span-12 space-y-6 lg:col-span-5">
@@ -1223,81 +920,23 @@ const CreateNewBookingForm = () => {
 
             {/* Date Picking Mirror Layer */}
             <div className="mb-4 space-y-3">
-              <div>
-                <Label className="text-xs text-gray-400">Renter Name</Label>
-                <Input
-                  value={renterName}
-                  placeholder="e.g John Doe"
-                  onChange={(e) => setRenterName(e.target.value)}
-                />
-                <small className="mt-2 text-sm text-red-500">
-                  {renterName.trim() &&
-                    renterName.trim().split(" ").length < 2 &&
-                    "Please enter renter full name!"}
-                </small>
-              </div>
-
-              <div>
-                <Label className="text-xs text-gray-400">Renter ID</Label>
-                <Input
-                  value={renterID}
-                  placeholder="e.g 12389176"
-                  onChange={(e) => setRenterID(e.target.value)}
-                />
-              </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-xs text-gray-400">Handover Date</Label>
                   <Input
                     type="datetime-local"
+                    disabled
                     className="mt-1 text-xs"
-                    value={
-                      filters.start
-                        ? dayjs(filters.start).format("YYYY-MM-DDTHH:mm")
-                        : ""
-                    }
-                    onChange={(e) => {
-                      const newStart = e.target.value; // e.g., "2026-06-22T14:30"
-                      // Force the existing end date to adopt this new start time
-                      const updatedEnd = syncTimeToDateString(
-                        filters.end,
-                        newStart,
-                      );
-
-                      setFilters({
-                        ...filters,
-                        start: newStart,
-                        end: updatedEnd,
-                      });
-                    }}
-                    name="start_date"
+                    value={start}
                   />
                 </div>
                 <div>
                   <Label className="text-xs text-gray-400">Return Date</Label>
                   <Input
                     type="datetime-local"
+                    disabled
                     className="mt-1 text-xs"
-                    value={
-                      filters.end
-                        ? dayjs(filters.end).format("YYYY-MM-DDTHH:mm")
-                        : ""
-                    }
-                    onChange={(e) => {
-                      const newEnd = e.target.value; // e.g., "2026-06-25T16:00"
-                      // Force the existing start date to adopt this new end time
-                      const updatedStart = syncTimeToDateString(
-                        filters.start,
-                        newEnd,
-                      );
-
-                      setFilters({
-                        ...filters,
-                        start: updatedStart,
-                        end: newEnd,
-                      });
-                    }}
-                    name="end_date"
+                    value={end}
                   />
                 </div>
               </div>
@@ -1325,7 +964,7 @@ const CreateNewBookingForm = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-500 dark:text-gray-400">
                     Base Subtotal ({totalDays}d × Ksh{" "}
-                    {VehicleDetails?.daily_rate.toLocaleString()})
+                    {VehicleDetails.daily_rate.toLocaleString()})
                   </span>
                   <span className="font-medium text-gray-800 dark:text-gray-200">
                     Ksh. {baseRateTotal.toLocaleString()}
@@ -1536,12 +1175,13 @@ const CreateNewBookingForm = () => {
             </div>
 
             <Modal
+              // isOpen
               isOpen={successModal.isOpen}
               onClose={successModal.closeModal}
-              className="z-99999 max-w-150 p-5 lg:p-10"
+              className="max-w-150 p-5 lg:p-10"
             >
               <div className="text-center">
-                <div className="relative z-1 mb-7 flex items-center justify-center">
+                <div className="relative mb-7 flex items-center justify-center">
                   <svg
                     className="fill-success-50 dark:fill-success-500/15"
                     width="90"
@@ -1639,13 +1279,20 @@ const CreateNewBookingForm = () => {
                 data-amount="10"
                 data-currency="KES"
                 size="md"
-                disabled={isPaying || paymentSuccess}
+                disabled={isPaying || paymentSuccess || !userVerified(profile)}
               >
-                {isPaying
-                  ? "Processing Transaction..."
-                  : `Pay Now (Ksh. ${grandTotalAmount.toLocaleString()})`}
+                {!userVerified(profile)
+                  ? "Verify account to book"
+                  : isPaying
+                    ? "Processing Transaction..."
+                    : `Pay Now (Ksh. ${grandTotalAmount.toLocaleString()})`}
               </Button>
 
+              <div className="mx-auto mt-3 flex w-1/2 items-center gap-3 text-sm text-gray-500">
+                <div className="h-0.5 w-full bg-gray-600"></div>
+                OR
+                <div className="h-0.5 w-full bg-gray-600"></div>
+              </div>
               <div className="flex items-center gap-3">
                 <Link className="w-full" href={"tel:+254768927617"}>
                   <Button className="w-full" size="sm" variant="outline">
@@ -1655,7 +1302,7 @@ const CreateNewBookingForm = () => {
                 </Link>
                 <Link
                   className="w-full"
-                  href={`https://wa.me/254768927617?text=I%20am%20interested%20in%20booking%20the%20${VehicleDetails?.make}%20${VehicleDetails?.model}`}
+                  href={`https://wa.me/254768927617?text=I%20am%20interested%20in%20booking%20the%20${VehicleDetails.make}%20${VehicleDetails.model}`}
                 >
                   <Button className="w-full" size="sm" variant="success">
                     <SmsOutlinedIcon fontSize="small" className="me-1" />{" "}
@@ -1928,7 +1575,7 @@ const CreateNewBookingForm = () => {
                   setPoliciesAccepted(!policiesAccepted);
                   setOpenPolicyModal(false);
 
-                  localStorage.setItem(
+                  localStorage?.setItem(
                     "policiesAccepted",
                     JSON.stringify(!policiesAccepted),
                   );
@@ -1942,4 +1589,4 @@ const CreateNewBookingForm = () => {
   );
 };
 
-export default CreateNewBookingForm;
+export default BookingPage;

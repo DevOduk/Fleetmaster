@@ -15,6 +15,7 @@ import InventoryOutlinedIcon from "@mui/icons-material/InventoryOutlined";
 import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
 import CallToAction from "@/components/marketing-components/CallToAction";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Home | FleetMaster - Fleet Management Solution",
@@ -167,21 +168,25 @@ export default function Home() {
             className="h-10 brightness-30 dark:brightness-100"
             src={"/images/logo/company-1.svg"}
             alt="Company 1"
+            loading="lazy"
           />
           <img
             className="h-10 brightness-30 dark:brightness-100"
             src={"/images/logo/company-2.svg"}
-            alt="Company 1"
+            alt="Company 2"
+            loading="lazy"
           />
           <img
             className="h-10 brightness-30 dark:brightness-100"
             src={"/images/logo/company-3.svg"}
-            alt="Company 1"
+            alt="Company 3"
+            loading="lazy"
           />
           <img
             className="h-10 brightness-30 dark:brightness-100"
             src={"/images/logo/company-1.svg"}
-            alt="Company 1"
+            alt="Company 4"
+            loading="lazy"
           />
         </div>
       </div>
@@ -305,11 +310,14 @@ export default function Home() {
                 {/* Content Card Wrapper (Image Container) */}
                 {/* md:order-first and md:order-last push the image dynamically based on item index */}
                 <div
-                  className={`mb-10 flex overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900 ${isEven ? "md:order-first" : "md:order-last"}`}
+                  className={`mb-10 flex aspect-3/2 relative overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900 ${isEven ? "md:order-first" : "md:order-last"}`}
                 >
-                  <img
+                  <Image
                     src={feature.imgSrc}
                     alt={feature.badgeText}
+                    preload
+                    fill
+                    style={{ objectFit: 'cover' }}
                     className="aspect-3/2 w-full bg-gray-200 object-cover"
                   />
                 </div>
@@ -411,10 +419,13 @@ export default function Home() {
 
       <div className="container m-auto mt-5 mb-5 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
         {/* 3. Swapped col-7 for col-span-7 */}
-        <div className="lg:col-span-6">
-          <img
+        <div className="lg:col-span-6 aspect-video relative">
+          <Image
             className="w-full rounded-xl"
             alt="What Next ..."
+            preload
+            fill
+            style={{ objectFit: 'cover' }}
             src={
               "/images/user/Professional_business_concept_image_showing_a_Flor-1765206733138.webp"
             }

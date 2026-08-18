@@ -4,6 +4,7 @@ import { useFleet } from "@/context/FleetContext";
 import { Box } from "@mui/material";
 import { defaultVehicleImages } from "./hero/slider";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Tenant {
   tenantData: any;
@@ -46,9 +47,9 @@ export default function ViewAllCategories({ tenantData }: Tenant) {
       {allMyCategories.slice(0, 6).map((item) => (
         <Link key={item.category} href={`/vehicles?category=${item.category}`}>
           <div className="mb-3 rounded-2xl bg-gray-500/3 shadow dark:bg-gray-500/10">
-            <div className="relative">
+            <div className="relative aspect-4/3 w-full">
               <Box
-                className="flex h-full w-full items-end gap-2 rounded-xl p-3 font-bold text-white bg-blend-darken"
+                className="flex h-full z-2 w-full items-end gap-2 rounded-xl p-3 font-bold text-white bg-blend-darken"
                 sx={{
                   position: "absolute",
                   bottom: 0,
@@ -58,10 +59,13 @@ export default function ViewAllCategories({ tenantData }: Tenant) {
               >
                 {item.category}
               </Box>
-              <img
+              <Image
                 src={item.image_url}
-                alt={item.category}
-                className="aspect-4/3 w-full rounded-xl object-cover"
+                alt={''}
+                preload
+                fill
+                style={{ objectFit: 'cover' }}
+                className="rounded-xl object-cover bg-white"
               />
             </div>
           </div>

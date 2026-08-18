@@ -1,4 +1,5 @@
 "use client";
+
 import { useFleet } from "@/context/FleetContext";
 import VehicleItem from "@/components/client-components/Vehicles/VehicleItem";
 import { VehicleSkeleton } from "@/components/client-components/Vehicles/VehicleSkeleton";
@@ -8,7 +9,6 @@ import { useEffect, useState } from "react";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import Pagination from "@/components/tables/Pagination";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import DoNotDisturbAltOutlinedIcon from "@mui/icons-material/DoNotDisturbAltOutlined";
 import { useBooking } from "@/context/BookingContext";
@@ -48,7 +48,6 @@ export default function ViewAllVehicles({
   const router = useRouter();
   const pathname = usePathname();
 
-  console.log("tenant fleet: ", vehicles);
 
   const [isOpen, setIsOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Recommended");
@@ -72,7 +71,7 @@ export default function ViewAllVehicles({
   const filteredVehicles = vehicles.filter((vehicle) => {
     const matchesLocation =
       filters.location && filters.location !== "Countrywide"
-        ? vehicle.location === filters.location
+        ? vehicle.location.title === filters.location
         : true;
 
     // If driverType filter is set to "All" or not specified, show all. Otherwise, match the type strictly.

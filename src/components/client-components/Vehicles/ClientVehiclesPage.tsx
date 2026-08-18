@@ -1,4 +1,5 @@
 "use client";
+
 import ViewAllVehicles from "@/components/client-components/Vehicles/viewallvehicles";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Label from "@/components/form/Label";
@@ -21,6 +22,8 @@ import { useTenant } from "@/context/TenantContext";
 import { useToast } from "@/context/ToastContext";
 import CarModelsByBrand from "@/data/carMakeModels";
 import { vehiclesCategories, yearsOfManufacture } from "@/data/globalExports";
+import { syncTimeToDateString } from "../hero/searchform";
+import Image from "next/image";
 
 interface Filters {
   category: string;
@@ -31,10 +34,22 @@ interface Filters {
   minPrice: number;
   maxPrice: number;
   driverType: string;
-  location: string;
+  location: any;
   start: string;
   end: string;
 }
+
+
+
+const defaultLocation = {
+  id: "Countrywide",
+  title: "Countrywide",
+  description:
+    "Find rental vehicles all over the country through our countrywide selection",
+  image_url:
+    "https://images.goway.com/production/hero_image/Amboseli_AdobeStock_568345335.jpeg?VersionId=sEzQrGblBaQDhMGlcsN_UCovnYeM0tUf",
+  location: [-1.286389, 36.817223],
+};
 
 const resetFiltersStates = {
   category: "",
@@ -45,23 +60,9 @@ const resetFiltersStates = {
   minPrice: 0,
   maxPrice: 100000,
   driverType: "All",
-  location: "Countrywide",
-  start: "",
-  end: "",
-};
-
-export const syncTimeToDateString = (
-  dateTarget: string,
-  sourceDateTime: string,
-): string => {
-  if (!sourceDateTime || !dateTarget) return dateTarget;
-
-  const [, timeComponent] = sourceDateTime.split("T");
-  const [dateComponent] = dateTarget.split("T");
-
-  if (!timeComponent || !dateComponent) return dateTarget;
-
-  return `${dateComponent}T${timeComponent}`;
+  location: defaultLocation,
+  start: dayjs().add(1, "day").hour(9).minute(0).second(0).millisecond(0).toDate().toString(),
+  end: dayjs().add(3, "day").hour(9).minute(0).second(0).millisecond(0).toDate().toString(),
 };
 
 export default function ClientVehiclesPage() {
@@ -71,8 +72,10 @@ export default function ClientVehiclesPage() {
   const { tenant } = useTenant();
   const searchParams = useSearchParams();
 
-  const fallbackStart = dayjs().add(1, "day").toDate().toString(); // Tomorrow at current time
-  const fallbackEnd = dayjs().add(3, "day").toDate().toString();
+
+  // Generate tomorrow at a fixed 9:00 AM deterministically
+  const fallbackStart = dayjs().add(1, "day").hour(9).minute(0).second(0).millisecond(0).toDate().toString();
+  const fallbackEnd = dayjs().add(3, "day").hour(9).minute(0).second(0).millisecond(0).toDate().toString();
 
   const initialFilters = {
     category: searchParams.get("category") || "",
@@ -90,8 +93,8 @@ export default function ClientVehiclesPage() {
 
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState<Filters>(initialFilters);
-  const [selectedLocation, setSelectedLocation] = useState<string>(
-    initialFilters.location,
+  const [selectedLocation, setSelectedLocation] = useState<any>(
+    defaultLocation
   );
 
   // 1. Initialize loading as true so it defaults to skeleton cards on first paint
@@ -143,29 +146,56 @@ export default function ClientVehiclesPage() {
   };
   const handleSave = () => {
     // 1. Create the single source of truth for the updated state
-    const updatedFilters = { ...filters, location: selectedLocation };
+    const updatedFilters = { ...filters, location: selectedLocation.title };
 
-    // 2. Update your local React component state
     setFilters(updatedFilters);
-
-    // 3. Pass the fresh, updated object directly to your callback handler
     handleApplyFilters(updatedFilters);
     closeModal();
   };
+
+  // --- 1. FILTER LOGIC ---
+  const filteredVehicles = vehicles.filter((vehicle) => {
+    const matchesLocation =
+      filters.location && filters.location !== "Countrywide"
+        ? vehicle.location.title === filters.location
+        : true;
+
+    // If driverType filter is set to "All" or not specified, show all. Otherwise, match the type strictly.
+    const matchesDriverType =
+      filters.driverType && filters.driverType !== "All"
+        ? vehicle.driver_type === filters.driverType
+        : true;
+
+    const matchesCategory = filters.category
+      ? vehicle.category === filters.category
+      : true;
+    const matchesMake = filters.make ? vehicle.make === filters.make : true;
+    const matchesModel = filters.model ? vehicle.model === filters.model : true;
+    const matchesYear =
+      (filters.minYear ? vehicle.year >= filters.minYear : true) &&
+      (filters.maxYear ? vehicle.year <= filters.maxYear : true);
+    const matchesPrice =
+      (filters.minPrice ? vehicle.daily_rate >= filters.minPrice : true) &&
+      (filters.maxPrice ? vehicle.daily_rate <= filters.maxPrice : true);
+
+    return (
+      matchesLocation &&
+      matchesDriverType &&
+      matchesCategory &&
+      matchesMake &&
+      matchesModel &&
+      matchesYear &&
+      matchesPrice
+    );
+  });
+
 
   const allCategories = vehicles.map((v) => v.category);
   const allLocations = tenant?.yards || [];
 
   const categories = [...new Set([...allCategories, ...vehiclesCategories])];
   const locations = [
-    {
-      title: "Countrywide",
-      description:
-        "Find rental vehicles all over the country through our countrywide selection",
-      image_url:
-        "https://images.goway.com/production/hero_image/Amboseli_AdobeStock_568345335.jpeg?VersionId=sEzQrGblBaQDhMGlcsN_UCovnYeM0tUf",
-      location: [-1.286389, 36.817223],
-    },
+    defaultLocation,
     ...allLocations,
   ];
 
@@ -306,9 +336,9 @@ export default function ClientVehiclesPage() {
         {/* --- Left Filters Control Board --- */}
         <div className="col col-span-12 mb-3 h-fit rounded-xl border border-gray-400 p-4 md:col-span-4 dark:border-gray-500">
           <div className="mb-3 rounded-2xl bg-gray-500/3 shadow dark:bg-gray-500/10">
-            <div className="relative">
+            <div className="relative  h-35 w-full aspect-auto">
               <Box
-                className="flex h-full w-full items-end gap-2 rounded-xl p-4 font-bold text-white bg-blend-darken"
+                className="flex h-full z-2 w-full items-end gap-2 rounded-xl p-4 font-bold text-white bg-blend-darken"
                 sx={{
                   position: "absolute",
                   bottom: 0,
@@ -316,8 +346,7 @@ export default function ClientVehiclesPage() {
                   background: "linear-gradient(to top, black, transparent)",
                 }}
               >
-                {locations?.find((l) => l.title === filters.location)?.title ||
-                  "Countrywide"}
+                {filters.location || "Countrywide"}
                 <Box
                   onClick={openModal}
                   className="flex cursor-pointer items-end gap-2 rounded-lg bg-gray-900/40 p-1 px-2 text-sm font-medium text-green-400 bg-blend-darken"
@@ -326,24 +355,24 @@ export default function ClientVehiclesPage() {
                   <PencilIcon /> Change
                 </Box>
               </Box>
-              <img
+              <Image
                 src={
                   locations?.find((l) => l.title === filters.location)
                     ?.image_url ||
                   "https://images.goway.com/production/hero_image/Amboseli_AdobeStock_568345335.jpeg?VersionId=sEzQrGblBaQDhMGlcsN_UCovnYeM0tUf"
                 }
-                alt={
-                  locations?.find((l) => l.title === filters.location)?.title ||
-                  "Countrywide"
-                }
-                className="h-35 w-full rounded-xl object-cover"
+                alt={''}
+                preload
+                fill
+                style={{ objectFit: 'cover' }}
+                className="rounded-xl object-cover bg-white"
               />
             </div>
 
             <Modal
               isOpen={isOpen}
               onClose={() => {
-                setFilters({ ...filters, location: "CountryWide" });
+                setFilters({ ...filters, location: defaultLocation.title });
                 closeModal();
               }}
               className="max-w-150 p-5 lg:p-10"
@@ -355,10 +384,10 @@ export default function ClientVehiclesPage() {
                 {locations.map((l, i) => (
                   <div
                     key={i}
-                    className={`relative rounded-2xl border-2 ${l.title === selectedLocation ? "border-green-500" : "border-transparent"}`}
+                    className={`relative rounded-2xl border-2 ${l.id === selectedLocation.id ? "border-green-500" : "border-transparent"}`}
                   >
                     <Box
-                      onClick={() => setSelectedLocation(l?.title)}
+                      onClick={() => setSelectedLocation(l)}
                       className="z-9 flex h-full w-full cursor-pointer items-end gap-2 rounded-xl p-4 font-medium text-white bg-blend-darken"
                       sx={{
                         position: "absolute",
@@ -373,7 +402,7 @@ export default function ClientVehiclesPage() {
                         className="flex cursor-pointer items-end gap-2 rounded-lg bg-gray-900/40 p-1 px-3 text-sm text-gray-100 bg-blend-darken"
                         sx={{ position: "absolute", top: 10, right: 10 }}
                       >
-                        {selectedLocation === l?.title ? (
+                        {selectedLocation.id === l?.id ? (
                           <span className="text-green-400">
                             <DoneAllOutlinedIcon fontSize="small" /> Selected
                           </span>
@@ -594,7 +623,7 @@ export default function ClientVehiclesPage() {
               onClick={() => handleApplyFilters()}
               disabled={loading}
             >
-              {loading ? "Processing..." : "Apply Filters"}
+              {loading ? "Processing..." : `Apply Filters (${filteredVehicles.length || 0})`}
             </Button>
           </div>
         </div>

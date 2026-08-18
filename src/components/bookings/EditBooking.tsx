@@ -297,13 +297,13 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
 
     return days;
   }, [bookingDetails, newBookingDetails]);
-
+console.log('bookingDetails: ',bookingDetails)
   const grossSubTotal = useMemo(() => {
-    return bookingDetails?.vehicle?.daily_rate * dayGap || 0;
+    return bookingDetails?.vehicleDetails?.daily_rate * dayGap || 0;
   }, [bookingDetails, newBookingDetails]);
 
   const vatAmount = useMemo(() => {
-    return Math.round(bookingDetails?.vehicle?.daily_rate * dayGap * 0.16);
+    return Math.round(bookingDetails?.vehicleDetails?.daily_rate * dayGap * 0.16);
   }, [bookingDetails, newBookingDetails]);
 
   const grandTotalAmount = grossSubTotal + vatAmount;
@@ -345,7 +345,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
   const updateBookingStatus = async (status: string) => {
     showToast("Updating booking. Just a moment ...", "info");
 
-    const { vehicle, ...bookingWithoutVehicles } = newBookingDetails;
+    const { vehicle, vehicleDetails, ...bookingWithoutVehicles } = newBookingDetails;
 
     const response = await updateBookingDetails(BookingID, {
       ...bookingWithoutVehicles,
@@ -515,8 +515,8 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
         if (!res.ok || data.ResponseCode !== "0") {
           throw new Error(
             data.errorMessage ||
-              data.ResponseDescription ||
-              "Failed to dispatch M-Pesa push.",
+            data.ResponseDescription ||
+            "Failed to dispatch M-Pesa push.",
           );
         }
 
@@ -825,8 +825,8 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
             </Button>
             {bookingDetails?.booking_status.toLowerCase() === "reserved" &&
               new Date().getTime() >
-                new Date(bookingDetails.created_at).getTime() +
-                  30 * 60 * 1000 && (
+              new Date(bookingDetails.created_at).getTime() +
+              30 * 60 * 1000 && (
                 <Alert
                   variant="error"
                   title="Reservation expired!"
@@ -886,8 +886,8 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                 <div className="mt-2 mb-4">
                   <img
                     className="h-45 w-full rounded-lg object-cover"
-                    src={bookingDetails?.vehicle?.image_url}
-                    alt={bookingDetails?.vehicle?.make}
+                    src={bookingDetails?.vehicleDetails?.image_url}
+                    alt={''}
                   />
                 </div>
                 <div className="">
@@ -899,12 +899,12 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                     type="text"
                     value={
                       (profile.role !== "Client" &&
-                        bookingDetails?.vehicle?.license_plate + ": ") +
-                      bookingDetails?.vehicle?.year +
+                        bookingDetails?.vehicleDetails?.license_plate + ": ") +
+                      bookingDetails?.vehicleDetails?.year +
                       " " +
-                      bookingDetails?.vehicle?.make +
+                      bookingDetails?.vehicleDetails?.make +
                       " " +
-                      bookingDetails?.vehicle?.model
+                      bookingDetails?.vehicleDetails?.model
                     }
                     disabled
                     className="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -943,11 +943,10 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                               />
                               <span className="box mr-2 flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 dark:border-gray-700">
                                 <span
-                                  className={`h-2 w-2 rounded-full bg-white ${
-                                    newBookingDetails.priority === key
+                                  className={`h-2 w-2 rounded-full bg-white ${newBookingDetails.priority === key
                                       ? "block"
                                       : "hidden"
-                                  }`}
+                                    }`}
                                 ></span>
                               </span>
                             </span>
@@ -1034,7 +1033,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                 {bookingDetails?.id && (
                   <div className="text-sm text-green-500">
                     Rental period set at a minimum of{" "}
-                    {bookingDetails?.vehicle?.min_rental_days} Days
+                    {bookingDetails?.vehicleDetails?.min_rental_days} Days
                   </div>
                 )}
               </div>
@@ -1220,11 +1219,10 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                   {/* Notification alert response box */}
                   {statusMessage && (
                     <div
-                      className={`text-theme-sm rounded-lg p-3 ${
-                        statusMessage.type === "success"
+                      className={`text-theme-sm rounded-lg p-3 ${statusMessage.type === "success"
                           ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
                           : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                      }`}
+                        }`}
                     >
                       {statusMessage.text}
                     </div>
@@ -1234,9 +1232,8 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                   <button
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className={`bg-brand-500 text-theme-sm hover:bg-brand-600 ms-auto mt-3 flex items-center justify-center rounded-lg p-2 px-4 font-medium text-white transition-all ${
-                      isSubmitting ? "cursor-not-allowed opacity-50" : ""
-                    }`}
+                    className={`bg-brand-500 text-theme-sm hover:bg-brand-600 ms-auto mt-3 flex items-center justify-center rounded-lg p-2 px-4 font-medium text-white transition-all ${isSubmitting ? "cursor-not-allowed opacity-50" : ""
+                      }`}
                   >
                     {isSubmitting
                       ? "Processing Submission..."
@@ -1278,8 +1275,8 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                         className="mt-1 text-xs"
                         value={dayjs(
                           bookingDetails.rental_start +
-                            "T" +
-                            bookingDetails.rental_time,
+                          "T" +
+                          bookingDetails.rental_time,
                         ).format("YYYY-MM-DDTHH:mm")}
                         name="start_date"
                       />
@@ -1332,7 +1329,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                           ...prev,
                           rental_end: new Date(
                             new Date(bookingDetails.rental_end).getTime() +
-                              day * 24 * 60 * 60 * 1000,
+                            day * 24 * 60 * 60 * 1000,
                           )
                             .toISOString()
                             .split("T")[0],
@@ -1377,7 +1374,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 dark:text-gray-400">
                         Base Subtotal ({dayGap}d × Ksh{" "}
-                        {(bookingDetails?.vehicle?.daily_rate).toLocaleString()}
+                        {(bookingDetails?.vehicleDetails?.daily_rate)?.toLocaleString()}
                         )
                       </span>
                       <span className="font-medium text-gray-800 dark:text-gray-200">
@@ -1447,11 +1444,10 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                     {/* M-Pesa Option Layout Box */}
                     <div
                       onClick={() => setPaymentMethod("m-pesa")}
-                      className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${
-                        paymentMethod === "m-pesa"
+                      className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${paymentMethod === "m-pesa"
                           ? "border-brand-500 bg-brand-50/5"
                           : "border-gray-200 dark:border-gray-800"
-                      }`}
+                        }`}
                     >
                       <FormControlLabel
                         value="m-pesa"
@@ -1473,11 +1469,10 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                     {/* Card Option Layout Box */}
                     <div
                       onClick={() => setPaymentMethod("card")}
-                      className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${
-                        paymentMethod === "card"
+                      className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${paymentMethod === "card"
                           ? "border-brand-500 bg-brand-50/5"
                           : "border-gray-200 dark:border-gray-800"
-                      }`}
+                        }`}
                     >
                       <FormControlLabel
                         value="card"
@@ -1533,8 +1528,8 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                             type="text"
                             placeholder="Card number"
                             className="pl-15.5"
-                            // value={cardNumber}
-                            // onChange={(e) => setCardNumber(e.target.value)}
+                          // value={cardNumber}
+                          // onChange={(e) => setCardNumber(e.target.value)}
                           />
                           <span className="absolute top-1/2 left-0 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
                             <svg
@@ -1577,8 +1572,8 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                             max={"5"}
                             placeholder="MM/YY"
                             className="mt-2 w-full text-center"
-                            // value={expiry}
-                            // onChange={(e) => handleExpiryChange(e.target.value)}
+                          // value={expiry}
+                          // onChange={(e) => handleExpiryChange(e.target.value)}
                           />
                         </div>
 
@@ -1592,8 +1587,8 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                             max={"4"}
                             placeholder="•••"
                             className="mt-2 w-full text-center tracking-widest"
-                            // value={cvv}
-                            // onChange={(e) => setCvv(e.target.value)}
+                          // value={cvv}
+                          // onChange={(e) => setCvv(e.target.value)}
                           />
                         </div>
                       </div>

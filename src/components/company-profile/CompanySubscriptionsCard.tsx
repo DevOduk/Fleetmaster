@@ -6,7 +6,6 @@ import {
   updateTenantDetails,
 } from "@/app/actions/tenant";
 import { useUser } from "@/context/UserContext";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import ComponentCard from "../common/ComponentCard";
 import ExpiryBanner, { getExpiryString } from "./ExpiryBanner";

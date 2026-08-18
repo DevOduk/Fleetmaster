@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import {
+  bookingEmail,
   ClientWelcomeEmail,
   WelcomeEmail,
 } from "@/utils/templates/email-templates";
@@ -13,9 +14,9 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const redis =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
     ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
     : null;
 
 const CACHE_TTL = 300; // 5 minutes cache TTL
@@ -138,4 +139,64 @@ export async function markNotificationAsSeen(notificationId: number) {
   }
 
   return { success: true, error: null };
+}
+
+export async function sendBookingNotification(
+  userEmail: string,
+  tenant: any,
+  bookingDetails: any,
+  userName: string,
+  userId: string,
+) {
+  const supabase = await createClient();
+
+  if (!userEmail) {
+    return {
+      success: false,
+      error: { message: "Recipient email & headers is required" },
+    };
+  }
+
+  if (bookingDetails.booking_status === 'Reserved') {
+    return {
+      success: false,
+      error: { message: "Booking reserved!" },
+    };
+  }
+
+  const displayName = userName || "there";
+
+  const { data, error: mailError } = await resend.emails.send({
+    from: `${tenant.name} <onboarding@resend.dev>`,
+    to: (
+      // userEmail
+      'austine.oduk@gmail.com'
+    ),
+    subject: `Booking Confirmed!`,
+    html: bookingEmail(displayName, tenant, bookingDetails),
+  });
+
+  const { error: notifError } = await supabase
+    .from("fleetmaster_notifications")
+    .insert({
+      user_id: userId,
+      category: "Booking",
+      title: "Booking Confirmed!",
+      notification: `Hello ${userName}. Your booking was confirmed successfully on ${new Date().toLocaleString()} for REF #${bookingDetails.payment_ref} from ${bookingDetails.rental_start} to ${bookingDetails.rental_end}! Thank you for choosing us.\n${tenant.name} Team`,
+      seen: false,
+    });
+
+  if (notifError) {
+    console.error("Internal notification insert error:", notifError);
+  }
+
+  if (mailError) {
+    console.error("Resend delivery error:", mailError);
+    return {
+      success: false,
+      error: { message: `Booking email failed to send: ${mailError.message}` },
+    };
+  }
+
+  return { success: true, data };
 }

@@ -26,7 +26,7 @@ export async function generateMetadata({
   const vehicleMake = vehicle?.data?.make || "Vehicle";
   const vehicleModel = vehicle?.data?.model || "Model";
   const vehicleYear = vehicle?.data?.year || "Year";
-  const vehicleLocation = vehicle?.data?.location || "Location";
+  const vehicleLocation = vehicle?.data?.location?.title || "Location";
   const vehicleDescription = vehicle?.data?.description || "Description";
 
   const tenantName = tenant?.name || "FleetMaster";

@@ -27,6 +27,7 @@ import { handleImageFileUpload } from "@/utils/uploads/imageUpload";
 import { useModal } from "@/hooks/useModal";
 import { Modal } from "@/components/ui/modal";
 import { useAdminBooking } from "@/context/AdminBookingContext";
+import { fetchTenantDetails } from "@/app/actions/tenant";
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string }>;
@@ -38,7 +39,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
   const resolvedParams = use(params);
   const vehicleID = resolvedParams.vehicleID;
   const { profile } = useUser();
-  const [loadingVehicle, setLoadingVehicle] = useState(false);
+  const [loadingVehicle, setLoadingVehicle] = useState(true);
   const [backDrop, setBackDrop] = useState(false);
   const [disableButton, setDisableButton] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -47,6 +48,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
     useState<any>(null);
   const { isOpen, openModal: openDeleteModal, closeModal } = useModal();
   const { bookings, loading } = useAdminBooking();
+  const [yards, setYards] = useState<any>([]);
 
   useEffect(() => {
     if (!vehicleID) return;
@@ -73,6 +75,23 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
     fetchAllVehicles();
   }, [vehicleID]);
 
+  console.log('vehivcle: ', VehicleDetails)
+
+  useEffect(() => {
+    if (!profile) return;
+    if (!profile.tenant_id) return;
+
+    const getTenantDetails = async () => {
+      const res = await fetchTenantDetails(profile.tenant_id);
+      if (res.success) {
+        setYards(res.data.yards);
+      }
+    };
+
+    getTenantDetails();
+  }, [profile]);
+
+
   const breadcrumbItems = [
     { label: "Vehicles", href: "/vehicles" },
     {
@@ -85,7 +104,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
     setDisableButton(true);
     setBackDrop(true);
 
-    const res = await updateVehicleDetails(Number(vehicleID), VehicleDetails);
+    const res = await updateVehicleDetails(Number(vehicleID), {...VehicleDetails, location: VehicleDetails.location.id});
 
     if (res.success) {
       // Use .map to replace ONLY the vehicle that matches the ID
@@ -304,11 +323,10 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
               </div>
               <div>
                 <span
-                  className={`font-sm mt-2 mb-1 rounded-full px-3 py-1 text-xs ${
-                    VehicleDetails?.status === "Available"
+                  className={`font-sm mt-2 mb-1 rounded-full px-3 py-1 text-xs ${VehicleDetails?.status === "Available"
                       ? "bg-green-100 text-green-700"
                       : "bg-amber-100 text-amber-700"
-                  }`}
+                    }`}
                 >
                   {VehicleDetails?.status}
                 </span>
@@ -564,7 +582,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
                 <div className="font-sm mt-2 mb-1 flex gap-3 dark:text-white">
                   {["Automatic", "Manual", "Automatic/Manual"].map((t) => (
                     <span
-                    key={t}
+                      key={t}
                       className={`cursor-pointer rounded-lg px-4 py-2 text-sm ${t === VehicleDetails?.transmission ? "bg-brand-500 text-white" : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"}`}
                       onClick={() =>
                         setVehicleDetails((prev: any) => ({
@@ -584,7 +602,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
                 <div className="font-sm mt-2 mb-1 flex gap-3 dark:text-white">
                   {["Self Drive", "Chauffeured"].map((t) => (
                     <span
-                    key={t}
+                      key={t}
                       className={`cursor-pointer rounded-lg px-4 py-2 text-sm ${t === VehicleDetails?.driver_type ? "bg-brand-500 text-white" : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"}`}
                       onClick={() =>
                         setVehicleDetails((prev: any) => ({
@@ -649,27 +667,31 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
               </div>
               <div className="p-2">
                 <p className="text-gray-400">Location</p>
-                <Select
-                  options={profile?.fleetmaster_tenants?.yards
-                    ?.map((y) => `${y.title}`)
-                    .map((l) => {
-                      return {
-                        value: l,
-                        label: l,
-                      };
-                    })}
 
-                  defaultValue={VehicleDetails?.location}
-                  value={VehicleDetails?.location}
-                  placeholder="Change location"
-                  onChange={(e) =>
-                    setVehicleDetails((prev: any) => ({
-                      ...prev,
-                      location: e,
-                    }))
-                  }
-                  className="dark:bg-dark-900 mt-3"
-                />
+<Select
+  options={yards
+    ?.map((y) => {
+      return {
+        value: y.id,
+        label: y.title,
+      };
+    }) || []}
+  defaultValue={VehicleDetails?.location?.id || ''}
+  value={VehicleDetails?.location?.id || ''}
+  placeholder="Change location"
+  onChange={(e) => {
+    // Find the full yard object from your yards list based on the chosen ID (e)
+    const selectedYard = yards?.find((y) => y.id === e);
+
+    setVehicleDetails((prev: any) => ({
+      ...prev,
+      // Store the full yard object in state so UI details work, 
+      // but ensure you track the foreign key ID separately if needed
+      location: selectedYard || prev.location,
+    }));
+  }}
+  className="dark:bg-dark-900 mt-3"
+/>
               </div>
 
               <div className="p-2">

@@ -13,6 +13,7 @@ import { fetchVehicleDetails } from "@/app/actions/vehicles";
 import type { Metadata } from "next";
 import { fetchBookingsForVehicle } from "@/app/actions/bookings";
 import { headers } from "next/headers";
+import Image from "next/image";
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string }>;
@@ -108,11 +109,10 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
               </div>
               <div>
                 <span
-                  className={`font-sm mt-2 mb-1 rounded-full px-3 py-1 text-xs ${
-                    VehicleDetails.status === "Available"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-amber-100 text-amber-700"
-                  }`}
+                  className={`font-sm mt-2 mb-1 rounded-full px-3 py-1 text-xs ${VehicleDetails.status === "Available"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-amber-100 text-amber-700"
+                    }`}
                 >
                   {VehicleDetails.status}
                 </span>
@@ -142,11 +142,16 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
                   label={VehicleDetails.seats + " Seats"}
                 />
               </Box>
-              <img
-                src={VehicleDetails.image_url}
-                alt={`${VehicleDetails.make} ${VehicleDetails.model}`}
-                className="mb-8 aspect-video w-full rounded-xl object-cover"
-              />
+              <div className="mb-8 aspect-video w-full relative">
+                <Image
+                  src={VehicleDetails?.image_url}
+                  alt={`${VehicleDetails?.make} ${VehicleDetails?.model}`}
+                  preload
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  className="rounded-xl object-cover"
+                />
+              </div>
             </div>
 
             <div>

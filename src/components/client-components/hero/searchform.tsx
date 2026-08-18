@@ -25,30 +25,34 @@ interface SearchParams {
   end: string;
 }
 
-const syncTimeToDateString = (
+export const syncTimeToDateString = (
   dateTarget: string,
   sourceDateTime: string,
 ): string => {
   if (!sourceDateTime || !dateTarget) return dateTarget;
 
-  // Extract the time portion (everything after the 'T')
-  const [, timeComponent] = sourceDateTime.split("T");
-  // Extract the date portion of the target string
-  const [dateComponent] = dateTarget.split("T");
+  const targetDay = dayjs(dateTarget);
+  const sourceDay = dayjs(sourceDateTime);
 
-  if (!timeComponent || !dateComponent) return dateTarget;
+  if (!targetDay.isValid() || !sourceDay.isValid()) return dateTarget;
 
-  return `${dateComponent}T${timeComponent}`;
+  // Keep target's date (YYYY-MM-DD), but steal source's time (HH:mm:ss)
+  return targetDay
+    .hour(sourceDay.hour())
+    .minute(sourceDay.minute())
+    .second(sourceDay.second())
+    .toDate()
+    .toString();
 };
 
 export default function SearchForm({ tenant }: { tenant: any }) {
   const router = useRouter();
   const [search, setSearch] = useState<number>(0);
 
-  const fallbackStart = dayjs().add(1, "day").format("YYYY-MM-DD[T]HH:mm");
+  // Generate tomorrow at a fixed 9:00 AM deterministically
+  const fallbackStart = dayjs().add(1, "day").hour(9).minute(0).second(0).millisecond(0).toDate().toString();
+  const fallbackEnd = dayjs().add(3, "day").hour(9).minute(0).second(0).millisecond(0).toDate().toString();
 
-  // 2 days after tomorrow (3 days total) at the exact same hour and minute
-  const fallbackEnd = dayjs().add(3, "day").format("YYYY-MM-DD[T]HH:mm");
   const [searchParams, setSearchParams] = useState<SearchParams>({
     location: "",
     category: "",
