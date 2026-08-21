@@ -18,6 +18,7 @@ import {
   verifyPhoneOTP,
 } from "@/app/actions/verification/phone";
 import { retryDuration } from "@/data/globalExports";
+import LoadingInfo from "@/components/loading/LoadingInfo";
 
 function ProfilePage({ userProfile }: { userProfile?: any }) {
   const { profile, loading, setProfile } = useUser();
@@ -126,11 +127,8 @@ function ProfilePage({ userProfile }: { userProfile?: any }) {
   );
 
   if (loading) {
-    return (
-      <div className="container mx-auto min-h-[80vh] max-w-6xl p-5 text-gray-400">
-        Loading profile ...
-      </div>
-    );
+    return (<LoadingInfo />);
+
   } else if (!loading && !profile) {
     window.location.href = `/signin?r=${currentPageUrl}`;
     return (

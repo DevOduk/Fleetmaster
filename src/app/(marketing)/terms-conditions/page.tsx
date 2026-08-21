@@ -37,6 +37,7 @@ export default function ClientTermsPage() {
             alt="Driver Liability Framework"
             preload
             fill
+                sizes="(max-width: 1024px) 50vw, 33vw"
             style={{ objectFit: 'cover' }}
             src="/images/user/why-you-should-provide-terms-and-conditions-for-your-website.webp"
           />

@@ -1,7 +1,8 @@
-import EditProfilePage from "@/components/ProfilePage/client-profile/EditProfilePage";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import Feedback from "@/components/feedback/Feedback";
+
 import { Metadata } from "next";
 import { createPublicClient } from "@/utils/supabase/server";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 
 interface PageProps {
   params: Promise<{
@@ -29,7 +30,7 @@ export async function generateMetadata({
     `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
 
   return {
-    title: `Edit Profile | ${tenantName} - Premium Car Rental & Fleet Solutions`,
+    title: `Feedback | ${tenantName} - Premium Car Rental & Fleet Solutions`,
     description: tenantDescription,
     openGraph: {
       title: `${tenantName} - Official Website`,
@@ -38,22 +39,10 @@ export async function generateMetadata({
   };
 }
 
-export default function Profile() {
+export default function page() {
   return (
-    <div className="container m-auto max-w-6xl">
-      <PageBreadcrumb
-        items={[
-          {
-            label: "Profile",
-            href: "/profile",
-          },
-        ]}
-        pageTitle="Edit Profile"
-      />
-
-      <div className="space-y-6">
-        <EditProfilePage />
-      </div>
+    <div className="mt-8">
+      <Feedback />
     </div>
   );
 }

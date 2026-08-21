@@ -9,27 +9,6 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { Outfit } from "next/font/google";
-// import type { Metadata } from "next";
-
-// export const metadata: Metadata = {
-//   title: "FleetMaster - Fleet Management Solution",
-//   description:
-//     "FleetMaster is a comprehensive fleet management solution designed to optimize vehicle operations, enhance efficiency, and reduce costs for businesses of all sizes.",
-//   keywords: [
-//     "Fleet Management Solution Kenya",
-//     "Rental Fleet Management Nairobi, Kenya",
-//     "Fleet Management Software Kenya",
-//     "Fleet Management",
-//     "Car Rental Management",
-//     "Rental Software",
-//     "Fleet Management",
-//     "Vehicle Management",
-//     "Fleet Optimization",
-//     "Fleet Tracking",
-//     "Fleet Maintenance",
-//     "Fleet Analytics",
-//   ]
-// };
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -42,6 +21,32 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
+      <head>
+        {/* Instant Theme & Dark Mode Injector Script (Prevents flash/lag before hydration) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                // 1. Apply Brand Color immediately
+                const savedColor = localStorage.getItem("brand-color");
+                if (savedColor) {
+                  document.documentElement.style.setProperty("--color-brand-500", savedColor);
+                }
+
+                // 2. Apply Light/Dark Class immediately to prevent white flash
+                const savedTheme = localStorage.getItem("theme");
+                const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                
+                if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+                  document.documentElement.classList.add("dark");
+                } else if (savedTheme === "light") {
+                  document.documentElement.classList.remove("dark");
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <ThemeProvider>
         <SidebarProvider>
           <body
@@ -132,7 +137,6 @@ export default function RootLayout({
 
                 // Provide tiny safe stubs for known globals the extension might read
                 try {
-                  // Commonly seen single-name globals (be conservative)
                   if (typeof window.M === 'undefined') window.M = window.M || {};
                   if (typeof window.M_ID === 'undefined') window.M_ID = window.M_ID || null;
                 } catch (e) {}

@@ -27,6 +27,7 @@ export default function MainClientHeader() {
             <Image
               width={154}
               height={32}
+              sizes="(max-width: 768px) 120px, 154px"
               className="dark:hidden"
               src="/images/logo/logo.svg"
               alt=""
@@ -34,6 +35,8 @@ export default function MainClientHeader() {
             <Image
               width={154}
               height={32}
+              sizes="(max-width: 768px) 120px, 154px"
+              preload
               className="hidden dark:block"
               src="/images/logo/logo-dark.svg"
               alt=""

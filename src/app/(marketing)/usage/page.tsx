@@ -49,6 +49,7 @@ export default function UseCasesPage() {
             alt="What Next ..."
             preload
             fill
+                sizes="(max-width: 1024px) 50vw, 33vw"
             style={{ objectFit: 'cover' }}
             src={
               "/images/user/Professional_business_concept_image_showing_a_Flor-1765206733138.webp"
@@ -214,6 +215,7 @@ export default function UseCasesPage() {
                       alt={feature.badgeText}
                       preload
                       fill
+                sizes="(max-width: 1024px) 50vw, 33vw"
                       style={{ objectFit: 'cover' }}
                       className="aspect-3/2 w-full bg-gray-200 object-cover"
                     />

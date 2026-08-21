@@ -14,10 +14,9 @@ import VerificationBanner from "@/components/client-components/VerificationBanne
 import { useFleet } from "@/context/FleetContext";
 import { fetchUserTickets } from "@/app/actions/support";
 import SearchModal from "@/components/header/SearchModal";
-import userVerified from "@/utils/clients/checkverification";
 import { getNotifications } from "@/app/actions/notifications";
 import { fetchBookingsForClient } from "@/app/actions/bookings";
-import Image from "next/image";
+import { userVerified } from "@/utils/clients/checkverification";
 
 export default function ClientHeader() {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);

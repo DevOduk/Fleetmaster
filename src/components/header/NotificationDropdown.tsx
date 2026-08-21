@@ -110,9 +110,8 @@ export default function NotificationDropdown({
         onClick={handleClick}
       >
         <span
-          className={`absolute top-0.5 right-0 z-10 h-2 w-2 rounded-full bg-orange-400 ${
-            !notifying ? "hidden" : "flex"
-          }`}
+          className={`absolute top-0.5 right-0 z-10 h-2 w-2 rounded-full bg-orange-400 ${!notifying ? "hidden" : "flex"
+            }`}
         >
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
         </span>
@@ -135,11 +134,10 @@ export default function NotificationDropdown({
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
-        className={`shadow-theme-lg dark:bg-gray-dark fixed inset-0 z-100! flex h-full w-full flex-col rounded-none border border-gray-200 bg-white p-3 dark:border-gray-300 ${
-          viewAll
+        className={`shadow-theme-lg dark:bg-gray-dark fixed inset-0 z-100! flex h-full w-full flex-col rounded-none border border-gray-200 bg-white p-3 dark:border-gray-300 ${viewAll
             ? "sm:inset-auto sm:top-4 sm:right-4 sm:bottom-4 sm:h-[calc(100vh-2rem)] sm:w-100 sm:rounded-2xl"
             : "sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:h-auto sm:max-h-135 sm:w-100 sm:rounded-2xl"
-        } `}
+          } `}
       >
         {/* Fixed Header */}
         <div className="mb-3 flex shrink-0 items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-700">
@@ -182,8 +180,9 @@ export default function NotificationDropdown({
                   <Image
                     width={40}
                     height={40}
+                    sizes="40px"
                     src={`/images/user/user-01.jpg`}
-                    alt="User"
+                    alt=""
                     className="w-full overflow-hidden rounded-full"
                   />
                   <span className="bg-success-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
@@ -232,8 +231,9 @@ export default function NotificationDropdown({
                     <Image
                       width={40}
                       height={40}
+                      sizes="40px"
                       src={`/images/user/user-01.jpg`}
-                      alt="User"
+                      alt=""
                       className="w-full overflow-hidden rounded-full"
                     />
                     <span className="bg-success-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>

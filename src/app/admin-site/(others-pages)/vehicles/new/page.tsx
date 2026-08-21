@@ -170,6 +170,7 @@ const NewVehiclePage = () => {
       showToast("Please select a valid image file (PNG, WEBP, JPEG)!", "error");
       return;
     }
+    setBackDrop(true);
 
     try {
       // 1. Upload file to Supabase bucket (replace 'your-bucket-name' with yours)
@@ -179,18 +180,24 @@ const NewVehiclePage = () => {
       const { data, error } = await supabase.storage
         .from("fleetmaster_files")
         .upload(fileName, file);
+
       if (error) throw error;
 
       // 2. Get the public URL
       const {
         data: { publicUrl },
-      } = supabase.storage.from("fleetmaster_files").getPublicUrl(fileName);
+      } = supabase.storage
+        .from("fleetmaster_files")
+        .getPublicUrl(fileName);
 
       // 3. Update state
       setVehicleDetails({ ...VehicleDetails, image_url: publicUrl });
+      setBackDrop(false);
     } catch (error) {
       showToast(error.message, "error");
       console.error("Error uploading image:", error.message);
+
+      setBackDrop(false);
     }
   };
 
@@ -253,8 +260,8 @@ const NewVehiclePage = () => {
               <div>
                 <span
                   className={`font-sm mt-2 mb-1 rounded-full px-3 py-1 text-xs ${VehicleDetails?.status === "Available"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-amber-100 text-amber-700"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-amber-100 text-amber-700"
                     }`}
                 >
                   {VehicleDetails?.status || "Default"}
@@ -288,7 +295,7 @@ const NewVehiclePage = () => {
                   label={VehicleDetails?.seats || 0 + " Seats"}
                 />
               </Box>
-              <label className="absolute right-3 bottom-3 flex cursor-pointer items-center gap-2 rounded-lg border-0 bg-black/50 p-2 px-3 text-sm text-white outline-0">
+              <label className="absolute right-3 bottom-3 flex cursor-pointer items-center gap-2 rounded-lg border-0 bg-brand-600/50 p-2 px-3 text-sm text-white outline-0">
                 <input
                   type="file"
                   accept="image/*"
@@ -605,8 +612,8 @@ const NewVehiclePage = () => {
                       }) || []
                   }
 
-                  defaultValue={VehicleDetails?.location}
-                  value={VehicleDetails?.location}
+                  defaultValue={VehicleDetails?.location?.title || ''}
+                  value={VehicleDetails?.location?.title || ''}
                   placeholder="Select a location"
                   onChange={(e) =>
                     setVehicleDetails((prev: any) => ({

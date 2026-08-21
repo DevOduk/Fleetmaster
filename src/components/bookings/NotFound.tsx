@@ -10,7 +10,7 @@ const BookingNotFound = () => {
       {/* Icon with subtle background pulse */}
       <div className="relative mb-6">
         <div className="absolute inset-0 animate-pulse rounded-full bg-blue-500/20 blur-2xl" />
-        <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+        <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-red-100 dark:bg-red-800/30">
           <DoNotDisturbAltOutlinedIcon
             color="error"
             sx={{ fontSize: "2rem" }}
@@ -19,12 +19,12 @@ const BookingNotFound = () => {
       </div>
 
       {/* Text Content */}
-      <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-        Booking Not Found
-      </h1>
-      <p className="mb-8 max-w-2xl text-gray-500 dark:text-gray-400">
+      <h4 className="modal-title text-theme-xl mt-3 mb-2 font-semibold text-gray-800 lg:text-xl dark:text-white/90">
+        Booking Not Found!
+      </h4>
+      <p className="mb-8 text-sm max-w-2xl text-gray-500 dark:text-gray-400">
         The booking you are looking for doesn&apos;t exist or has been
-        removed/deleted. Please check the ID and try again.
+        removed/deleted. Please check the ID and try again. If this error persits, contact <Link className="text-blue-500 underline" href={'/support'}>support</Link> with the booking id.
       </p>
 
       {/* Action Button */}

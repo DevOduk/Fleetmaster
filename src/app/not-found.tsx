@@ -38,6 +38,7 @@ export default function GlobalNotFound() {
             alt="Page Not Found"
             width={200}
             height={67}
+                sizes="(max-width: 1024px) 50vw, 33vw"
             priority
             className="drop-shadow-xl dark:hidden"
           />
@@ -47,6 +48,7 @@ export default function GlobalNotFound() {
             width={200}
             height={67}
             priority
+                sizes="(max-width: 1024px) 50vw, 33vw"
             className="hidden animate-bounce drop-shadow-[0_0_25px_rgba(59,130,246,0.15)] dark:block"
           />
         </div>

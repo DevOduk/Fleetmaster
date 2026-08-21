@@ -28,6 +28,7 @@ import { useModal } from "@/hooks/useModal";
 import { Modal } from "@/components/ui/modal";
 import { useAdminBooking } from "@/context/AdminBookingContext";
 import { fetchTenantDetails } from "@/app/actions/tenant";
+import LoadingInfo from "@/components/loading/LoadingInfo";
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string }>;
@@ -75,7 +76,6 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
     fetchAllVehicles();
   }, [vehicleID]);
 
-  console.log('vehivcle: ', VehicleDetails)
 
   useEffect(() => {
     if (!profile) return;
@@ -104,7 +104,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
     setDisableButton(true);
     setBackDrop(true);
 
-    const res = await updateVehicleDetails(Number(vehicleID), {...VehicleDetails, location: VehicleDetails.location.id});
+    const res = await updateVehicleDetails(Number(vehicleID), { ...VehicleDetails, location: VehicleDetails.location.id });
 
     if (res.success) {
       // Use .map to replace ONLY the vehicle that matches the ID
@@ -135,6 +135,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
     setBackDrop(true);
     const res = await updateVehicleDetails(VehicleDetails?.id, {
       ...VehicleDetails,
+      location: VehicleDetails.location.id,
       status: status,
     });
 
@@ -150,7 +151,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
       }));
       setBackDrop(false);
     } else {
-      showToast("An error ocuured while updating vehicle status!", "error");
+      showToast(`An error ocuured while updating vehicle status!`, "error");
       setBackDrop(false);
     }
   };
@@ -174,7 +175,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
   };
 
   if (loadingVehicle) {
-    return <div>Fetching vehicle details</div>;
+    return (<LoadingInfo />);
   }
   if (!VehicleDetails) {
     return <VehicleNotFound />;
@@ -324,8 +325,8 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
               <div>
                 <span
                   className={`font-sm mt-2 mb-1 rounded-full px-3 py-1 text-xs ${VehicleDetails?.status === "Available"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-amber-100 text-amber-700"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-amber-100 text-amber-700"
                     }`}
                 >
                   {VehicleDetails?.status}
@@ -383,7 +384,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
               </label>
               <img
                 src={VehicleDetails?.image_url}
-                alt={`${VehicleDetails?.make} ${VehicleDetails?.model}`}
+                alt={``}
                 className="mb-8 aspect-video w-full rounded-xl object-cover"
               />
             </div>
@@ -428,12 +429,12 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
                 <p className="text-gray-400">Model</p>
 
                 <Select
-                  options={CarModelsByBrand[VehicleDetails?.make].map(
+                  options={CarModelsByBrand[VehicleDetails?.make]?.map(
                     (model) => ({
                       value: model,
                       label: model,
                     }),
-                  )}
+                  ) || []}
 
                   defaultValue={VehicleDetails?.model}
                   value={VehicleDetails?.model}
@@ -668,30 +669,30 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
               <div className="p-2">
                 <p className="text-gray-400">Location</p>
 
-<Select
-  options={yards
-    ?.map((y) => {
-      return {
-        value: y.id,
-        label: y.title,
-      };
-    }) || []}
-  defaultValue={VehicleDetails?.location?.id || ''}
-  value={VehicleDetails?.location?.id || ''}
-  placeholder="Change location"
-  onChange={(e) => {
-    // Find the full yard object from your yards list based on the chosen ID (e)
-    const selectedYard = yards?.find((y) => y.id === e);
+                <Select
+                  options={yards
+                    ?.map((y) => {
+                      return {
+                        value: y.id,
+                        label: y.title,
+                      };
+                    }) || []}
+                  defaultValue={VehicleDetails?.location?.id || ''}
+                  value={VehicleDetails?.location?.id || ''}
+                  placeholder="Change location"
+                  onChange={(e) => {
+                    // Find the full yard object from your yards list based on the chosen ID (e)
+                    const selectedYard = yards?.find((y) => y.id === e);
 
-    setVehicleDetails((prev: any) => ({
-      ...prev,
-      // Store the full yard object in state so UI details work, 
-      // but ensure you track the foreign key ID separately if needed
-      location: selectedYard || prev.location,
-    }));
-  }}
-  className="dark:bg-dark-900 mt-3"
-/>
+                    setVehicleDetails((prev: any) => ({
+                      ...prev,
+                      // Store the full yard object in state so UI details work, 
+                      // but ensure you track the foreign key ID separately if needed
+                      location: selectedYard || prev.location,
+                    }));
+                  }}
+                  className="dark:bg-dark-900 mt-3"
+                />
               </div>
 
               <div className="p-2">

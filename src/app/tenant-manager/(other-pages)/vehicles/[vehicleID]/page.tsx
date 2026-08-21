@@ -145,9 +145,10 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
               <div className="mb-8 aspect-video w-full relative">
                 <Image
                   src={VehicleDetails?.image_url}
-                  alt={`${VehicleDetails?.make} ${VehicleDetails?.model}`}
+                  alt={``}
                   preload
                   fill
+                  sizes="(max-width: 1024px) 50vw, 33vw"
                   style={{ objectFit: 'cover' }}
                   className="rounded-xl object-cover"
                 />
@@ -213,7 +214,7 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
               <div>
                 <p className="text-gray-400">Location</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">
-                  {VehicleDetails.location}
+                  {VehicleDetails.location?.title || 'N/A'}
                 </p>
               </div>
               <div>

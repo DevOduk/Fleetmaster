@@ -19,20 +19,31 @@ export interface PricingPlan {
 
 export const retryDuration = 60 * 2; //2.5 minutes in seconds
 
+export const defaultVehicleImages = [
+  "https://www.toyotawalton.com/wp-content/uploads/2025/01/Toyota-Land-Cruiser-Prado-used-vehicle-Toyota-walton.webp",
+  "https://images.kobemotor.com/images/v70245-yi003.jpeg",
+  "https://www.autocraftjapan.com/adminPanel/uploads/avis/veh_images/17170579389image_2.JPG",
+  "https://gybird.co.ke/site/images/car_images/untitled-design-2026-03-13t163415-081-1773409350.jpg",
+  "https://images.carexpert.com.au/crop/1200/630/cms/v1/media/2022-10-2023-isuzu-d-maxhero-3x2-1-1.jpg",
+  "/images/product/classic.jpg",
+];
+
+
 export const vehiclesCategories = [
-  "Mini",
+  "Premium SUV",
   "Economy",
   "Compact",
+  "Minivan / Passenger Van",
+  "Pickup Truck",
+  "Classic Vehicles",
   "Intermediate / Midsize",
   "Standard",
   "Full-Size",
-  "Premium",
+  "Premium Experience",
   "Luxury / Exotic",
   "Compact SUV",
   "Intermediate SUV",
   "Full-Size SUV",
-  "Minivan / Passenger Van",
-  "Pickup Truck",
   "Convertible",
   "Electric Vehicle (EV)",
 ];

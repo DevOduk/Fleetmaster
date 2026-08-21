@@ -1,4 +1,5 @@
 "use client";
+
 import EditBookingForm from "@/components/bookings/EditBooking";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Button from "@/components/ui/button/Button";

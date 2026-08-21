@@ -190,12 +190,16 @@ const AppHeader: React.FC = () => {
               height={32}
               className="dark:hidden"
               src="./images/logo/logo.svg"
+              sizes="(max-width: 768px) 120px, 154px"
+              priority
               alt=""
             />
             <Image
               width={154}
               height={32}
               className="hidden dark:block"
+              sizes="(max-width: 768px) 120px, 154px"
+              priority
               src="./images/logo/logo-dark.svg"
               alt=""
             />

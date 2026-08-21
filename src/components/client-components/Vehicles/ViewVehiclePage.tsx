@@ -23,10 +23,10 @@ import Input from "@/components/form/input/InputField";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import DeliveryBanner from "@/components/client-components/DeliveryBanner";
-import userVerified from "@/utils/clients/checkverification";
 import { fetchVehicleDetails } from "@/app/actions/vehicles";
 import { fetchBookingsForVehicle } from "@/app/actions/bookings";
 import { syncTimeToDateString } from "../hero/searchform";
+import { userVerified } from "@/utils/clients/checkverification";
 
 interface VehiclePageProps {
   params: Promise<{ vehicleID: string; tenant: string }>;
@@ -440,8 +440,8 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
               <div>
                 <span
                   className={`font-sm mt-2 mb-1 rounded-full px-3 py-1 text-xs ${VehicleDetails?.status === "Available"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-amber-100 text-amber-700"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-amber-100 text-amber-700"
                     }`}
                 >
                   {VehicleDetails?.status}
@@ -525,7 +525,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
               <div>
                 <p className="text-gray-400">Location</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">
-                  {VehicleDetails?.location.title}
+                  {VehicleDetails?.location?.title || 'Loading ...'}
                 </p>
               </div>
 

@@ -11,9 +11,9 @@ const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
 const redis =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
     ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
     : null;
 
 export async function POST(request: Request) {
@@ -38,16 +38,16 @@ export async function POST(request: Request) {
     if (role === "admin") {
       const queryBuilder = targetTenantSlug
         ? supabase
-            .from("fleetmaster_admins")
-            .select(
-              `id, password, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, fleetmaster_tenants!inner(*)`,
-            )
-            .eq("fleetmaster_tenants.slug", targetTenantSlug)
+          .from("fleetmaster_admins")
+          .select(
+            `id, password, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, fleetmaster_tenants!inner(*)`,
+          )
+          .eq("fleetmaster_tenants.slug", targetTenantSlug)
         : supabase
-            .from("fleetmaster_admins")
-            .select(
-              "id, password, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, fleetmaster_tenants(*)",
-            );
+          .from("fleetmaster_admins")
+          .select(
+            "id, password, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, national_id_number, dl_number, fleetmaster_tenants(*)",
+          );
 
       const { data, error } = await queryBuilder
         .eq("email", targetEmail)

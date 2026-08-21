@@ -83,7 +83,8 @@ export default async function AuthLayout({
                           width={231}
                           height={48}
                           src="./images/logo/auth-logo.svg"
-                          alt="Logo"
+                          alt=""
+                          sizes="(max-width: 1024px) 50vw, 33vw"
                         />
                       </Link>
                       <p className="text-left text-sm text-gray-400 dark:text-white/60">

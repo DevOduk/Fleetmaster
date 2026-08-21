@@ -98,7 +98,7 @@ export default function SignInForm({ tenant }: Tenant) {
 
       setIsLoggingIn(false);
       showToast(
-        "Success! Login successful, redirecting in 5 seconds...",
+        "Login successful! Redirecting in 5 seconds...",
         "success",
       );
 
@@ -199,13 +199,13 @@ export default function SignInForm({ tenant }: Tenant) {
                   {errorMessage.includes(
                     "Please verify your email to access your account.",
                   ) && (
-                    <a
-                      href={`/verify-email?v=${btoa(JSON.stringify(verifyData))}`}
-                      className="mt-1 text-xs text-blue-500 underline"
-                    >
-                      Verify Now
-                    </a>
-                  )}
+                      <a
+                        href={`/verify-email?v=${btoa(JSON.stringify(verifyData))}`}
+                        className="mt-1 text-xs text-blue-500 underline"
+                      >
+                        Verify Now
+                      </a>
+                    )}
                 </div>
                 <div>
                   <Label>

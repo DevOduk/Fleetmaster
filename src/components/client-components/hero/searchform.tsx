@@ -13,8 +13,8 @@ import { useFleet } from "@/context/FleetContext";
 import { useRouter } from "next/navigation";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import dayjs from "dayjs";
-import { DefaultCategories } from "../categories";
 import CarModelsByBrand from "@/data/carMakeModels";
+import { vehiclesCategories } from "@/data/globalExports";
 
 interface SearchParams {
   location: string;
@@ -74,7 +74,7 @@ export default function SearchForm({ tenant }: { tenant: any }) {
   const allYards = tenant?.yards?.map((y) => y.title) || [];
 
   const categories = [
-    ...new Set([...allCategories, ...DefaultCategories]),
+    ...new Set([...allCategories, ...vehiclesCategories]),
   ].sort();
   const makes = [...new Set(allMakes)];
 

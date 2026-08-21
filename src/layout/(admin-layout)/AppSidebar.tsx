@@ -523,6 +523,8 @@ const AppSidebar: React.FC = () => {
                   <Image
                     width={154}
                     height={32}
+                    sizes="154px"
+                    priority
                     className="dark:hidden"
                     src="/images/logo/logo_expert.svg"
                     alt=""
@@ -530,6 +532,8 @@ const AppSidebar: React.FC = () => {
                   <Image
                     width={154}
                     height={32}
+                    sizes="154px"
+                    priority
                     className="hidden dark:block"
                     src="/images/logo/logo_expert_dark.svg"
                     alt=""
@@ -540,6 +544,8 @@ const AppSidebar: React.FC = () => {
                   <Image
                     width={154}
                     height={32}
+                    sizes="154px"
+                    priority
                     className="dark:hidden"
                     src="/images/logo/logo_pro.svg"
                     alt=""
@@ -547,6 +553,8 @@ const AppSidebar: React.FC = () => {
                   <Image
                     width={154}
                     height={32}
+                    sizes="154px"
+                    priority
                     className="hidden dark:block"
                     src="/images/logo/logo_pro_dark.svg"
                     alt=""
@@ -557,6 +565,8 @@ const AppSidebar: React.FC = () => {
                   <Image
                     width={154}
                     height={32}
+                    sizes="154px"
+                    priority
                     className="dark:hidden"
                     src="/images/logo/logo.svg"
                     alt=""
@@ -564,6 +574,8 @@ const AppSidebar: React.FC = () => {
                   <Image
                     width={154}
                     height={32}
+                    sizes="154px"
+                    priority
                     className="hidden dark:block"
                     src="/images/logo/logo-dark.svg"
                     alt=""
@@ -577,6 +589,8 @@ const AppSidebar: React.FC = () => {
               alt=""
               width={32}
               height={32}
+              sizes="32px"
+              priority
             />
           )}
         </Link>

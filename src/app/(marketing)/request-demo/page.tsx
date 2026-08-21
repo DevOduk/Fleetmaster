@@ -28,6 +28,7 @@ export default function RequestDemoPage() {
               alt="Product Dashboard Mockup"
               preload
               fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
               style={{ objectFit: 'cover' }}
               className="block w-full rounded rounded-t-xl border-0 object-cover object-top dark:hidden"
             />
@@ -36,6 +37,7 @@ export default function RequestDemoPage() {
               alt="Product Dashboard"
               preload
               fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
               style={{ objectFit: 'cover' }}
               className="hidden w-full rounded rounded-t-xl border-0 object-cover object-top dark:block"
             />

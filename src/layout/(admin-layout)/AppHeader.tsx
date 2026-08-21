@@ -182,6 +182,8 @@ const AppHeader: React.FC = () => {
                     <Image
                       width={154}
                       height={32}
+              sizes="(max-width: 768px) 120px, 154px"
+              priority
                       className="dark:hidden"
                       src="./images/logo/logo_expert.svg"
                       alt=""
@@ -189,6 +191,8 @@ const AppHeader: React.FC = () => {
                     <Image
                       width={154}
                       height={32}
+              sizes="(max-width: 768px) 120px, 154px"
+              priority
                       className="hidden dark:block"
                       src="./images/logo/logo_expert_dark.svg"
                       alt=""
@@ -200,6 +204,8 @@ const AppHeader: React.FC = () => {
                     <Image
                       width={154}
                       height={32}
+              sizes="(max-width: 768px) 120px, 154px"
+              priority
                       className="dark:hidden"
                       src="./images/logo/logo_pro.svg"
                       alt=""
@@ -207,6 +213,8 @@ const AppHeader: React.FC = () => {
                     <Image
                       width={154}
                       height={32}
+              sizes="(max-width: 768px) 120px, 154px"
+              priority
                       className="hidden dark:block"
                       src="./images/logo/logo_pro_dark.svg"
                       alt=""
@@ -217,6 +225,8 @@ const AppHeader: React.FC = () => {
                     <Image
                       width={154}
                       height={32}
+              sizes="(max-width: 768px) 120px, 154px"
+              priority
                       className="dark:hidden"
                       src="/images/logo/logo.svg"
                       alt=""
@@ -224,6 +234,8 @@ const AppHeader: React.FC = () => {
                     <Image
                       width={154}
                       height={32}
+              sizes="(max-width: 768px) 120px, 154px"
+              priority
                       className="hidden dark:block"
                       src="/images/logo/logo-dark.svg"
                       alt=""

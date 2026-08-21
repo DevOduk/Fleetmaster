@@ -1,6 +1,5 @@
 "use client";
 import ViewAllCategories from "@/components/client-components/categories";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Button from "@/components/ui/button/Button";
 import { useTenant } from "@/context/TenantContext";
 import PhoneEnabledOutlinedIcon from "@mui/icons-material/PhoneEnabledOutlined";
@@ -9,6 +8,9 @@ import ViewAllLocations from "@/components/client-components/locations";
 import SecondaryHero from "@/components/marketing-components/SecondaryHero";
 import { ImageList, ImageListItem } from "@mui/material";
 import Link from "next/link";
+import { useFleet } from "@/context/FleetContext";
+import { useMemo } from "react";
+import { defaultVehicleImages } from "@/data/globalExports";
 
 const itemData = [
   {
@@ -63,6 +65,7 @@ const itemData = [
 
 export default function AboutPageContent() {
   const { tenant: tenantData } = useTenant();
+  const { vehicles } = useFleet();
   const pages = [
     {
       label: "Home",
@@ -73,6 +76,10 @@ export default function AboutPageContent() {
       href: "/about",
     },
   ];
+  const images = useMemo(() => {
+    const allImages = vehicles?.map((v) => v.image_url);
+    return [...allImages, ...defaultVehicleImages];
+  }, [vehicles]);
 
   return (
     <div>
@@ -92,8 +99,20 @@ export default function AboutPageContent() {
         <div className="lg:col-span-5">
           <h3 className="text-amber-500">ABOUT US</h3>
           <h2 className="mt-4 mb-3 text-3xl font-bold text-black dark:text-white">
-            Welcome to {tenantData?.name || "CarHire"}
+            Welcome to {tenantData?.name || "our CarHire"}
           </h2>
+
+          <p className="mb-4 max-w-175 text-sm text-gray-500 dark:text-gray-400">
+            {tenantData?.about ? (
+              tenantData.about
+            ) : (
+              <>
+                At {tenantData?.name}, we are passionate about providing
+                exceptional car rental services that exceed our customers'
+                expectations.
+              </>
+            )}
+          </p>
           {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}
           <p className="max-w-175 text-sm text-gray-500 dark:text-gray-400">
             {tenantData.description?.trim() ? (
@@ -131,13 +150,13 @@ export default function AboutPageContent() {
         <h2 className="mt-4 mb-10 text-center text-3xl font-bold text-black dark:text-white">
           View Our Photo Gallery
         </h2>
-        <ImageList variant="masonry" cols={4} gap={8}>
-          {itemData.map((item) => (
-            <ImageListItem key={item.img}>
+        <ImageList className="p pointer-events-none select-none" variant="masonry" cols={4} gap={8}>
+          {images.slice(0, 30).map((item, i) => (
+            <ImageListItem key={i}>
               <img
-                srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                src={`${item.img}?w=248&fit=crop&auto=format`}
-                alt={item.title}
+                srcSet={`${item}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                src={`${item}?w=248&fit=crop&auto=format`}
+                alt={''}
                 loading="lazy"
               />
             </ImageListItem>

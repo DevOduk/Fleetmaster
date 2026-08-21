@@ -24,6 +24,7 @@ export default function Error404() {
           className="dark:hidden"
           width={472}
           height={152}
+          sizes="(max-width: 640px) 100vw, 472px"
         />
         <Image
           src="/images/error/404-dark.svg"
@@ -31,6 +32,7 @@ export default function Error404() {
           className="hidden dark:block"
           width={472}
           height={152}
+          sizes="(max-width: 640px) 100vw, 472px"
         />
 
         <p className="mt-10 mb-6 text-base text-gray-700 sm:text-lg dark:text-gray-400">

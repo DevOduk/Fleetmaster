@@ -8,18 +8,23 @@ import mixPlugin from "colord/plugins/mix";
 extend([mixPlugin]);
 
 export function ThemeInitializer({ defaultColor = "#465fff" }) {
-  useEffect(() => {
-    // 1. Get from localStorage (or fetch from your user/company API)
+  // Run this synchronously on client load immediately
+  if (typeof window !== "undefined") {
     const savedColor = localStorage.getItem("brand-color") || defaultColor;
+    applyThemeVariables(savedColor);
+  }
 
-    // 2. Apply variables
+  useEffect(() => {
+    const savedColor = localStorage.getItem("brand-color") || defaultColor;
     applyThemeVariables(savedColor);
   }, [defaultColor]);
 
-  return null; // This component renders nothing
+  return null;
 }
 
 export function applyThemeVariables(primaryColor: string) {
+  if (typeof window === "undefined") return;
+  
   const root = document.documentElement;
   const base = colord(primaryColor);
 
@@ -29,7 +34,7 @@ export function applyThemeVariables(primaryColor: string) {
     "--color-brand-200": base.lighten(0.25).desaturate(0.1).toHex(),
     "--color-brand-300": base.lighten(0.15).toHex(),
     "--color-brand-400": base.lighten(0.07).toHex(),
-    "--color-brand-500": base.toHex(), // Primary
+    "--color-brand-500": base.toHex(),
     "--color-brand-600": base.darken(0.08).toHex(),
     "--color-brand-700": base.darken(0.16).toHex(),
     "--color-brand-800": base.darken(0.24).toHex(),

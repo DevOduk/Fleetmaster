@@ -165,7 +165,7 @@ export default function VehiclesTable({
                           </div>
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {vehicle.location}
+                          {vehicle.location?.title || 'N/A'}
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                           {vehicle.category}

@@ -56,7 +56,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
       }
     });
   }, [loading, BookingID]);
-
+console.log('booking',bookingDetails?.tenant_id,'vs profile: ', profile?.tenant_id)
   useEffect(() => {
     if (!bookingDetails) return;
 
@@ -211,8 +211,8 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
               <div className="mt-2 mb-4">
                 <img
                   className="h-45 w-full rounded-lg object-cover"
-                  src={bookingDetails?.vehicle?.image_url}
-                  alt={bookingDetails?.vehicle?.make}
+                  src={bookingDetails?.vehicleDetails?.image_url}
+                  alt={bookingDetails?.vehicleDetails?.make}
                 />
               </div>
               <div className="">
@@ -224,12 +224,12 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                   type="text"
                   value={
                     (profile.role !== "Client" &&
-                      bookingDetails?.vehicle?.license_plate + ": ") +
-                    bookingDetails?.vehicle?.year +
+                      bookingDetails?.vehicleDetails?.license_plate + ": ") +
+                    bookingDetails?.vehicleDetails?.year +
                     " " +
-                    bookingDetails?.vehicle?.make +
+                    bookingDetails?.vehicleDetails?.make +
                     " " +
-                    bookingDetails?.vehicle?.model
+                    bookingDetails?.vehicleDetails?.model
                   }
                   disabled
                   className="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -354,7 +354,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
               {bookingDetails?.id && (
                 <div className="text-sm text-green-500">
                   Rental period set at a minimum of{" "}
-                  {bookingDetails?.vehicle?.min_rental_days} Days
+                  {bookingDetails?.vehicleDetails?.min_rental_days} Days
                 </div>
               )}
             </div>
@@ -449,7 +449,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                     <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
                     <div className="text-right font-medium text-gray-800 dark:text-gray-200">
                       Ksh.{" "}
-                      {bookingDetails?.vehicle?.daily_rate.toLocaleString()}
+                      {bookingDetails?.vehicleDetails?.daily_rate?.toLocaleString()}
                     </div>
 
                     {/* Row 3 */}
@@ -478,7 +478,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                     <div className="text-right font-medium text-gray-800 dark:text-gray-200">
                       Ksh.{" "}
                       {(
-                        bookingDetails?.vehicle?.daily_rate *
+                        bookingDetails?.vehicleDetails?.daily_rate *
                         bookingDetails?.rental_days *
                         0.16
                       ).toLocaleString()}

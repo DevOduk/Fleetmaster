@@ -317,6 +317,7 @@ export default function Home() {
                     alt={feature.badgeText}
                     preload
                     fill
+                    sizes="(min-width: 768px) 50vw, 100vw"
                     style={{ objectFit: 'cover' }}
                     className="aspect-3/2 w-full bg-gray-200 object-cover"
                   />
@@ -425,6 +426,7 @@ export default function Home() {
             alt="What Next ..."
             preload
             fill
+            sizes="(min-width: 768px) 50vw, 100vw"
             style={{ objectFit: 'cover' }}
             src={
               "/images/user/Professional_business_concept_image_showing_a_Flor-1765206733138.webp"

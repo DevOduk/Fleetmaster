@@ -7,8 +7,8 @@ import { Avatar } from "@mui/material";
 import Badge from "@/components/ui/badge/Badge";
 import { useUser } from "@/context/UserContext";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
-import userVerified from "@/utils/clients/checkverification";
 import { usePathname, useSearchParams } from "next/navigation";
+import { userVerified } from "@/utils/clients/checkverification";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);

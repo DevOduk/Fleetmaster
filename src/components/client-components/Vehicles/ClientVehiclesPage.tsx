@@ -55,12 +55,12 @@ const resetFiltersStates = {
   category: "",
   make: "",
   model: "",
-  minYear: 0,
+  minYear: 1950,
   maxYear: new Date().getFullYear(),
   minPrice: 0,
   maxPrice: 100000,
   driverType: "All",
-  location: defaultLocation,
+  location: defaultLocation.title,
   start: dayjs().add(1, "day").hour(9).minute(0).second(0).millisecond(0).toDate().toString(),
   end: dayjs().add(3, "day").hour(9).minute(0).second(0).millisecond(0).toDate().toString(),
 };
@@ -81,7 +81,7 @@ export default function ClientVehiclesPage() {
     category: searchParams.get("category") || "",
     make: searchParams.get("make") || "",
     model: searchParams.get("model") || "",
-    minYear: parseInt(searchParams.get("minYear") || "0"),
+    minYear: parseInt(searchParams.get("minYear") || "1950"),
     maxYear: parseInt(searchParams.get("maxYear") || "2026"),
     minPrice: parseInt(searchParams.get("minPrice") || "0"),
     maxPrice: parseInt(searchParams.get("maxPrice") || "100000"),
@@ -229,7 +229,7 @@ export default function ClientVehiclesPage() {
     },
     0,
   );
-
+  console.log(filters)
   return (
     <div className="container m-auto min-h-screen">
       <PageBreadcrumb pageTitle="Vehicles" />
@@ -346,7 +346,7 @@ export default function ClientVehiclesPage() {
                   background: "linear-gradient(to top, black, transparent)",
                 }}
               >
-                {filters.location || "Countrywide"}
+                {filters?.location || "Countrywide"}
                 <Box
                   onClick={openModal}
                   className="flex cursor-pointer items-end gap-2 rounded-lg bg-gray-900/40 p-1 px-2 text-sm font-medium text-green-400 bg-blend-darken"
@@ -355,24 +355,17 @@ export default function ClientVehiclesPage() {
                   <PencilIcon /> Change
                 </Box>
               </Box>
-              <Image
-                src={
-                  locations?.find((l) => l.title === filters.location)
-                    ?.image_url ||
-                  "https://images.goway.com/production/hero_image/Amboseli_AdobeStock_568345335.jpeg?VersionId=sEzQrGblBaQDhMGlcsN_UCovnYeM0tUf"
-                }
+              <img
+                src={locations?.find((l) => l.title === filters.location)?.image_url}
                 alt={''}
-                preload
-                fill
                 style={{ objectFit: 'cover' }}
-                className="rounded-xl object-cover bg-white"
+                className="rounded-xl w-full h-full object-cover bg-white"
               />
             </div>
 
             <Modal
               isOpen={isOpen}
               onClose={() => {
-                setFilters({ ...filters, location: defaultLocation.title });
                 closeModal();
               }}
               className="max-w-150 p-5 lg:p-10"
@@ -413,24 +406,16 @@ export default function ClientVehiclesPage() {
                     </Box>
                     <img
                       src={l?.image_url}
-                      alt={l.title}
+                      alt={''}
+                      loading="eager"
                       className="h-35 w-full rounded-xl object-cover"
                     />
                   </div>
                 ))}
               </div>
               <div className="mt-8 flex w-full items-center justify-end gap-3">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    closeModal();
-                  }}
-                >
-                  Close
-                </Button>
-                <Button size="sm" onClick={handleSave}>
-                  Save Changes
+                 <Button size="sm" onClick={handleSave}>
+                  Apply Changes
                 </Button>
               </div>
             </Modal>
@@ -549,7 +534,7 @@ export default function ClientVehiclesPage() {
                       )}
                       placeholder="Min Year"
                       onChange={(e) =>
-                        setFilters({ ...filters, minYear: parseInt(e) || 0 })
+                        setFilters({ ...filters, minYear: parseInt(e) || 1950 })
                       }
                     />
                     <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
@@ -560,7 +545,7 @@ export default function ClientVehiclesPage() {
                 <div className="w-full">
                   <div className="relative">
                     <Select
-                      options={yearsOfManufacture(filters.minYear)
+                      options={yearsOfManufacture(filters?.minYear)
                         .sort((a, b) => b - a)
                         .map((y) => {
                           return {

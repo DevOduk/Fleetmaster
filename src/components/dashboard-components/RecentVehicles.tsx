@@ -74,7 +74,7 @@ export default function RecentVehiscles() {
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
             {loading ? (
               <>
-                {[...Array(4)].map((i) => (
+                {[...Array(4)].map((_,i) => (
                   <TableRow key={i}>
                     <TableCell className="w-full py-2" colSpan={4}>
                       <div className="mb-2 h-12 animate-pulse rounded bg-gray-300 text-center dark:bg-gray-600"></div>

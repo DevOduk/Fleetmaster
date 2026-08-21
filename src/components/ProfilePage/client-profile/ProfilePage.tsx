@@ -20,6 +20,8 @@ import {
   verifyPhoneOTP,
 } from "@/app/actions/verification/phone";
 import { retryDuration } from "@/data/globalExports";
+import LoadingInfo from "@/components/loading/LoadingInfo";
+import Alert from "@/components/ui/alert/Alert";
 
 export const hex = (id: string): string => {
   // 1. Cross-runtime conversion to standard hex format
@@ -154,11 +156,8 @@ function ProfilePage() {
   );
 
   if (loading) {
-    return (
-      <div className="container mx-auto min-h-[80vh] max-w-6xl p-5 text-gray-400">
-        Loading profile ...
-      </div>
-    );
+    return (<LoadingInfo />);
+
   } else if (!loading && !profile) {
     window.location.href = `/signin?r=${currentPageUrl}`;
     return (
@@ -169,7 +168,7 @@ function ProfilePage() {
   }
 
   return (
-    <div className="container m-auto mt-6 mb-6 min-h-screen max-w-6xl">
+    <div className="container m-auto max-w-6xl">
       <Modal
         isOpen={isOpen}
         onClose={closeModal}
@@ -466,9 +465,9 @@ function ProfilePage() {
               value={
                 profile?.dob
                   ? new Date(profile?.dob).toLocaleDateString() +
-                    ", " +
-                    getAge(profile?.dob) +
-                    " Yrs"
+                  ", " +
+                  getAge(profile?.dob) +
+                  " Yrs"
                   : "N/A"
               }
             />
@@ -513,12 +512,16 @@ function ProfilePage() {
               value={profile?.dl_number || "8345 ..."}
               verified={profile?.verification_status?.driving_license}
             />
-            <DataViewSchema
+            {/* <DataViewSchema
               label="KRA PIN"
               value={profile?.kra_pin_number || "A105 ..."}
               verified={profile?.verification_status?.kra_pin}
-            />
+            /> */}
           </div>
+          
+                    {
+                      profile.verification_error && <Alert className='mt-3!' variant="error" title="Document verification failed!" message={profile.verification_error} /> 
+                    }
         </div>
       </div>
     </div>
@@ -551,8 +554,7 @@ export function DataViewSchema({
         <>
           <p className="flex items-center justify-between gap-5 text-sm font-medium text-gray-800 dark:text-white/90">
             {label.includes("National") ||
-            label.includes("License") ||
-            label.includes("KRA") ? (
+              label.includes("License") ? (
               <span className="flex items-center gap-2">
                 <DownloadIcon style={{ width: 28, height: 28 }} /> {value}
               </span>

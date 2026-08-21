@@ -2,15 +2,14 @@
 
 import { useFleet } from "@/context/FleetContext";
 import { Box } from "@mui/material";
-import { defaultVehicleImages } from "./hero/slider";
 import Link from "next/link";
 import Image from "next/image";
+import { defaultVehicleImages, vehiclesCategories } from "@/data/globalExports";
 
 interface Tenant {
   tenantData: any;
 }
 
-export const DefaultCategories = ["Premium SUV", "Economy", "Compact"];
 
 export default function ViewAllCategories({ tenantData }: Tenant) {
   const { vehicles } = useFleet();
@@ -31,7 +30,7 @@ export default function ViewAllCategories({ tenantData }: Tenant) {
 
   const fallbackCategories = defaultVehicleImages
     .map((image, i) => ({
-      category: DefaultCategories[i],
+      category: vehiclesCategories[i],
       image_url: image,
     }))
     .filter((item) => !existingCategoryNames.has(item.category));
@@ -64,6 +63,7 @@ export default function ViewAllCategories({ tenantData }: Tenant) {
                 alt={''}
                 preload
                 fill
+                sizes="(max-width: 1024px) 50vw, 33vw"
                 style={{ objectFit: 'cover' }}
                 className="rounded-xl object-cover bg-white"
               />

@@ -1,16 +1,12 @@
 "use client";
+
 import { useFleet } from "@/context/FleetContext";
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { clearTimeout } from "timers";
 import Image from "next/image";
+import { defaultVehicleImages } from "@/data/globalExports";
 
-export const defaultVehicleImages = [
-  "https://www.toyotawalton.com/wp-content/uploads/2025/01/Toyota-Land-Cruiser-Prado-used-vehicle-Toyota-walton.webp",
-  "https://images.kobemotor.com/images/v70245-yi003.jpeg",
-  "https://www.autocraftjapan.com/adminPanel/uploads/avis/veh_images/17170579389image_2.JPG",
-];
 
 export default function HeroSlider() {
   const { vehicles, loading: loadingVehicles } = useFleet();
@@ -144,7 +140,7 @@ export default function HeroSlider() {
               alt={``}
               src={img}
               fill
-              sizes="100vw"
+                sizes="(max-width: 1024px) 50vw, 33vw"
               style={{ filter: "brightness(70%)" }}
               priority={i === 0}
             />

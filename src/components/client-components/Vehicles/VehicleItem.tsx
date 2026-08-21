@@ -78,6 +78,7 @@ function VehicleItem({ VehicleDetails, isBooked, filters }: VehicleDetails) {
             alt={``}
             preload
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             style={{ objectFit: 'cover' }}
             className="rounded-xl rounded-b-none bg-white object-cover"
           />
@@ -85,9 +86,10 @@ function VehicleItem({ VehicleDetails, isBooked, filters }: VehicleDetails) {
       </Link>
 
       <div className="px-3 pb-4">
-        <h4 className="mb-1 font-bold text-black dark:text-white">
+        <h4 className="mb-1 font-bold text-black dark:text-white truncate">
           {VehicleDetails.year} {VehicleDetails.make}{" "}
           {VehicleDetails.model}{" "}
+          {VehicleDetails.category}{" "}
         </h4>
         <div className="mb-1 flex flex-wrap items-center gap-2 text-sm">
           <div

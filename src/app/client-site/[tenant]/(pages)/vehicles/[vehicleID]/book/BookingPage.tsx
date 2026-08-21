@@ -42,10 +42,10 @@ import { ArrowRightIcon } from "@/icons";
 import Alert from "@/components/ui/alert/Alert";
 import { createPayment } from "@/app/actions/payments";
 import DeliveryBanner from "@/components/client-components/DeliveryBanner";
-import userVerified from "@/utils/clients/checkverification";
 import { mpesaPollingIterval } from "@/components/company-profile/CompanySubscriptionsCard";
 import { createNewBooking } from "@/app/actions/bookings";
 import Image from "next/image";
+import { userVerified } from "@/utils/clients/checkverification";
 
 dayjs.extend(isBetween);
 
@@ -576,6 +576,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                 alt={""}
                 preload
                 fill
+                sizes="(max-width: 1024px) 50vw, 33vw"
                 style={{ objectFit: 'cover' }}
                 className="relative w-full object-cover object-center"
               />

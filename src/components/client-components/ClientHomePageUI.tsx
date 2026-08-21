@@ -10,6 +10,7 @@ import ViewAllLocations from "@/components/client-components/locations";
 import ViewAllCategories from "@/components/client-components/categories";
 import ViewAllSnapshots from "@/components/client-components/Vehicles/viewallvehiclesSnapshot";
 import { useTenant } from "@/context/TenantContext";
+import Link from "next/link";
 
 export default function ClientHomePageUI() {
   const { tenant: tenantData } = useTenant();
@@ -44,16 +45,15 @@ export default function ClientHomePageUI() {
               <>
                 At {tenantData?.name}, we are passionate about providing
                 exceptional car rental services that exceed our customers'
-                expectations. With a commitment to quality, reliability, and
-                customer satisfaction, we strive to be the preferred choice for
-                all your car rental needs.
+                expectations.
               </>
             )}
           </p>
-
-          <Button variant="primary" size="sm" className="ml-auto px-8! py-2!">
-            Read More <ChevronRightIcon />
-          </Button>
+          <Link href={'/about'}>
+            <Button variant="primary" size="sm" className="ml-auto px-8! py-2!">
+              Read More <ChevronRightIcon />
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -70,13 +70,15 @@ export default function ClientHomePageUI() {
         <div className="container m-auto mt-5">
           <ViewAllSnapshots tenant={tenantData?.slug} />
 
-          <div className="flex items-center">
+          <div className="flex items-center justify-between">
             <p className="text-gray-500 dark:text-gray-500">
               View our fleet across the country ...
             </p>
-            <Button variant="primary" size="sm" className="ml-auto px-8! py-2!">
-              View All <ChevronRightIcon />
-            </Button>
+            <Link href={'/vehicles'}>
+              <Button variant="primary" size="sm" className="ml-auto px-8! py-2!">
+                View All <ChevronRightIcon />
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

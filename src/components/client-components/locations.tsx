@@ -8,35 +8,14 @@ import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import LuggageOutlinedIcon from "@mui/icons-material/LuggageOutlined";
 import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined";
 import Button from "../ui/button/Button";
-import { defaultVehicleImages } from "./hero/slider";
 import Image from "next/image";
+import { defaultVehicleImages } from "@/data/globalExports";
+import Link from "next/link";
 
 interface Tenant {
   tenantData: any;
 }
-const allYards = [
-  {
-    title: "Nairabi Yard, Kenya.",
-    description: "This is the location of our yard in Kisumu.",
-    image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Kenyatta_International_Convention_Centre_02.jpg/1920px-Kenyatta_International_Convention_Centre_02.jpg",
-    location: [-1.286389, 36.817223],
-  },
-  {
-    title: "Kisumu Yard, Kenya.",
-    description: "This is the location of our main yard in Nairobi.",
-    image_url:
-      "https://africanspicesafaris.com/wp-content/uploads/2020/06/kisumu-city-tours-kenya-1200x900.jpg",
-    location: [-0.091702, 34.767956],
-  },
-  {
-    title: "Mombasa Yard, Kenya.",
-    description: "This is the location of our yard in Mombasa.",
-    image_url:
-      "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/09/b6/49/0f.jpg",
-    location: [-4.04374, 39.658871],
-  },
-];
+
 
 export default function ViewAllLocations({ tenantData }: Tenant) {
   return (
@@ -46,35 +25,37 @@ export default function ViewAllLocations({ tenantData }: Tenant) {
       className="container m-auto mt-5 mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3"
     >
       {tenantData?.yards?.length > 0
-        ? tenantData?.yards?.slice(0, 6).map((VehicleDetails) => (
-          <div
-            key={VehicleDetails.id}
-            className="mb-3 rounded-2xl bg-gray-500/3 shadow dark:bg-gray-500/10"
-          >
-            <div className="relative aspect-video w-full">
-              <Box
-                className="flex h-full w-full z-2 items-end gap-2 rounded-xl p-3 font-bold text-white bg-blend-darken"
-                sx={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  background: "linear-gradient(to top, black, transparent)",
-                }}
-              >
-                {VehicleDetails.title}
-              </Box>
-              <Image
-                src={VehicleDetails.image_url}
-                alt={``}
-                preload
-                fill
-                style={{ objectFit: 'cover' }}
-                className=" rounded-xl object-cover"
-              />
+        ? tenantData?.yards?.slice(0, 6).map((VehicleDetails, i) => (
+          <Link key={i} href={`/vehicles?location=${(VehicleDetails.title)}`}>
+            <div
+              className="mb-3 rounded-2xl bg-gray-500/3 shadow dark:bg-gray-500/10"
+            >
+              <div className="relative aspect-video w-full">
+                <Box
+                  className="flex h-full w-full z-2 items-end gap-2 rounded-xl p-3 font-bold text-white bg-blend-darken"
+                  sx={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    background: "linear-gradient(to top, black, transparent)",
+                  }}
+                >
+                  {VehicleDetails.title}
+                </Box>
+                <Image
+                  src={VehicleDetails.image_url}
+                  alt={``}
+                  preload
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 33vw"
+                  style={{ objectFit: 'cover' }}
+                  className=" rounded-xl object-cover"
+                />
+              </div>
             </div>
-          </div>
+          </Link>
         ))
-        : defaultVehicleImages.map((_, i) => (
+        : defaultVehicleImages.slice(0, 3).map((_, i) => (
           <div
             key={i}
             className="mb-3 aspect-video relative overflow-hidden rounded-2xl bg-gray-300 shadow dark:bg-gray-700"
@@ -84,8 +65,9 @@ export default function ViewAllLocations({ tenantData }: Tenant) {
               alt=""
               preload
               fill
+              sizes="(max-width: 1024px) 50vw, 33vw"
               style={{ objectFit: 'cover' }}
-              className="h-full w-full object-cover object-center"
+              className="h-full w-full object-cover object-center brightness-70"
             />
           </div>
         ))}

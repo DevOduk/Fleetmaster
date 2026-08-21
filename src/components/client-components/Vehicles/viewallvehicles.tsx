@@ -274,12 +274,29 @@ export default function ViewAllVehicles({
         </div>
       </div>
 
+
       <div
         key={tenant}
         data-tenant={tenant}
         className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
       >
         <DeliveryBanner />
+
+
+        {/* TOP Pagination Controls Visibility Rule */}
+        {!isShowingLoaders && (
+          <div className="mb-3 flex items-center justify-between border-b border-gray-100 py-5 dark:border-gray-800 col-span-full">
+            <span className="text-sm text-gray-800 dark:text-white">
+              Showing {startIndex} to {endIndex} of {sortedVehicles.length}{" "}
+              results
+            </span>
+            <Pagination
+              onPageChange={handlePageChange}
+              currentPage={activePage}
+              totalPages={totalPages}
+            />
+          </div>
+        )}
 
         {isShowingLoaders ? (
           Array.from({ length: 6 }).map((_, index) => (

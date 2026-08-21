@@ -42,12 +42,12 @@ import { createPayment } from "@/app/actions/payments";
 import { mpesaPollingIterval } from "../company-profile/CompanySubscriptionsCard";
 import ComponentCard from "../common/ComponentCard";
 import Rating from "@mui/material/Rating";
-import { submitUserFeedback } from "@/app/actions/feedback";
+import { submitUserFeedback } from "@/app/actions/feedbacks";
 import { Modal } from "@/components/ui/modal";
 import Select from "../form/Select";
 import SimpleLoader from "../ui/loading/simpleLoader";
 import Link from "next/link";
-import { useAdminBooking } from "@/context/AdminBookingContext";
+// import { useAdminBooking } from "@/context/AdminBookingContext";
 
 const clientReasons = [
   "Change of plans or preferences",
@@ -132,7 +132,7 @@ function formatDuration(ms: number): string {
 }
 
 export default function ViewBooking({ BookingID }: { BookingID: number }) {
-  document.title = "Edit Booking " + BookingID;
+  document.title = "Edit Booking #" + BookingID;
   const { loading, profile } = useUser();
   const [eventStartDate, setEventStartDate] = useState(
     new Date().toISOString().split("T")[0],
@@ -161,7 +161,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
   const { isOpen, openModal: openCancelModal, closeModal } = useModal();
   const [cancellation_reason, setCancellation_reason] = useState("");
   const [cancelEmail, setCancelEmail] = useState("");
-  const { reloadBookings } = useAdminBooking();
+  // const { reloadBookings } = useAdminBooking();
 
   useEffect(() => {
     if (loading) return;
@@ -206,6 +206,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
     return () => clearInterval(int);
   }, [bookingDetails]); // Added dependency to re-run if details change
 
+  // Handle Form Submission
   const handleSubmit = async () => {
     // 1. Guard check: make sure description text exists
     if (!description.trim()) {
@@ -239,6 +240,8 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
         category,
         rating: rating || 5,
         feedback_text: description,
+        is_feedback: false,
+        booking_id: BookingID,
       },
       {
         id: profile.id,
@@ -250,6 +253,12 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
     setIsSubmitting(false);
 
     if (result.success) {
+      setBookingDetails((prev) => ({
+        ...prev,
+        reviewed: true,
+        reviewed_by: profile?.id,
+      }));
+
       showToast("Your feedback has been sent successfully.", "success");
       setStatusMessage({
         type: "success",
@@ -261,7 +270,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
       showToast("Failed to submit feedback.", "error");
       setStatusMessage({
         type: "error",
-        text: result.error || "Failed to submit feedback.",
+        text: result.error.message || "Failed to submit feedback.",
       });
     }
   };
@@ -297,7 +306,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
 
     return days;
   }, [bookingDetails, newBookingDetails]);
-console.log('bookingDetails: ',bookingDetails)
+
   const grossSubTotal = useMemo(() => {
     return bookingDetails?.vehicleDetails?.daily_rate * dayGap || 0;
   }, [bookingDetails, newBookingDetails]);
@@ -361,7 +370,7 @@ console.log('bookingDetails: ',bookingDetails)
       setNewBookingDetails((prev) => ({ ...prev, booking_status: status }));
       setBookingDetails((prev) => ({ ...prev, booking_status: status }));
 
-      reloadBookings(); // <-- Trigger reload of bookings in context to reflect the updated status
+      // reloadBookings(); // <-- Trigger reload of bookings in context to reflect the updated status
     } else {
       console.log(response.error);
       showToast("Could not update booking status. Try again later!", "error");
@@ -388,6 +397,14 @@ console.log('bookingDetails: ',bookingDetails)
     const status = bookingDetails?.booking_status;
 
     return date.isAfter(start) && status === "Active";
+  })();
+
+  const isReviewed = (() => {
+    const reviewed = (bookingDetails?.reviewed);
+    const reviewedByUser = (bookingDetails?.reviewed_by === profile?.id);
+
+    // check if the booking has been reviewed and if it is the user who reviewed if both true then show revied and dont show feedback ui else show 
+    return (reviewed && reviewedByUser);
   })();
 
   const isCompleted = (() => {
@@ -573,7 +590,7 @@ console.log('bookingDetails: ',bookingDetails)
                 ...newBookingDetails,
                 rental_days: bookingDetails.rental_days + dayGap,
               });
-              reloadBookings();
+              // reloadBookings();
 
               const newPayment = {
                 tenant_id: profile?.tenant_id,
@@ -823,6 +840,7 @@ console.log('bookingDetails: ',bookingDetails)
             >
               {timerString}
             </Button>
+
             {bookingDetails?.booking_status.toLowerCase() === "reserved" &&
               new Date().getTime() >
               new Date(bookingDetails.created_at).getTime() +
@@ -932,6 +950,7 @@ console.log('bookingDetails: ',bookingDetails)
                                 type="radio"
                                 name="event-level"
                                 value={key}
+                                disabled={isEnded || isCancelled || isCompleted}
                                 id={`modal${key}`}
                                 checked={newBookingDetails.priority === key}
                                 onChange={() =>
@@ -944,8 +963,8 @@ console.log('bookingDetails: ',bookingDetails)
                               <span className="box mr-2 flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 dark:border-gray-700">
                                 <span
                                   className={`h-2 w-2 rounded-full bg-white ${newBookingDetails.priority === key
-                                      ? "block"
-                                      : "hidden"
+                                    ? "block"
+                                    : "hidden"
                                     }`}
                                 ></span>
                               </span>
@@ -1157,10 +1176,10 @@ console.log('bookingDetails: ',bookingDetails)
 
           {/* ================= RIGHT SIDE: INVOICE & INTASEND GATEWAY (col-span-5) ================= */}
           <div className="col-span-12 space-y-6 xl:col-span-5">
-            {isCompleted || isCancelled ? (
+            {!isReviewed ? ((isCompleted || isCancelled) ? (
               <ComponentCard title="Leave A Review">
                 <p className="text-theme-sm mb-4 font-medium text-gray-800 dark:text-white/90">
-                  This rental ended or was cancelled. How would you recommend
+                  This rental was completed or cancelled. How would you recommend
                   this {profile.role === "Client" ? "Company" : "Client"} on a
                   scale of 1 to 10?
                 </p>
@@ -1220,8 +1239,8 @@ console.log('bookingDetails: ',bookingDetails)
                   {statusMessage && (
                     <div
                       className={`text-theme-sm rounded-lg p-3 ${statusMessage.type === "success"
-                          ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
-                          : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                        ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                        : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
                         }`}
                     >
                       {statusMessage.text}
@@ -1445,8 +1464,8 @@ console.log('bookingDetails: ',bookingDetails)
                     <div
                       onClick={() => setPaymentMethod("m-pesa")}
                       className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${paymentMethod === "m-pesa"
-                          ? "border-brand-500 bg-brand-50/5"
-                          : "border-gray-200 dark:border-gray-800"
+                        ? "border-brand-500 bg-brand-50/5"
+                        : "border-gray-200 dark:border-gray-800"
                         }`}
                     >
                       <FormControlLabel
@@ -1470,8 +1489,8 @@ console.log('bookingDetails: ',bookingDetails)
                     <div
                       onClick={() => setPaymentMethod("card")}
                       className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${paymentMethod === "card"
-                          ? "border-brand-500 bg-brand-50/5"
-                          : "border-gray-200 dark:border-gray-800"
+                        ? "border-brand-500 bg-brand-50/5"
+                        : "border-gray-200 dark:border-gray-800"
                         }`}
                     >
                       <FormControlLabel
@@ -1712,6 +1731,19 @@ console.log('bookingDetails: ',bookingDetails)
                   </Button>
                 </div>
               </div>
+            )) : (
+              <>
+                <Alert title="Review Submitted" variant="success" message="Your review has been successfully submitted! Thank you for choosing us. We look forward to working with you again." />
+                <Link href={'/vehicles'}>
+                  <Button
+                    className="w-full mt-3"
+                    variant="primary"
+                    size="sm"
+                  >
+                    Find more vehicles
+                  </Button>
+                </Link>
+              </>
             )}
           </div>
         </div>

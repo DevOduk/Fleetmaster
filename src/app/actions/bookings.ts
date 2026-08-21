@@ -37,11 +37,10 @@ async function clearBookingCache({
     // Clear global list
     pipeline.del("bookings:all");
 
-    // Clear target booking ID if provided
-    if (bookingId) pipeline.del(`booking:id:${bookingId}`);
-
     // Clear tenant maps if provided
     if (tenantId) {
+      pipeline.del(`booking:id:${bookingId}`);
+      pipeline.del(`booking:id:${bookingId}:tenant:${tenantId}`);
       pipeline.del(`bookings:tenant:${tenantId}`);
       pipeline.del(`bookings:admin:${tenantId}`);
     }
@@ -118,6 +117,7 @@ export async function fetchBookingDetails(id: number, tenantID: string) {
     .from("fleetmaster_bookings")
     .select(`*, vehicleDetails:fleetmaster_vehicles(*)`)
     .eq("id", id)
+    .eq("tenant_id", tenantID)
     .single();
 
   if (!error && data) {

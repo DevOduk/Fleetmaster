@@ -81,20 +81,19 @@ export async function GET(request: Request) {
           ? "fleetmaster_admins"
           : "fleetmaster_clients";
 
+      const profileFields = `id, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob${normalizedType === "client" ? ", national_id_number, dl_number, verification_error, submitted_document, onboarded" : ""
+        }, fleetmaster_tenants(*)`;
+
       const queryBuilder = decoded.tenant_id
         ? supabase
-            .from(tableName)
-            .select(
-              `id, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, fleetmaster_tenants(*)`,
-            )
-            .eq("id", decoded.id)
-            .eq("tenant_id", decoded.tenant_id)
+          .from(tableName)
+          .select(profileFields)
+          .eq("id", decoded.id)
+          .eq("tenant_id", decoded.tenant_id)
         : supabase
-            .from(tableName)
-            .select(
-              `id, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, fleetmaster_tenants(*)`,
-            )
-            .eq("id", decoded.id);
+          .from(tableName)
+          .select(profileFields)
+          .eq("id", decoded.id);
 
       const { data, error } = await queryBuilder.maybeSingle();
 

@@ -4,16 +4,14 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { useUser } from "@/context/UserContext";
 import UserAddressCard from "../admin-profile/UserAddressCard";
 import UserMetaCard from "../admin-profile/UserMetaCard";
+import LoadingInfo from "@/components/loading/LoadingInfo";
 
 function ProfilePage() {
   const { profile, loading } = useUser();
 
   if (loading) {
-    return (
-      <div className="container mx-auto min-h-[80vh] p-5 text-gray-400">
-        Loading profile ...
-      </div>
-    );
+    return (<LoadingInfo />);
+
   } else if (!profile) {
     window.location.href = "/signin";
     return (

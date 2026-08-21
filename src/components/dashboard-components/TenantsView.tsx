@@ -95,7 +95,7 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
 
   const indexStart = (activePage - 1) * itemsPerPage;
   const indexEnd = indexStart + itemsPerPage;
-  const paginatedVehicles = initialTenants.slice(indexStart, indexEnd);
+  const paginatedTenants = initialTenants.slice(indexStart, indexEnd);
 
   const startIndex = initialTenants.length === 0 ? 0 : indexStart + 1;
   const endIndex = Math.min(activePage * itemsPerPage, initialTenants.length);
@@ -226,110 +226,109 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
                     </TableCell>
                   </TableRow>
                 ) : // 3. Loop through your live initialTenants data dynamically
-                initialTenants.slice(startIndex - 1, endIndex).length > 0 ? (
-                  initialTenants
-                    .slice(startIndex - 1, endIndex)
-                    .map((tenant, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="px-5 py-4 text-start sm:px-6">
-                          <div className="flex min-w-45 items-center gap-3">
-                            <Avatar
-                              className="object-fit-cover w-25 border object-center"
-                              style={{
-                                objectFit: "cover",
-                                objectPosition: "center",
-                              }}
-                              src={tenant.tenant_logo || undefined}
-                            />
-                            <div>
-                              <span className="text-theme-sm block font-medium text-gray-800 uppercase dark:text-white/90">
-                                {tenant.slug || "N/A"}
-                              </span>
-                              <span className="text-theme-xs block pt-2 text-nowrap text-gray-500 dark:text-gray-400">
-                                {tenant.name}
-                              </span>
+                  paginatedTenants.length > 0 ? (
+                    paginatedTenants
+                      .map((tenant, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="px-5 py-4 text-start sm:px-6">
+                            <div className="flex min-w-45 items-center gap-3">
+                              <Avatar
+                                className="object-fit-cover w-25 border object-center"
+                                style={{
+                                  objectFit: "cover",
+                                  objectPosition: "center",
+                                }}
+                                src={tenant.tenant_logo || undefined}
+                              />
+                              <div>
+                                <span className="text-theme-sm block font-medium text-gray-800 uppercase dark:text-white/90">
+                                  {tenant.slug || "N/A"}
+                                </span>
+                                <span className="text-theme-xs block pt-2 text-nowrap text-gray-500 dark:text-gray-400">
+                                  {tenant.name}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-theme-sm max-w-90 min-w-45 truncate px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {tenant.about || "No bio available"}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {tenant.slug ? (
-                            <a
-                              target="_blank"
-                              className="text-brand-500 text-sm hover:underline"
-                              href={`https://${tenant.slug}.fleetmaster.co.ke`}
+                          </TableCell>
+                          <TableCell className="text-theme-sm max-w-90 min-w-45 truncate px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {tenant.about || "No bio available"}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {tenant.slug ? (
+                              <a
+                                target="_blank"
+                                className="text-brand-500 text-sm hover:underline"
+                                href={`http://${tenant.slug}.localhost:3000`}
+                              >
+                                [ Open ]
+                              </a>
+                            ) : (
+                              <span>—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {tenant.email ? (
+                              <a
+                                className="text-brand-500 hover:underline"
+                                href={`mailto:${tenant.email}`}
+                              >
+                                {tenant.email}
+                              </a>
+                            ) : (
+                              <span>—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {tenant.phone || "—"}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {tenant.yards?.length || 0}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {tenant.admins?.length || 0}{" "}
+                            {(tenant.admins?.length || 0) === 1
+                              ? "admin"
+                              : "admins"}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
+                            {tenant.created_at
+                              ? new Date(tenant.created_at).toLocaleString()
+                              : "—"}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
+                            {tenant.subscription_plan}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            <Badge
+                              variant="light"
+                              color={
+                                tenant.subscription_status === "Active"
+                                  ? "success"
+                                  : tenant.subscription_status === "Not Active"
+                                    ? "error"
+                                    : "warning"
+                              }
                             >
-                              [ Open ]
-                            </a>
-                          ) : (
-                            <span>—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {tenant.email ? (
-                            <a
-                              className="text-brand-500 hover:underline"
-                              href={`mailto:${tenant.email}`}
-                            >
-                              {tenant.email}
-                            </a>
-                          ) : (
-                            <span>—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {tenant.phone || "—"}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {tenant.yards?.length || 0}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {tenant.admins?.length || 0}{" "}
-                          {(tenant.admins?.length || 0) === 1
-                            ? "admin"
-                            : "admins"}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
-                          {tenant.created_at
-                            ? new Date(tenant.created_at).toLocaleString()
-                            : "—"}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
-                          {tenant.subscription_plan}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          <Badge
-                            variant="light"
-                            color={
-                              tenant.subscription_status === "Active"
-                                ? "success"
-                                : tenant.subscription_status === "Not Active"
-                                  ? "error"
-                                  : "warning"
-                            }
-                          >
-                            {tenant.subscription_status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
-                          {tenant.expiry_date
-                            ? getExpiryString(tenant.expiry_date)
-                            : "—"}
-                        </TableCell>
-                        <TableCell className="text-theme-sm flex gap-3 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                          <Link href={`/tenants/${tenant.id}`}>
-                            <button className="bg-brand-500 border-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg border p-2 px-4 font-medium text-nowrap text-white">
-                              View <ArrowRightIcon />
-                            </button>
-                          </Link>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                ) : (
-                  <>There was a problem with the page oyu requested!</>
-                )}
+                              {tenant.subscription_status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
+                            {tenant.expiry_date
+                              ? getExpiryString(tenant.expiry_date)
+                              : "—"}
+                          </TableCell>
+                          <TableCell className="text-theme-sm flex gap-3 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                            <Link href={`/tenants/${tenant.id}`}>
+                              <button className="bg-brand-500 border-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg border p-2 px-4 font-medium text-nowrap text-white">
+                                View <ArrowRightIcon />
+                              </button>
+                            </Link>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                  ) : (
+                    <>There was a problem with the page oyu requested!</>
+                  )}
               </TableBody>
             </Table>
           </div>

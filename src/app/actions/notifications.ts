@@ -4,12 +4,12 @@ import { createClient } from "@/utils/supabase/server";
 import {
   bookingEmail,
   ClientWelcomeEmail,
-  WelcomeEmail,
 } from "@/utils/templates/email-templates";
 import { Redis } from "@upstash/redis";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
 
 const redis =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
@@ -199,4 +199,23 @@ export async function sendBookingNotification(
   }
 
   return { success: true, data };
+}
+
+// sending internal notification 
+export async function dispatchSystemNotification(title: string, user_id: string, category: string, notification: string) {
+  const supabase = await createClient();
+
+  const { error: notifError } = await supabase
+    .from("fleetmaster_notifications")
+    .insert({
+      user_id: user_id,
+      category: category,
+      title: title,
+      notification: notification,
+      seen: false,
+    });
+
+  if (notifError) {
+    console.error("Internal notification insert error:", notifError);
+  }
 }

@@ -7,9 +7,8 @@ import Label from "../form/Label";
 import TextArea from "../form/input/TextArea";
 import { useTheme } from "@mui/material/styles";
 import { useUser } from "@/context/UserContext"; // Adjust this hook import to your real location
-import { submitUserFeedback } from "@/app/actions/feedback";
+import { submitUserFeedback } from "@/app/actions/feedbacks";
 import { useToast } from "@/context/ToastContext";
-import { error } from "console";
 import Input from "../form/input/InputField";
 
 const Feedback: React.FC = () => {
@@ -72,12 +71,12 @@ const Feedback: React.FC = () => {
     // 2. Guard check: Make sure context has fully loaded the user profile
     if (!profile) {
       showToast(
-        "User profile context not loaded. Please log in again.",
+        "Not signed in! Please log in to write a feedback.",
         "error",
       );
       setStatusMessage({
         type: "error",
-        text: "User profile context not loaded. Please log in again.",
+        text: "Not signed in! Please log in to write a feedback.",
       });
       return;
     }
@@ -89,7 +88,7 @@ const Feedback: React.FC = () => {
     const result = await submitUserFeedback(
       {
         category,
-        rating: rating || 5,
+        rating: rating / 2 || 0,
         feedback_text: description,
       },
       {
@@ -113,7 +112,7 @@ const Feedback: React.FC = () => {
       showToast("Failed to submit feedback.", "error");
       setStatusMessage({
         type: "error",
-        text: result.error || "Failed to submit feedback.",
+        text: result.error.message || "Failed to submit feedback.",
       });
     }
   };
@@ -122,8 +121,9 @@ const Feedback: React.FC = () => {
     <div>
       <div className="mx-auto max-w-6xl space-y-6">
         <ComponentCard title="Submit Feedback">
-          <p className="text-theme-sm mb-4 font-medium text-gray-800 dark:text-white/90">
-            Writing review as{" "}
+          <p className="text-theme-sm mb-4 font-medium text-gray-800 dark:text-white/90">How would you rate your experience with the website? Your feedback will help us improve. Thank you.</p>
+          <p className="text-theme-sm mb-4 font-medium text-gray-700 dark:text-gray-400">
+            Disclaimer: Writing review as{" "}
             <span className="text-brand-500 font-semibold">
               {profile?.first_name} {profile?.last_name}
             </span>{" "}
@@ -148,7 +148,7 @@ const Feedback: React.FC = () => {
               <div className="flex flex-col items-center justify-center gap-3 py-3">
                 <div>
                   <h3 className="text-2xl font-bold text-purple-600">
-                    ({rating.toFixed(1)})
+                    ({rating || 0})
                   </h3>
                 </div>
                 <Rating
@@ -156,8 +156,8 @@ const Feedback: React.FC = () => {
                   value={rating}
                   onChange={(_, newValue) => setRating(newValue)}
                   size="large"
-                  max={5}
-                  precision={0.5}
+                  max={10}
+                  precision={1}
                   sx={{
                     "& .MuiRating-iconEmpty": {
                       color:
@@ -184,11 +184,10 @@ const Feedback: React.FC = () => {
             {/* Notification alert response box */}
             {statusMessage && (
               <div
-                className={`text-theme-sm rounded-lg p-3 ${
-                  statusMessage.type === "success"
-                    ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
-                    : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                }`}
+                className={`text-theme-sm rounded-lg p-3 ${statusMessage.type === "success"
+                  ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                  : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                  }`}
               >
                 {statusMessage.text}
               </div>
@@ -198,9 +197,8 @@ const Feedback: React.FC = () => {
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className={`bg-brand-500 text-theme-sm hover:bg-brand-600 ms-auto mt-3 flex items-center justify-center rounded-lg p-2 px-4 font-medium text-white transition-all ${
-                isSubmitting ? "cursor-not-allowed opacity-50" : ""
-              }`}
+              className={`bg-brand-500 text-theme-sm hover:bg-brand-600 ms-auto mt-3 flex items-center justify-center rounded-lg p-2 px-4 font-medium text-white transition-all ${isSubmitting ? "cursor-not-allowed opacity-50" : ""
+                }`}
             >
               {isSubmitting ? "Processing Submission..." : "Submit Feedback"}
             </button>
@@ -212,3 +210,4 @@ const Feedback: React.FC = () => {
 };
 
 export default Feedback;
+

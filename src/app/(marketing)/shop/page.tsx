@@ -42,6 +42,7 @@ export default function ShopPage() {
             alt="What Next ..."
             preload
             fill
+                sizes="(max-width: 1024px) 50vw, 33vw"
             style={{ objectFit: 'cover' }}
             src={"/images/user/How-Does-GPS-Tracking-Work-on-Cars.webp"}
           />
@@ -208,6 +209,7 @@ export default function ShopPage() {
                     className="absolute inset-0 h-full w-full bg-gray-200 object-cover transition-transform duration-300 group-hover:scale-105"
                     preload
                     fill
+                sizes="(max-width: 1024px) 50vw, 33vw"
                     style={{ objectFit: 'cover' }}
                   />
                 </div>

@@ -17,13 +17,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("system");
   const [isInitialized, setIsInitialized] = useState(false);
 
   // 2. Load the initial theme on client mount
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as Theme | null;
-    const initialTheme = savedTheme || "light"; // Defaulting to system if nothing is saved
+    const initialTheme = savedTheme || "system"; // Defaulting to system if nothing is saved
 
     setTheme(initialTheme);
     setIsInitialized(true);

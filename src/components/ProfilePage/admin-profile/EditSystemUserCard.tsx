@@ -437,7 +437,7 @@ export default function EditSystemUserCard({ userID }: { userID?: string }) {
             </div>
           </div>
           {/* restricted to super admin or owner of account  */}
-          {(profile?.role === "Super Admin" || profile?.id === userID) && (
+          {/* {(profile?.role === "Super Admin" && profile?.id === userID) && (
             <div className="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
               <div className="no-scrollbar relative w-full overflow-y-auto rounded-3xl bg-white p-4 lg:p-11 dark:bg-gray-900">
                 <div className="px-2 pr-14">
@@ -480,7 +480,7 @@ export default function EditSystemUserCard({ userID }: { userID?: string }) {
                 </form>
               </div>
             </div>
-          )}
+          )} */}
 
           <div className="mt-6 flex items-center gap-3 px-2 lg:justify-end">
             <Link href="/profile" className="mr-2">

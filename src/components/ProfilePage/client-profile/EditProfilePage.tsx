@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import handleProfileUpdate from "@/utils/clients/handleProfileUpdate";
 import { useToast } from "@/context/ToastContext";
 import { useUser } from "@/context/UserContext";
@@ -14,6 +14,11 @@ import Link from "next/link";
 import Select from "@/components/form/Select";
 import { allCountriesDB, languages, timezones } from "@/data/globalExports";
 import { usePathname, useSearchParams } from "next/navigation";
+import LoadingInfo from "@/components/loading/LoadingInfo";
+import DropzoneComponent from "@/components/form/form-elements/DropZone";
+import { submitAndVerifyDocument } from "@/app/actions/verification/documents";
+import Alert from "@/components/ui/alert/Alert";
+
 
 function EditProfilePage() {
   const { profile, loading, setProfile } = useUser();
@@ -31,7 +36,7 @@ function EditProfilePage() {
 
   useEffect(() => {
     if (profile && !loading) {
-      console.log(profile);
+
       setProfileDetails(profile);
     }
   }, [profile]);
@@ -77,12 +82,32 @@ function EditProfilePage() {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto min-h-[80vh] p-5 text-gray-400">
-        Loading profile ...
-      </div>
+
+
+  const verify = async (file?: File) => {
+    if (!file || !profileDetails) return;
+
+    showToast('Your documents have een submitted for review! Standby. This can take upto 24hrs to complete. Meanwhile feel free to browse our vehicles!')
+
+    await submitAndVerifyDocument(
+      {
+        id: profile.id,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        national_id_number: profile.national_id_number,
+        dl_number: profile.dl_number,
+        dob: profile.dob,
+        email: profile.email,
+      },
+      file
     );
+
+  };
+
+
+  if (loading) {
+    return (<LoadingInfo />);
+
   } else if (!profile) {
     window.location.href = `/signin?r=${currentPageUrl}`;
     return (
@@ -91,7 +116,7 @@ function EditProfilePage() {
       </div>
     );
   }
-
+  // we will usea basic driving license check by uploading dl to a free openai/gemini/deepseek to extract navItems, national id Number, date of birth and date of expiry and general visibility of photo on image and after running return an object with whether each aspect pass based on user rprovided information i.e the users first name and ;assertRootParamInSamples, at least one name must atch i.e if dl has 3 names f, s, l, atleast one of these names must be equal to the name the user entered as either first or last name, second the national id number must be qequalto the id in the dl document, expiry must be in a future Date, also extract license dl Number, finally return the results, we will save that in the db and send an email and internal notif what went wrong or if they are userVerified. 
   return (
     <>
       <Backdrop
@@ -431,6 +456,9 @@ function EditProfilePage() {
                 className="mb-3"
                 type="text"
                 placeholder="21345678"
+                hint={profileDetails?.national_id_number?.trim()?.split('').length !== 8 && "Please enter a valid National ID Number"}
+
+                error={profileDetails?.national_id_number?.trim()?.split('').length !== 8 || false}
                 value={profileDetails?.national_id_number}
                 onChange={(e) =>
                   setProfileDetails((prev) => ({
@@ -443,7 +471,7 @@ function EditProfilePage() {
             </div>
 
             <div>
-              <Label>Driving License</Label>
+              <Label>Driving License Number</Label>
               <Input
                 className="mb-3"
                 type="text"
@@ -459,7 +487,7 @@ function EditProfilePage() {
               {/* <DropzoneComponent title="Upload Driving License" /> */}
             </div>
 
-            <div>
+            {/* <div>
               <Label>KRA PIN (Kenyan Nationals)</Label>
               <Input
                 className="mb-3"
@@ -474,9 +502,20 @@ function EditProfilePage() {
                 }
               />
 
-              {/* <DropzoneComponent accept={{ "application/pdf": [".pdf"] }} title="Upload KRA PIN" /> */}
-            </div>
+              <DropzoneComponent accept={{ "application/pdf": [".pdf"] }} title="Upload KRA PIN" />
+            </div> */}
           </div>
+          {
+            profile.submitted_document && <Alert variant="success" title="Documents submitted successfully!" message="Your documents have been submitted for review! Standby. This can take upto 24hrs to complete. Meanwhile feel free to browse our vehicles!" /> 
+          }
+          {
+            profile.verification_error && <Alert className='mb-3' variant="error" title="Document verification failed!" message={profile.verification_error} /> 
+          }
+          <DropzoneComponent
+            onChange={(files: File[]) => verify(files[0])}
+            title="Upload Driving License"
+          />
+
         </div>
       </div>
 

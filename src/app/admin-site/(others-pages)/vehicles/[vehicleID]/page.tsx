@@ -61,7 +61,6 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
   const VehicleDetails = response?.data;
 
   const bookingsResponse = await fetchBookingsForVehicle(vehicleID);
-  console.log(bookingsResponse);
 
   if (bookingsResponse.success) {
     loading = false;
@@ -69,7 +68,6 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
   } else {
     loading = false;
   }
-  console.log("details", VehicleDetails);
 
   if (!VehicleDetails) {
     return <VehicleNotFound />;
@@ -147,7 +145,7 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
               </Box>
               <img
                 src={VehicleDetails.image_url}
-                alt={`${VehicleDetails.make} ${VehicleDetails.model}`}
+                alt={``}
                 className="mb-8 aspect-video w-full rounded-xl object-cover"
               />
             </div>
@@ -209,7 +207,7 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
               <div>
                 <p className="text-gray-400">Location</p>
                 <p className="font-sm mt-2 mb-1 dark:text-white">
-                  {VehicleDetails.location}
+                  {VehicleDetails.location?.title || 'N/A'}
                 </p>
               </div>
               <div>

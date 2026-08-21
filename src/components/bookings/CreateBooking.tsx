@@ -393,7 +393,7 @@ const CreateNewBookingForm = () => {
                 ...newBooking,
                 booking_status: "Booked",
                 payment_status: "COMPLETE",
-              });
+              }, profile?.email, profile?.fleetmaster_tenants, profile?.first_name);
               const dbRes = await createPayment(newPayment);
 
               console.log("Database payment update response:", dbRes);
@@ -424,7 +424,7 @@ const CreateNewBookingForm = () => {
                 ...newBooking,
                 booking_status: "Reserved",
                 payment_status: "FAILED",
-              });
+              }, profile?.email, profile?.fleetmaster_tenants, profile?.first_name);
               const dbRes = await createPayment(newPayment);
 
               console.log("Database payment update response:", dbRes);
@@ -1193,6 +1193,7 @@ const CreateNewBookingForm = () => {
                             alt={``}
                             preload
                             fill
+                            sizes="(max-width: 1024px) 50vw, 33vw"
                             style={{ objectFit: 'cover' }}
                             className="rounded-lg object-cover object-center"
                           />
