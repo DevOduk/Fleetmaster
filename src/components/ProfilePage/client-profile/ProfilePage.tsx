@@ -512,11 +512,6 @@ function ProfilePage() {
               value={profile?.dl_number || "8345 ..."}
               verified={profile?.verification_status?.driving_license}
             />
-            {/* <DataViewSchema
-              label="KRA PIN"
-              value={profile?.kra_pin_number || "A105 ..."}
-              verified={profile?.verification_status?.kra_pin}
-            /> */}
           </div>
           
                     {

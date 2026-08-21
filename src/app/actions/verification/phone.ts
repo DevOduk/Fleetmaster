@@ -380,7 +380,6 @@ export async function verifyPhoneOTP(encodedPayload: string, role?: string) {
     const currentStatus = user.verification_status || {
       email: false,
       phone: false,
-      kra_pin: false,
       national_id: false,
       driving_license: false,
     };

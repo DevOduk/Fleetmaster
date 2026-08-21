@@ -72,24 +72,6 @@ export default function UserDocumentsCard() {
               )}
             </p>
           </div>
-
-          <div className="">
-            <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-              KRA PIN
-            </p>
-            <p className="flex items-center justify-between gap-3 text-sm font-medium text-gray-800 dark:text-white/90">
-              <span className="flex items-center gap-2">
-                <DownloadIcon style={{ width: 28, height: 28 }} />
-                {profile?.kra_pin_number || "Not uploaded"}
-              </span>
-
-              {profile.verification_status?.kra_pin ? (
-                <TaskAltOutlinedIcon className="mt-1 text-green-500" />
-              ) : (
-                <CancelOutlinedIcon className="mt-1 text-red-500" />
-              )}
-            </p>
-          </div>
         </div>
       </div>
     </>

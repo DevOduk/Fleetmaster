@@ -107,27 +107,6 @@ export default function EditUserDocumentsCard() {
                 />
                 <DropzoneComponent title="Upload Driving License" />
               </div>
-
-              <div>
-                <Label>KRA PIN (Kenyan Nationals)</Label>
-                <Input
-                  className="mb-3"
-                  type="text"
-                  placeholder="A10621345678"
-                  value={profileDetails?.kra_pin_number}
-                  onChange={(e) =>
-                    setProfileDetails((prev) => ({
-                      ...prev,
-                      kra_pin_number: e.target.value,
-                    }))
-                  }
-                />
-
-                <DropzoneComponent
-                  accept={{ "application/pdf": [".pdf"] }}
-                  title="Upload KRA PIN"
-                />
-              </div>
             </div>
           </div>
           <div className="mt-6 flex items-center gap-3 px-2 lg:justify-end">

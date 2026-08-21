@@ -486,24 +486,6 @@ function EditProfilePage() {
               />
               {/* <DropzoneComponent title="Upload Driving License" /> */}
             </div>
-
-            {/* <div>
-              <Label>KRA PIN (Kenyan Nationals)</Label>
-              <Input
-                className="mb-3"
-                type="text"
-                placeholder="A10621345678"
-                value={profileDetails?.kra_pin_number}
-                onChange={(e) =>
-                  setProfileDetails((prev) => ({
-                    ...prev,
-                    kra_pin_number: e.target.value,
-                  }))
-                }
-              />
-
-              <DropzoneComponent accept={{ "application/pdf": [".pdf"] }} title="Upload KRA PIN" />
-            </div> */}
           </div>
           {
             profile.submitted_document && <Alert variant="success" title="Documents submitted successfully!" message="Your documents have been submitted for review! Standby. This can take upto 24hrs to complete. Meanwhile feel free to browse our vehicles!" /> 

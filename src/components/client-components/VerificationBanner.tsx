@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import { useUser } from "@/context/UserContext";
 
 const VERIFICATION_STEPS = [
   {

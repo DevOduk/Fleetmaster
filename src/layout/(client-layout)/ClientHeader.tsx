@@ -10,7 +10,6 @@ import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { usePathname } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { useTenant } from "@/context/TenantContext";
-import VerificationBanner from "@/components/client-components/VerificationBanner";
 import { useFleet } from "@/context/FleetContext";
 import { fetchUserTickets } from "@/app/actions/support";
 import SearchModal from "@/components/header/SearchModal";
@@ -210,7 +209,6 @@ export default function ClientHeader() {
         </div>
       )}
       <header className="sticky top-0 z-40 flex w-full border-gray-200 bg-white lg:border-b dark:border-gray-800 dark:bg-gray-900">
-        {profile?.role === "Client" && <VerificationBanner profile={profile} />}
         <div className="container m-auto flex grow flex-col items-center justify-between lg:flex-row lg:px-2">
           <div className="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4 dark:border-gray-800">
             <Link href="/" className="lg:block">
