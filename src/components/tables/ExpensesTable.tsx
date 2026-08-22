@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+"use client"
+
 import {
   Table,
   TableBody,
@@ -10,31 +11,9 @@ import Badge from "../ui/badge/Badge";
 import { ArrowRightIcon, PencilIcon, TrashBinIcon } from "@/icons";
 import Link from "next/link";
 import { CircularProgress } from "@mui/material";
-import { useUser } from "@/context/UserContext";
-import { fetchExpensesForAdmin } from "@/app/actions/expenses";
 
-export default function ExpensesTable() {
-  const { profile } = useUser();
-  const [loading, setLoading] = useState(true);
-  const [expenses, setExpenses] = useState([]);
+export default function ExpensesTable({expenses, loading}: {expenses: any; loading: boolean;}) {
 
-  useEffect(() => {
-    if (!profile?.tenant_id) return;
-    const fetchExpenses = async () => {
-      setLoading(true);
-
-      const res = await fetchExpensesForAdmin(profile?.tenant_id);
-      console.log(res);
-      if (res.success) {
-        setExpenses(res.data);
-
-        setLoading(false);
-      } else {
-        setLoading(false);
-      }
-    };
-    fetchExpenses();
-  }, [profile]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
@@ -137,7 +116,7 @@ export default function ExpensesTable() {
                     </TableCell>
                     <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
                       {/* {order.nextService} */}
-                      {new Date(expense.created_at).toLocaleString()}
+                      {new Date(expense.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
                       {expense.method}

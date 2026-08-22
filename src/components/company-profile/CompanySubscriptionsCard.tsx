@@ -26,6 +26,8 @@ import { createPayment } from "@/app/actions/payments";
 import Alert from "../ui/alert/Alert";
 import { Modal } from "../ui/modal";
 import { ArrowRightIcon } from "@/icons";
+import { createExpense } from "@/app/actions/expenses";
+import LoadingInfo from "../loading/LoadingInfo";
 
 export const mpesaPollingIterval = 22000;
 
@@ -38,12 +40,13 @@ interface Subscription {
 }
 
 export default function CompanySubscriptionsCard() {
-  const { profile } = useUser();
+  const { profile, setProfile } = useUser();
   const [company, setCompany] = useState<any>(null);
   const [loadingCompany, setLoadingCompany] = useState<boolean>(true);
   const [selectedIndex, setSelectedIndex] = useState(1);
   const [mpesaNumber, setMpesaNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("m-pesa");
+  const [billingPeriod, setBillingPeriod] = useState(3);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const [error, setError] = useState(null);
@@ -52,15 +55,14 @@ export default function CompanySubscriptionsCard() {
 
   const defaultSubscription: Subscription = {
     label: "Free Trial Plan",
-    value:
-      "Welcome to fleetmaster crm dashboard where you can manage your rental fleet with ease!",
+    value: "Welcome to fleetmaster crm dashboard where you can manage your rental fleet with ease!",
     amount: 0,
     method: "M-PESA",
     date: company?.created_at || profile?.fleetmaster_tenants?.created_at,
   };
 
   const [subscriptionsList, setSubScriptionsList] = useState<Subscription[]>([
-    defaultSubscription,
+    defaultSubscription
   ]);
 
   useEffect(() => {
@@ -73,7 +75,6 @@ export default function CompanySubscriptionsCard() {
         const res = await fetchTenantDetails(profile.tenant_id);
         const subRes = await fetchTenantSubscriptions(profile.tenant_id);
 
-        console.log(subRes);
         setCompany(res.data);
         setSubScriptionsList([...(subRes.data || []), defaultSubscription]);
 
@@ -86,7 +87,26 @@ export default function CompanySubscriptionsCard() {
     getTenantDetails();
   }, [profile?.tenant_id]);
 
-  const grandTotalAmount = parseInt(subscriptionPlans[selectedIndex].price);
+  const monthlyAmount = Number(subscriptionPlans[selectedIndex].price);
+  const subtotalAmount = monthlyAmount * (billingPeriod);
+  const vatAmount = subtotalAmount * 0.05;
+  const grandTotalAmount = Math.round(subtotalAmount + vatAmount);
+
+
+  // 1. Determine the base date to add 30 days to
+  const currentExpiry = company?.expiry_date
+    ? new Date(company.expiry_date).getTime()
+    : 0;
+  const now = new Date().getTime();
+
+  // If current expiry is in the future, add 30 days to it. Otherwise, add to today.
+  const baseTime = currentExpiry > now ? currentExpiry : now;
+  const thirtyDaysInMs = (30 * 24 * 60 * 60 * 1000) * billingPeriod;
+  const newExpiryTimestamp = baseTime + thirtyDaysInMs;
+
+  // 2. Convert to ISO string for Supabase timestamptz compatibility
+  const newExpiryIsoString = new Date(newExpiryTimestamp).toISOString();
+
 
   const createNewPayment = async () => {
     setError(null);
@@ -147,13 +167,12 @@ export default function CompanySubscriptionsCard() {
         });
 
         const data = await res.json();
-        console.log("Daraja STK Response: ", data);
 
         if (!res.ok || data.ResponseCode !== "0") {
           throw new Error(
             data.errorMessage ||
-              data.ResponseDescription ||
-              "Failed to dispatch M-Pesa push.",
+            data.ResponseDescription ||
+            "Failed to dispatch M-Pesa push.",
           );
         }
 
@@ -197,12 +216,6 @@ export default function CompanySubscriptionsCard() {
             // Daraja returns ResultCode ('0' = Success, non-zero or user cancellation handles failure)
             const resultCode = statusData.ResultCode;
             const responseCode = statusData.ResponseCode;
-            console.log(
-              "Daraja status check poll: ",
-              resultCode,
-              responseCode,
-              statusData,
-            );
 
             // If ResultCode is 0, payment succeeded
             if (resultCode === "0") {
@@ -232,33 +245,42 @@ export default function CompanySubscriptionsCard() {
                 message: `Subscription renewal for package: ${subscriptionPlans[selectedIndex]?.name}`,
               };
 
+              const newExpense = {
+                tenant_id: profile?.tenant_id,
+                category: "Subscription",
+                method: "M-PESA",
+                currency: "KES",
+                amount: Number(grandTotalAmount),
+                payment_ref: mpesaRef,
+                description: `Subscription renewal for package: ${subscriptionPlans[selectedIndex]?.name}`,
+              };
+
               await createPayment(newPayment);
+              await createExpense(newExpense);
 
-              // 1. Determine the base date to add 30 days to
-              const currentExpiry = company?.expiry_date
-                ? new Date(company.expiry_date).getTime()
-                : 0;
-              const now = new Date().getTime();
+              const { admins, yards, ...cleanData } = company;
 
-              // If current expiry is in the future, add 30 days to it. Otherwise, add to today.
-              const baseTime = currentExpiry > now ? currentExpiry : now;
-              const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
-              const newExpiryTimestamp = baseTime + thirtyDaysInMs;
-
-              // 2. Convert to ISO string for Supabase timestamptz compatibility
-              const newExpiryIsoString = new Date(
-                newExpiryTimestamp,
-              ).toISOString();
-
-              await updateTenantDetails(profile?.tenant_id, {
-                ...company,
+              const updatedTenant = {
+                ...cleanData,
                 subscription_status: "Active",
                 subscription_plan: subscriptionPlans[selectedIndex]?.name,
                 expiry_date: newExpiryIsoString,
-              });
+              }
+
+              const { data } = await updateTenantDetails(profile?.tenant_id, updatedTenant);
+              setCompany(data);
+
+              setProfile((profile: any) => ({
+                ...profile,
+                fleetmaster_tenants: {
+                  ...profile.fleetmaster_tenants,
+                  subscription_status: 'Active',
+                  expiry_date: newExpiryIsoString
+                }
+              }))
 
               const subRes = await fetchTenantSubscriptions(profile.tenant_id);
-              console.log("subscriptions res: ", subRes);
+
               setSubScriptionsList([
                 ...(subRes.data || []),
                 defaultSubscription,
@@ -320,197 +342,6 @@ export default function CompanySubscriptionsCard() {
     }
   };
 
-  // const handleCheckoutSubmit = async () => {
-  //   setError(null);
-
-  //   if (!profile) {
-  //     showToast('Please sign in to your account to place a booking!', 'error');
-  //     return;
-  //   }
-  //   if (paymentMethod === 'm-pesa' && !mpesaNumber) {
-  //     showToast('Please enter a valid M-Pesa phone number!', 'error');
-  //     return;
-  //   }
-
-  //   setIsPaying(true);
-  //   const firstName = profile?.first_name;
-  //   const lastName = profile?.last_name;
-
-  //   // --- BRANCH 1: ONE-CLICK DIRECT M-PESA STK PUSH (NO MODAL) ---
-  //   if (paymentMethod === 'm-pesa') {
-  //     showToast('Processing your security checks...', 'info');
-
-  //     // --- SANITIZE AND NORMALIZE PHONE NUMBER INPUT ---
-  //     let sanitizedNumber = mpesaNumber.replace(/\D/g, '');
-
-  //     if (sanitizedNumber.startsWith('0')) {
-  //       sanitizedNumber = `254${sanitizedNumber.substring(1)}`;
-  //     } else if (sanitizedNumber.startsWith('7') || sanitizedNumber.startsWith('1')) {
-  //       sanitizedNumber = `254${sanitizedNumber}`;
-  //     } else if (sanitizedNumber.startsWith('254') && sanitizedNumber.length > 3) {
-  //       // Already formatted
-  //     } else {
-  //       console.warn("Phone formatting fallback pattern encountered:", sanitizedNumber);
-  //     }
-
-  //     if (sanitizedNumber.length !== 12) {
-  //       showToast('Please enter a valid 9 or 10-digit M-Pesa phone number.', 'error');
-  //       setIsPaying(false);
-  //       return;
-  //     }
-
-  //     let intervalId: NodeJS.Timeout | null = null;
-  //     let safetyTimeoutId: NodeJS.Timeout | null = null;
-
-  //     const clearPollingTimers = () => {
-  //       if (intervalId) clearInterval(intervalId);
-  //       if (safetyTimeoutId) clearTimeout(safetyTimeoutId);
-  //     };
-
-  //     try {
-  //       // --- ATOMIC BACKEND PIPELINE TRIGGER ---
-  //       const res = await fetch('/api/intasend/stk', {
-  //         method: 'POST',
-  //         headers: { 'Content-Type': 'application/json' },
-  //         body: JSON.stringify({
-  //           amount: Number(grandTotalAmount),
-  //           phone: sanitizedNumber,
-  //           email: profile?.email,
-  //           firstName,
-  //           lastName
-  //         })
-  //       });
-
-  //       const data = await res.json();
-  //       console.log('intasend stk response: ', res);
-
-  //       if (!res.ok) {
-  //         throw new Error(data.error || 'Failed to dispatch payment payload.');
-  //       }
-
-  //       const targetInvoiceId = data.invoice?.invoice_id || data.id;
-
-  //       if (!targetInvoiceId) {
-  //         throw new Error('No tracking invoice ID returned from billing gateway.');
-  //       }
-
-  //       showToast('STK Push Request Sent! Please enter your M-Pesa PIN', 'info');
-
-  //       // Safety lifecycle fallback boundary loop limit (2 minutes)
-  //       safetyTimeoutId = setTimeout(() => {
-  //         clearPollingTimers();
-  //         setIsPaying(false);
-  //         setError({ message: 'Payment verification timed out. Please check your Phone and try gain.' })
-  //         showToast('Payment verification timed out. Please check your Phone and try again', 'error');
-  //       }, 60000);
-
-  //       intervalId = setInterval(async () => {
-  //         try {
-  //           const statusRes = await fetch('/api/intasend/status', {
-  //             method: 'POST',
-  //             headers: { 'Content-Type': 'application/json' },
-  //             body: JSON.stringify({ invoice_id: targetInvoiceId })
-  //           });
-
-  //           const statusData = await statusRes.json();
-  //           console.log('status check poll: ', statusData);
-
-  //           // Safely map nested or flat invoice properties
-  //           const invoiceObj = statusData.data?.invoice || statusData.invoice || {};
-  //           const paymentState = (statusData.state || invoiceObj.state || '').toUpperCase();
-
-  //           const mpesaRef = invoiceObj.mpesa_reference ||
-  //             invoiceObj.provider_ref ||
-  //             `ST-${targetInvoiceId}`;
-
-  //           if (paymentState === 'COMPLETE' || paymentState === 'SUCCESS') {
-  //             clearPollingTimers();
-  //             setIsPaying(false);
-  //             showToast('Payment Confirmed! Your subscription renewal has been processed successfully.', 'success');
-  //             successModal.openModal();
-  //             setPaymentSuccess(true);
-
-  //             const newPayment = {
-  //               tenant_id: profile?.tenant_id,
-  //               intasend_invoice_id: invoiceObj.invoice_id || targetInvoiceId,
-  //               provider: invoiceObj.provider || 'M-PESA',
-  //               provider_reference: invoiceObj.provider_ref || mpesaRef,
-  //               amount: Number(grandTotalAmount),
-  //               currency: invoiceObj.currency || 'KES',
-  //               account_number: invoiceObj.account || profile?.tenant_id,
-  //               payment_ref: mpesaRef,
-  //               user_id: profile.id,
-  //               status: 'Success',
-  //               message: `Subscription renewal for package: ${subscriptionPlans[selectedIndex]?.name}`,
-  //             };
-
-  //             const paymentRes = await createPayment(newPayment);
-
-  //             // Calculate 30 days from now in milliseconds
-  //             const thirtyDaysFromNow = new Date().getTime() + (30 * 24 * 60 * 60 * 1000);
-
-  //             // FIXED: Pass only the primitive properties without spreading nested relations
-  //             const updateTenantRes = await updateTenantDetails(
-  //               profile?.tenant_id,
-  //               {
-  //                 subscription_status: 'Active',
-  //                 subscription_plan: subscriptionPlans[selectedIndex]?.name,
-  //                 expiry_date: thirtyDaysFromNow
-  //               }
-  //             );
-
-  //             if (paymentRes.success) {
-  //               // payment logged successfully
-  //             }
-  //             if (updateTenantRes.success) {
-  //               // tenant updated successfully
-  //             }
-  //             console.log("Database tenant update response:", updateTenantRes);
-
-  //           } else if (paymentState === 'FAILED') {
-  //             clearPollingTimers();
-  //             setIsPaying(false);
-  //             const failReason = invoiceObj.failed_reason || 'Transaction was declined, canceled, or timed out.';
-  //             showToast(failReason, 'error');
-  //             setError({ message: failReason });
-
-  //             const newPayment = {
-  //               tenant_id: profile.tenant_id,
-  //               intasend_invoice_id: invoiceObj.invoice_id || targetInvoiceId,
-  //               provider: invoiceObj.provider || 'M-PESA',
-  //               provider_reference: invoiceObj.provider_ref || `ST-${targetInvoiceId}`,
-  //               amount: Number(grandTotalAmount),
-  //               currency: invoiceObj.currency || 'KES',
-  //               account_number: invoiceObj.account || profile?.tenant_id,
-  //               payment_ref: targetInvoiceId,
-  //               user_id: profile.id,
-  //               status: 'Failed',
-  //               message: 'Subscription renewal failure: ' + failReason,
-  //             };
-
-  //             await createPayment(newPayment);
-  //           }
-  //           // If state is 'PROCESSING', the loop simply waits for the next interval tick.
-  //         } catch (pollErr) {
-  //           console.error("Error during background status poll checking:", pollErr);
-  //         }
-  //       }, 5000);
-
-  //     } catch (err: any) {
-  //       setError(err);
-  //       console.error("Direct STK Push Failed:", err);
-  //       showToast(err.message || 'M-Pesa STK verification failed.', 'error');
-  //       setIsPaying(false);
-  //     }
-
-  //     // --- BRANCH 2: SECURE CARD CHECKOUT via BACKEND INLINE MODAL ---
-  //   } else {
-  //     showToast('Card payment checkout not available! Consult support.', 'error');
-  //     setIsPaying(false);
-  //     return;
-  //   }
-  // };
-
   useEffect(() => {
     if (!document.getElementById("intasend-inline-sdk")) {
       const script = document.createElement("script");
@@ -522,61 +353,7 @@ export default function CompanySubscriptionsCard() {
   }, []);
 
   if (!profile || !profile.tenant_id || loadingCompany) {
-    return (
-      <div className="mx-auto w-full animate-pulse space-y-6 p-6">
-        {/* Header Section Placeholder */}
-        <div className="flex items-center justify-between border-b border-gray-100 pb-6 dark:border-gray-800">
-          <div className="space-y-2">
-            <div className="h-6 w-48 rounded-md bg-gray-200 dark:bg-gray-600"></div>
-            <div className="h-4 w-32 rounded-md bg-gray-100 dark:bg-gray-600"></div>
-          </div>
-          <div className="h-10 w-28 rounded-lg bg-gray-200 dark:bg-gray-600"></div>
-        </div>
-
-        {/* Metric Cards Grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="space-y-3 rounded-xl border border-gray-100 p-5 dark:border-gray-700"
-            >
-              <div className="h-4 w-34 rounded-md bg-gray-100 dark:bg-gray-600"></div>
-              <div className="h-8 w-19 rounded-md bg-gray-200 dark:bg-gray-600"></div>
-            </div>
-          ))}
-        </div>
-
-        {/* Main Content Area / List Placeholder */}
-        <div className="space-y-4 rounded-xl border border-gray-100 p-4 dark:border-gray-800">
-          <div className="mb-2 h-5 w-36 rounded-md bg-gray-200 dark:bg-gray-500"></div>
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between border-b border-gray-50 py-3 last:border-0 dark:border-gray-600"
-            >
-              <div className="flex w-full items-center space-x-3">
-                <div className="h-10 w-10 shrink-0 rounded-full bg-gray-200 dark:bg-gray-600"></div>
-                <div className="w-full max-w-[60%] space-y-2">
-                  <div className="h-4 w-3/4 rounded-md bg-gray-200 dark:bg-gray-600"></div>
-                  <div className="h-3 w-1/2 rounded-md bg-gray-100 dark:bg-gray-600"></div>
-                </div>
-              </div>
-              <div className="h-4 w-12 rounded-md bg-gray-100 dark:bg-gray-600"></div>
-            </div>
-          ))}
-        </div>
-
-        {/* Subtle Loading Text Indicator */}
-        <div className="flex items-center justify-center space-x-2 pt-2">
-          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500 [animation-delay:-0.3s]"></div>
-          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500 [animation-delay:-0.15s]"></div>
-          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500"></div>
-          <span className="pl-1 text-xs font-medium text-gray-400">
-            Syncing workspace...
-          </span>
-        </div>
-      </div>
-    );
+    return <LoadingInfo />;
   }
   if (!company) {
     return (
@@ -815,204 +592,302 @@ export default function CompanySubscriptionsCard() {
               </div>
             ))}
           </div>
-          <div className="container mx-auto max-w-4xl">
-            {/* Billing Gateway Gateway Interface Config */}
-            <h4 className="mb-3 text-sm font-bold text-gray-900 dark:text-white">
-              Choose Payment Method
-            </h4>
-            <FormControl component="fieldset" className="mb-6 w-full">
-              {/* Use ONE RadioGroup mapped directly to your state variable */}
-              <RadioGroup
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="space-y-3"
-              >
-                {/* M-Pesa Option Layout Box */}
-                <div
-                  onClick={() => setPaymentMethod("m-pesa")}
-                  className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${
-                    paymentMethod === "m-pesa"
-                      ? "border-brand-500 bg-brand-50/5"
-                      : "border-gray-200 dark:border-gray-800"
-                  }`}
-                >
-                  <FormControlLabel
-                    value="m-pesa"
-                    control={<Radio size="small" />}
-                    label={
-                      <div className="flex items-center gap-2">
-                        <MobileScreenShareOutlinedIcon
-                          className="text-brand-500"
-                          fontSize="small"
-                        />
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          M-Pesa Instant PayBill
-                        </span>
-                      </div>
-                    }
-                  />
-                </div>
+          <div className="grid grid-cols-12 gap-5">
+            <div className="col-span-12 lg:col-span-7">
+              <div className="mb-0 flex flex-wrap gap-2">
+                {[3, 6, 12].map((months) => (
+                  <button
+                    key={months}
+                    type="button"
+                    onClick={() => setBillingPeriod(months)}
+                    className={`rounded-t-lg border px-4 py-2 text-sm font-medium transition-colors ${billingPeriod === months
+                      ? "border-brand-500 bg-brand-500 text-white"
+                      : "border-gray-200 text-gray-600 hover:border-brand-300 dark:border-gray-700 dark:text-gray-300"
+                      }`}
+                  >
+                    {months === 3 ? "Quarterly" : months === 6 ? "6 Months" : "1 Year"}
+                  </button>
+                ))}
+              </div>
 
-                {/* Card Option Layout Box */}
-                <div
-                  onClick={() => setPaymentMethod("card")}
-                  className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${
-                    paymentMethod === "card"
-                      ? "border-brand-500 bg-brand-50/5"
-                      : "border-gray-200 dark:border-gray-800"
-                  }`}
-                >
-                  <FormControlLabel
-                    value="card"
-                    control={<Radio size="small" />}
-                    label={
-                      <div className="flex items-center gap-2">
-                        <CreditCardIcon
-                          className="text-brand-500"
-                          fontSize="small"
-                        />
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          Bank Instant Checkout (VISA/MASTER Card)
-                        </span>
-                      </div>
-                    }
-                  />
+              <div className="overflow-hidden rounded-b-xl border border-gray-200 dark:border-gray-800">
+                <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 pt-5 dark:border-gray-800 dark:bg-gray-800/40">
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white">Invoice Summary</h4>
+                  <p className="mt-1 text-xs text-gray-500">Minimum billing period is quarterly.</p>
                 </div>
-              </RadioGroup>
-            </FormControl>
+                <div className="divide-y divide-gray-100 text-sm dark:divide-gray-800">
+                  <div className="flex justify-between px-4 py-3 text-gray-600 dark:text-gray-300">
+                    <span>{subscriptionPlans[selectedIndex].name} ({billingPeriod} months)</span>
+                    <span>Ksh. {subtotalAmount.toLocaleString()}</span>
+                  </div>
 
-            <div className="mt-4 mb-4 transition-all duration-200">
-              {paymentMethod === "m-pesa" && (
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                    M-Pesa Mobile Number
-                  </label>
-                  <div className="relative mt-2">
-                    <Input
-                      type="tel"
-                      placeholder="e.g., 0712345678"
-                      className="pl-15.5"
-                      defaultValue={company?.phone}
-                      value={mpesaNumber || company?.phone}
-                      onChange={(e) => setMpesaNumber(e.target.value)}
-                      disabled={isPaying}
-                    />
-                    <span className="absolute top-1/2 left-0 flex h-11 w-13.75 -translate-y-1/2 items-center justify-center border-r border-gray-200 text-sm dark:border-gray-800 dark:text-white">
-                      +254
-                    </span>
+                  <div className="space-y-2.5 mx-4 p-3 rounded-lg border-brand-500/50 mt-2 border">
+                    <p className="font font-semibold text-brand-500">What you get:</p>
+                    {subscriptionPlans[selectedIndex]?.features
+                      .filter((f) => f.included)
+                      .map((feature, i) => (
+                        <div key={i} className="flex items-start gap-2.5">
+                          {feature?.included ? (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="lucide lucide-check text-brand-500 mt-0.5 shrink-0"
+                              aria-hidden="true"
+                            >
+                              <path d="M20 6 9 17l-5-5"></path>
+                            </svg>
+                          ) : (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="lucide lucide-minus mt-0.5 shrink-0 text-red-500"
+                              aria-hidden="true"
+                            >
+                              <path d="M5 12h14"></path>
+                            </svg>
+                          )}
+                          <span
+                            className={`text-[13px] text-gray-500 dark:text-gray-300`}
+                          >
+                            <span
+                              className={`text-foreground font-medium ${!feature?.included ? "line-through opacity-40" : ""}`}
+                            >
+                              <span className="font-semibold">
+                                {feature.highlightedText}
+                              </span>{" "}
+                              {feature.text}
+                            </span>
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                  <div className="flex justify-between px-4 py-3 text-gray-600 dark:text-gray-300">
+                    <span>VAT (5%)</span>
+                    <span>Ksh. {vatAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between px-4 py-3 text-gray-600 dark:text-gray-300">
+                    <span>Next Expiry</span>
+                    <span>{(new Date(newExpiryTimestamp)).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between bg-gray-50 px-4 py-4 font-bold text-gray-900 dark:bg-gray-800/40 dark:text-white">
+                    <span>Total Due</span>
+                    <span className="text-brand-500">Ksh. {grandTotalAmount.toLocaleString()}</span>
                   </div>
                 </div>
-              )}
+              </div>
+            </div>
 
-              {paymentMethod === "card" && (
-                <div className="space-y-4">
-                  {/* Card Number Row */}
+            <div className="col-span-12 lg:col-span-5">
+              {/* Billing Gateway Gateway Interface Config */}
+              <h4 className="mb-3 text-sm font-bold text-gray-900 dark:text-white">
+                Choose Payment Method
+              </h4>
+              <FormControl component="fieldset" className="mb-6 w-full">
+                {/* Use ONE RadioGroup mapped directly to your state variable */}
+                <RadioGroup
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="space-y-3"
+                >
+                  {/* M-Pesa Option Layout Box */}
+                  <div
+                    onClick={() => setPaymentMethod("m-pesa")}
+                    className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${paymentMethod === "m-pesa"
+                      ? "border-brand-500 bg-brand-50/5"
+                      : "border-gray-200 dark:border-gray-800"
+                      }`}
+                  >
+                    <FormControlLabel
+                      value="m-pesa"
+                      control={<Radio size="small" />}
+                      label={
+                        <div className="flex items-center gap-2">
+                          <MobileScreenShareOutlinedIcon
+                            className="text-brand-500"
+                            fontSize="small"
+                          />
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            M-Pesa Instant PayBill
+                          </span>
+                        </div>
+                      }
+                    />
+                  </div>
+
+                  {/* Card Option Layout Box */}
+                  <div
+                    onClick={() => setPaymentMethod("card")}
+                    className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${paymentMethod === "card"
+                      ? "border-brand-500 bg-brand-50/5"
+                      : "border-gray-200 dark:border-gray-800"
+                      }`}
+                  >
+                    <FormControlLabel
+                      value="card"
+                      control={<Radio size="small" />}
+                      label={
+                        <div className="flex items-center gap-2">
+                          <CreditCardIcon
+                            className="text-brand-500"
+                            fontSize="small"
+                          />
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            Bank Instant Checkout (VISA/MASTER Card)
+                          </span>
+                        </div>
+                      }
+                    />
+                  </div>
+                </RadioGroup>
+              </FormControl>
+
+              <div className="mt-4 mb-4 transition-all duration-200">
+                {paymentMethod === "m-pesa" && (
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                      Card Details
+                      M-Pesa Mobile Number
                     </label>
                     <div className="relative mt-2">
                       <Input
-                        type="text"
-                        placeholder="Card number"
+                        type="tel"
+                        placeholder="e.g., 0712345678"
                         className="pl-15.5"
-                        // value={cardNumber}
-                        // onChange={(e) => setCardNumber(e.target.value)}
+                        defaultValue={company?.phone}
+                        value={mpesaNumber || company?.phone}
+                        onChange={(e) => setMpesaNumber(e.target.value)}
+                        disabled={isPaying}
                       />
-                      <span className="absolute top-1/2 left-0 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
-                          <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
-                          <path
-                            d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
-                            fill="#FC6020"
-                          />
-                        </svg>
+                      <span className="absolute top-1/2 left-0 flex h-11 w-13.75 -translate-y-1/2 items-center justify-center border-r border-gray-200 text-sm dark:border-gray-800 dark:text-white">
+                        +254
                       </span>
                     </div>
                   </div>
+                )}
 
-                  {/* Expiry and CVV Side-by-Side Row */}
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Expiry Field */}
+                {paymentMethod === "card" && (
+                  <div className="space-y-4">
+                    {/* Card Number Row */}
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                        Expiry Date
+                        Card Details
                       </label>
-                      <Input
-                        type="text"
-                        max={"5"}
-                        placeholder="MM/YY"
-                        className="mt-2 w-full text-center"
+                      <div className="relative mt-2">
+                        <Input
+                          type="text"
+                          placeholder="Card number"
+                          className="pl-15.5"
+                        // value={cardNumber}
+                        // onChange={(e) => setCardNumber(e.target.value)}
+                        />
+                        <span className="absolute top-1/2 left-0 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
+                            <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
+                            <path
+                              d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
+                              fill="#FC6020"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Expiry and CVV Side-by-Side Row */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Expiry Field */}
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                          Expiry Date
+                        </label>
+                        <Input
+                          type="text"
+                          max={"5"}
+                          placeholder="MM/YY"
+                          className="mt-2 w-full text-center"
                         // value={expiry}
                         // onChange={(e) => handleExpiryChange(e.target.value)}
-                      />
-                    </div>
+                        />
+                      </div>
 
-                    {/* CVV/CVC Field */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                        Secure Code (CVV)
-                      </label>
-                      <Input
-                        type="password"
-                        max={"4"}
-                        placeholder="•••"
-                        className="mt-2 w-full text-center tracking-widest"
+                      {/* CVV/CVC Field */}
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                          Secure Code (CVV)
+                        </label>
+                        <Input
+                          type="password"
+                          max={"4"}
+                          placeholder="•••"
+                          className="mt-2 w-full text-center tracking-widest"
                         // value={cvv}
                         // onChange={(e) => setCvv(e.target.value)}
-                      />
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
+              </div>
+
+              {isPaying && (
+                <Alert
+                  title="Payment Processing!"
+                  variant="info"
+                  message="Your payment is being processed. Check your phone."
+                />
               )}
-            </div>
+              {paymentSuccess && (
+                <Alert
+                  title="Payment Confirmed!"
+                  variant="success"
+                  message="Your payment was successful. A receipt and your subscription details have been sent to your email. If you have any questions, contact support."
+                />
+              )}
 
-            {isPaying && (
-              <Alert
-                title="Payment Processing!"
-                variant="info"
-                message="Your payment is being processed. Check your phone."
-              />
-            )}
-            {paymentSuccess && (
-              <Alert
-                title="Payment Confirmed!"
-                variant="success"
-                message="Your payment was successful. A receipt and your subscription details have been sent to your email. If you have any questions, contact support."
-              />
-            )}
+              {error && (
+                <Alert
+                  title="Payment Error!"
+                  variant="error"
+                  message={
+                    error?.message || "An error occured. Please try again later!"
+                  }
+                />
+              )}
 
-            {error && (
-              <Alert
-                title="Payment Error!"
-                variant="error"
-                message={
-                  error?.message || "An error occured. Please try again later!"
-                }
-              />
-            )}
-
-            {/* Dynamic Call-To-Action Operations Routing Grid */}
-            <div className="mt-4 space-y-3">
-              <Button
-                onClick={createNewPayment}
-                className="intaSendPayButton w-full"
-                data-amount="10"
-                data-currency="KES"
-                size="md"
-                disabled={isPaying || paymentSuccess}
-              >
-                {isPaying
-                  ? "Processing Transaction..."
-                  : `Pay Now (Ksh. ${grandTotalAmount.toLocaleString()})`}
-              </Button>
+              {/* Dynamic Call-To-Action Operations Routing Grid */}
+              <div className="mt-4 space-y-3">
+                <Button
+                  onClick={createNewPayment}
+                  className="intaSendPayButton w-full"
+                  data-amount="10"
+                  data-currency="KES"
+                  size="md"
+                  disabled={isPaying || paymentSuccess}
+                >
+                  {isPaying
+                    ? "Processing Transaction..."
+                    : `Pay Now (Ksh. ${grandTotalAmount.toLocaleString()})`}
+                </Button>
+              </div>
             </div>
           </div>
         </ComponentCard>

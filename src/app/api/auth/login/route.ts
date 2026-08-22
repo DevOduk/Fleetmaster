@@ -46,7 +46,7 @@ export async function POST(request: Request) {
         : supabase
           .from("fleetmaster_admins")
           .select(
-            "id, password, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, national_id_number, dl_number, fleetmaster_tenants(*)",
+            `id, password, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, fleetmaster_tenants!inner(*)`,
           );
 
       const { data, error } = await queryBuilder
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       const { data, error } = await supabase
         .from("fleetmaster_clients")
         .select(
-          `id, password, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, fleetmaster_tenants!inner(*)`,
+          "id, password, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, national_id_number, dl_number, fleetmaster_tenants(*)",
         )
         .eq("email", targetEmail)
         .eq("fleetmaster_tenants.slug", targetTenantSlug)

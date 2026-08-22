@@ -2325,36 +2325,36 @@ export const languages = [
 
 export const expenseCategories = [
   {
-    value: "hardware",
+    value: "Hardware",
     label: "Hardware purchases and equipment",
   },
   {
-    value: "subscription",
-    label: "Subscription purchases and license renewal",
+    value: "Subscription",
+    label: "Subscription renewal for package: ",
   },
   {
-    value: "bandwidth",
+    value: "Bandwidth",
     label: "Internet and data connectivity costs",
   },
   {
-    value: "salaries",
+    value: "Salaries",
     label: "Payment of employee salaries",
   },
   {
-    value: "marketing",
+    value: "Marketing",
     label: "Marketing and advertising expenses",
   },
   {
-    value: "rent",
+    value: "Rent",
     label: "Office or yard rental fees",
   },
   {
-    value: "utilities",
+    value: "Utilities",
     label: "Utility bills (electricity, water, etc.)",
   },
   {
-    value: "other",
-    label: "Miscellaneous expenses",
+    value: "Miscellaneous",
+    label: "Other Company miscellaneous expenses",
   },
 ];
 

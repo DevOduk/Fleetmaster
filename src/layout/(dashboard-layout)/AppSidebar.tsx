@@ -14,6 +14,7 @@ import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined
 import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
 import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
 import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined";
+import { iconStyle } from "../(admin-layout)/AppSidebar";
 
 type NavItem = {
   name: string;
@@ -24,17 +25,17 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <DashboardCustomizeOutlinedIcon />,
+    icon: <DashboardCustomizeOutlinedIcon sx={iconStyle} />,
     name: "Dashboard",
     path: "/",
   },
   {
-    icon: <CalendarTodayOutlinedIcon />,
+    icon: <CalendarTodayOutlinedIcon sx={iconStyle} />,
     name: "Tenants",
     path: "/tenants",
   },
   {
-    icon: <DirectionsCarFilledOutlinedIcon />,
+    icon: <DirectionsCarFilledOutlinedIcon sx={iconStyle} />,
     name: "Vehicles",
     path: "/vehicles",
   },
@@ -42,39 +43,39 @@ const navItems: NavItem[] = [
 
 const othersItems: NavItem[] = [
   {
-    icon: <ContrastOutlinedIcon />,
+    icon: <ContrastOutlinedIcon sx={iconStyle} />,
     name: "Preferences",
     path: "/admin-preferences",
   },
   {
-    icon: <SupportAgentOutlinedIcon />,
+    icon: <SupportAgentOutlinedIcon sx={iconStyle} />,
     name: "Support",
     path: "/view-support",
   },
   {
-    icon: <FeedbackOutlinedIcon />,
+    icon: <FeedbackOutlinedIcon sx={iconStyle} />,
     name: "Feedbacks",
     path: "/view-feedback",
   },
   {
-    icon: <WysiwygOutlinedIcon />,
+    icon: <WysiwygOutlinedIcon sx={iconStyle} />,
     name: "System Logs",
     path: "/system",
   },
 ];
 const accountItems: NavItem[] = [
   {
-    icon: <AccountCircleOutlinedIcon />,
+    icon: <AccountCircleOutlinedIcon sx={iconStyle} />,
     name: "Admin Profile",
     path: "/profile",
   },
   {
-    icon: <AccountCircleOutlinedIcon />,
+    icon: <AccountCircleOutlinedIcon sx={iconStyle} />,
     name: "System Admins",
     path: "/admins",
   },
   {
-    icon: <ManageAccountsOutlinedIcon />,
+    icon: <ManageAccountsOutlinedIcon sx={iconStyle} />,
     name: "Settings",
     path: "/account/account-settings",
   },

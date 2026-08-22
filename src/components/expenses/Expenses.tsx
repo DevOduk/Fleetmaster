@@ -40,15 +40,8 @@ const Expenses: React.FC = () => {
   const aggregatedData = useMemo<{ series: number[]; labels: string[] }>(() => {
     if (!expenses || expenses.length === 0) return { series: [], labels: [] };
 
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-
     // Group by category
     const groups = expenses
-      .filter((e) => {
-        const d = new Date(e.created_at);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-      })
       .reduce<Record<string, number>>((acc, curr) => {
         const cat =
           curr.category.replace(
@@ -84,7 +77,7 @@ const Expenses: React.FC = () => {
     plotOptions: {
       pie: {
         dataLabels: {
-          offset: 10,
+          offset: 0,
         },
       },
     },
@@ -203,7 +196,7 @@ const Expenses: React.FC = () => {
           {
             title: "This Month's Expenses",
             value: totalThisMonth,
-            description: `Total earnings this Month (${fullMonth})`,
+            description: `Total edpenses this Month (${fullMonth})`,
           },
           {
             title: "Daily Average (This Month)",
@@ -222,9 +215,9 @@ const Expenses: React.FC = () => {
             <h2 className="mt-3 mb-2 text-2xl font-bold text-gray-600 dark:text-gray-300">
               {p?.value
                 ? Number(p.value).toLocaleString("en-KE", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
                 : "0.00"}
             </h2>
             <p className="text-sm text-gray-500">{p?.description}</p>
@@ -272,7 +265,7 @@ const Expenses: React.FC = () => {
           </button>
         </Link>
       </div>
-      <ExpensesTable />
+      <ExpensesTable expenses={expenses} loading={loading} />
       <Pagination onPageChange={() => 2} currentPage={1} totalPages={1} />
     </div>
   );

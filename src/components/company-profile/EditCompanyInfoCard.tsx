@@ -173,8 +173,7 @@ export default function EditCompanyInfoCard() {
     );
 
     const res = await updateTenantDetails(profile.tenant_id, {
-      ...companyFormData,
-      yards: updatedYards,
+      ...companyFormData
     });
     if (res.success) {
       showToast(`Yard "${yard.title}" deleted successfully.`, "success");

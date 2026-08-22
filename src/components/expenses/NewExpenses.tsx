@@ -1,8 +1,9 @@
 "use client";
-import React, { useState } from "react";
+
+import { useState } from "react";
 import Label from "@/components/form/Label";
 import Select from "@/components/form/Select";
-import { expenseCategories } from "@/data/globalExports";
+import { expenseCategories, subscriptionPlans } from "@/data/globalExports";
 import TextArea from "../form/input/TextArea";
 import { useUser } from "@/context/UserContext";
 import Input from "../form/input/InputField";
@@ -30,7 +31,6 @@ function NewExpenses() {
       !expenseDetails.category.trim() ||
       !expenseDetails.method.trim() ||
       !expenseDetails.description.trim() ||
-      !expenseDetails.payment_ref.trim() ||
       expenseDetails.amount === 0
     ) {
       showToast("Please fill out all the required fields!", "error");
@@ -106,8 +106,9 @@ function NewExpenses() {
                     setExpenseDetails((prev) => ({
                       ...prev,
                       category: e,
-                      description: expenseCategories.find((v) => v.value === e)
-                        .label,
+                      description:
+                        expenseCategories.find((v) => v.value === e)?.label ??
+                        "Other",
                     }))
                   }
                   options={expenseCategories.map((e) => {
@@ -139,6 +140,21 @@ function NewExpenses() {
                   setExpenseDetails((prev) => ({
                     ...prev,
                     amount: sanitized === "" ? 0 : Number(sanitized),
+                  }));
+                }}
+                onBlur={() => {
+                  const category =
+                    expenseCategories.find(
+                      (v) => v.value === expenseDetails.category,
+                    )?.label ?? "Other";
+                  const plan =
+                    subscriptionPlans.find(
+                      (p) => Number(p.price) === expenseDetails.amount,
+                    )?.name ?? "Custom";
+
+                  setExpenseDetails((prev) => ({
+                    ...prev,
+                    description: `${category} ${plan}`,
                   }));
                 }}
               />
@@ -191,9 +207,7 @@ function NewExpenses() {
                 <TextArea
                   placeholder="Describe the expense"
                   value={expenseDetails.description}
-                  onChange={(e) =>
-                    setExpenseDetails((prev) => ({ ...prev, description: e }))
-                  }
+                  onChange={(e) => { }}
                   rows={4}
                   className="ta-input"
                 ></TextArea>

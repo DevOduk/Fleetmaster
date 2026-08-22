@@ -33,6 +33,7 @@
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.2",
     "africastalking": "^0.8.3",
+    "animejs": "^4.5.0",
     "apexcharts": "^4.7.0",
     "autoprefixer": "^10.4.22",
     "bcrypt-ts": "^8.0.1",

@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
+import WaterDropGrid from "@/components/animations/waterdrop";
 
 export default function GlobalNotFound() {
   const router = useRouter();
@@ -29,7 +30,9 @@ export default function GlobalNotFound() {
   }, []);
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white p-4 dark:bg-gray-900">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white p-4 dark:bg-zinc-900">
+      {/* <WaterDropGrid /> */}
+      
       <div className="relative z-10 w-full max-w-lg px-6 py-10 text-center shadow-2xl shadow-gray-200/50 backdrop-blur-sm transition-all dark:shadow-none">
         {/* Image Container */}
         <div className="mx-auto mb-8 w-fit transition-transform duration-500 ease-out hover:scale-105">

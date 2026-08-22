@@ -24,7 +24,6 @@
       0 0;
   }
 }
-
 .apexcharts-tooltip-y-group {
   margin: 4px 10px !important;
   border-radius: 15px !important;
@@ -248,7 +247,7 @@
 }
 
 @utility menu-item {
-  @apply text-theme-sm relative flex w-full items-center gap-3 rounded-lg px-3 py-2 font-medium;
+  @apply text-theme-sm relative flex w-full items-center gap-2 rounded-lg px-2 py-2 font-medium;
 }
 
 @utility menu-item-active {

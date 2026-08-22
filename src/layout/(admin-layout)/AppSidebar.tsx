@@ -18,7 +18,6 @@ import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFi
 import TrendingDownOutlinedIcon from "@mui/icons-material/TrendingDownOutlined";
 import NavigationOutlinedIcon from "@mui/icons-material/NavigationOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import ContrastOutlinedIcon from "@mui/icons-material/ContrastOutlined";
 import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
 import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
 import WysiwygOutlinedIcon from "@mui/icons-material/WysiwygOutlined";
@@ -51,24 +50,17 @@ type NavItem = {
   }[];
 };
 
+export const iconStyle = { 
+  fontSize: '1.2rem' 
+}
 export const navItems: NavItem[] = [
   {
-    icon: <DashboardCustomizeOutlinedIcon />,
+    icon: <DashboardCustomizeOutlinedIcon sx={iconStyle} />,
     name: "Dashboard",
     path: "/",
   },
-  // {
-  //   icon: <DashboardCustomizeOutlinedIcon />,
-  //   name: "Dashboard",
-  //   subItems: [{ name: "Home", path: "/", pro: false }],
-  // },
-  // {
-  //   icon: <CalendarTodayOutlinedIcon />,
-  //   name: "Calendar",
-  //   path: "/calendar",
-  // },
   {
-    icon: <CalendarTodayOutlinedIcon />,
+    icon: <CalendarTodayOutlinedIcon sx={iconStyle} />,
     name: " Bookings",
     subItems: [
       { name: "All Bookings", path: "/bookings", pro: false, count: [true] },
@@ -77,110 +69,64 @@ export const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <DirectionsCarFilledOutlinedIcon />,
+    icon: <DirectionsCarFilledOutlinedIcon sx={iconStyle} />,
     name: " Vehicles",
     path: "/vehicles",
     count: [true],
   },
   {
-    icon: <TrendingDownOutlinedIcon />,
+    icon: <TrendingDownOutlinedIcon sx={iconStyle} />,
     name: " Expenses",
     path: "/expenses",
     pro: true,
   },
   {
-    icon: <LocationOnOutlinedIcon />,
+    icon: <LocationOnOutlinedIcon sx={iconStyle} />,
     name: "Yards",
     path: "/yards",
   },
   {
-    icon: <NavigationOutlinedIcon />,
+    icon: <NavigationOutlinedIcon sx={iconStyle} />,
     name: "Live Map",
     path: "/map",
     pro: true,
   },
 
-  // {
-  //   name: "Forms",
-  //   icon: <ListIcon />,
-  //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  // },
-  // {
-  //   name: "Tables",
-  //   icon: <TableIcon />,
-  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  // },
-  // {
-  //   name: "Pages",
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
-  //   ],
-  // },
 ];
 
 export const othersItems: NavItem[] = [
   {
-    icon: <FeedbackOutlinedIcon />,
+    icon: <FeedbackOutlinedIcon sx={iconStyle} />,
     name: "Feedback",
     path: "/feedback",
   },
   {
-    icon: <WysiwygOutlinedIcon />,
+    icon: <WysiwygOutlinedIcon sx={iconStyle} />,
     name: "System Logs",
     path: "/system-logs",
   },
   {
-    icon: <PeopleAltOutlinedIcon />,
+    icon: <PeopleAltOutlinedIcon sx={iconStyle} />,
     name: "System Users",
     path: "/system-users",
   },
-  // {
-  //   icon: <PieChartIcon />,
-  //   name: "Charts",
-  //   subItems: [
-  //     { name: "Line Chart", path: "/line-chart", pro: false },
-  //     { name: "Bar Chart", path: "/bar-chart", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <BoxCubeIcon />,
-  //   name: "UI Elements",
-  //   subItems: [
-  //     { name: "Alerts", path: "/alerts", pro: false },
-  //     { name: "Avatar", path: "/avatars", pro: false },
-  //     { name: "Badge", path: "/badge", pro: false },
-  //     { name: "Buttons", path: "/buttons", pro: false },
-  //     { name: "Images", path: "/images", pro: false },
-  //     { name: "Videos", path: "/videos", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <PlugInIcon />,
-  //   name: "Authentication",
-  //   subItems: [
-  //     { name: "Sign In", path: "/signin", pro: false },
-  //     { name: "Sign Up", path: "/signup", pro: false },
-  //   ],
-  // },
 ];
 export const accountItems: NavItem[] = [
   {
-    icon: <SupportAgentOutlinedIcon />,
+    icon: <SupportAgentOutlinedIcon sx={iconStyle} />,
     name: "Support",
     path: "/support",
   },
   {
-    icon: <AccountCircleOutlinedIcon />,
+    icon: <AccountCircleOutlinedIcon sx={iconStyle} />,
     name: "User Profile",
     path: "/profile",
   },
   {
-    icon: <EmojiTransportationOutlinedIcon />,
+    icon: <EmojiTransportationOutlinedIcon sx={iconStyle} />,
     name: "Company",
     subItems: [
-      { name: "Profile", path: "/company-profile", pro: false },
+      { name: "Company Profile", path: "/company-profile", pro: false },
       {
         name: "Subscriptions",
         path: "/company-profile/subscription",
@@ -190,38 +136,10 @@ export const accountItems: NavItem[] = [
     ],
   },
   {
-    icon: <ManageAccountsOutlinedIcon />,
+    icon: <ManageAccountsOutlinedIcon sx={iconStyle} />,
     name: "Account Settings",
     path: "/profile/account-settings",
   },
-  // {
-  //   icon: <PieChartIcon />,
-  //   name: "Charts",
-  //   subItems: [
-  //     { name: "Line Chart", path: "/line-chart", pro: false },
-  //     { name: "Bar Chart", path: "/bar-chart", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <BoxCubeIcon />,
-  //   name: "UI Elements",
-  //   subItems: [
-  //     { name: "Alerts", path: "/alerts", pro: false },
-  //     { name: "Avatar", path: "/avatars", pro: false },
-  //     { name: "Badge", path: "/badge", pro: false },
-  //     { name: "Buttons", path: "/buttons", pro: false },
-  //     { name: "Images", path: "/images", pro: false },
-  //     { name: "Videos", path: "/videos", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <PlugInIcon />,
-  //   name: "Authentication",
-  //   subItems: [
-  //     { name: "Sign In", path: "/signin", pro: false },
-  //     { name: "Sign Up", path: "/signup", pro: false },
-  //   ],
-  // },
 ];
 
 const AppSidebar: React.FC = () => {
@@ -260,7 +178,7 @@ const AppSidebar: React.FC = () => {
     navItems: NavItem[],
     menuType: "main" | "others" | "account",
   ) => (
-    <ul className="flex flex-col gap-4">
+    <ul className="flex flex-col gap-3">
       {navItems.map((nav, index) => (
         <li key={nav.name}>
           {nav.subItems ? (

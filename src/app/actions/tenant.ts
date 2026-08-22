@@ -77,8 +77,8 @@ export async function fetchTenantDetails(tenantId: string) {
     // 🔑 Store both details AND refresh the ID-to-slug bridge pointer for client caching
     await Promise.all([
       redis.set(cacheKey, JSON.stringify(data), { ex: CACHE_TTL_SECONDS }),
-      data.slug && data.id 
-        ? redis.set(`map:id_to_slug:${data.id}`, data.slug.toLowerCase().trim(), { ex: CACHE_TTL_SECONDS }) 
+      data.slug && data.id
+        ? redis.set(`map:id_to_slug:${data.id}`, data.slug.toLowerCase().trim(), { ex: CACHE_TTL_SECONDS })
         : Promise.resolve(),
     ]);
   } catch (cacheErr) {
@@ -89,7 +89,7 @@ export async function fetchTenantDetails(tenantId: string) {
 }
 
 export async function fetchTenantSubscriptions(tenantId: string) {
-  const cacheKey = `tenants:subscriptions:${tenantId}`;
+  const cacheKey = `subscriptions:tenant:${tenantId}`;
 
   try {
     const cachedData = await redis.get<any[]>(cacheKey);
@@ -102,11 +102,10 @@ export async function fetchTenantSubscriptions(tenantId: string) {
 
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("fleetmaster_payments")
-    .select("amount, tenant_id, message, provider, created_at")
+    .from("fleetmaster_expenses")
+    .select("amount, tenant_id, description, method, currency, category, created_at")
     .eq("tenant_id", tenantId)
-    .eq("status", "Success")
-    .ilike("message", "Subscription renewal for package:%")
+    .ilike("category", "subscription")
     .order("created_at", { ascending: false });
 
   if (error || !data) {
@@ -115,11 +114,11 @@ export async function fetchTenantSubscriptions(tenantId: string) {
 
   const subscriptions = data.map((item) => {
     return {
-      label: item.message.split("Subscription renewal for package: ")[1],
-      value: item.message,
+      label: item.description.split("Subscription renewal for package: ")[1],
+      value: item.description,
       date: item.created_at,
       amount: item.amount,
-      method: item.provider,
+      method: item.method,
     };
   });
 
@@ -139,8 +138,10 @@ export async function updateTenantDetails(tenantId: string, updatedData: any) {
 
   const { data, error } = await supabase
     .from("fleetmaster_tenants")
-    .update({ ...updatedData, last_updated: new Date() })
-    .eq("id", tenantId);
+    .update({ ...updatedData, last_updated: new Date().toISOString() }) // use .toISOString() for dates
+    .eq("id", tenantId)
+    .select()
+    .single(); 
 
   if (!error) {
     await invalidateTenantCache(undefined, tenantId);
@@ -266,8 +267,8 @@ export async function createNewTenant(newTenantData: any) {
       try {
         await Promise.all([
           redis.del("tenants:all"),
-          data.slug && data.id 
-            ? redis.set(`map:id_to_slug:${data.id}`, data.slug.toLowerCase().trim(), { ex: CACHE_TTL_SECONDS }) 
+          data.slug && data.id
+            ? redis.set(`map:id_to_slug:${data.id}`, data.slug.toLowerCase().trim(), { ex: CACHE_TTL_SECONDS })
             : Promise.resolve(),
         ]);
       } catch (cacheErr) {

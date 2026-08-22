@@ -96,10 +96,10 @@ export async function createExpense(expenseDetails: any) {
   // Invalidate cache on creation
   if (redis && !error) {
     try {
-      const keysToInvalidate = ["expenses:all"];
+      const keysToInvalidate = ["expenses:all",`subscriptions:tenant:${expenseDetails.tenant_id}`];
 
       if (expenseDetails?.tenant_id) {
-        keysToInvalidate.push(`expenses:admin:${expenseDetails.tenant_id}`);
+        keysToInvalidate.push(`expenses:tenant:${expenseDetails.tenant_id}`);
       }
 
       await redis.del(...keysToInvalidate);
@@ -112,7 +112,7 @@ export async function createExpense(expenseDetails: any) {
 }
 
 export async function fetchExpensesForAdmin(tenantId: string) {
-  const cacheKey = `expenses:admin:${tenantId}`;
+  const cacheKey = `expenses:tenant:${tenantId}`;
 
   if (redis) {
     try {
