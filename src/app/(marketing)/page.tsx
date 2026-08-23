@@ -1,7 +1,6 @@
 // app/page.tsx
 import type { Metadata } from "next";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import HttpIcon from "@mui/icons-material/Http";
@@ -16,6 +15,7 @@ import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
 import CallToAction from "@/components/marketing-components/CallToAction";
 import Link from "next/link";
 import Image from "next/image";
+import { getAllFeedbacks } from "../actions/feedbacks";
 
 export const metadata: Metadata = {
   title: "Home | FleetMaster - Fleet Management Solution",
@@ -23,10 +23,12 @@ export const metadata: Metadata = {
     "FleetMaster is the ultimate fleet management dashboard built with Next.js and Tailwind CSS. Monitor your fleet's performance, track vehicles in real-time, and optimize operations with our intuitive interface. Try it now and experience seamless fleet management like never before.",
 };
 
-export default function Home() {
+export default async function Home() {
+    const feedbacks = await getAllFeedbacks();
+  
   return (
     <div>
-      <div className="hero h-max-screen relative bg-white select-none dark:bg-[#080a29]">
+      <div className="hero h-max-screen relative bg-white select-none dark:bg-zinc-900">
         <div
           className="absolute top-0 right-0 h-100 w-full bg-cover bg-right opacity-40 mix-blend-multiply lg:h-[85vh] lg:bg-center lg:opacity-100 lg:mix-blend-normal"
           style={{
@@ -468,7 +470,7 @@ export default function Home() {
       </div>
 
       <br />
-      <TestimonialsSection />
+      <TestimonialsSection feedbacks={feedbacks} />
       <br />
       <CallToAction />
     </div>

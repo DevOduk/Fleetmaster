@@ -22,7 +22,7 @@ export default function AdminLayout({
 }) {
   return (
     <div>
-      <div className="min-h-screen dark:bg-[#080a29]">
+      <div className="min-h-screen dark:bg-zinc-900">
         <Backdrop />
 
         {/* Header */}

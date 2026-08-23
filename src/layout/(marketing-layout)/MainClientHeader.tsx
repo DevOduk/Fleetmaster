@@ -20,7 +20,7 @@ export default function MainClientHeader() {
       {/* Rounded floating card container:
               Includes dark mode support to match your app structure seamlessly.
             */}
-      <div className="flex items-center justify-between rounded-full border border-gray-200/50 bg-white/80 px-6 py-2.5 shadow-sm backdrop-blur-md dark:border-zinc-800/50 dark:bg-[#080a29]/60">
+      <div className="flex items-center justify-between rounded-full border border-gray-200/50 bg-white/80 px-6 py-2.5 shadow-sm backdrop-blur-md dark:border-zinc-800/50 dark:bg-zinc-900/60">
         {/* Logo / Brand */}
         <div className="flex cursor-pointer items-center gap-2">
           <Link href="/" className="">

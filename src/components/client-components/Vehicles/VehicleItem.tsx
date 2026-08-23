@@ -86,8 +86,9 @@ function VehicleItem({ VehicleDetails, isBooked, filters }: VehicleDetails) {
       </Link>
 
       <div className="px-3 pb-4">
-        <h4 className="mb-1 font-bold text-black dark:text-white truncate">
-          {VehicleDetails.year} {VehicleDetails.make}{" "}
+        <h4 className="mb-1 font-bold text-black dark:text-gray-200 truncate">
+          {/* {VehicleDetails.year} */}
+          {VehicleDetails.make}{" "}
           {VehicleDetails.model}{" "}
           {VehicleDetails.category}{" "}
         </h4>

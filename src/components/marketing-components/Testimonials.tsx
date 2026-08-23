@@ -2,10 +2,31 @@
 
 import StarIcon from "@mui/icons-material/Star";
 import VerifiedIcon from "@mui/icons-material/Verified";
+import Rating from "@mui/material/Rating";
+import { useTheme } from "@mui/material/styles";
 
-export default function TestimonialsSection() {
+
+
+
+export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
+  const theme = useTheme();
+
+  const normalizedTestimonials = feedbacks.filter((f) => f.is_feedback && f.rating >= 4.5).map(feed => {
+    return {
+      rating: feed.rating,
+      title: feed.category,
+      quote: feed.feedback_text,
+      author: `${feed.sender.first_name.replace(feed.sender.first_name.charAt(0), feed.sender.first_name.charAt(0).toUpperCase())} ${feed.sender.last_name.replace(feed.sender.last_name.charAt(0), feed.sender.last_name.charAt(0).toUpperCase())}`,
+      role: `${feed.user_role} | ${feed.tenant.name}`,
+      initials: `${feed.sender.first_name.split('')[0]}${feed.sender.last_name.split('')[0]}`.toUpperCase(),
+      color: "bg-emerald-500/10 text-emerald-500",
+    }
+  })
   const testimonials = [
+    ...normalizedTestimonials,
     {
+      rating: 5,
+      title: "Faster Fleet Launch",
       quote:
         "Setting up our fleet used to take days of DNS configuring. Moving to FleetMaster gave us a fully-vetted booking portal on our own free subdomain within three minutes. Absolute lifesaver.",
       author: "Marcus Vance",
@@ -14,6 +35,8 @@ export default function TestimonialsSection() {
       color: "bg-emerald-500/10 text-emerald-500",
     },
     {
+      rating: 5,
+      title: "Predictive Fleet Health",
       quote:
         "The live telematics and automated battery/voltage tracking completely transformed how we protect our premium inventory. We catch diagnostic faults before the drivers even notice them.",
       author: "Elena Rostova",
@@ -22,6 +45,8 @@ export default function TestimonialsSection() {
       color: "bg-blue-500/10 text-blue-500",
     },
     {
+      rating: 5,
+      title: "Security-First Vetting",
       quote:
         "We were highly skeptical about automated driver vetting, but the security-first pipeline has flagged three fraudulent identity profile attempts in our first month alone. The insurance savings paid for the software instantly.",
       author: "Devon Carter",
@@ -30,6 +55,8 @@ export default function TestimonialsSection() {
       color: "bg-indigo-500/10 text-indigo-500",
     },
     {
+      rating: 5,
+      title: "Utilization Optimization",
       quote:
         "Our Honda Fits and Toyota RAV4s used to get hammered with mileage while other cars sat idle. The deterministic rotation logic balanced our entire fleet utilization perfectly.",
       author: "Kenji Sato",
@@ -60,11 +87,28 @@ export default function TestimonialsSection() {
           >
             {/* Rating Row */}
             <div className="mb-4 flex items-center gap-0.5 text-amber-500">
-              {[...Array(5)].map((_, i) => (
-                <StarIcon key={i} fontSize="small" />
-              ))}
+              <Rating
+                readOnly
+                value={item.rating || 0}
+                max={5} // Adjusted to 5-star metric standard, can set to 10 if needed
+                size="small"
+                precision={.5}
+                sx={{
+                  "& .MuiRating-iconEmpty": {
+                    color:
+                      theme.palette.mode === "dark"
+                        ? "rgba(255,255,255,0.2)"
+                        : "#cbd5e1",
+                  },
+                }}
+              />
             </div>
 
+
+            {/* Narrative Quote Content */}
+            <p className="text-sm mb-2 font-semibold text-green-600 sm:text-base dark:text-green-400">
+              {item?.title || 'Cool'}
+            </p>
             {/* Narrative Quote Content */}
             <p className="flex-1 text-sm leading-relaxed font-normal text-gray-600 italic sm:text-base dark:text-zinc-300">
               &quot;{item.quote}&quot;
