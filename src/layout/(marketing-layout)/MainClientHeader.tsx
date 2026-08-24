@@ -16,11 +16,11 @@ export default function MainClientHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 container mx-auto w-full px-4 pt-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 container mx-auto w-full md:px-4 pt-4 lg:px-8">
       {/* Rounded floating card container:
               Includes dark mode support to match your app structure seamlessly.
             */}
-      <div className="flex items-center justify-between rounded-full border border-gray-200/50 bg-white/80 px-6 py-2.5 shadow-sm backdrop-blur-md dark:border-zinc-800/50 dark:bg-zinc-900/60">
+      <div className="flex items-center justify-between rounded-full border border-gray-200/50 dark:border-zinc-600/50 bg-white/80 px-5 md:px-6 py-2.5 shadow-sm backdrop-blur-md dark:bg-zinc-950/60">
         {/* Logo / Brand */}
         <div className="flex cursor-pointer items-center gap-2">
           <Link href="/" className="">
@@ -28,17 +28,26 @@ export default function MainClientHeader() {
               width={154}
               height={32}
               sizes="(max-width: 768px) 120px, 154px"
-              className="dark:hidden"
+              className="hidden md:block dark:hidden"
               src="/images/logo/logo.svg"
               alt=""
             />
             <Image
               width={154}
-              height={32}
+              height={40}
               sizes="(max-width: 768px) 120px, 154px"
               preload
-              className="hidden dark:block"
+              className="hidden md:dark:block"
               src="/images/logo/logo-dark.svg"
+              alt=""
+            />
+            <Image
+              width={40}
+              height={40}
+              sizes="(max-width: 768px) 120px, 154px"
+              preload
+              className="block md:hidden"
+              src="/images/logo/logo-icon.svg"
               alt=""
             />
           </Link>
@@ -46,6 +55,9 @@ export default function MainClientHeader() {
 
         {/* Desktop Links */}
         <nav className="hidden items-center gap-8 text-sm font-medium text-gray-600 md:flex dark:text-zinc-400">
+          <Link href="/about" className={getStyles("/pricing")}>
+            About Us
+          </Link>
           <Link href="/usage" className={getStyles("/usage")}>
             Use cases <AddIcon fontSize="small" className="opacity-60" />
           </Link>
@@ -73,7 +85,7 @@ export default function MainClientHeader() {
           <Link
             href="http://app.localhost:3000/register"
             target="_blank"
-            className=""
+            className="hidden md:block"
           >
             <button className="cursor-pointer rounded-xl border border-gray-200 bg-white px-5 py-2 text-sm font-semibold text-nowrap text-black shadow-sm transition-all hover:border-gray-400 dark:border-zinc-300 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200">
               Open app

@@ -4,13 +4,15 @@ import StarIcon from "@mui/icons-material/Star";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import Rating from "@mui/material/Rating";
 import { useTheme } from "@mui/material/styles";
+import { useEffect, useRef, useState } from "react";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 
 
 
 export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
   const theme = useTheme();
-
   const normalizedTestimonials = feedbacks.filter((f) => f.is_feedback && f.rating >= 4.5).map(feed => {
     return {
       rating: feed.rating,
@@ -66,73 +68,219 @@ export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
     },
   ];
 
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [resetToken, setResetToken] = useState(0);
+  const [itemsPerView, setItemsPerView] = useState(1);
+
+  useEffect(() => {
+    const updateItemsPerView = () => {
+      setItemsPerView(window.innerWidth >= 1280 ? 4 : window.innerWidth >= 768 ? 2 : 1);
+    };
+    updateItemsPerView();
+    window.addEventListener("resize", updateItemsPerView);
+    return () => window.removeEventListener("resize", updateItemsPerView);
+  }, []);
+
+
+
+  const triggerUserInteraction = () => {
+    setResetToken((prev) => prev + 1);
+  };
+
+  useEffect(() => {
+    if (testimonials.length <= 1) return;
+
+    const autoScrollTimer = setInterval(() => {
+      if (sliderRef.current) {
+        const { scrollLeft, clientWidth, scrollWidth } = sliderRef.current;
+        const isAtTheEnd = scrollLeft + clientWidth >= scrollWidth - 5;
+
+        sliderRef.current.scrollTo({
+          left: isAtTheEnd ? 0 : scrollLeft + clientWidth,
+          behavior: "smooth",
+        });
+      }
+    }, 5000);
+
+    return () => clearInterval(autoScrollTimer);
+  }, [testimonials.length, resetToken]);
+
+  const handleScroll = (direction: "left" | "right") => {
+    triggerUserInteraction(); // Wipes and resets the 5s timer frame immediately!
+
+    if (sliderRef.current) {
+      const { scrollLeft, clientWidth, scrollWidth } = sliderRef.current;
+
+      let targetScrollLeft: number;
+
+      if (direction === "right") {
+        // Check if we are at or past the end of the scrollable area
+        if (scrollLeft + clientWidth >= scrollWidth - 1) {
+          targetScrollLeft = 0; // Loop back to the start
+        } else {
+          targetScrollLeft = scrollLeft + clientWidth;
+        }
+      } else {
+        // If going left and at the very beginning, wrap around to the end
+        if (scrollLeft <= 0) {
+          targetScrollLeft = scrollWidth - clientWidth;
+        } else {
+          targetScrollLeft = scrollLeft - clientWidth;
+        }
+      }
+
+      sliderRef.current.scrollTo({
+        left: targetScrollLeft,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const handleDotClick = (index: number) => {
+    triggerUserInteraction(); // Wipes and resets the 5s timer frame immediately!
+
+    if (sliderRef.current) {
+      const { clientWidth } = sliderRef.current;
+      sliderRef.current.scrollTo({
+        left: index * clientWidth,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // Passive scroll tracking listener for active index (keeps dot highlighting synchronized)
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    const handleScrollTracking = () => {
+      const { scrollLeft, clientWidth } = slider;
+      if (clientWidth === 0) return;
+      const targetIndex = Math.round(scrollLeft / clientWidth);
+      setActiveIndex((prev) => (prev !== targetIndex ? targetIndex : prev));
+    };
+
+    slider.addEventListener("scroll", handleScrollTracking, { passive: true });
+    return () => slider.removeEventListener("scroll", handleScrollTracking);
+  }, [testimonials.length]);
+
   return (
-    <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
-      <h3 className="text-center text-amber-500">Client Testimonials</h3>
-      <h2 className="mt-4 mb-3 text-center text-3xl font-bold text-black dark:text-white">
+    <div className="container mx-auto px-3 py-10">
+      <h3 className="md:text-center text-amber-500">Client Testimonials</h3>
+      <h2 className="mt-4 mb-3 md:text-center text-3xl font-bold text-black dark:text-white">
         See What our Clients Had To Say!
       </h2>
-      <p className="m-auto mb-5 max-w-175 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p className="m-auto mb-5 max-w-175 md:text-center text-sm text-gray-500 dark:text-gray-400">
         From independent fleet operators to enterprise rental networks,
         thousands rely on FleetMaster to automate operations, track hardware
         diagnostics, and secure their assets.
       </p>
 
       {/* Testimonials Bento Grid Layout */}
-      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
-        {testimonials.map((item, index) => (
-          <div
-            key={index}
-            className="flex flex-col justify-between rounded-2xl border border-gray-100 bg-gray-100 p-6 shadow-xs transition-all duration-200 hover:border-gray-200 sm:p-8 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
-          >
-            {/* Rating Row */}
-            <div className="mb-4 flex items-center gap-0.5 text-amber-500">
-              <Rating
-                readOnly
-                value={item.rating || 0}
-                max={5} // Adjusted to 5-star metric standard, can set to 10 if needed
-                size="small"
-                precision={.5}
-                sx={{
-                  "& .MuiRating-iconEmpty": {
-                    color:
-                      theme.palette.mode === "dark"
-                        ? "rgba(255,255,255,0.2)"
-                        : "#cbd5e1",
-                  },
-                }}
-              />
-            </div>
+      <div className="group relative my-auto flex w-full items-center">
 
-
-            {/* Narrative Quote Content */}
-            <p className="text-sm mb-2 font-semibold text-green-600 sm:text-base dark:text-green-400">
-              {item?.title || 'Cool'}
-            </p>
-            {/* Narrative Quote Content */}
-            <p className="flex-1 text-sm leading-relaxed font-normal text-gray-600 italic sm:text-base dark:text-zinc-300">
-              &quot;{item.quote}&quot;
-            </p>
-
-            {/* Author Profile Footer Row */}
-            <div className="mt-6 flex items-center gap-4 border-t border-gray-50 pt-6 dark:border-zinc-800">
-              <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold tracking-wide ${item.color}`}
-              >
-                {item.initials}
+        {/* Inner Scrollable Track */}
+        <div
+          ref={sliderRef}
+          className="no-scrollbar grid h-full w-full grid-flow-col grid-rows-1 gap-0 gap-y-6 overflow-x-auto snap-x snap-mandatory scroll-smooth auto-cols-[calc(100%-2rem)] sm:auto-cols-full md:auto-cols-[calc((100%)/2)] xl:grid-rows-2"
+        >
+          {testimonials.map((item, index) => (
+            <div
+              key={index}
+              className="flex h-full snap-start min-w-0 flex-col mx-4 justify-between rounded-2xl border border-gray-100 bg-gray-100 p-6 shadow-md shadow-zinc-300/50 transition-all duration-200 hover:border-gray-200 sm:p-8 dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-zinc-500/90 dark:hover:border-gray-700"
+            >
+              {/* Rating Row */}
+              <div className="mb-4 flex items-center gap-0.5 text-amber-500">
+                <Rating
+                  readOnly
+                  value={item.rating || 0}
+                  max={5} // Adjusted to 5-star metric standard, can set to 10 if needed
+                  size="small"
+                  precision={.5}
+                  sx={{
+                    "& .MuiRating-iconEmpty": {
+                      color:
+                        theme.palette.mode === "dark"
+                          ? "rgba(255,255,255,0.2)"
+                          : "#cbd5e1",
+                    },
+                  }}
+                />
               </div>
-              <div className="min-w-0">
-                <h4 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                  {item.author}
-                </h4>
-                <p className="mt-0.5 truncate text-xs text-gray-400 dark:text-zinc-500">
-                  {item.role}
-                </p>
+
+              {/* Narrative Quote Content */}
+              <p className="text-sm mb-2 font-semibold text-green-600 sm:text-base dark:text-green-400">
+                {item?.title || 'Cool'}
+              </p>
+              {/* Narrative Quote Content */}
+              <p className="flex-1 text-xs leading-relaxed font-normal text-gray-600 italic sm:text-base dark:text-zinc-300">
+                &quot;{item.quote}&quot;
+              </p>
+
+              {/* Author Profile Footer Row */}
+              <div className="mt-6 flex items-center gap-4 border-t border-gray-50 pt-6 dark:border-zinc-800">
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold tracking-wide ${item.color}`}
+                >
+                  {item.initials}
+                </div>
+                <div className="min-w-0">
+                  <h4 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                    {item.author}
+                  </h4>
+                  <p className="mt-0.5 truncate text-xs text-gray-400 dark:text-zinc-500">
+                    {item.role}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+
+
+      {/* --- FIXED DOT INDICATOR PANEL OVERLAY --- */}
+      <div className="relative flex items-center justify-between gap-2 px-0 py-4 mt-2">
+        {/* Left Button */}
+        <button
+          onClick={() => handleScroll("left")}
+          className="flex items-center text-lg justify-center rounded-lg bg-gray-300 p-2.5 text-black shadow-md ring-1 ring-zinc-600/50 shadow-zinc-400 dark:shadow-zinc-500/90 backdrop-blur-sm transition hover:scale-105 active:scale-95 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+          aria-label="Previous slide"
+          title="Previous slide"
+        >
+          <ChevronLeftIcon fontSize="medium" />
+        </button>
+
+
+        <div className="flex gap-2">
+          {Array.from({ length: Math.ceil(testimonials.length / itemsPerView) }, (_, i) => {
+            const isActive = i === activeIndex;
+            return (
+              <button
+                key={`dot-${i}`}
+                onClick={() => handleDotClick(i)}
+                className={`m-0 h-2 rounded-full transition-all duration-300 outline-none ${isActive
+                  ? "w-6 bg-blue-500" // Highlighted Active Pill Indicator
+                  : "w-2 bg-gray-500 hover:bg-gray-400" // Inactive point dot color
+                  }`}
+                aria-label={`Jump directly to testimonial group ${i + 1}`}
+              />
+            );
+          })}
+        </div>
+
+        {/* Right Button */}
+        <button
+          onClick={() => handleScroll("right")}
+          className="flex items-center text-lg justify-center rounded-lg bg-gray-300 p-2.5 text-black shadow-md ring-1 ring-zinc-600/50 shadow-zinc-400 dark:shadow-zinc-500/90 backdrop-blur-sm transition hover:scale-105 active:scale-95 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+          aria-label="Next slide"
+          title="Next slide"
+        >
+          <ChevronRightIcon />
+        </button>
+      </div>
+
 
       {/* HIGH-FIDELITY TRUSTPILOT INTEGRATION COMPONENT */}
       <div className="container mx-auto border-t border-gray-100 pt-4 shadow dark:border-zinc-900">

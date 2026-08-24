@@ -7,7 +7,7 @@ export default function CallToAction() {
     <div className="pb-7">
       <div className="mx-auto mb-10 max-w-7xl border-t border-gray-500"></div>
 
-      <div className="mx-auto mt-5 mb-10 max-w-5xl p-0 text-center">
+      <div className="mx-auto mt-5 mb-10 max-w-5xl p-0 md:text-center">
         {/* Inner Card Container */}
         <div className="relative overflow-hidden rounded-3xl border border-gray-100 bg-gray-50 px-6 py-12 shadow-xs sm:p-16 dark:border-zinc-800/80 dark:bg-zinc-900/40">
           {/* Minimalist Background Light Flare */}
@@ -29,7 +29,7 @@ export default function CallToAction() {
             <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
               <Link
                 href={"/contact"}
-                className="w-full cursor-pointer rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold shadow-xs transition-all hover:bg-gray-100 sm:w-auto dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:text-gray-50 dark:hover:bg-zinc-800"
+                className="w-full cursor-pointer text-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold shadow-xs transition-all hover:bg-gray-100 sm:w-auto dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:text-gray-50 dark:hover:bg-zinc-800"
               >
                 Talk to an expert
               </Link>

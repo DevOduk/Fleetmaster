@@ -185,8 +185,8 @@ export default async function Home() {
             loading="lazy"
           />
           <img
-            className="h-10 brightness-30 dark:brightness-100"
-            src={"/images/logo/company-1.svg"}
+            className="h-10 brightness-30 contrast-0 dark:brightness-100"
+            src={"/images/logo/company-4.png"}
             alt="Company 4"
             loading="lazy"
           />
@@ -195,7 +195,7 @@ export default async function Home() {
 
       <div className="mx-auto mt-8 mb-8 grid w-full grid-cols-1 gap-3 p-4 md:container lg:grid-cols-12">
         {/* 2. Swapped col-5 for col-span-5 */}
-        <div className="col-span-12 lg:col-span-5">
+        <div className="col-span-12 lg:col-span-5 mb-8">
           <h3 className="text-amber-500">Where We Come In</h3>
           <h2 className="mt-4 mb-3 text-3xl font-bold text-black dark:text-white">
             Focus on Business. Leave the Software Hassle to Us!
@@ -230,10 +230,10 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="relative mx-auto max-w-4xl space-y-12 px-4 lg:col-span-7">
-          {/* <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-12 text-center">
+        <div className="col-span-12 relative py-3 mx-auto max-w-4xl space-y-12 px-4 lg:col-span-7">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-12 block md:hidden">
               Core Applications
-            </h2> */}
+            </h2>
 
           {/* Center Timeline Line Indicator: Centered on desktop, shifted to the left edge on mobile screens */}
           <div className="pointer-events-none absolute top-24 bottom-6 left-6.5 w-0.5 -translate-x-1/2 bg-slate-200 md:left-1/2 dark:bg-slate-800" />
@@ -312,7 +312,7 @@ export default async function Home() {
                 {/* Content Card Wrapper (Image Container) */}
                 {/* md:order-first and md:order-last push the image dynamically based on item index */}
                 <div
-                  className={`mb-10 flex aspect-3/2 relative overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900 ${isEven ? "md:order-first" : "md:order-last"}`}
+                  className={`mb-0 md:mb-10 flex aspect-3/2 relative overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900 ${isEven ? "md:order-first" : "md:order-last"}`}
                 >
                   <Image
                     src={feature.imgSrc}
@@ -354,18 +354,18 @@ export default async function Home() {
       <div className="container m-auto mb-5 border-t border-gray-500"></div>
 
       <br />
-      <div>
-        <h3 className="text-brand-500 text-center">Choose Convenience</h3>
-        <h2 className="mt-4 mb-3 text-center text-3xl font-bold text-black dark:text-white">
+      <div className="p-3"> 
+        <h3 className="text-brand-500 md:text-center">Choose Convenience</h3>
+        <h2 className="mt-4 mb-3 md:text-center text-3xl font-bold text-black dark:text-white">
           Be Among Hundreds of our Happy Clients Worldwide!
         </h2>
-        <p className="m-auto mb-5 max-w-175 text-center text-sm text-gray-500 dark:text-gray-400">
+        <p className="m-auto mb-5 max-w-175 md:text-center text-sm text-gray-500 dark:text-gray-400">
           Browse our extensive collection of well-maintained vehicles across
           divers locations. From compact cars to luxury sedans, we have the
           perfect vehicle for your needs.
         </p>
 
-        <div className="container m-auto mb-4 grid grid-cols-2 gap-3 p-2 lg:grid-cols-4">
+        <div className="container m-auto mb-4 grid grid-cols-1 md:grid-cols-2 gap-3 lg:grid-cols-4">
           <div className="mb-6 rounded-2xl border-l-0 border-l-blue-500 bg-gray-700/9 p-4 shadow shadow-blue-500/60">
             <PeopleAltOutlinedIcon className="text-gray-500" />
             <h2 className="text-brand-500 mt-2 mb-2 text-2xl font-extrabold">
@@ -420,7 +420,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="container m-auto mt-5 mb-5 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
+      <div className="container m-auto mt-5 mb-5 grid grid-cols-1 items-center gap-6 p-3 lg:grid-cols-12">
         {/* 3. Swapped col-7 for col-span-7 */}
         <div className="lg:col-span-6 aspect-video relative">
           <Image
