@@ -1,4 +1,5 @@
 "use client";
+
 import { ApexOptions } from "apexcharts";
 import dynamic from "next/dynamic";
 import { MoreDotIcon } from "@/icons";
@@ -6,7 +7,6 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useUser } from "@/context/UserContext";
-import { monthToStr } from "flatpickr/dist/utils/formatting";
 import { parseISO, getMonth, getYear, isSameMonth } from "date-fns";
 
 const revenueExpenses = ({ bookings, expenses }: any) => {

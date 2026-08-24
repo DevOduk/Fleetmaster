@@ -1139,7 +1139,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                         (isStarted && !isEnded) // can't complete before end
                       }
                       className="w-full"
-                      variant={!isStarted ? "danger" : "success"}
+                      variant={!isStarted && !isPastStartTime ? 'danger' : "success"}
                       size="sm"
                     >
                       {!isStarted
