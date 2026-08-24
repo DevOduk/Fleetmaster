@@ -254,7 +254,12 @@ function HomePage() {
             </div>
 
             <div className="col-span-12">
-              <StatisticsChart />
+              <StatisticsChart
+                bookings={bookings}
+                loadingBookings={LoadingBookings || loading}
+                target={targetMonthly}
+                expenses={expenses} 
+                />
             </div>
 
             <div className="col-span-12 xl:col-span-5">

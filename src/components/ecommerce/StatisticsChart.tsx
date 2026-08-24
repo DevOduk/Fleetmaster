@@ -18,7 +18,17 @@ const Chart = dynamic(() => import("react-apexcharts"), {
   ),
 });
 
-export default function StatisticsChart() {
+export default function StatisticsChart({
+  expenses,
+  bookings,
+  loadingBookings,
+  target,
+}: {
+  expenses: any;
+  bookings: any;
+  loadingBookings: boolean;
+  target: number;
+}) {
   const datePickerRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
