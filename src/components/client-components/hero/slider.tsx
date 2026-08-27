@@ -7,12 +7,12 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Image from "next/image";
 import { defaultVehicleImages } from "@/data/globalExports";
 
-
 export default function HeroSlider() {
   const { vehicles, loading: loadingVehicles } = useFleet();
   const sliderRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [resetToken, setResetToken] = useState(0);
+  const isScrollingRef = useRef(false); // Prevents overlapping glitched states from rapid clicks
 
   const allImageUrls =
     vehicles.length > 3
@@ -20,89 +20,106 @@ export default function HeroSlider() {
       : vehicles.length === 0
         ? defaultVehicleImages
         : [
-          ...vehicles.map((v) => v?.image_url).filter(Boolean),
-          ...defaultVehicleImages,
-        ];
+            ...vehicles.map((v) => v?.image_url).filter(Boolean),
+            ...defaultVehicleImages,
+          ];
 
   const triggerUserInteraction = () => {
     setResetToken((prev) => prev + 1);
   };
 
+  // Auto-scroll loop
   useEffect(() => {
     if (allImageUrls.length <= 1) return;
 
     const autoScrollTimer = setInterval(() => {
-      if (sliderRef.current) {
+      if (sliderRef.current && !isScrollingRef.current) {
         const { scrollLeft, clientWidth, scrollWidth } = sliderRef.current;
         const isAtTheEnd = scrollLeft + clientWidth >= scrollWidth - 5;
+        const nextIndex = isAtTheEnd ? 0 : activeIndex + 1;
 
+        isScrollingRef.current = true;
         sliderRef.current.scrollTo({
-          left: isAtTheEnd ? 0 : scrollLeft + clientWidth,
+          left: nextIndex * clientWidth,
           behavior: "smooth",
         });
+
+        // Release lock after animation finishes
+        setTimeout(() => {
+          isScrollingRef.current = false;
+        }, 400);
       }
     }, 5000);
 
     return () => clearInterval(autoScrollTimer);
-  }, [allImageUrls.length, resetToken]);
+  }, [allImageUrls.length, resetToken, activeIndex]);
 
   const handleScroll = (direction: "left" | "right") => {
-    triggerUserInteraction(); // Wipes and resets the 5s timer frame immediately!
+    if (isScrollingRef.current || !sliderRef.current) return;
+    triggerUserInteraction();
 
-    if (sliderRef.current) {
-      const { scrollLeft, clientWidth, scrollWidth } = sliderRef.current;
-      
-      let targetScrollLeft: number;
+    const { scrollLeft, clientWidth, scrollWidth } = sliderRef.current;
+    let targetIndex = activeIndex;
 
-      if (direction === "right") {
-        // Check if we are at or past the end of the scrollable area
-        if (scrollLeft + clientWidth >= scrollWidth - 1) {
-          targetScrollLeft = 0; // Loop back to the start
-        } else {
-          targetScrollLeft = scrollLeft + clientWidth;
-        }
-      } else {
-        // If going left and at the very beginning, wrap around to the end
-        if (scrollLeft <= 0) {
-          targetScrollLeft = scrollWidth - clientWidth;
-        } else {
-          targetScrollLeft = scrollLeft - clientWidth;
-        }
-      }
-
-      sliderRef.current.scrollTo({
-        left: targetScrollLeft,
-        behavior: "smooth",
-      });
+    if (direction === "right") {
+      targetIndex = scrollLeft + clientWidth >= scrollWidth - 5 ? 0 : activeIndex + 1;
+    } else {
+      targetIndex = scrollLeft <= 5 ? allImageUrls.length - 1 : activeIndex - 1;
     }
+
+    isScrollingRef.current = true;
+    sliderRef.current.scrollTo({
+      left: targetIndex * clientWidth,
+      behavior: "smooth",
+    });
+
+    setActiveIndex(targetIndex);
+
+    setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 350);
   };
 
   const handleDotClick = (index: number) => {
-    triggerUserInteraction(); // Wipes and resets the 5s timer frame immediately!
+    if (isScrollingRef.current || !sliderRef.current || index === activeIndex) return;
+    triggerUserInteraction();
 
-    if (sliderRef.current) {
-      const { clientWidth } = sliderRef.current;
-      sliderRef.current.scrollTo({
-        left: index * clientWidth,
-        behavior: "smooth",
-      });
-    }
+    const { clientWidth } = sliderRef.current;
+    isScrollingRef.current = true;
+
+    sliderRef.current.scrollTo({
+      left: index * clientWidth,
+      behavior: "smooth",
+    });
+
+    setActiveIndex(index);
+
+    setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 350);
   };
 
-  // Passive scroll tracking listener for active index (keeps dot highlighting synchronized)
+  // Passive scroll tracking to keep dot states locked accurately
   useEffect(() => {
     const slider = sliderRef.current;
     if (!slider) return;
 
+    let timeoutId: NodeJS.Timeout;
     const handleScrollTracking = () => {
-      const { scrollLeft, clientWidth } = slider;
-      if (clientWidth === 0) return;
-      const targetIndex = Math.round(scrollLeft / clientWidth);
-      setActiveIndex((prev) => (prev !== targetIndex ? targetIndex : prev));
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const { scrollLeft, clientWidth } = slider;
+        if (clientWidth === 0) return;
+        const targetIndex = Math.round(scrollLeft / clientWidth);
+        setActiveIndex((prev) => (prev !== targetIndex ? targetIndex : prev));
+      }, 50); // Debounce check to prevent mid-scroll flickering
     };
 
     slider.addEventListener("scroll", handleScrollTracking, { passive: true });
-    return () => slider.removeEventListener("scroll", handleScrollTracking);
+    return () => {
+      slider.removeEventListener("scroll", handleScrollTracking);
+      clearTimeout(timeoutId);
+    };
   }, [allImageUrls.length]);
 
   return (
@@ -125,10 +142,10 @@ export default function HeroSlider() {
         <ChevronRightIcon />
       </button>
 
-      {/* Inner Scrollable Track */}
+      {/* Inner Scrollable Track (Removed conflicting CSS scroll-smooth class) */}
       <div
         ref={sliderRef}
-        className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto scroll-smooth"
+        className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto"
       >
         {allImageUrls.map((img, i) => (
           <div
@@ -140,7 +157,7 @@ export default function HeroSlider() {
               alt={``}
               src={img}
               fill
-                sizes="(max-width: 1024px) 50vw, 33vw"
+              sizes="(max-width: 1024px) 50vw, 33vw"
               style={{ filter: "brightness(70%)" }}
               priority={i === 0}
             />
@@ -156,10 +173,11 @@ export default function HeroSlider() {
             <button
               key={`dot-${i}`}
               onClick={() => handleDotClick(i)}
-              className={`m-0 h-2 rounded-full transition-all duration-300 outline-none ${isActive
-                  ? "w-6 bg-blue-500" // Highlighted Active Pill Indicator
-                  : "w-2 bg-gray-500 hover:bg-gray-400" // Inactive point dot color
-                }`}
+              className={`m-0 h-2 rounded-full transition-all duration-300 outline-none ${
+                isActive
+                  ? "w-6 bg-blue-500"
+                  : "w-2 bg-gray-500 hover:bg-gray-400"
+              }`}
               aria-label={`Jump directly to panel view frame index number ${i + 1}`}
             />
           );

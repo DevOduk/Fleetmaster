@@ -20,12 +20,13 @@ export default function ClientTermsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="m-auto min-h-screen w-full">
       {/* Hero Header Block */}
       <SecondaryHero
         pages={pages}
         title="Rental Terms &"
         highlightedText="Usage Conditions"
+        className="dark:bg-zinc-950"
         description="Please read these client terms carefully before taking physical possession or keys of any managed fleet vehicle."
       />
 
@@ -76,7 +77,7 @@ export default function ClientTermsPage() {
       {/* Interactive Terms System */}
       <div
         id="terms-root"
-        className="border-t border-slate-200 bg-white dark:border-slate-800/60 dark:bg-slate-900/40"
+        className="border-t border-slate-200 bg-white dark:border-slate-800/60 dark:bg-zinc-950/40"
       >
         <ClientRentalTerms />
       </div>

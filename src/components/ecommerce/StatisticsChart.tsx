@@ -6,7 +6,7 @@ import { ApexOptions } from "apexcharts";
 import flatpickr from "flatpickr";
 import ChartTab from "../common/ChartTab";
 import { CalenderIcon } from "../../icons";
-import { parseISO, getYear, getMonth, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { getYear, getMonth, getDaysInMonth, isWithinInterval, startOfDay, endOfDay, format, isSameDay, eachDayOfInterval } from "date-fns";
 
 // Import mandatory flatpickr theme stylesheets directly
 import "flatpickr/dist/flatpickr.min.css";
@@ -32,7 +32,7 @@ export default function StatisticsChart({
   target: number;
 }) {
   const datePickerRef = useRef<HTMLInputElement>(null);
-  const [filterType, setFilterType] = useState<"monthly" | "quarterly" | "annually">("monthly");
+  const [filterType, setFilterType] = useState<"daily" | "monthly" | "quarterly" | "annually">("monthly");
   const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({
     start: null,
     end: null,
@@ -80,11 +80,19 @@ export default function StatisticsChart({
     const now = new Date();
     const currentYear = getYear(now);
 
+    // Keep the date as stored by the API. Parsing an ISO timestamp with
+    // parseISO converts it to local time and can shift it into the prior day
+    // or month for users in negative UTC offsets.
+    const getChartDate = (createdAt: string) => {
+      const [year, month, day] = createdAt.slice(0, 10).split("-").map(Number);
+      return new Date(year, month - 1, day);
+    };
+
     // 1. Handle Custom Date Range Filter if active
     if (dateRange.start && dateRange.end) {
       const filteredBookings = (bookings || []).filter((item) => {
         if (!item?.created_at) return false;
-        const date = parseISO(item.created_at);
+        const date = getChartDate(item.created_at);
         return (
           isWithinInterval(date, {
             start: startOfDay(dateRange.start!),
@@ -95,33 +103,67 @@ export default function StatisticsChart({
 
       const filteredExpenses = (expenses || []).filter((item) => {
         if (!item?.created_at) return false;
-        const date = parseISO(item.created_at);
+        const date = getChartDate(item.created_at);
         return isWithinInterval(date, {
           start: startOfDay(dateRange.start!),
           end: endOfDay(dateRange.end!),
         });
       });
 
-      const totalBookingsVal = filteredBookings.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
-      const totalExpensesVal = filteredExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+      const days = eachDayOfInterval({
+        start: startOfDay(dateRange.start),
+        end: startOfDay(dateRange.end),
+      });
+      const getSumForDay = (data: any[], day: Date, isBooking = true) =>
+        data
+          .filter((item) => {
+            const date = getChartDate(item.created_at);
+            return isSameDay(date, day) && (!isBooking || item.status !== "Reserved");
+          })
+          .reduce((sum, item) => sum + (Number(isBooking ? item.total : item.amount) || 0), 0);
 
       return {
-        categories: ["Custom Range"],
+        categories: days.map((day) => format(day, "dd")),
         series: [
-          { name: "Sales / Bookings", data: [totalBookingsVal] },
-          { name: "Expenses", data: [totalExpensesVal] },
+          { name: "Sales", data: days.map((day) => getSumForDay(filteredBookings, day, true)) },
+          { name: "Expenses", data: days.map((day) => getSumForDay(filteredExpenses, day, false)) },
         ],
       };
     }
 
-    // 2. Handle Quarterly Filter
+    // 2. Handle Daily Filter (all days in the current month)
+    if (filterType === "daily") {
+      const days = Array.from(
+        { length: now.getDate() },
+        (_, index) => new Date(currentYear, getMonth(now), index + 1)
+      );
+      const getSumForDay = (data: any[], day: Date, isBooking = true) => {
+        return data
+          .filter((item) => {
+            if (!item?.created_at) return false;
+            const date = getChartDate(item.created_at);
+            return isSameDay(date, day) && (!isBooking || item.status !== "Reserved");
+          })
+          .reduce((sum, item) => sum + (Number(isBooking ? item.total : item.amount) || 0), 0);
+      };
+
+      return {
+        categories: days.map((day) => format(day, "dd")),
+        series: [
+          { name: "Sales", data: days.map((day) => getSumForDay(bookings || [], day, true)) },
+          { name: "Expenses", data: days.map((day) => getSumForDay(expenses || [], day, false)) },
+        ],
+      };
+    }
+
+    // 3. Handle Quarterly Filter
     if (filterType === "quarterly") {
       const quarters = ["Q1 (Jan-Mar)", "Q2 (Apr-Jun)", "Q3 (Jul-Sep)", "Q4 (Oct-Dec)"];
       const getSumForQuarter = (data: any[], qMonths: number[], isBooking = true) => {
         return data
           .filter((item) => {
             if (!item?.created_at) return false;
-            const date = parseISO(item.created_at);
+            const date = getChartDate(item.created_at);
             return (
               getYear(date) === currentYear &&
               qMonths.includes(getMonth(date)) &&
@@ -150,14 +192,14 @@ export default function StatisticsChart({
       };
     }
 
-    // 3. Handle Annually Filter (Past 5 Years or available years)
+    // 4. Handle Annually Filter (Past 5 Years or available years)
     if (filterType === "annually") {
       const years = [currentYear - 4, currentYear - 3, currentYear - 2, currentYear - 1, currentYear];
       const getSumForYear = (data: any[], targetYear: number, isBooking = true) => {
         return data
           .filter((item) => {
             if (!item?.created_at) return false;
-            const date = parseISO(item.created_at);
+            const date = getChartDate(item.created_at);
             return (
               getYear(date) === targetYear && (!isBooking || item.status !== "Reserved")
             );
@@ -177,7 +219,7 @@ export default function StatisticsChart({
       };
     }
 
-    // 4. Default Monthly Filter (Jan to Current Month)
+    // 5. Default Monthly Filter (Jan to Current Month)
     const allMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const currentMonthIndex = getMonth(now);
     const categories = allMonths.slice(0, currentMonthIndex + 1);
@@ -186,7 +228,7 @@ export default function StatisticsChart({
       return data
         .filter((item) => {
           if (!item?.created_at) return false;
-          const date = parseISO(item.created_at);
+          const date = getChartDate(item.created_at);
           return (
             getYear(date) === currentYear &&
             getMonth(date) === targetMonthIndex &&
@@ -226,7 +268,7 @@ export default function StatisticsChart({
       },
     },
     stroke: {
-      curve: "straight",
+      curve: "smooth",
       width: [2, 2],
     },
     fill: {
@@ -306,10 +348,19 @@ export default function StatisticsChart({
           {/* ChartTab handles view toggling: Pass active filter state and setter if needed */}
           <div className="flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
             <button
+              onClick={() => { setFilterType("daily"); setDateRange({ start: null, end: null }); }}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${filterType === "daily" && !dateRange.start
+                ? "bg-white text-gray-800 shadow-sm dark:bg-gray-700 dark:text-white"
+                : "text-gray-500 hover:text-gray-800 dark:text-gray-400"
+                }`}
+            >
+              Daily
+            </button>
+            <button
               onClick={() => { setFilterType("monthly"); setDateRange({ start: null, end: null }); }}
               className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${filterType === "monthly" && !dateRange.start
-                  ? "bg-white text-gray-800 shadow-sm dark:bg-gray-700 dark:text-white"
-                  : "text-gray-500 hover:text-gray-800 dark:text-gray-400"
+                ? "bg-white text-gray-800 shadow-sm dark:bg-gray-700 dark:text-white"
+                : "text-gray-500 hover:text-gray-800 dark:text-gray-400"
                 }`}
             >
               Monthly
@@ -317,8 +368,8 @@ export default function StatisticsChart({
             <button
               onClick={() => { setFilterType("quarterly"); setDateRange({ start: null, end: null }); }}
               className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${filterType === "quarterly" && !dateRange.start
-                  ? "bg-white text-gray-800 shadow-sm dark:bg-gray-700 dark:text-white"
-                  : "text-gray-500 hover:text-gray-800 dark:text-gray-400"
+                ? "bg-white text-gray-800 shadow-sm dark:bg-gray-700 dark:text-white"
+                : "text-gray-500 hover:text-gray-800 dark:text-gray-400"
                 }`}
             >
               Quarterly
@@ -326,8 +377,8 @@ export default function StatisticsChart({
             <button
               onClick={() => { setFilterType("annually"); setDateRange({ start: null, end: null }); }}
               className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${filterType === "annually" && !dateRange.start
-                  ? "bg-white text-gray-800 shadow-sm dark:bg-gray-700 dark:text-white"
-                  : "text-gray-500 hover:text-gray-800 dark:text-gray-400"
+                ? "bg-white text-gray-800 shadow-sm dark:bg-gray-700 dark:text-white"
+                : "text-gray-500 hover:text-gray-800 dark:text-gray-400"
                 }`}
             >
               Annually
@@ -350,7 +401,9 @@ export default function StatisticsChart({
           {loadingBookings ? (
             <div className="h-77.5 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800" />
           ) : (
-            <Chart options={options} series={chartData.series} type="area" height={510} />
+            <div className="overflow-hidden">
+              <Chart options={options} series={chartData.series} type="area" height={510} />
+            </div>
           )}
         </div>
       </div>

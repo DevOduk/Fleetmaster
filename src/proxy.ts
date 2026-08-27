@@ -12,9 +12,9 @@ const JWT_SECRET = process.env.JWT_SECRET
 const redis =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
     ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
     : null;
 
 export async function proxy(req: NextRequest) {
@@ -142,14 +142,18 @@ export async function proxy(req: NextRequest) {
     const managerSessionToken = req.cookies.get("admin_session")?.value;
 
     // Dynamically construct sign-in path depending on domain type
-    let signInPath = "/signin";
+    const searchString = url.searchParams.toString();
+    const currentPageUrl = encodeURIComponent(
+      searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
+    );
+    let signInPath = `/signin?r=${currentPageUrl}`;
     if (isVercelDomain) {
       if (pathSegments[0] === "admin-site") {
-        signInPath = "/admin-site/signin";
+        signInPath = `/admin-site/signin?r=${currentPageUrl}`;
       } else if (pathSegments[0] === "tenant-manager") {
-        signInPath = "/tenant-manager/signin";
+        signInPath = `/tenant-manager/signin?r=${currentPageUrl}`;
       } else if (pathSegments[0] === "client-site" && pathSegments[1]) {
-        signInPath = `/client-site/${pathSegments[1]}/signin`;
+        signInPath = `/client-site/${pathSegments[1]}/signin?r=${currentPageUrl}`;
       }
     }
 

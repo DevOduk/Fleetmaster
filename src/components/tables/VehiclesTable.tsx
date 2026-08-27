@@ -213,8 +213,8 @@ export default function VehiclesTable({
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-8 pb-3">
-        <span className="text-gray-800 dark:text-white">
+      <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
+          <span className="text-gray-800 dark:text-white text-sm">
           Showing {startIndex} to {isNaN(endIndex) ? 1 : endIndex} of{" "}
           {totalResults || 0} results
         </span>

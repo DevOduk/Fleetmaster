@@ -55,7 +55,7 @@ export default function MainClientHeader() {
 
         {/* Desktop Links */}
         <nav className="hidden items-center gap-8 text-sm font-medium text-gray-600 md:flex dark:text-zinc-400">
-          <Link href="/about" className={getStyles("/pricing")}>
+          <Link href="/about" className={getStyles("/about")}>
             About Us
           </Link>
           <Link href="/usage" className={getStyles("/usage")}>

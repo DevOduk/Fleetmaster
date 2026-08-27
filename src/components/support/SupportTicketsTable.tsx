@@ -225,16 +225,16 @@ const Support: React.FC = () => {
                   tickets.slice(startIndex - 1, endIndex).length > 0 ? (
                     tickets.slice(startIndex - 1, endIndex).map((t) => (
                       <TableRow key={t.id} className="text-sm">
-                        <TableCell className="text-brand-500 p-3">
+                        <TableCell className="text-brand-500 text-nowrap p-3">
                           {t.ticket_number}
                         </TableCell>
                         <TableCell className="text-brand-500 p-3">
                           <Badge color="info">{t.category}</Badge>
                         </TableCell>
-                        <TableCell className="p-3 text-slate-700 dark:text-slate-300">
+                        <TableCell className="p-3 text-slate-700  min-w-50 dark:text-slate-300">
                           {t.subject}
                         </TableCell>
-                        <TableCell className="max-w-130 truncate p-3 text-slate-700 dark:text-slate-300">
+                        <TableCell className="max-w-120 min-w-50 truncate p-3 text-slate-700 dark:text-slate-300">
                           {t.description}
                         </TableCell>
                         <TableCell className="p-3 text-slate-500">
@@ -279,8 +279,8 @@ const Support: React.FC = () => {
             </Table>
           </div>
 
-          <div className="flex items-center justify-between pt-8 pb-3">
-            <span className="text-gray-800 dark:text-white">
+          <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
+          <span className="text-gray-800 dark:text-white text-sm">
               Showing {startIndex} to {endIndex} of {totalResults} results
             </span>
             <Pagination

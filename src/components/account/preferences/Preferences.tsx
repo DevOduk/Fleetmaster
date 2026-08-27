@@ -180,7 +180,7 @@ export default function Preferences(
             your popups appear: Placement, size, etc.
           </p>
 
-          <div className="flex flex-wrap gap-3 py-4">
+          <div className="grid grid-cols-2 gap-3 py-4 sm:grid-cols-3 lg:grid-cols-6">
             {[
               "top-right",
               "top-left",
@@ -202,12 +202,12 @@ export default function Preferences(
                 onClick={() => {
                   setPosition(
                     pos as
-                      | "top-left"
-                      | "top-right"
-                      | "bottom-left"
-                      | "bottom-right"
-                      | "top-center"
-                      | "bottom-center",
+                    | "top-left"
+                    | "top-right"
+                    | "bottom-left"
+                    | "bottom-right"
+                    | "top-center"
+                    | "bottom-center",
                   );
 
                   toast(
@@ -244,7 +244,7 @@ export default function Preferences(
           </div>
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/40">
           <div>
             <p className="font-medium text-gray-900 dark:text-white">
               Popup Notifications
@@ -259,7 +259,7 @@ export default function Preferences(
             className="accent-brand-500 h-5 w-5 cursor-pointer rounded border-gray-300"
           />
         </div>
-        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/40">
           <div>
             <p className="font-medium text-gray-900 dark:text-white">
               Email Notifications
@@ -276,7 +276,7 @@ export default function Preferences(
           />
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-800">
+        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/40">
           <div>
             <p className="font-medium text-gray-900 dark:text-white">
               Newsletter

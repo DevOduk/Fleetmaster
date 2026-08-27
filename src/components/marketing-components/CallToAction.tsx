@@ -9,7 +9,7 @@ export default function CallToAction() {
 
       <div className="mx-auto mt-5 mb-10 max-w-5xl p-0 md:text-center">
         {/* Inner Card Container */}
-        <div className="relative overflow-hidden rounded-3xl border border-gray-100 bg-gray-50 px-6 py-12 shadow-xs sm:p-16 dark:border-zinc-800/80 dark:bg-zinc-900/40">
+        <div className="relative overflow-hidden rounded-3xl border border-gray-100 bg-gray-100 px-6 py-12 shadow-xs sm:p-16 dark:border-zinc-800/80 dark:bg-zinc-950/60">
           {/* Minimalist Background Light Flare */}
           <div className="bg-brand-500/10 dark:bg-brand-500/5 pointer-events-none absolute -bottom-24 left-1/2 h-40 w-80 -translate-x-1/2 rounded-full blur-[60px]" />
 
@@ -29,7 +29,7 @@ export default function CallToAction() {
             <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
               <Link
                 href={"/contact"}
-                className="w-full cursor-pointer text-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold shadow-xs transition-all hover:bg-gray-100 sm:w-auto dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:text-gray-50 dark:hover:bg-zinc-800"
+                className="w-full cursor-pointer text-center rounded-lg border border-gray-200 bg-white px-6 py-2 text-sm font-semibold shadow-xs transition-all hover:bg-gray-100 sm:w-auto dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:text-gray-50 dark:hover:bg-zinc-800"
               >
                 Talk to an expert
               </Link>
@@ -37,7 +37,7 @@ export default function CallToAction() {
               <Link
                 target="_blank"
                 href={"http://app.localhost:3000/register"}
-                className="group bg-brand-500 dark:bg-brand-500 dark:text-brand-50 hover:bg-brand-900 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-medium text-white shadow-md transition-all sm:w-auto"
+                className="group bg-brand-500 dark:bg-brand-500 dark:text-brand-50 hover:bg-brand-900 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-6 py-2 text-sm font-medium text-white shadow-md transition-all sm:w-auto"
               >
                 Start for free
                 <ArrowForwardIcon className="text-xs transition-transform duration-200 group-hover:translate-x-0.5" />

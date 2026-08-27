@@ -232,7 +232,7 @@ const Bookings: React.FC = () => {
             </div>
           ))}
         </div>
-        <div className="flex items-center justify-between py-3">
+      <div className="flex items-start md:items-center gap-7 justify-between py-3 flex-col md:flex-row">
           <div>
             <p className="text-theme-sm mb-2 font-medium text-gray-800 dark:text-white/90">
               View all bookings and manage them. Click Create New Booking to add
@@ -261,7 +261,6 @@ const Bookings: React.FC = () => {
           </div>
         </div>
         <BookingsTable />
-        <Pagination onPageChange={() => 2} currentPage={1} totalPages={1} />
       </div>
     </div>
   );

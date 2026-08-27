@@ -6,13 +6,18 @@ import { Avatar } from "@mui/material";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { useAdmin } from "@/context/AdminContext";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Badge from "@/components/ui/badge/Badge";
 
 export default function AdminDropdown() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchString = useSearchParams().toString();
   const [isOpen, setIsOpen] = useState(false);
   const { adminProfile: profile, logout } = useAdmin();
+  const currentPageUrl = encodeURIComponent(
+    searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
+  );
 
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.stopPropagation();
@@ -43,9 +48,8 @@ export default function AdminDropdown() {
           </span>
 
           <svg
-            className={`stroke-gray-500 transition-transform duration-200 dark:stroke-gray-400 ${
-              isOpen ? "rotate-180" : ""
-            }`}
+            className={`stroke-gray-500 transition-transform duration-200 dark:stroke-gray-400 ${isOpen ? "rotate-180" : ""
+              }`}
             width="18"
             height="20"
             viewBox="0 0 18 20"
@@ -63,7 +67,7 @@ export default function AdminDropdown() {
         </button>
       ) : (
         <Link
-          href="/signin"
+          href={`/signin?r=${currentPageUrl}`}
           className="flex items-center gap-2 text-nowrap text-gray-600 dark:text-gray-400"
         >
           <Avatar src="" /> Sign in

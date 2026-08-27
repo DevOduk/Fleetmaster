@@ -20,7 +20,7 @@ import { useUser } from "@/context/UserContext";
 import { useTenant } from "@/context/TenantContext";
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import DeliveryBanner from "@/components/client-components/DeliveryBanner";
 import { fetchVehicleDetails } from "@/app/actions/vehicles";
@@ -37,6 +37,12 @@ const breadcrumbItems = [{ label: "Vehicles", href: "/vehicles" }];
 export default function ViewVehiclePage({ params }: VehiclePageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const searchString = searchParams.toString();
+  // Rebuild the accurate current page URL dynamically to signin link
+  const currentPageUrl = encodeURIComponent(
+    searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
+  );
   const resolvedParams = use(params);
   const [loading, setLoading] = useState(true);
   const [loadingBooking, setLoadingBooking] = useState(true);
@@ -668,7 +674,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
                 </Button>
               </div>
             ) : (
-              <Link target="_blank" href={"/signin"}>
+              <Link target="_blank" href={`/signin?r=${currentPageUrl}`}>
                 <Button className="mt-5 w-full" size="sm">
                   Signin to Book
                 </Button>

@@ -1,6 +1,7 @@
 "use client";
 import { Avatar, Backdrop, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined";
 import { handleImageFileUpload } from "@/utils/uploads/imageUpload";
 import { useToast } from "@/context/ToastContext";
@@ -16,6 +17,8 @@ export default function EditAdminMetaCard() {
   const [profileDetails, setProfileDetails] = useState(profile || null);
   const { showToast } = useToast();
   const [backDrop, setBackDrop] = useState(false);
+  const pathname = usePathname();
+  const searchString = useSearchParams().toString();
 
   useEffect(() => {
     if (profile && !loading) {
@@ -44,7 +47,10 @@ export default function EditAdminMetaCard() {
       </div>
     );
   } else if (!profile) {
-    window.location.href = "/signin";
+    const currentPageUrl = encodeURIComponent(
+      searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
+    );
+    window.location.href = `/signin?r=${currentPageUrl}`;
     return (
       <div className="container mx-auto min-h-[80vh] p-5 text-gray-400">
         Redirecting to signin ...

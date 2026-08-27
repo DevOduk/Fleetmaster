@@ -59,14 +59,14 @@ export default function CompanyInfoCard() {
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <div className="max-w-6xl mx-auto overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-gray-900">
       <ExpiryBanner
         plan={company.subscription_plan}
         expiryDate={company.expiry_date}
       />
 
       {/* Header Section */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5 dark:border-gray-800">
+      <div className="flex flex-col md:flex-row  md:items-center gap-7 justify-between border-b border-gray-100 py-5 dark:border-gray-800">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
             {company.tenant_logo ? (
@@ -106,13 +106,13 @@ export default function CompanyInfoCard() {
 
         <Link
           href="/company-profile/edit"
-          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+          className="rounded-lg bg-gray-900 px-4 text-center py-2 text-sm font-semibold text-white transition hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
         >
           Edit Profile
         </Link>
       </div>
 
-      <div className="space-y-8 p-6">
+      <div className="space-y-8 mt-7">
         <p className="text-sm text-gray-600 dark:text-gray-300">
           {company.description || "No description available."}
         </p>

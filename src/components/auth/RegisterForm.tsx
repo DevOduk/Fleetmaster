@@ -223,10 +223,10 @@ function RegisterFormInner() {
                         .replace(/[^a-z0-9\s-]/g, "")
                         .replace(/\s+/g, "-")
                         ? companyDetils.slug
-                            .trim()
-                            .toLowerCase()
-                            .replace(/[^a-z0-9\s-]/g, "")
-                            .replace(/\s+/g, "-")
+                          .trim()
+                          .toLowerCase()
+                          .replace(/[^a-z0-9\s-]/g, "")
+                          .replace(/\s+/g, "-")
                         : "mycompany"}
                       .fleetmaster.co.ke
                     </p>

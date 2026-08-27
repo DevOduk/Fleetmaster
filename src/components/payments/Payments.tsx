@@ -123,7 +123,8 @@ const Payments: React.FC = () => {
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between py-3">
+      
+      <div className="flex items-start md:items-center gap-7 justify-between py-3 flex-col md:flex-row">
         <div>
           <p className="text-theme-sm mb-2 font-medium text-gray-800 dark:text-white/90">
             View all payments (All money coming in) and manage them. Click
@@ -143,7 +144,6 @@ const Payments: React.FC = () => {
         </Link>
       </div>
       <PaymentsTable expenses={expenses} loading={loading} />
-      <Pagination onPageChange={() => 2} currentPage={1} totalPages={1} />
     </div>
   );
 };

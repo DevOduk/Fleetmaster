@@ -32,16 +32,17 @@ export default function UseCasesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="m-auto min-h-screen w-full">
       {/* Hero Header Block */}
       <SecondaryHero
         pages={pages}
         title="Discover our platform"
         highlightedText="Use Cases"
+        className="dark:bg-zinc-950"
         description="See how business operators use FleetMaster's built-in tool suite to eliminate scattered management software, scale assets safely, and reduce operational overhead."
       />
 
-      <div className="container  m-auto mt-5 mb-5 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
+      <div className="container  m-auto mt-5 mb-5 grid grid-cols-1 items-start gap-6 p-4 lg:grid-cols-12">
         {/* 3. Swapped col-7 for col-span-7 */}
         <div className="lg:col-span-6 relative aspect-video">
           <Image
@@ -49,7 +50,7 @@ export default function UseCasesPage() {
             alt="What Next ..."
             preload
             fill
-                sizes="(max-width: 1024px) 50vw, 33vw"
+            sizes="(max-width: 1024px) 50vw, 33vw"
             style={{ objectFit: 'cover' }}
             src={
               "/images/user/Professional_business_concept_image_showing_a_Flor-1765206733138.webp"
@@ -128,7 +129,7 @@ export default function UseCasesPage() {
             </h2> */}
 
             {/* Center Timeline Line Indicator: Centered on desktop, shifted to the left edge on mobile screens */}
-            <div className="pointer-events-none absolute top-24 bottom-6 left-6.5 w-0.5 -translate-x-1/2 bg-slate-200 md:left-1/2 dark:bg-slate-800" />
+            <div className="pointer-events-none absolute top-24 bottom-6 left-6.5 w-0.5 -translate-x-1/2 bg-slate-200 md:left-1/2 dark:bg-zinc-800" />
 
             {[
               {
@@ -201,7 +202,7 @@ export default function UseCasesPage() {
                   className="relative grid min-h-75 grid-cols-1 items-center gap-8 pl-12 md:grid-cols-2 md:gap-16 md:pl-0"
                 >
                   {/* Center/Left Number Node Badge */}
-                  <div className="absolute top-0 left-0 z-10 flex h-12 w-12 translate-x-0 items-center justify-center rounded-full border-4 border-slate-50 bg-slate-100 text-sm font-bold text-slate-800 shadow-sm md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 dark:border-slate-950 dark:bg-slate-900 dark:text-slate-200">
+                  <div className="absolute top-0 left-0 z-10 flex h-12 w-12 translate-x-0 items-center justify-center rounded-full border-4 border-slate-50 bg-slate-100 text-sm font-bold text-slate-800 shadow-sm md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 dark:border-slate-950 dark:bg-zinc-900 dark:text-slate-200">
                     {index + 1}
                   </div>
 
@@ -215,7 +216,7 @@ export default function UseCasesPage() {
                       alt={feature.badgeText}
                       preload
                       fill
-                sizes="(max-width: 1024px) 50vw, 33vw"
+                      sizes="(max-width: 1024px) 50vw, 33vw"
                       style={{ objectFit: 'cover' }}
                       className="aspect-3/2 w-full bg-gray-200 object-cover"
                     />
@@ -248,7 +249,7 @@ export default function UseCasesPage() {
 
           {/* Right Column (Span 5): Downward Interactive Vertical Stepper */}
           <div className="space-y-6 lg:sticky lg:top-6 lg:col-span-4">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-zinc-950">
               <h3 className="mb-6 text-xl font-bold text-slate-900 dark:text-white">
                 Deployment Timeline
               </h3>
@@ -259,7 +260,7 @@ export default function UseCasesPage() {
                   {
                     stepIcon: HowToRegIcon,
                     iconColorClass:
-                      "bg-blue-50 dark:bg-blue-950/50 text-blue-600",
+                      "bg-blue-200 dark:bg-blue-950/50 text-blue-600",
                     title: "Step 1: Account Registration",
                     description:
                       "Create your secure master administrator account in under two minutes. No payment method or onboarding parameters are required to configure your development space.",
@@ -297,10 +298,14 @@ export default function UseCasesPage() {
                     >
                       {/* Step Indicator Node Badge */}
                       <div
-                        className={`absolute -left-0.75 z-10 flex items-center justify-center rounded-full border-4 border-white p-2 dark:border-slate-900 ${step.iconColorClass}`}
+                        className={`before:absolute before:h-full before:w-full before:bg-white dark:before:bg-zinc-950 before:-z-10 absolute before:rounded-full -left-7 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center rounded-full border-4 border-white p-2 dark:border-zinc-950 ${step.iconColorClass}`}
                       >
-                        <StepIcon className="h-4 w-4" />
+                        <div className="absolute inset-0 rounded-full bg-current opacity-15 dark:opacity-30 -z-10" />
+                        
+                        <StepIcon fontSize="medium" />
                       </div>
+
+                      <div />
 
                       {/* Step Description Content */}
                       <div className="pl-4">
@@ -318,11 +323,11 @@ export default function UseCasesPage() {
             </div>
 
             {/* Quick System Support Availability Notification */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 text-slate-100 dark:bg-zinc-900">
-              <h4 className="text-brand-400 mb-2 text-sm font-semibold tracking-wider uppercase">
+            <div className="rounded-2xl border border-slate-800 bg-zinc-300 p-6 text-slate-100 dark:bg-zinc-800">
+              <h4 className="text-brand-800 dark:text-brand-400 mb-2 text-sm font-semibold tracking-wider uppercase">
                 Need Help Provisioning?
               </h4>
-              <p className="text-xs leading-relaxed text-slate-400">
+              <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
                 Our support engineering team offers free white-glove setup
                 strategies. We can map legacy operational spreadsheets over to
                 your secure isolated database configuration in real-time.

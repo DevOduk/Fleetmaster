@@ -38,13 +38,22 @@ interface SystemUsersProps {
   loading?: boolean;
 }
 
-const getUsersByPlan = (plan: string) => {
+export const getUsersByPlan = (plan: string) => {
   if (!plan) return 0;
 
   if (plan === "Trial") {
     return 1;
   } else {
     return subscriptionPlans.find((s) => s.name === plan).userAccounts;
+  }
+};
+export const getVehiclesByPlan = (plan: string) => {
+  if (!plan) return '0 vehicles';
+
+  if (plan === "Trial") {
+    return '50 vehicles';
+  } else {
+    return subscriptionPlans.find((s) => s.name === plan).features.find(f => f.text.includes('listings')).highlightedText;
   }
 };
 
@@ -175,7 +184,7 @@ const SystemUsers = () => {
   return (
     <div>
       <div className="space-y-6">
-        <div className="flex items-center justify-between py-3">
+      <div className="flex items-start md:items-center gap-7 justify-between py-3 flex-col md:flex-row">
           <div>
             <p className="text-theme-sm mb-2 font-medium text-gray-800 dark:text-white/90">
               View all system users and manage them. Click Create New User to
@@ -255,99 +264,99 @@ const SystemUsers = () => {
                       </TableCell>
                     </TableRow>
                   ) : // 3. Loop through your live initialUsers data dynamically
-                  paginatedUsers.length > 0 ? (
-                    paginatedUsers.map((user, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="px-5 py-4 text-start sm:px-6">
-                          <div className="flex min-w-45 items-center gap-3">
-                            <Avatar
-                              className="object-fit-cover w-25 object-center"
-                              style={{
-                                objectFit: "cover",
-                                objectPosition: "center",
-                              }}
-                              src={user.profile_pic || undefined}
-                            />
-                            <div>
-                              <span className="text-theme-sm block font-medium text-gray-800 uppercase dark:text-white/90">
-                                {user.first_name || "N/A"}{" "}
-                                {user.id === profile.id && "(You)"}
-                              </span>
-                              <span className="text-theme-xs block pt-2 text-gray-500 dark:text-gray-400">
-                                {user.first_name} {user.last_name}
-                              </span>
+                    paginatedUsers.length > 0 ? (
+                      paginatedUsers.map((user, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="px-5 py-4 text-start sm:px-6">
+                            <div className="flex min-w-45 items-center gap-3">
+                              <Avatar
+                                className="object-fit-cover w-25 object-center"
+                                style={{
+                                  objectFit: "cover",
+                                  objectPosition: "center",
+                                }}
+                                src={user.profile_pic || undefined}
+                              />
+                              <div>
+                                <span className="text-theme-sm block font-medium text-gray-800 uppercase dark:text-white/90">
+                                  {user.first_name || "N/A"}{" "}
+                                  {user.id === profile.id && "(You)"}
+                                </span>
+                                <span className="text-theme-xs block pt-2 text-gray-500 dark:text-gray-400">
+                                  {user.first_name} {user.last_name}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {user.bio || "No bio available"}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {user.email ? (
-                            <a
-                              className="text-brand-500 hover:underline"
-                              href={`mailto:${user.email}`}
-                            >
-                              {user.email}
-                            </a>
-                          ) : (
-                            <span>—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {user.phone || "—"}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {/* <Badge variant={user.role === 'super_admin' ? 'success' : 'primary'}> */}
-                          {user.role}
-                          {/* </Badge> */}
-                        </TableCell>
-                        <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
-                          {user.created_at
-                            ? new Date(user.created_at).toLocaleString()
-                            : "—"}
-                        </TableCell>
-                        <TableCell className="text-theme-sm flex gap-3 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                          {profile?.role === "Super Admin" && (
-                            <Link
-                              href={
-                                user.id === profile.id
-                                  ? "/profile/edit"
-                                  : `/system-users/${user.id}/edit`
-                              }
-                            >
-                              <Button
-                                size="sm"
-                                variant="success-outline"
-                                endIcon={
-                                  <EditOutlinedIcon
-                                    fontSize="small"
-                                    className="m-0"
-                                  />
+                          </TableCell>
+                          <TableCell className="text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {user.bio || "No bio available"}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {user.email ? (
+                              <a
+                                className="text-brand-500 hover:underline"
+                                href={`mailto:${user.email}`}
+                              >
+                                {user.email}
+                              </a>
+                            ) : (
+                              <span>—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {user.phone || "—"}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {/* <Badge variant={user.role === 'super_admin' ? 'success' : 'primary'}> */}
+                            {user.role}
+                            {/* </Badge> */}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
+                            {user.created_at
+                              ? new Date(user.created_at).toLocaleString()
+                              : "—"}
+                          </TableCell>
+                          <TableCell className="text-theme-sm flex gap-3 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                            {profile?.role === "Super Admin" && (
+                              <Link
+                                href={
+                                  user.id === profile.id
+                                    ? "/profile/edit"
+                                    : `/system-users/${user.id}/edit`
                                 }
                               >
-                                Update
-                              </Button>
+                                <Button
+                                  size="sm"
+                                  variant="success-outline"
+                                  endIcon={
+                                    <EditOutlinedIcon
+                                      fontSize="small"
+                                      className="m-0"
+                                    />
+                                  }
+                                >
+                                  Update
+                                </Button>
+                              </Link>
+                            )}
+                            <Link
+                              target={user.id === profile.id ? "_blank" : "_self"}
+                              href={
+                                user.id === profile.id
+                                  ? "/profile"
+                                  : `/system-users/${user.id}`
+                              }
+                            >
+                              <button className="bg-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg p-2 px-3 font-medium text-nowrap text-white">
+                                View User <ArrowRightIcon className="ml-1" />
+                              </button>
                             </Link>
-                          )}
-                          <Link
-                            target={user.id === profile.id ? "_blank" : "_self"}
-                            href={
-                              user.id === profile.id
-                                ? "/profile"
-                                : `/system-users/${user.id}`
-                            }
-                          >
-                            <button className="bg-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg p-2 px-3 font-medium text-nowrap text-white">
-                              View User <ArrowRightIcon className="ml-1" />
-                            </button>
-                          </Link>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <>There was a problem with the page oyu requested!</>
-                  )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <>There was a problem with the page oyu requested!</>
+                    )}
                 </TableBody>
               </Table>
             </div>
@@ -356,8 +365,8 @@ const SystemUsers = () => {
 
         {/* Pagination Controls Visibility Rule */}
         {!loading && (
-          <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-8 pb-3 dark:border-gray-800">
-            <span className="text-sm text-gray-800 dark:text-white">
+          <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
+        <span className="text-gray-800 dark:text-white text-sm">
               Showing {startIndex} to {endIndex} of {initialUsers.length}{" "}
               results
             </span>

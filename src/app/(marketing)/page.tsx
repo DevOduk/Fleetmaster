@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-    const feedbacks = await getAllFeedbacks();
-  
+  const feedbacks = await getAllFeedbacks();
+
   return (
     <div>
       <div className="hero h-max-screen relative bg-white select-none dark:bg-zinc-900">
@@ -193,6 +193,50 @@ export default async function Home() {
         </div>
       </div>
 
+
+
+      {/* Info Split Section */}
+      <div className="container m-auto mt-8 mb-8 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
+        <div className="lg:col-span-6 relative aspect-video">
+          <Image
+            className="aspect-video w-full rounded-xl object-cover shadow-sm"
+            alt="FleetMaster Platform"
+            preload
+            fill
+            sizes="(max-width: 1024px) 50vw, 33vw"
+            style={{ objectFit: 'cover' }}
+            src="/images/product/BMW-MY26-X6-cosy-1-extended.jpg"
+          />
+        </div>
+
+        <div className="lg:col-span-6">
+          <h3 className="text-sm font-semibold tracking-wider text-amber-600">
+            ABOUT US
+          </h3>
+          <h2 className="mt-2 mb-3 text-3xl font-bold text-slate-900 dark:text-white">
+            Empowering Fleet Operators with Intelligent Technology
+          </h2>
+          <p className="max-w-175 text-sm leading-relaxed text-slate-600 dark:text-gray-400">
+            FleetMaster is the ultimate fleet management dashboard built with modern technology and designed for Africa. We streamline vehicle rentals, track real-time diagnostics, and verify user credentials from a single, beautifully unified workspace
+            ...
+          </p>
+
+          <div className="mt-5 flex items-center gap-4 pt-2">
+            <Link
+              href="/about"
+              className="group flex cursor-pointer items-center gap-1 rounded-xl bg-amber-600 px-5 py-3 text-sm font-medium text-white shadow-md transition-all hover:bg-amber-700"
+            >
+              Read More
+              <KeyboardArrowRightIcon
+                className="text-sm transition-transform group-hover:translate-x-0.5"
+                fontSize="small"
+              />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+
       <div className="mx-auto mt-8 mb-8 grid w-full grid-cols-1 gap-3 p-4 md:container lg:grid-cols-12">
         {/* 2. Swapped col-5 for col-span-5 */}
         <div className="col-span-12 lg:col-span-5 mb-8">
@@ -232,8 +276,8 @@ export default async function Home() {
 
         <div className="col-span-12 relative py-3 mx-auto max-w-4xl space-y-12 px-4 lg:col-span-7">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-12 block md:hidden">
-              Core Applications
-            </h2>
+            Core Applications
+          </h2>
 
           {/* Center Timeline Line Indicator: Centered on desktop, shifted to the left edge on mobile screens */}
           <div className="pointer-events-none absolute top-24 bottom-6 left-6.5 w-0.5 -translate-x-1/2 bg-slate-200 md:left-1/2 dark:bg-slate-800" />
@@ -354,7 +398,7 @@ export default async function Home() {
       <div className="container m-auto mb-5 border-t border-gray-500"></div>
 
       <br />
-      <div className="p-3"> 
+      <div className="p-3">
         <h3 className="text-brand-500 md:text-center">Choose Convenience</h3>
         <h2 className="mt-4 mb-3 md:text-center text-3xl font-bold text-black dark:text-white">
           Be Among Hundreds of our Happy Clients Worldwide!

@@ -18,7 +18,7 @@ export default function RecentOrders({
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-3 sm:px-6 dark:border-gray-800 dark:bg-white/3">
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 flex gap-2 justify-between items-center">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
             Recent Bookings
@@ -71,127 +71,129 @@ export default function RecentOrders({
           </Link>
         </div>
       </div>
-      <div className="max-w-full overflow-x-auto">
-        <Table>
-          {/* Table Header */}
-          <TableHeader className="border-y border-gray-100 dark:border-gray-800">
-            <TableRow>
-              <TableCell
-                isHeader
-                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
-              >
-                Vehicle
-              </TableCell>
-              <TableCell
-                isHeader
-                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
-              >
-                Category
-              </TableCell>
-              <TableCell
-                isHeader
-                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
-              >
-                Amount
-              </TableCell>
-              <TableCell
-                isHeader
-                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
-              >
-                Time
-              </TableCell>
-              <TableCell
-                isHeader
-                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
-              >
-                Status
-              </TableCell>
-            </TableRow>
-          </TableHeader>
-
-          {/* Table Body */}
-
-          <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {loading ? (
-              <>
-                {[...Array(4)].map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="w-full py-2" colSpan={4}>
-                      <div className="mb-2 h-12 animate-pulse rounded bg-gray-300 text-center dark:bg-gray-600"></div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </>
-            ) : bookings.length > 0 ? (
-              bookings?.slice(0, 10).map((product, index) => (
-                <TableRow key={index} className="">
-                  <TableCell className="py-3">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={product.vehicleDetails?.image_url}
-                        className="h-11 w-17 rounded object-cover"
-                        alt={product.vehicleDetails?.make}
-                      />
-                      <div>
-                        <p className="text-theme-sm font-medium text-gray-800 dark:text-white/90">
-                          {product.vehicleDetails?.make}{" "}
-                          {product.vehicleDetails?.model}{" "}
-                          {product.vehicleDetails?.year}
-                        </p>
-                        <span className="text-theme-xs text-gray-500 dark:text-gray-400">
-                          {product.vehicleDetails?.license_plate} |{" "}
-                          {product.vehicleDetails?.rental_days} Days
-                        </span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
-                    {product.vehicleDetails?.category}
-                  </TableCell>
-                  <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
-                    {product.total?.toLocaleString()} Ksh.
-                  </TableCell>
-                  <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
-                    {new Date(product.created_at)?.toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
-                    <Badge
-                      size="sm"
-                      color={
-                        product.booking_status === "Active"
-                          ? "primary"
-                          : product.booking_status === "Reserved"
-                            ? "info"
-                            : product.booking_status === "Completed"
-                              ? "success"
-                              : product.booking_status === "Cancelled"
-                                ? "error"
-                                : "warning"
-                      }
-                    >
-                      {product.booking_status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
+      <div className="custom-scrollbar max-w-full overflow-x-auto">
+        <div className="min-h-100 min-w-170">
+          <Table>
+            {/* Table Header */}
+            <TableHeader className="border-y border-gray-100 dark:border-gray-800">
               <TableRow>
-                <TableCell colSpan={4}>
-                  <div className="flex h-80 items-center justify-center rounded-lg border text-center text-sm text-red-500 dark:border-gray-600">
-                    You don't have any bookings! Go to &nbsp;{" "}
-                    <Link
-                      className="text-brand-500 underline"
-                      href={"/bookings"}
-                    >
-                      Bookings
-                    </Link>{" "}
-                    &nbsp; to create one.
-                  </div>
+                <TableCell
+                  isHeader
+                  className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                >
+                  Vehicle
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                >
+                  Category
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                >
+                  Amount
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                >
+                  Time
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                >
+                  Status
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+
+            {/* Table Body */}
+
+            <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
+              {loading ? (
+                <>
+                  {[...Array(4)].map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="w-full py-2" colSpan={4}>
+                        <div className="mb-2 h-12 animate-pulse rounded bg-gray-300 text-center dark:bg-gray-600"></div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </>
+              ) : bookings.length > 0 ? (
+                bookings?.slice(0, 10).map((product, index) => (
+                  <TableRow key={index} className="">
+                    <TableCell className="py-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={product.vehicleDetails?.image_url}
+                          className="h-11 w-17 rounded object-cover"
+                          alt={product.vehicleDetails?.make}
+                        />
+                        <div>
+                          <p className="text-theme-sm font-medium text-gray-800 dark:text-white/90">
+                            {product.vehicleDetails?.make}{" "}
+                            {product.vehicleDetails?.model}{" "}
+                            {product.vehicleDetails?.year}
+                          </p>
+                          <span className="text-theme-xs text-gray-500 dark:text-gray-400">
+                            {product.vehicleDetails?.license_plate} |{" "}
+                            {product.vehicleDetails?.rental_days} Days
+                          </span>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
+                      {product.vehicleDetails?.category}
+                    </TableCell>
+                    <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
+                      {product.total?.toLocaleString()} Ksh.
+                    </TableCell>
+                    <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
+                      {new Date(product.created_at)?.toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
+                      <Badge
+                        size="sm"
+                        color={
+                          product.booking_status === "Active"
+                            ? "primary"
+                            : product.booking_status === "Reserved"
+                              ? "info"
+                              : product.booking_status === "Completed"
+                                ? "success"
+                                : product.booking_status === "Cancelled"
+                                  ? "error"
+                                  : "warning"
+                        }
+                      >
+                        {product.booking_status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4}>
+                    <div className="flex h-80 items-center justify-center rounded-lg border text-center text-sm text-red-500 dark:border-gray-600">
+                      You don't have any bookings! Go to &nbsp;{" "}
+                      <Link
+                        className="text-brand-500 underline"
+                        href={"/bookings"}
+                      >
+                        Bookings
+                      </Link>{" "}
+                      &nbsp; to create one.
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { useEffect, useState } from "react";
 import { useToast } from "@/context/ToastContext";
@@ -12,6 +13,8 @@ import { hex } from "../client-profile/ProfilePage";
 
 export default function EditUserAddressCard() {
   const { profile, loading, setProfile } = useUser();
+  const pathname = usePathname();
+  const searchString = useSearchParams().toString();
   const [profileDetails, setProfileDetails] = useState(profile || null);
   const { showToast } = useToast();
   const [backDrop, setBackDrop] = useState(false);
@@ -40,7 +43,10 @@ export default function EditUserAddressCard() {
       </div>
     );
   } else if (!profile) {
-    window.location.href = "/signin";
+    const currentPageUrl = encodeURIComponent(
+      searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
+    );
+    window.location.href = `/signin?r=${currentPageUrl}`;
     return (
       <div className="container mx-auto min-h-[80vh] p-5 text-gray-400">
         Redirecting to signin ...

@@ -21,11 +21,12 @@ export default function TenantTermsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="m-auto min-h-screen w-full">
       {/* Hero Header Block */}
       <SecondaryHero
         pages={pages}
         title="Tenant Merchant &"
+        className="dark:bg-zinc-950"
         highlightedText="Platform Terms"
         description="Core Service Level Agreements (SLA), hardware calibration limits, and transactional frameworks for commercial fleet management operators."
       />
@@ -80,7 +81,7 @@ export default function TenantTermsPage() {
       {/* Interactive Terms System */}
       <div
         id="terms-root"
-        className="border-t border-slate-200 bg-white dark:border-slate-800/60 dark:bg-slate-900/40"
+        className="border-t border-slate-200 bg-white dark:border-slate-800/60 dark:bg-zinc-950/40"
       >
         <TermsConditions />
       </div>

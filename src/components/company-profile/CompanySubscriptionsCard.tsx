@@ -377,7 +377,7 @@ export default function CompanySubscriptionsCard() {
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <div className="w-full overflow-hidden rounded-2xl bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
       <ExpiryBanner
         plan={company.subscription_plan}
         expiryDate={company.expiry_date}
@@ -451,8 +451,8 @@ export default function CompanySubscriptionsCard() {
 
       {/* Header Section */}
       <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5 dark:border-gray-800">
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+        <div className="flex items-start gap-4">
+          <div className="flex h-14 w-14 shrink-0 aspect-square items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
             {company.tenant_logo ? (
               <img
                 src={company.tenant_logo}
@@ -465,11 +465,11 @@ export default function CompanySubscriptionsCard() {
               </span>
             )}
           </div>
-          <div>
+          <div className="w-auto">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">
               {company.name}
             </h2>
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <p className="text-xs font-medium text-gray-500">
                 {company.slug}.fleetmaster.co.ke{" "}
                 {company.website && ` - ${company.website}`}
@@ -493,7 +493,7 @@ export default function CompanySubscriptionsCard() {
         </div>
       </div>
 
-      <div className="space-y-8 p-6">
+      <div className="space-y-8 py-6">
         {/* new  subscription */}
         <ComponentCard title="Contact Information">
           <div className="text-gray-400">

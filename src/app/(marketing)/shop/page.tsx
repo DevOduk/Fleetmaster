@@ -25,12 +25,13 @@ export default function ShopPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="m-auto min-h-screen w-full">
       {/* Hero Header Block */}
       <SecondaryHero
         pages={pages}
         title="Hardware & Operational"
         highlightedText="Equipment"
+        className="dark:bg-zinc-950"
         description="Get commercial-grade, pre-configured trackers and telemetry sensors built to link directly with your FleetMaster dashboard right out of the box."
       />
 
@@ -42,7 +43,7 @@ export default function ShopPage() {
             alt="What Next ..."
             preload
             fill
-                sizes="(max-width: 1024px) 50vw, 33vw"
+            sizes="(max-width: 1024px) 50vw, 33vw"
             style={{ objectFit: 'cover' }}
             src={"/images/user/How-Does-GPS-Tracking-Work-on-Cars.webp"}
           />
@@ -186,7 +187,7 @@ export default function ShopPage() {
             return (
               <div
                 key={product.id}
-                className="group flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-blue-500/10 transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+                className="group flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-zinc-500 bg-white shadow-sm shadow-blue-500/10 transition-all hover:shadow-md dark:border-zinc-600 dark:bg-zinc-800 cursor-pointer"
               >
                 {/* Product Image Box */}
                 <div className="relative aspect-4/3 overflow-hidden bg-slate-100 dark:bg-slate-800">
@@ -209,13 +210,13 @@ export default function ShopPage() {
                     className="absolute inset-0 h-full w-full bg-gray-200 object-cover transition-transform duration-300 group-hover:scale-105"
                     preload
                     fill
-                sizes="(max-width: 1024px) 50vw, 33vw"
+                    sizes="(max-width: 1024px) 50vw, 33vw"
                     style={{ objectFit: 'cover' }}
                   />
                 </div>
 
                 {/* Card Main Body Content Elements */}
-                <div className="flex grow flex-col justify-between p-5">
+                <div className="flex grow flex-col justify-between p-4">
                   <div>
                     {/* Category Header metadata badge elements */}
                     <div className="mb-2 flex items-center gap-1.5 font-bold text-amber-500">
@@ -244,7 +245,7 @@ export default function ShopPage() {
                   </div>
 
                   {/* Pricing Matrix & Checkout Action Interceptions */}
-                  <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
+                  <div className="mt-0 flex items-center justify-between border-t border-brand-100 pt-2 dark:border-zinc-500">
                     <div>
                       {/* <span className="text-[10px] text-slate-400 uppercase tracking-widest block font-medium">Price</span> */}
                       <div className="flex items-baseline gap-0.5">
@@ -260,10 +261,10 @@ export default function ShopPage() {
 
                     <button
                       type="button"
-                      className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-all active:scale-95"
+                      className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-2 rounded-lg px-3 p-2 text-xs font-semibold text-white shadow-sm transition-all active:scale-95"
                     >
-                      <ShoppingCartOutlinedIcon className="h-4 w-4" />
-                      Order Hardware
+                      <ShoppingCartOutlinedIcon fontSize="small" />
+                      Order
                     </button>
                   </div>
                 </div>
@@ -273,7 +274,7 @@ export default function ShopPage() {
         </div>
 
         {/* Informative Shipping Notice Banner Footnote */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-center md:flex-row md:text-left dark:border-slate-800 dark:bg-slate-900">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-center md:flex-row md:text-left dark:border-slate-800 dark:bg-zinc-900">
           <div>
             <h4 className="text-sm font-bold text-slate-900 dark:text-white">
               Need Installation Assistance across Kenya?

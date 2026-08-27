@@ -5,15 +5,21 @@ import { useUser } from "@/context/UserContext";
 import UserAddressCard from "../admin-profile/UserAddressCard";
 import UserMetaCard from "../admin-profile/UserMetaCard";
 import LoadingInfo from "@/components/loading/LoadingInfo";
+import { usePathname, useSearchParams } from "next/navigation";
 
 function ProfilePage() {
   const { profile, loading } = useUser();
+  const pathname = usePathname();
+  const searchString = useSearchParams().toString();
+  const currentPageUrl = encodeURIComponent(
+    searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
+  );
 
   if (loading) {
     return (<LoadingInfo />);
 
   } else if (!profile) {
-    window.location.href = "/signin";
+    window.location.href = `/signin?r=${currentPageUrl}`;
     return (
       <div className="container mx-auto min-h-[80vh] p-5 text-gray-400">
         Redirecting to signin ...

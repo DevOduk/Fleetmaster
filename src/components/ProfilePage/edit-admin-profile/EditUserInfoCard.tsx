@@ -4,6 +4,7 @@ import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { useToast } from "@/context/ToastContext";
 import { Backdrop, CircularProgress } from "@mui/material";
@@ -11,6 +12,9 @@ import handleProfileUpdate from "@/utils/admins/handleProfileUpdate";
 
 export default function EditUserInfoCard() {
   const { profile, loading, setProfile } = useUser();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchString = searchParams.toString();
   const [profileDetails, setProfileDetails] = useState(profile || null);
   const { showToast } = useToast();
   const [backDrop, setBackDrop] = useState(false);
@@ -51,7 +55,10 @@ export default function EditUserInfoCard() {
       </div>
     );
   } else if (!profile) {
-    window.location.href = "/signin";
+    const currentPageUrl = encodeURIComponent(
+      searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
+    );
+    window.location.href = `/signin?r=${currentPageUrl}`;
     return (
       <div className="container mx-auto min-h-[80vh] p-5 text-gray-400">
         Redirecting to signin ...

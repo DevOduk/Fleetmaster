@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSidebar } from "@/context/SidebarContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import AppHeader from "@/layout/(dashboard-layout)/AppHeader";
@@ -14,15 +14,23 @@ import { ManagerFleetProvider } from "@/context/ManagerFleetContext";
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   const { adminProfile, loading } = useAdmin();
 
   useEffect(() => {
     if (loading) return;
     if (!adminProfile) {
-      router.push("/signin");
+      const searchString = searchParams.toString();
+      // Rebuild the accurate current page URL dynamically
+      const currentPageUrl = encodeURIComponent(
+        searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
+      );
+
+      router.push(`/signin?r=${currentPageUrl}`);
     }
-  }, [adminProfile, router, loading]);
+  }, [adminProfile, pathname, router, searchParams, loading]);
 
   if (loading) {
     return (

@@ -11,6 +11,7 @@ interface SecondaryHeroProps {
   title: string;
   highlightedText?: string;
   description?: string;
+  className?: string;
   pages?: Pages[];
   children?: React.ReactNode;
 }
@@ -20,10 +21,11 @@ export default function SecondaryHero({
   highlightedText,
   description,
   pages,
+  className,
   children,
 }: SecondaryHeroProps) {
   return (
-    <div className="hero relative mb-5 overflow-hidden bg-gray-200 select-none dark:bg-gray-950">
+    <div className={`hero relative mb-5 overflow-hidden bg-gray-200 select-none dark:bg-gray-950 ${className}`}>
       {/* Background Masked Image */}
       {/* <div
                 className="absolute top-0 right-0 w-full h-full bg-cover bg-right lg:bg-center opacity-40 lg:opacity-100 mix-blend-multiply lg:mix-blend-normal pointer-events-none"

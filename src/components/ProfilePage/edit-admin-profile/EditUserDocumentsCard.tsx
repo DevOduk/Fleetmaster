@@ -9,12 +9,18 @@ import { useToast } from "@/context/ToastContext";
 import { useUser } from "@/context/UserContext";
 import { Backdrop, CircularProgress } from "@mui/material";
 import handleProfileUpdate from "@/utils/admins/handleProfileUpdate";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export default function EditUserDocumentsCard() {
   const { profile, loading, setProfile } = useUser();
   const [profileDetails, setProfileDetails] = useState(profile || null);
   const { showToast } = useToast();
   const [backDrop, setBackDrop] = useState(false);
+  const pathname = usePathname();
+  const searchString = useSearchParams().toString();
+  const currentPageUrl = encodeURIComponent(
+    searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
+  );
 
   useEffect(() => {
     if (profile && !loading) {
@@ -40,7 +46,7 @@ export default function EditUserDocumentsCard() {
       </div>
     );
   } else if (!profile) {
-    window.location.href = "/signin";
+    window.location.href = `/signin?r=${currentPageUrl}`;
     return (
       <div className="container mx-auto min-h-[80vh] p-5 text-gray-400">
         Redirecting to signin ...

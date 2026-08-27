@@ -150,7 +150,7 @@ export default function EditCompanyInfoCard() {
     } else {
       showToast(
         res.error.message ||
-          "Failed to update company details. Please try again.",
+        "Failed to update company details. Please try again.",
         "error",
       );
       setUpdatingCompany(false);
@@ -216,7 +216,7 @@ export default function EditCompanyInfoCard() {
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <div className="max-w-6xl mx-auto overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-gray-900">
       {isOpen && (
         <UpdateYardsModal
           tenantId={profile?.tenant_id}
@@ -229,7 +229,7 @@ export default function EditCompanyInfoCard() {
         />
       )}
 
-      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5 dark:border-gray-800">
+      <div className="flex items-center justify-between border-b border-gray-100 py-5 dark:border-gray-800">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
             {companyFormData.tenant_logo ? (
@@ -258,7 +258,7 @@ export default function EditCompanyInfoCard() {
         </div>
       </div>
 
-      <div className="space-y-8 p-6">
+      <div className="space-y-8 mt-5">
         <ComponentCard title="Company Identity">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <EditableInput
@@ -482,6 +482,7 @@ export default function EditCompanyInfoCard() {
           </ComponentCard>
         )}
       </div>
+
       <div className="flex items-center justify-end border-t border-gray-100 px-6 py-5 dark:border-gray-800">
         <Button
           disabled={updatingCompany}

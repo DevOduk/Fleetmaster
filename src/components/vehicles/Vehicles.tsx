@@ -4,15 +4,20 @@ import ComponentCard from "../common/ComponentCard";
 import VehiclesTable from "../tables/VehiclesTable";
 import Link from "next/link";
 import { PlusIcon } from "@/icons";
+import { getVehiclesByPlan } from "../bookings/SystemUsers";
 
 function Vehicles({
+  profile,
   vehicles,
   loading,
 }: {
+  profile: any;
   vehicles: any[];
   loading: boolean;
 }) {
   const isDashboard = window?.location.href.includes("dashboard");
+  const plan = profile?.fleetmaster_tenants?.subscription_plan || "Trial";
+
 
   return (
     <div>
@@ -78,8 +83,8 @@ function Vehicles({
             </Link>
           </div>
         ) : (
-          <ComponentCard title="All Vehicles Data">
-            <div className="flex items-center justify-between py-3">
+          <div title="All Vehicles Data">
+            <div className="flex items-start md:items-center gap-7 justify-between py-3 flex-col md:flex-row">
               <div>
                 <p className="text-theme-sm mb-2 font-medium text-gray-800 dark:text-white/90">
                   {isDashboard
@@ -87,7 +92,7 @@ function Vehicles({
                     : "View all vehicles and manage them. Click Add New Vehicle to add a new vehicle."}
                 </p>
                 <span className="text-theme-sm text-start text-gray-500 dark:text-gray-400">
-                  {vehicles?.length || 0} Vehicles |{" "}
+                  <strong>{vehicles?.length || 0} Vehicles</strong> of <strong>{getVehiclesByPlan(plan)}</strong> listings |{" "}
                   {vehicles?.filter((v) => v.status === "Available").length ||
                     0}{" "}
                   Available
@@ -102,7 +107,7 @@ function Vehicles({
               )}
             </div>
             <VehiclesTable vehicles={vehicles || []} loading={loading} />
-          </ComponentCard>
+          </div>
         )}
       </div>
     </div>

@@ -10,6 +10,9 @@ import { fetchExpensesForAdmin } from "@/app/actions/expenses";
 import ReactApexChart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import { CircularProgress } from "@mui/material";
+import FeatureError from "../loading/FeatureError";
+import VpnLockOutlinedIcon from "@mui/icons-material/VpnLockOutlined";
+
 
 type Expense = {
   amount: number | string;
@@ -22,6 +25,7 @@ const Expenses: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const currency = profile?.fleetmaster_tenants?.currency || "USD";
+  const plan = profile?.fleetmaster_tenants?.subscription_plan;
   const [isDark, setIsDark] = useState(false);
 
   // Theme observer for dark mode sync
@@ -179,6 +183,13 @@ const Expenses: React.FC = () => {
   // Formula: Total monthly expenses / Days passed so far this month
   const averageDailyThisMonth = Number((totalThisMonth / today).toFixed(0));
 
+
+  if (plan !== 'Pro' && plan !== 'Expert') {
+    return (
+      <FeatureError status="403" icon={<VpnLockOutlinedIcon fontSize="large" className="text-3xl" />} description={`Expense tracking is not available in this plan (${plan}). Upgrade to Pro or Expert to access detailed expense analytics and reports.`} />
+    )
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4">
@@ -248,7 +259,7 @@ const Expenses: React.FC = () => {
         )}
       </div>
 
-      <div className="flex items-center justify-between py-3">
+      <div className="flex items-start md:items-center gap-7 justify-between py-3 flex-col md:flex-row">
         <div>
           <p className="text-theme-sm mb-2 font-medium text-gray-800 dark:text-white/90">
             View all bookings and manage them. Click Create New Booking to add a
@@ -266,7 +277,6 @@ const Expenses: React.FC = () => {
         </Link>
       </div>
       <ExpensesTable expenses={expenses} loading={loading} />
-      <Pagination onPageChange={() => 2} currentPage={1} totalPages={1} />
     </div>
   );
 };

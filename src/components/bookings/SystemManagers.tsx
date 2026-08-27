@@ -206,89 +206,89 @@ const SystemManagers = () => {
                       </TableCell>
                     </TableRow>
                   ) : // 3. Loop through your live initialUsers data dynamically
-                  initialUsers.slice(startIndex - 1, endIndex).length > 0 ? (
-                    initialUsers
-                      .slice(startIndex - 1, endIndex)
-                      .map((user, i) => (
-                        <TableRow key={i}>
-                          <TableCell className="px-5 py-4 text-start sm:px-6">
-                            <div className="flex min-w-45 items-center gap-3">
-                              <Avatar
-                                className="object-fit-cover w-25 object-center"
-                                style={{
-                                  objectFit: "cover",
-                                  objectPosition: "center",
-                                }}
-                                src={user.profile_pic || undefined}
-                              />
-                              <div>
-                                <span className="text-theme-sm block font-medium text-gray-800 uppercase dark:text-white/90">
-                                  {user.first_name || "N/A"}
-                                </span>
-                                <span className="text-theme-xs block pt-2 text-gray-500 dark:text-gray-400">
-                                  {user.first_name} {user.last_name}
-                                </span>
+                    initialUsers.slice(startIndex - 1, endIndex).length > 0 ? (
+                      initialUsers
+                        .slice(startIndex - 1, endIndex)
+                        .map((user, i) => (
+                          <TableRow key={i}>
+                            <TableCell className="px-5 py-4 text-start sm:px-6">
+                              <div className="flex min-w-45 items-center gap-3">
+                                <Avatar
+                                  className="object-fit-cover w-25 object-center"
+                                  style={{
+                                    objectFit: "cover",
+                                    objectPosition: "center",
+                                  }}
+                                  src={user.profile_pic || undefined}
+                                />
+                                <div>
+                                  <span className="text-theme-sm block font-medium text-gray-800 uppercase dark:text-white/90">
+                                    {user.first_name || "N/A"}
+                                  </span>
+                                  <span className="text-theme-xs block pt-2 text-gray-500 dark:text-gray-400">
+                                    {user.first_name} {user.last_name}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                            {user.bio || "No bio available"}
-                          </TableCell>
-                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                            {user.email ? (
-                              <a
-                                className="text-brand-500 hover:underline"
-                                href={`mailto:${user.email}`}
-                              >
-                                {user.email}
-                              </a>
-                            ) : (
-                              <span>—</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                            {user.phone || "—"}
-                          </TableCell>
-                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                            {/* <Badge variant={user.role === 'super_admin' ? 'success' : 'primary'}> */}
-                            {user.role}
-                            {/* </Badge> */}
-                          </TableCell>
-                          <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
-                            {user.created_at
-                              ? new Date(user.created_at).toLocaleString()
-                              : "—"}
-                          </TableCell>
-                          <TableCell className="text-theme-sm flex gap-3 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                            <Link href={`/bookings/${user.id}/edit`}>
-                              <Button
-                                size="sm"
-                                variant="success-outline"
-                                endIcon={
-                                  <EditOutlinedIcon
-                                    fontSize="small"
-                                    className="m-0"
-                                  />
-                                }
-                              >
-                                Update
-                              </Button>
-                            </Link>
-                            <Link href={`/bookings/${user.id}`}>
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                className="bg-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg p-2 px-3 font-medium text-nowrap text-white"
-                              >
-                                View User
-                              </Button>
-                            </Link>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                  ) : (
-                    <>There was a problem with the page oyu requested!</>
-                  )}
+                            </TableCell>
+                            <TableCell className="text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                              {user.bio || "No bio available"}
+                            </TableCell>
+                            <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                              {user.email ? (
+                                <a
+                                  className="text-brand-500 hover:underline"
+                                  href={`mailto:${user.email}`}
+                                >
+                                  {user.email}
+                                </a>
+                              ) : (
+                                <span>—</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                              {user.phone || "—"}
+                            </TableCell>
+                            <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                              {/* <Badge variant={user.role === 'super_admin' ? 'success' : 'primary'}> */}
+                              {user.role}
+                              {/* </Badge> */}
+                            </TableCell>
+                            <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
+                              {user.created_at
+                                ? new Date(user.created_at).toLocaleString()
+                                : "—"}
+                            </TableCell>
+                            <TableCell className="text-theme-sm flex gap-3 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                              <Link href={`/bookings/${user.id}/edit`}>
+                                <Button
+                                  size="sm"
+                                  variant="success-outline"
+                                  endIcon={
+                                    <EditOutlinedIcon
+                                      fontSize="small"
+                                      className="m-0"
+                                    />
+                                  }
+                                >
+                                  Update
+                                </Button>
+                              </Link>
+                              <Link href={`/bookings/${user.id}`}>
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  className="bg-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg p-2 px-3 font-medium text-nowrap text-white"
+                                >
+                                  View User
+                                </Button>
+                              </Link>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                    ) : (
+                      <>There was a problem with the page oyu requested!</>
+                    )}
                 </TableBody>
               </Table>
             </div>
@@ -297,8 +297,8 @@ const SystemManagers = () => {
 
         {/* Pagination Controls Visibility Rule */}
         {!loading && (
-          <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-8 pb-3 dark:border-gray-800">
-            <span className="text-sm text-gray-800 dark:text-white">
+          <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
+            <span className="text-gray-800 dark:text-white text-sm">
               Showing {startIndex} to {endIndex} of {initialUsers.length}{" "}
               results
             </span>

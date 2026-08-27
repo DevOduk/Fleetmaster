@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSidebar } from "@/context/SidebarContext";
 import AppHeader from "@/layout/(admin-layout)/AppHeader";
 import AppSidebar from "@/layout/(admin-layout)/AppSidebar";
@@ -26,6 +26,12 @@ export default function OthersPagesLayout({
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   const { profile, loading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchString = searchParams.toString();
+  const currentPageUrl = encodeURIComponent(
+    searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
+  );
 
   // Domain-aware multi-tenant routing controller
   const executeAbsoluteAuthRedirect = () => {
@@ -35,15 +41,16 @@ export default function OthersPagesLayout({
     const protocol = window.location.protocol;
     const port = window.location.port ? `:${window.location.port}` : "";
 
+
     // A. Localhost Subdomain Path Resolution (e.g., app.localhost:3000)
     if (hostname.includes("localhost") && hostname.startsWith("app.")) {
-      window.location.href = `${protocol}//app.localhost${port}/signin`;
+      window.location.href = `${protocol}//app.localhost${port}/signin?r=${currentPageUrl}`;
       return;
     }
 
     // B. Vercel Staging/Trial Path Rules (Bypasses relative root routes)
     if (hostname.includes("vercel.app")) {
-      window.location.href = `${protocol}//${hostname}${port}/admin-site/signin`;
+      window.location.href = `${protocol}//${hostname}${port}/admin-site/signin?r=${currentPageUrl}`;
       return;
     }
 
@@ -53,11 +60,11 @@ export default function OthersPagesLayout({
       !hostname.startsWith("dashboard.") &&
       hostname !== "localhost"
     ) {
-      window.location.href = `${protocol}//app.${hostname}${port}/signin`;
+      window.location.href = `${protocol}//app.${hostname}${port}/signin?r=${currentPageUrl}`;
       return;
     }
     // Standard absolute fallback string execution path
-    router.replace("/signin");
+    router.replace(`/signin?r=${currentPageUrl}`);
   };
 
   useEffect(() => {
@@ -83,7 +90,7 @@ export default function OthersPagesLayout({
     return null;
   }
   if (profile?.role === "Client") {
-    router.replace("/signin");
+    router.replace(`/signin?r=${currentPageUrl}`);
     return null;
   }
 

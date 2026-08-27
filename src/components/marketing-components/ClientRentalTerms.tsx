@@ -53,7 +53,7 @@ const ClientRentalTerms: React.FC = () => {
     <div className="container mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-12 lg:grid-cols-12">
       {/* Navigation Sidebar */}
       <div className="col-span-12 h-fit space-y-2 lg:sticky lg:top-6 lg:col-span-4">
-        <div className="rounded-2xl border border-slate-200/60 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="rounded-2xl border border-slate-200/60 bg-slate-50 p-4 dark:border-slate-800 dark:bg-zinc-950/80">
           <p className="mb-3 px-3 text-[11px] font-bold tracking-widest text-slate-400 uppercase dark:text-slate-500">
             Renter / Client Agreement
           </p>
@@ -192,7 +192,7 @@ const ClientRentalTerms: React.FC = () => {
         {/* Clause 5 */}
         <section
           id="client-insurance"
-          className="scroll-mt-12 space-y-3 rounded-2xl border border-slate-200 bg-zinc-50 p-5 dark:border-slate-800 dark:bg-slate-900"
+          className="scroll-mt-12 space-y-3 rounded-2xl border border-slate-200 bg-zinc-50 p-5 py-6 dark:border-slate-800 dark:bg-zinc-950/80"
         >
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
             <LocalShieldIcon className="h-5! w-5! text-green-700" />

@@ -3,6 +3,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import VpnLockOutlinedIcon from "@mui/icons-material/VpnLockOutlined";
 import { Metadata } from "next";
 import { getAdminTenant } from "@/utils/getAdminTenant";
+import FeatureError from "@/components/loading/FeatureError";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { tenantData } = await getAdminTenant();
@@ -35,17 +36,8 @@ export default function page() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Map" />
-      <div className="mt-10 flex min-h-[75vh] flex-col items-center justify-center gap-4 text-[10px] text-red-400 dark:text-red-600">
-        <VpnLockOutlinedIcon fontSize="large" className="text-2xl" />
-        <p className="font-medium tracking-[0.2em] text-red-400 uppercase dark:text-red-600">
-          Error Status: FEATURE COMING SOON
-        </p>
-        <p className="max-w-4xl text-sm text-gray-500">
-          Live maps integration is coming soon. With real-time vehicle traccking
-          and telematics ensring you car is safe, secure and running well.
-        </p>
-      </div>
 
+      <FeatureError icon={<VpnLockOutlinedIcon fontSize="large" className="text-3xl" />} description="Live maps integration is coming soon. With real-time vehicle traccking and telematics ensring you car is safe, secure and running well. Keep on the watch!" />
       {/* <Map /> */}
     </div>
   );

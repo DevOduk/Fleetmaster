@@ -74,13 +74,8 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
     return () => observer.disconnect();
   }, [isDarkMode]);
 
-  if (!initialTenants || initialTenants.length === 0) {
-    return (
-      <div className="p-5 text-center text-gray-500 dark:text-gray-400">
-        No tenants found.
-      </div>
-    );
-  }
+
+  
   const urlPage = parseInt(searchParams.get("page") || "1", 10);
 
   // --- 3. PAGINATION MATH MATRICS ---
@@ -109,6 +104,17 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
     }
     router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
   };
+
+
+
+  if (!initialTenants || initialTenants.length === 0) {
+    return (
+      <div className="p-5 text-center text-gray-500 dark:text-gray-400">
+        No tenants found.
+      </div>
+    );
+  }
+
 
   return (
     <div>
@@ -336,8 +342,8 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
 
         {/* Pagination Controls Visibility Rule */}
         {!loading && (
-          <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-8 pb-3 dark:border-gray-800">
-            <span className="text-sm text-gray-800 dark:text-white">
+          <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
+        <span className="text-gray-800 dark:text-white text-sm">
               Showing {startIndex} to {endIndex} of {initialTenants.length}{" "}
               results
             </span>

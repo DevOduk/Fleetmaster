@@ -59,7 +59,7 @@ const TermsConditions: React.FC = () => {
     <div className="container mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-12 lg:grid-cols-12">
       {/* LEFT SIDEBAR: Interactive Tracer Navigation Links */}
       <div className="col-span-12 h-fit space-y-2 lg:sticky lg:top-22 lg:col-span-4">
-        <div className="rounded-2xl border border-slate-200/60 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="rounded-2xl border border-slate-200/60 bg-zinc-100 p-4 dark:border-slate-800 dark:bg-zinc-950/80">
           <p className="mb-3 px-3 text-[11px] font-bold tracking-widest text-slate-400 uppercase dark:text-slate-500">
             Agreement Navigation
           </p>

@@ -27,12 +27,13 @@ export default function Page() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="m-auto min-h-screen w-full">
       {/* Hero Section */}
       <SecondaryHero
         pages={pages}
         title="Get in touch with"
         highlightedText="Our Team"
+        className="dark:bg-zinc-950"
         description="Have questions about features, setup, or scaling your enterprise operations? Drop us a message and our fleet experts will handle the rest."
       />
       <section className="container mx-auto max-w-3xl px-4 py-12 text-center">
@@ -53,7 +54,7 @@ export default function Page() {
       <main className="container mx-auto px-4 pb-24">
         <div className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-12 lg:grid-cols-12">
           {/* Left Column: Contact Form */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm lg:col-span-7 dark:border-slate-800 dark:bg-slate-900">
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm lg:col-span-7 dark:border-slate-800 dark:bg-zinc-950">
             <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold text-slate-900 dark:text-white">
               {/* <ChatBubbleOutlineOutlinedIcon className="text-blue-600 w-5 h-5" />  */}
               Send us a message
@@ -64,27 +65,27 @@ export default function Page() {
           {/* Right Column: Contact Cards & Info */}
           <div className="space-y-6 lg:col-span-5">
             {/* Quick Contact Info */}
-            <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-zinc-950">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                 Contact Information
               </h3>
 
               <div className="space-y-4">
                 <div className="flex items-start gap-4">
-                  <div className="flex items-center justify-center rounded-xl bg-blue-50 p-3 text-blue-600 dark:bg-blue-950/50">
+                  <div className="flex items-center justify-center rounded-xl bg-blue-50 p-3 text-blue-500 dark:bg-blue-950/50">
                     <MailOutlinedIcon className="h-5 w-5" />
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
                       Email Us
                     </h4>
-                    <p className="text-brand-600 dark:text-brand-400 mt-0.5 text-sm">
+                    <p className="text-brand-500 dark:text-brand-400 mt-0.5 text-sm">
                       support@fleetmaster.co.ke
                     </p>
-                    <p className="text-brand-600 dark:text-brand-400 text-sm">
+                    {/* <p className="text-brand-600 dark:text-brand-400 text-sm">
                       info@fleetmaster.co.ke
-                    </p>
-                    <p className="text-brand-600 dark:text-brand-400 text-sm">
+                    </p> */}
+                    <p className="text-brand-500 dark:text-brand-400 text-sm">
                       sales@fleetmaster.co.ke
                     </p>
                   </div>
@@ -143,7 +144,7 @@ export default function Page() {
               Our Location
             </h3>
 
-            <div className="relative flex h-48 w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 dark:border-slate-800 dark:bg-slate-800">
+            <div className="relative flex h-48 w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 dark:border-slate-800 dark:bg-zinc-800">
               <div className="absolute h-full w-full">
                 <iframe
                   className="h-full w-full"

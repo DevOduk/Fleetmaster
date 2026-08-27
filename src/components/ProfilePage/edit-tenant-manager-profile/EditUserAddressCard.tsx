@@ -9,6 +9,7 @@ import { Backdrop, CircularProgress } from "@mui/material";
 import { useAdmin } from "@/context/AdminContext";
 import handleProfileUpdate from "@/utils/managers/handleProfileUpdate";
 import { hex } from "../client-profile/ProfilePage";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export default function EditUserAddressCard() {
   const {
@@ -19,6 +20,8 @@ export default function EditUserAddressCard() {
   const [profileDetails, setProfileDetails] = useState(profile || null);
   const { showToast } = useToast();
   const [backDrop, setBackDrop] = useState(false);
+  const pathname = usePathname();
+  const searchString = useSearchParams().toString();
 
   useEffect(() => {
     if (profile && !loading) {
@@ -44,7 +47,10 @@ export default function EditUserAddressCard() {
       </div>
     );
   } else if (!profile) {
-    window.location.href = "/signin";
+    const currentPageUrl = encodeURIComponent(
+      searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
+    );
+    window.location.href = `/signin?r=${currentPageUrl}`;
     return (
       <div className="container mx-auto min-h-[80vh] p-5 text-gray-400">
         Redirecting to signin ...

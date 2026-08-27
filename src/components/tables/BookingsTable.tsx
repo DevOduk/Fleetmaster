@@ -53,7 +53,7 @@ export default function BookingsTable() {
                 <TableRow>
                   <TableCell
                     isHeader
-                    className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                    className="text-theme-xs hidden md:block px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                   >
                     ID.
                   </TableCell>
@@ -139,11 +139,11 @@ export default function BookingsTable() {
                     .slice(startIndex - 1, endIndex)
                     .map((booking: any, i) => (
                       <TableRow key={booking.id}>
-                        <TableCell className="text-theme-sm px-4 py-3 text-gray-500 dark:text-gray-400">
+                        <TableCell className="text-theme-sm hidden md:block px-4 py-3 text-gray-500 dark:text-gray-400">
                           {booking.id}
                         </TableCell>
                         <TableCell className="px-5 py-4 text-start sm:px-6">
-                          <div className="flex min-w-62.5 items-center gap-3">
+                          <div className="flex min-w-65 items-center gap-3 pr-3">
                             <img
                               className="object-fit-cover w-20 rounded-lg object-center"
                               style={{
@@ -160,8 +160,7 @@ export default function BookingsTable() {
                                 {booking.vehicleDetails?.make}{" "}
                                 {booking.vehicleDetails?.model}
                               </span>
-                              <span className="text-theme-xs block py-2 text-gray-500 dark:text-gray-400">
-                                {/* {order.user.role} */}
+                              <span className="text-theme-xs block py-1 text-gray-500 dark:text-gray-400">
                                 {booking.vehicleDetails?.license_plate}
                               </span>
                             </div>
@@ -235,8 +234,8 @@ export default function BookingsTable() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-8 pb-3">
-        <span className="text-gray-800 dark:text-white">
+      <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
+        <span className="text-gray-800 dark:text-white text-sm">
           Showing {startIndex} to {endIndex} of {totalResults} results
         </span>
         <Pagination

@@ -66,7 +66,8 @@ export default function Page() {
         pages={pages}
         title="View our"
         highlightedText="Pricing"
-        description="Our prices are made for complete zero initial costs. Focus on business, we will handle the rest."
+        className="dark:bg-zinc-950"
+        description="Our prices are made for complete zero initial costs. Focus on business, we will handle the software hassles. Flexible plans tailored to your fleet management needs, from startup to enterprise scale."
       >
         <Button
           variant="success"
