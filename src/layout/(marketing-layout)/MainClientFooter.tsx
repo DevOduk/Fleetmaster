@@ -10,7 +10,7 @@ const MainClientFooter: React.FC = () => {
   return (
     <div>
       <div className="flex cursor-pointer items-center gap-0 relative p-4 lg:px-10 py-8 w-full bg-gray-300 dark:bg-zinc-800">
-        <Link href="/" className="w-full contrast-0">
+        <Link href="/" className="w-full contrast-0 relative pointer-events-none select-none">
           <img
             className="w-full h-full"
             src="/images/logo/logo-vector.svg"

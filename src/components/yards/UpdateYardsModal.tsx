@@ -22,6 +22,28 @@ const MapPicker = dynamic(() => import("../map/MapPicker"), {
   ),
 });
 
+type Yard = {
+  id?: string;
+  title: string;
+  description: string;
+  image_url: string;
+  location: [number, number];
+};
+
+type CompanyFormData = {
+  yards: Yard[];
+  [key: string]: unknown;
+};
+
+type UpdateYardsModalProps = {
+  tenantId: string;
+  isOpen: boolean;
+  yardDetails?: Yard;
+  setCompanyFormData: React.Dispatch<React.SetStateAction<CompanyFormData>>;
+  companyFormData: CompanyFormData;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
 export default function UpdateYardsModal({
   tenantId,
   isOpen,
@@ -29,11 +51,11 @@ export default function UpdateYardsModal({
   setCompanyFormData,
   companyFormData,
   setIsOpen,
-}: any) {
+}: UpdateYardsModalProps): React.JSX.Element {
   const [isUpdloading, setIsUploading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const { showToast } = useToast();
-  const [updatedYard, setUpdatedYard] = useState<any>(
+  const [updatedYard, setUpdatedYard] = useState<Yard>(
     yardDetails || {
       title: "",
       description: "",
@@ -47,7 +69,7 @@ export default function UpdateYardsModal({
     const image = await handleImageFileUpload(e, showToast, "Profiles");
 
     if (image) {
-      setUpdatedYard((prev: any) => ({ ...prev, image_url: image as string }));
+      setUpdatedYard((prev) => ({ ...prev, image_url: image as string }));
       setIsUploading(false);
     } else {
       showToast("An error occured while uploading image!", "error");
@@ -60,9 +82,9 @@ export default function UpdateYardsModal({
     const isUpdate = !!yardDetails;
     let res;
     const newYards = isUpdate
-      ? companyFormData.yards.map((y: any) =>
-          y.id === yardDetails.id ? updatedYard : y,
-        )
+      ? companyFormData.yards.map((y) =>
+        y.id === yardDetails.id ? updatedYard : y,
+      )
       : [...(companyFormData.yards || []), updatedYard];
     if (isUpdate) {
       res = await updateTenantYardDetails(
@@ -76,7 +98,7 @@ export default function UpdateYardsModal({
     }
 
     if (res.success) {
-      setCompanyFormData((prev: any) => ({ ...prev, yards: newYards }));
+      setCompanyFormData((prev) => ({ ...prev, yards: newYards }));
       showToast(
         `Yard ${isUpdate ? "updated" : "created"} successfully.`,
         "success",

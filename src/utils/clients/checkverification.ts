@@ -1,4 +1,13 @@
-export function userVerified(profile: any) {
+interface VerificationProfile {
+  verification_status?: {
+    email?: boolean;
+    phone?: boolean;
+    national_id?: boolean;
+    driving_license?: boolean;
+  };
+}
+
+export function userVerified(profile: VerificationProfile) {
   const verified =
     profile?.verification_status?.email &&
     profile?.verification_status?.phone &&
@@ -6,7 +15,7 @@ export function userVerified(profile: any) {
     profile?.verification_status?.driving_license;
   return Boolean(verified);
 }
-export function adminUserVerified(profile: any) {
+export function adminUserVerified(profile: VerificationProfile) {
   const verified =
     profile?.verification_status?.email &&
     profile?.verification_status?.phone &&

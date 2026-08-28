@@ -6,7 +6,7 @@ const JWT_SECRET =
   process.env.JWT_SECRET || process.env.NEXT_PUBLIC_JWT_SECRET || null;
 
 export async function getAdminTenant() {
-  let tenantData: any = null;
+  let tenantData: unknown = null;
   let tenantId: string | null = null;
 
   // If header not present, try to derive tenant from server session cookie (for admin pages)
@@ -16,8 +16,11 @@ export async function getAdminTenant() {
 
     if (sessionCookie && JWT_SECRET) {
       try {
-        const decoded = jwt.verify(sessionCookie, JWT_SECRET) as any;
-        const derivedTenantId = decoded?.tenant_id || decoded?.tenantId || null;
+        const decoded = jwt.verify(sessionCookie, JWT_SECRET);
+        const derivedTenantId =
+          typeof decoded === "string"
+            ? null
+            : decoded?.tenant_id || decoded?.tenantId || null;
 
         if (derivedTenantId) {
           tenantId = derivedTenantId;

@@ -2,7 +2,6 @@
 
 import React, { useEffect } from "react";
 import "leaflet/dist/leaflet.css";
-import Pagination from "../tables/Pagination";
 import BookingsTable from "../tables/BookingsTable";
 import Link from "next/link";
 import { useAdminBooking } from "@/context/AdminBookingContext";
@@ -248,14 +247,14 @@ const Bookings: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => reloadBookings()}
-              className="text-theme-sm ms-auto flex items-center justify-center gap-3 rounded-lg bg-gray-800 p-2 px-3 font-medium text-gray-500 hover:bg-gray-800/70"
+              className="text-theme-sm ms-auto flex items-center justify-center gap-3 rounded-lg p-2 px-3 font-medium text-gray-500 hover:bg-gray-800/70"
             >
-              <CachedIcon /> Sync now
+              <CachedIcon />
             </button>
 
             <Link href="/bookings/new">
               <button className="bg-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg p-2 px-3 font-medium text-white">
-                Create New Booking
+                New Booking
               </button>
             </Link>
           </div>

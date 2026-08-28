@@ -7,7 +7,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 interface NotificationPayload {
   isFirstTime: boolean;
   userEmail: string;
-  tenant: any;
+  tenant: Parameters<typeof sendWelcomeNotification>[1];
   firstName?: string;
 }
 

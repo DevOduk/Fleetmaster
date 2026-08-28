@@ -16,7 +16,7 @@ async function handleProfileUpdate(
     showToast("Profile was updated successfully!", "success");
     setBackDrop(false);
 
-    setProfile(profileDetails);
+    setProfile({fleetmaster_tenants, ...cleanProfile});
   } else {
     showToast(res.error.message, "error");
     setBackDrop(false);

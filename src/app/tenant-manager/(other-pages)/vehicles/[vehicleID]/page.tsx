@@ -70,7 +70,7 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
   }
 
   if (!VehicleDetails) {
-    return <VehicleNotFound />;
+    return <VehicleNotFound name="Vehicle" />;
   }
 
   return (

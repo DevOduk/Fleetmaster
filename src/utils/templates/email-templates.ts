@@ -24,7 +24,26 @@ export function WelcomeEmail(displayName: string) {
   `;
 }
 
-export function ClientWelcomeEmail(displayName: string, tenant: any) {
+interface EmailTenant {
+  slug: string;
+  name: string;
+}
+
+interface BookingDetails {
+  rental_start?: string;
+  rental_end?: string;
+  rental_days?: number;
+  total?: number | string;
+  vat?: number | string;
+  delivery_fee?: number | string;
+  rental_time?: string;
+  payment_method?: string;
+  renter_name?: string;
+  pickup_location?: string;
+  payment_ref?: string;
+}
+
+export function ClientWelcomeEmail(displayName: string, tenant: EmailTenant) {
   const appUrl = `http://${tenant.slug}.localhost:3000`;
   return `
     <div style="font-family: sans-serif; padding: 24px; max-width: 480px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
@@ -50,9 +69,13 @@ export function ClientWelcomeEmail(displayName: string, tenant: any) {
   `;
 }
 
-export function bookingEmail(displayName: string, tenant: any, bookingDetails: any) {
+export function bookingEmail(
+  displayName: string,
+  tenant: EmailTenant,
+  bookingDetails: BookingDetails,
+) {
   const appUrl = `http://${tenant.slug}.localhost:3000`;
-  
+
   // Format dates cleanly if available
   const startDate = bookingDetails.rental_start || "N/A";
   const endDate = bookingDetails.rental_end || "N/A";

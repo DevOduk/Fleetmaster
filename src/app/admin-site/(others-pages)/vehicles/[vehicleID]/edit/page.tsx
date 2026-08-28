@@ -178,7 +178,7 @@ const EditVehiclePage = ({ params }: VehiclePageProps) => {
     return (<LoadingInfo />);
   }
   if (!VehicleDetails) {
-    return <VehicleNotFound />;
+    return <VehicleNotFound name="Vehicle" />;
   }
 
   return (

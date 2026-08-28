@@ -511,7 +511,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
   }
 
   if (!VehicleDetails) {
-    return <VehicleNotFound />;
+    return <VehicleNotFound name="Vehicle" />;
   }
 
   return (

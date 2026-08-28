@@ -39,7 +39,6 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const searchString = searchParams.toString();
-  // Rebuild the accurate current page URL dynamically to signin link
   const currentPageUrl = encodeURIComponent(
     searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
   );
@@ -237,7 +236,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
   }
 
   if (!VehicleDetails) {
-    return <VehicleNotFound />;
+    return <VehicleNotFound name="Vehicle" />;
   }
 
   // --- DYNAMIC FINANCIAL CALCULATIONS ---
