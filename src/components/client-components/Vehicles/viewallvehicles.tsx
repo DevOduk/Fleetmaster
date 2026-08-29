@@ -285,8 +285,8 @@ export default function ViewAllVehicles({
 
         {/* TOP Pagination Controls Visibility Rule */}
         {!isShowingLoaders && (
-          <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
-        <span className="text-gray-800 dark:text-white text-sm">
+          <div className="flex items-center justify-between pt-8 pb-3 col-span-full flex-col md:flex-row gap-8">
+            <span className="text-gray-800 dark:text-white text-sm">
               Showing {startIndex} to {endIndex} of {sortedVehicles.length}{" "}
               results
             </span>
@@ -351,7 +351,7 @@ export default function ViewAllVehicles({
       {/* Pagination Controls Visibility Rule */}
       {!isShowingLoaders && (
         <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
-        <span className="text-gray-800 dark:text-white text-sm">
+          <span className="text-gray-800 dark:text-white text-sm">
             Showing {startIndex} to {endIndex} of {sortedVehicles.length}{" "}
             results
           </span>
