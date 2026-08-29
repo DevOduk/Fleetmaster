@@ -175,43 +175,6 @@ const Calendar: React.FC = () => {
     "Low Priority": "warning",
   };
 
-  // const handleEventClick = (clickInfo: EventClickArg) => {
-  //   const event = clickInfo.event;
-
-  //   // Helper to format Date object to YYYY-MM-DD (Local Time)
-  //   const formatDateToLocal = (dateStr: any) => {
-  //     if (!dateStr) return '';
-
-  //     // Create a date object. If it's all day, we treat it as local midnight.
-  //     // FullCalendar often passes '2026-05-13' which might be parsed as UTC.
-  //     // We force it to be interpreted as local time by appending 'T00:00:00'
-  //     // and then extracting the local parts.
-  //     const date = new Date(dateStr);
-
-  //     // If the date is invalid, return empty
-  //     if (isNaN(date.getTime())) return '';
-
-  //     const year = date.getFullYear();
-  //     const month = String(date.getMonth() + 1).padStart(2, '0');
-  //     const day = String(date.getDate()).padStart(2, '0');
-
-  //     return `${year}-${month}-${day}`;
-  //   };
-
-  //   setSelectedEvent(event as unknown as CalendarEvent);
-  //   setBookingID(parseInt(event.id));
-  //   setBookingName(event.title);
-  //   setEventStartDate(formatDateToLocal(event.start));
-  //   setEventEndDate(formatDateToLocal(event.end));
-  //   setEventStartTime(event.extendedProps.rentalTime);
-  //   setEventEndTime(event.extendedProps.rentalTime);
-  //   setEventLevel(event.extendedProps.calendar);
-  //   setRenterName(event.extendedProps.renter);
-  //   setRenterPhone(event.extendedProps.renterPhone);
-  //   setRenterID(event.extendedProps.renterID);
-  //   openModal();
-  // };
-
   const handleAddOrUpdateEvent = () => {
     if (selectedEvent) {
       console.log({

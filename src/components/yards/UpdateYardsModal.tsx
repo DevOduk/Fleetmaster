@@ -32,7 +32,7 @@ type Yard = {
 
 type CompanyFormData = {
   yards: Yard[];
-  [key: string]: unknown;
+  [key: string]: any;
 };
 
 type UpdateYardsModalProps = {

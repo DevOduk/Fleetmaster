@@ -55,7 +55,7 @@ const SystemManagers = () => {
         res &&
         typeof res === "object" &&
         res !== null &&
-        Array.isArray((res as { data?: unknown }).data)
+        Array.isArray((res as { data?: any }).data)
       ) {
         setIinitialUsers((res as { data: AdminUser[] }).data);
       }

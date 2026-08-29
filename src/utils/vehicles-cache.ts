@@ -4,7 +4,7 @@ import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/utils/supabase/server";
 
 interface CachedVehiclesResult {
-  data: Record<string, unknown>[];
+  data: Record<string, any>[];
   success: boolean;
   error: string | null;
 }
@@ -48,7 +48,7 @@ async function fetchAndCacheVehicles(
 
 
   const result: CachedVehiclesResult = {
-    data: (data ?? []) as Record<string, unknown>[],
+    data: (data ?? []) as Record<string, any>[],
     success: !error,
     error: error?.message ?? null,
   };
