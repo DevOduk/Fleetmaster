@@ -1,4 +1,4 @@
-// File: src/app/api/auth/login/route.ts
+// File: src/app/api/v1/auth/login/route.ts
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
     // Strip raw password hash before saving to cache or returning
     const { password: _, ...safeUserAccount } = userAccount;
 
-    // 6. SEED REDIS CACHE (Eliminates cold cache miss on subsequent /api/auth/me)
+    // 6. SEED REDIS CACHE (Eliminates cold cache miss on subsequent /api/v1/auth/me)
     if (redis) {
       try {
         const normalizedType = role === "admin" ? "admin" : "client";

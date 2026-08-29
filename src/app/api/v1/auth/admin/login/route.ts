@@ -1,4 +1,5 @@
-// src/app/api/auth/admin/login/route.ts
+// src/app/api/v1/auth/admin/login/route.ts
+
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { compare } from "bcrypt-ts";

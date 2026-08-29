@@ -1,4 +1,5 @@
-// src/app/api/auth/admin/me/route.ts
+// src/app/apiv1//auth/admin/me/route.ts
+
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";

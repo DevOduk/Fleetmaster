@@ -1,4 +1,4 @@
-// File: src/app/api/auth/me/route.ts
+// File: src/app/api/v1/auth/me/route.ts
 
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";

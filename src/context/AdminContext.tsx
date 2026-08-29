@@ -48,7 +48,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     async function checkSession() {
       try {
-        const response = await fetch("/api/auth/admin/me");
+        const response = await fetch("/api/v1/auth/admin/me");
         if (response.ok) {
           const data = await response.json();
           setAdminProfile(data.user);
@@ -64,7 +64,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch("/api/auth/admin/login", {
+      const response = await fetch("/api/v1/auth/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -104,7 +104,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    await fetch("/api/auth/admin/logout", { method: "POST" });
+    await fetch("/api/v1/auth/admin/logout", { method: "POST" });
     setAdminProfile(null);
   };
 

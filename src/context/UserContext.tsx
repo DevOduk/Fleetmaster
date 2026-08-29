@@ -67,7 +67,7 @@ export function UserProvider({
 
       try {
         setLoading(true);
-        const response = await fetch("/api/auth/me");
+        const response = await fetch("/api/v1/auth/me");
         const contentType = response.headers.get("content-type");
 
         if (
@@ -102,7 +102,7 @@ export function UserProvider({
     tenant: string,
   ) => {
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role, email, password, tenant }),
@@ -142,7 +142,7 @@ export function UserProvider({
   };
 
   const logout = async () => {
-    const response = await fetch("/api/auth/logout", { method: "POST" });
+    const response = await fetch("/api/v1/auth/logout", { method: "POST" });
     if (response.ok) {
       setProfile(null);
       showToast("You have been logged out successfully!", "info");

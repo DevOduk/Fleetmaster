@@ -35,7 +35,7 @@ export default async function AuthSigInLayout({
           ? targetAccountType
           : "client";
 
-      // Instantly hit the exact same Redis profile key used by your /api/auth/me route
+      // Instantly hit the exact same Redis profile key used by your /api/v1/auth/me route
       const cacheKey = `user:profile:${decoded.id}:${normalizedType}`;
       const cachedProfile = await redis.get(cacheKey);
 
