@@ -58,7 +58,6 @@ export default function LeasingCheck() {
   ];
   const { tenant } = useTenant();
 
-  console.log(tenant);
   return (
     <div className="min-h-screen py-8">
       {tenant?.leasing_accepted ? (

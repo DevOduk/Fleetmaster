@@ -1,12 +1,13 @@
 // app/(admin)/page.tsx
 
 import type { Metadata } from "next";
-import StatisticsChart from "@/components/ecommerce/StatisticsChart";
 import { EcommerceMetrics } from "@/components/dashboard-components/EcommerceMetrics";
 import RecentVehiscles from "@/components/dashboard-components/RecentVehicles";
 import { getAllTenants } from "@/app/actions/tenant";
 import DemographicCard from "@/components/dashboard-components/ecommerce/DemographicCard";
 import { fetchAllSubscriptionPayments } from "@/app/actions/payments";
+import DashboardStatisticsChart from "@/components/ecommerce/DashboardStatisticsChart";
+import { subscriptionPlans } from "@/data/globalExports";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,12 @@ export default async function Home() {
       </div>
 
       <div className="col-span-12">
-        <StatisticsChart loadingBookings={false} expenses={[]} bookings={[]} target={700000} />
+        <DashboardStatisticsChart
+          loadingRevenue={false}
+          expenses={[]}
+          payments={payments as any[]}
+          target={Number(subscriptionPlans[0].price)}
+        />
       </div>
 
       <div className="col-span-12 xl:col-span-5">

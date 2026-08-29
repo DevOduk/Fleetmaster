@@ -79,7 +79,6 @@ const SupportTicketsDashboard: React.FC<SupportDashboardProps> = ({
     });
   }, [initialTickets, filterStatus, filterPriority]);
 
-  // console.log(initialTickets, "initialTickets");
 
   return (
     <div className="space-y-8">

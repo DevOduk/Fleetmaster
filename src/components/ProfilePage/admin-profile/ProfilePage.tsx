@@ -141,8 +141,6 @@ function ProfilePage({ userProfile }: { userProfile?: any }) {
   // check if userprofile is available if so it means the user is not the owner of the profile and is viewing another user's profile. In that case, we should use the userProfile prop instead of the context profile.
   const userDetails = userProfile || profile;
 
-  console.log(userDetails);
-
   return (
     <div>
       <Modal

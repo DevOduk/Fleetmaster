@@ -229,7 +229,7 @@ export default function ClientVehiclesPage() {
     },
     0,
   );
-  console.log(filters)
+
   return (
     <div className="container m-auto min-h-screen">
       <PageBreadcrumb pageTitle="Vehicles" />

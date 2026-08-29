@@ -97,7 +97,6 @@ export default function NewUserCard() {
       label: c.country,
     }));
   };
-  console.log(profileDetails);
 
   return (
     <>

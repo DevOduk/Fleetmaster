@@ -20,7 +20,7 @@ export default function DefaultInputs() {
     { value: "development", label: "Development" },
   ];
   const handleSelectChange = (value: string) => {
-    console.log("Selected value:", value);
+    //
   };
   return (
     <ComponentCard title="Default Inputs">
@@ -74,7 +74,6 @@ export default function DefaultInputs() {
             placeholder="Select a date"
             onChange={(dates, currentDateString) => {
               // Handle your logic
-              console.log({ dates, currentDateString });
             }}
           />
         </div>
@@ -86,7 +85,7 @@ export default function DefaultInputs() {
               type="time"
               id="tm"
               name="tm"
-              onChange={(e) => console.log(e.target.value)}
+              onChange={(e) => {}}
             />
             <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
               <TimeIcon />
@@ -99,9 +98,9 @@ export default function DefaultInputs() {
             <Input
               type="text"
               placeholder="Card number"
-              className="pl-[62px]"
+              className="pl-15.5"
             />
-            <span className="absolute top-1/2 left-0 flex h-11 w-[46px] -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+            <span className="absolute top-1/2 left-0 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
               <svg
                 width="20"
                 height="20"

@@ -4,9 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { ApexOptions } from "apexcharts";
 import flatpickr from "flatpickr";
-import ChartTab from "../common/ChartTab";
 import { CalenderIcon } from "../../icons";
-import { getYear, getMonth, getDaysInMonth, isWithinInterval, startOfDay, endOfDay, format, isSameDay, eachDayOfInterval } from "date-fns";
+import { getYear, getMonth, isWithinInterval, startOfDay, endOfDay, format, isSameDay, eachDayOfInterval } from "date-fns";
 
 // Import mandatory flatpickr theme stylesheets directly
 import "flatpickr/dist/flatpickr.min.css";
@@ -20,17 +19,23 @@ const Chart = dynamic(() => import("react-apexcharts"), {
   ),
 });
 
-export default function StatisticsChart({
+export default function DashboardStatisticsChart({
   expenses,
-  bookings,
-  loadingBookings,
+  payments,
+  loadingRevenue,
   target,
 }: {
   expenses: any[];
-  bookings: any[];
-  loadingBookings: boolean;
-  target: number;
+  payments: any[];
+  loadingRevenue: boolean;
+  target: number; // a daily value meaning should change for monthly quarterly etc if days mirroered are not equal
 }) {
+  const currentDate = new Date();
+  const daysInCurrentMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth() + 1,
+    0,
+  ).getDate();
   const datePickerRef = useRef<HTMLInputElement>(null);
   const [filterType, setFilterType] = useState<"daily" | "monthly" | "quarterly" | "annually">("monthly");
   const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({
@@ -88,16 +93,23 @@ export default function StatisticsChart({
       return new Date(year, month - 1, day);
     };
 
+    const getAmount = (item: any) => Number(item?.amount ?? item?.total ?? 0);
+    const isValidRevenueEntry = (item: any) => {
+      const status = String(item?.status ?? "").trim().toLowerCase();
+      if (!status) return true;
+      return !["reserved", "failed", "cancelled", "declined", "refunded"].includes(status);
+    };
+
     // 1. Handle Custom Date Range Filter if active
     if (dateRange.start && dateRange.end) {
-      const filteredBookings = (bookings || []).filter((item) => {
+      const filteredRevenue = (payments || []).filter((item) => {
         if (!item?.created_at) return false;
         const date = getChartDate(item.created_at);
         return (
           isWithinInterval(date, {
             start: startOfDay(dateRange.start!),
             end: endOfDay(dateRange.end!),
-          }) && item.status !== "Reserved"
+          }) && isValidRevenueEntry(item)
         );
       });
 
@@ -114,20 +126,21 @@ export default function StatisticsChart({
         start: startOfDay(dateRange.start),
         end: startOfDay(dateRange.end),
       });
-      const getSumForDay = (data: any[], day: Date, isBooking = true) =>
+      const getSumForDay = (data: any[], day: Date, isPayment = true) =>
         data
           .filter((item) => {
+            if (!item?.created_at) return false;
             const date = getChartDate(item.created_at);
-            return isSameDay(date, day) && (!isBooking || item.status !== "Reserved");
+            return isSameDay(date, day) && (isPayment ? isValidRevenueEntry(item) : true);
           })
-          .reduce((sum, item) => sum + (Number(isBooking ? item.total : item.amount) || 0), 0);
+          .reduce((sum, item) => sum + (isPayment ? getAmount(item) : Number(item.amount ?? 0)), 0);
 
       return {
         categories: days.map((day) => format(day, "dd")),
         series: [
-          { name: "Revenue", data: days.map((day) => getSumForDay(filteredBookings, day, true)) },
+          { name: "Revenue", data: days.map((day) => getSumForDay(filteredRevenue, day, true)) },
           { name: "Expenses", data: days.map((day) => getSumForDay(filteredExpenses, day, false)) },
-        { name: "Target", data: days.map(() => (target/30).toFixed(0)) }
+          { name: "Target", data: days.map(() => target) }
         ],
       };
     }
@@ -138,22 +151,22 @@ export default function StatisticsChart({
         { length: now.getDate() },
         (_, index) => new Date(currentYear, getMonth(now), index + 1)
       );
-      const getSumForDay = (data: any[], day: Date, isBooking = true) => {
+      const getSumForDay = (data: any[], day: Date, isPayment = true) => {
         return data
           .filter((item) => {
             if (!item?.created_at) return false;
             const date = getChartDate(item.created_at);
-            return isSameDay(date, day) && (!isBooking || item.status !== "Reserved");
+            return isSameDay(date, day) && (isPayment ? isValidRevenueEntry(item) : true);
           })
-          .reduce((sum, item) => sum + (Number(isBooking ? item.total : item.amount) || 0), 0);
+          .reduce((sum, item) => sum + (isPayment ? getAmount(item) : Number(item.amount ?? 0)), 0);
       };
 
       return {
         categories: days.map((day) => format(day, "dd")),
         series: [
-          { name: "Revenue", data: days.map((day) => getSumForDay(bookings || [], day, true)) },
+          { name: "Revenue", data: days.map((day) => getSumForDay(payments || [], day, true)) },
           { name: "Expenses", data: days.map((day) => getSumForDay(expenses || [], day, false)) },
-        { name: "Target", data: days.map(() => (target/30).toFixed(0)) }
+          { name: "Target", data: days.map(() => (target).toFixed(0)) }
         ],
       };
     }
@@ -161,18 +174,22 @@ export default function StatisticsChart({
     // 3. Handle Quarterly Filter
     if (filterType === "quarterly") {
       const quarters = ["Q1 (Jan-Mar)", "Q2 (Apr-Jun)", "Q3 (Jul-Sep)", "Q4 (Oct-Dec)"];
-      const getSumForQuarter = (data: any[], qMonths: number[], isBooking = true) => {
+      const isMonthIn = (monthIndex: number, months: number[]) => months.includes(monthIndex);
+      const getTargetForMonths = (year: number, months: number[]) =>
+        months.reduce((sum, monthIndex) => sum + target * new Date(year, monthIndex + 1, 0).getDate(), 0);
+
+      const getSumForQuarter = (data: any[], qMonths: number[], isPayment = true) => {
         return data
           .filter((item) => {
             if (!item?.created_at) return false;
             const date = getChartDate(item.created_at);
             return (
               getYear(date) === currentYear &&
-              qMonths.includes(getMonth(date)) &&
-              (!isBooking || item.status !== "Reserved")
+              isMonthIn(getMonth(date), qMonths) &&
+              (isPayment ? isValidRevenueEntry(item) : true)
             );
           })
-          .reduce((sum, item) => sum + (Number(isBooking ? item.total : item.amount) || 0), 0);
+          .reduce((sum, item) => sum + (isPayment ? getAmount(item) : Number(item.amount ?? 0)), 0);
       };
 
       const qMap = [
@@ -182,7 +199,7 @@ export default function StatisticsChart({
         [9, 10, 11],
       ];
 
-      const salesData = qMap.map((months) => getSumForQuarter(bookings || [], months, true));
+      const salesData = qMap.map((months) => getSumForQuarter(payments || [], months, true));
       const revenueData = qMap.map((months) => getSumForQuarter(expenses || [], months, false));
 
       return {
@@ -190,7 +207,7 @@ export default function StatisticsChart({
         series: [
           { name: "Revenue", data: salesData },
           { name: "Expenses", data: revenueData },
-        { name: "Target", data: qMap.map(() => target*3) }
+          { name: "Target", data: qMap.map((months) => getTargetForMonths(currentYear, months)) }
         ],
       };
     }
@@ -198,19 +215,22 @@ export default function StatisticsChart({
     // 4. Handle Annually Filter (Past 5 Years or available years)
     if (filterType === "annually") {
       const years = [currentYear - 4, currentYear - 3, currentYear - 2, currentYear - 1, currentYear];
-      const getSumForYear = (data: any[], targetYear: number, isBooking = true) => {
+      const getTargetForYear = (year: number) =>
+        Array.from({ length: 12 }, (_, monthIndex) => monthIndex).reduce(
+          (sum, monthIndex) => sum + target * new Date(year, monthIndex + 1, 0).getDate(),
+          0,
+        );
+      const getSumForYear = (data: any[], targetYear: number, isPayment = true) => {
         return data
           .filter((item) => {
             if (!item?.created_at) return false;
             const date = getChartDate(item.created_at);
-            return (
-              getYear(date) === targetYear && (!isBooking || item.status !== "Reserved")
-            );
+            return getYear(date) === targetYear && (isPayment ? isValidRevenueEntry(item) : true);
           })
-          .reduce((sum, item) => sum + (Number(isBooking ? item.total : item.amount) || 0), 0);
+          .reduce((sum, item) => sum + (isPayment ? getAmount(item) : Number(item.amount ?? 0)), 0);
       };
 
-      const salesData = years.map((yr) => getSumForYear(bookings || [], yr, true));
+      const salesData = years.map((yr) => getSumForYear(payments || [], yr, true));
       const revenueData = years.map((yr) => getSumForYear(expenses || [], yr, false));
 
       return {
@@ -218,8 +238,7 @@ export default function StatisticsChart({
         series: [
           { name: "Revenue", data: salesData },
           { name: "Expenses", data: revenueData },
-          { name: "Target", data: years.map(() => target*12) }
-
+          { name: "Target", data: years.map((year) => getTargetForYear(year)) }
         ],
       };
     }
@@ -229,7 +248,10 @@ export default function StatisticsChart({
     const currentMonthIndex = getMonth(now);
     const categories = allMonths.slice(0, currentMonthIndex + 1);
 
-    const getSumForMonth = (data: any[], targetMonthIndex: number, isBooking = true) => {
+    const getTargetForMonth = (year: number, monthIndex: number) =>
+      target * new Date(year, monthIndex + 1, 0).getDate();
+
+    const getSumForMonth = (data: any[], targetMonthIndex: number, isPayment = true) => {
       return data
         .filter((item) => {
           if (!item?.created_at) return false;
@@ -237,13 +259,13 @@ export default function StatisticsChart({
           return (
             getYear(date) === currentYear &&
             getMonth(date) === targetMonthIndex &&
-            (!isBooking || item.status !== "Reserved")
+            (isPayment ? isValidRevenueEntry(item) : true)
           );
         })
-        .reduce((sum, item) => sum + (Number(isBooking ? item.total : item.amount) || 0), 0);
+        .reduce((sum, item) => sum + (isPayment ? getAmount(item) : Number(item.amount ?? 0)), 0);
     };
 
-    const salesData = categories.map((_, index) => getSumForMonth(bookings || [], index, true));
+    const salesData = categories.map((_, index) => getSumForMonth(payments || [], index, true));
     const expensesData = categories.map((_, index) => getSumForMonth(expenses || [], index, false));
 
     return {
@@ -251,8 +273,7 @@ export default function StatisticsChart({
       series: [
         { name: "Revenue", data: salesData },
         { name: "Expenses", data: expensesData },
-        { name: "Target", data: categories.map(() => target) }
-
+        { name: "Target", data: categories.map((_, index) => getTargetForMonth(currentYear, index)) }
       ],
     };
   };
@@ -323,12 +344,24 @@ export default function StatisticsChart({
       axisTicks: {
         show: false,
       },
-    },
-    yaxis: {
       labels: {
+        maxHeight: 30,
         style: {
           fontSize: "12px",
           colors: ["#6B7280"],
+          cssClass: "apexcharts-xaxis-label",
+        },
+      },
+    },
+    yaxis: {
+      labels: {
+        align: "right",
+        minWidth: 40,
+        maxWidth: 40,
+        style: {
+          fontSize: "12px",
+          colors: ["#6B7280"],
+          cssClass: "apexcharts-yaxis-label",
         },
       },
       title: {
@@ -348,7 +381,7 @@ export default function StatisticsChart({
             Statistics
           </h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Target you've set on a monthly basis: ${formatedValue(target)}
+            Target you've set on a monthly basis: ${formatedValue(target*daysInCurrentMonth)}
           </p>
         </div>
         <div className="flex items-center gap-3 sm:justify-end">
@@ -405,7 +438,7 @@ export default function StatisticsChart({
 
       <div className="custom-scrollbar max-w-full overflow-x-auto">
         <div className="min-w-250 xl:min-w-full">
-          {loadingBookings ? (
+          {loadingRevenue ? (
             <div className="h-77.5 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800" />
           ) : (
             <div className="overflow-hidden">

@@ -56,7 +56,7 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
       }
     });
   }, [loading, BookingID]);
-console.log('booking',bookingDetails?.tenant_id,'vs profile: ', profile?.tenant_id)
+
   useEffect(() => {
     if (!bookingDetails) return;
 

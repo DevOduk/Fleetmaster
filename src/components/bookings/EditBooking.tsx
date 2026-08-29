@@ -367,7 +367,6 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
 
       // reloadBookings(); // <-- Trigger reload of bookings in context to reflect the updated status
     } else {
-      console.log(response.error);
       showToast("Could not update booking status. Try again later!", "error");
     }
   };
@@ -496,11 +495,6 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
         );
 
         const availabilityCheckResdata = await availabilityCheckRes.json();
-        console.log("❌ Availability check response failed:", {
-          status: availabilityCheckRes.status,
-          statusText: availabilityCheckRes.statusText,
-          data: availabilityCheckResdata,
-        });
 
         if (!availabilityCheckRes.ok || !availabilityCheckResdata.success) {
           const errorMessage =
@@ -522,7 +516,6 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
         });
 
         const data = await res.json();
-        console.log("Daraja STK Response: ", data);
 
         if (!res.ok || data.ResponseCode !== "0") {
           throw new Error(
@@ -558,12 +551,6 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
             const statusData = await statusRes.json();
             const resultCode = statusData.ResultCode;
             const responseCode = statusData.ResponseCode;
-            console.log(
-              "Daraja status check poll: ",
-              resultCode,
-              responseCode,
-              statusData,
-            );
 
             // Ignore intermediate processing states (e.g. "The service request has been accepted successfully" with no ResultCode yet)
             if (!resultCode || resultCode === "PROCESSING") {

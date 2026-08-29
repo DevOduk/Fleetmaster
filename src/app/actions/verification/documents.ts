@@ -78,8 +78,6 @@ export async function submitAndVerifyDocument(
   const res = JSON.parse(responseText);
 
 
-  console.log('user verification response: ', res)
-
   // 1. Build a clean list of errors skipping any true flags
   const errors: string[] = [];
   if (!res.photoClarity) errors.push("- Photo clarity is poor or unreadable.");

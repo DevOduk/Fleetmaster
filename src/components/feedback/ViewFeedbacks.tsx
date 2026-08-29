@@ -52,7 +52,7 @@ interface ViewFeedbacksProps {
 }
 
 const ratingsRange = (() => {
-  let values: number[] = [];
+  const values: number[] = [];
 
   for (let i = 5; i >= 0.5; i -= 0.5) {
     values.push(i)
@@ -144,7 +144,6 @@ const ViewFeedbacks: React.FC<ViewFeedbacksProps> = ({ initialFeedbacks }) => {
     }
 
     const { success, error } = await deleteFeedback(feedbackId);
-    console.log(error)
 
     const newFeedbacks = feedbacks.filter((f) => f.id !== feedbackId);
     if (success) {

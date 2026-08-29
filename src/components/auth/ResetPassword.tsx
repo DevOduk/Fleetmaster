@@ -76,7 +76,6 @@ export default function ResetPasswordForm({
       });
 
       const data = await response.json();
-      console.log("reset response: ", data);
 
       if (!response.ok) {
         showToast(

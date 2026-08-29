@@ -55,7 +55,7 @@ export default function VerificationBanner({ profile }: { profile?: any }) {
 
   // If everything is verified, user is logged out, or banner is dismissed, show nothing
   if (!activeWarningStep || isDismissed) return null;
-  console.log("Active verification warning step:", activeWarningStep.key);
+
   return (
     <div
       className="relative container m-auto my-2 flex items-center rounded-lg bg-amber-600/30 p-2 px-3 text-sm text-amber-900 shadow-sm dark:bg-amber-500/20 dark:text-amber-400"

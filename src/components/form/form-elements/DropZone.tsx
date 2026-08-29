@@ -23,7 +23,6 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({
   onChange,
 }) => {
   const onDrop = (acceptedFiles: File[]) => {
-    console.log("Files dropped:", acceptedFiles);
     onChange?.(acceptedFiles);
     // Handle file uploads here
   };

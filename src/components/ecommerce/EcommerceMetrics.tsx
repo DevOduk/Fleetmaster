@@ -8,6 +8,9 @@ import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 import { formatedValue } from "./MonthlyTarget";
 
+const clampChangeValue = (value: number) =>
+  Math.min(100, Math.max(-100, value));
+
 export const calculateChange = (current: number, previous: number) => {
   if (previous === 0) {
     if (current === 0) return 0; // no change
@@ -15,7 +18,7 @@ export const calculateChange = (current: number, previous: number) => {
   }
   const change = ((current - previous) / previous) * 100;
 
-  return change;
+  return clampChangeValue(change);
 };
 
 export const formatChange = (change: number | null) => {
@@ -27,11 +30,13 @@ export const formatChange = (change: number | null) => {
     };
   }
 
+  const safeChange = clampChangeValue(change);
+
   return {
-    text: Math.abs(change).toFixed(2) + "%",
-    color: change >= 0 ? ("success" as const) : ("error" as const),
+    text: Math.abs(safeChange).toFixed(2) + "%",
+    color: safeChange >= 0 ? ("success" as const) : ("error" as const),
     icon:
-      change >= 0 ? (
+      safeChange >= 0 ? (
         <ArrowUpIcon className="text-success-500" />
       ) : (
         <ArrowDownIcon className="text-error-500" />

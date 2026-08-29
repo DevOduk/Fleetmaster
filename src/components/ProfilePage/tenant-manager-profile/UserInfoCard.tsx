@@ -6,8 +6,6 @@ import { useAdmin } from "@/context/AdminContext";
 export default function AdminInfoCard() {
   const { adminProfile: profile } = useAdmin();
 
-  console.log("admin tenant manager profile: ", profile);
-
   return (
     <div className="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
       <div className="flex items-center justify-between">

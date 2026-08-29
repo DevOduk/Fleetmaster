@@ -291,7 +291,6 @@ const CreateNewBookingForm = () => {
         });
 
         const data = await res.json();
-        console.log("Daraja STK Response: ", data);
 
         if (!res.ok || data.ResponseCode !== "0") {
           throw new Error(
@@ -327,12 +326,6 @@ const CreateNewBookingForm = () => {
             const statusData = await statusRes.json();
             const resultCode = statusData.ResultCode;
             const responseCode = statusData.ResponseCode;
-            console.log(
-              "Daraja status check poll: ",
-              resultCode,
-              responseCode,
-              statusData,
-            );
 
             // Ignore intermediate processing states (e.g. "The service request has been accepted successfully" with no ResultCode yet)
             if (!resultCode || resultCode === "PROCESSING") {
@@ -396,8 +389,6 @@ const CreateNewBookingForm = () => {
               }, profile?.email, profile?.fleetmaster_tenants, profile?.first_name);
               const dbRes = await createPayment(newPayment);
 
-              console.log("Database payment update response:", dbRes);
-              console.log("Database booking insert response:", bookingRes);
 
               reloadBookings(); // <-- Trigger a refresh of the bookings list in the parent component
             } else {
@@ -420,15 +411,13 @@ const CreateNewBookingForm = () => {
                 message: failReason,
               };
 
-              const bookingRes = await createNewBooking({
+
+              await createNewBooking({
                 ...newBooking,
                 booking_status: "Reserved",
                 payment_status: "FAILED",
               }, profile?.email, profile?.fleetmaster_tenants, profile?.first_name);
-              const dbRes = await createPayment(newPayment);
-
-              console.log("Database payment update response:", dbRes);
-              console.log("Database booking insert response:", bookingRes);
+              await createPayment(newPayment);
             }
           } catch (pollErr) {
             console.error(

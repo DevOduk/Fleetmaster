@@ -177,18 +177,6 @@ const Calendar: React.FC = () => {
 
   const handleAddOrUpdateEvent = () => {
     if (selectedEvent) {
-      console.log({
-        rentalStart: eventStartDate,
-        rentalEnd: eventEndDate,
-        priority: eventLevel,
-        renterPhone: renterPhone,
-        rentalDays: getNumberOfDays(eventStartDate, eventEndDate),
-        total: getTotalAmount(
-          getBookingDetails(bookingID)?.vehicleID,
-          eventEndDate,
-          eventStartDate,
-        ),
-      });
       // return;
       setUpdatingBooking(true);
 
@@ -335,11 +323,6 @@ const Calendar: React.FC = () => {
         (newEnd.isAfter(existingStartWithBuffer) &&
           newStart.isBefore(existing.end));
 
-      // if (overlaps) {
-      //   console.log(`[Overlap Found] Vehicle ID: ${bookingID}`);
-      //   console.log(`Existing Booking #${existing.id}: ${existing.start.format('YYYY-MM-DD HH:mm')} to ${existing.end.format('YYYY-MM-DD HH:mm')}`);
-      //   console.log(`Your Selection: ${newStart.format('YYYY-MM-DD HH:mm')} to ${newEnd.format('YYYY-MM-DD HH:mm')}`);
-      // }
 
       return overlaps;
     });
