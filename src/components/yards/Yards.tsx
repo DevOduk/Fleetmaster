@@ -189,7 +189,6 @@ const YardsContent: React.FC = () => {
       {isOpen && (
         <UpdateYardsModal
           tenantId={adminProfile?.tenant_id}
-          isDarkMode={isDarkMode}
           isOpen={isOpen}
           setIsOpen={setIsOpen}
           yardDetails={selectedEvent}

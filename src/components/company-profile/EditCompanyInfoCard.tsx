@@ -220,7 +220,6 @@ export default function EditCompanyInfoCard() {
       {isOpen && (
         <UpdateYardsModal
           tenantId={profile?.tenant_id}
-          isDarkMode={isDarkMode}
           isOpen={isOpen}
           setIsOpen={setIsOpen}
           yardDetails={selectedEvent}

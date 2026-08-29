@@ -27,7 +27,7 @@ export default async function Home() {
       </div>
 
       <div className="col-span-12">
-        <StatisticsChart />
+        <StatisticsChart loadingBookings={false} expenses={[]} bookings={[]} target={700000} />
       </div>
 
       <div className="col-span-12 xl:col-span-5">
