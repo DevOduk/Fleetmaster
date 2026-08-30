@@ -115,6 +115,77 @@ export async function fetchVehicleDetails(id: number) {
   return { data, error: null };
 }
 
+
+export async function fetchTenantVehicleDetails(id: number, tenantId: string) {
+  const cacheKey = `vehicles:tenant:${tenantId}:id:${id}`;
+
+  if (!tenantId) {
+    return {
+      data: null,
+      error: { message: "Tenant access is required.", code: 401 },
+    };
+  }
+
+  try {
+    // 1. Read from Redis Cache
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return { data: cachedData, error: null };
+    }
+  } catch (cacheErr) {
+    console.error(`Redis read error in fetchVehicleDetails (${id}):`, cacheErr);
+  }
+
+  // 2. Fetch from Supabase on cache miss
+  const supabase = await createClient();
+
+  // First check whether the vehicle exists at all.
+  const { data: vehicle, error: vehicleError } = await supabase
+    .from("fleetmaster_vehicles")
+    .select(`*, location:fleetmaster_yards(*)`)
+    .eq("id", id)
+    .single();
+
+  if (vehicleError) {
+    if (vehicleError.code === "PGRST116") {
+      return {
+        data: null,
+        error: { message: "Vehicle not found.", code: 404 },
+      };
+    }
+    return { data: null, error: { message: vehicleError.message, code: 500 } };
+  }
+
+  if (!vehicle) {
+    return {
+      data: null,
+      error: { message: "Vehicle not found.", code: 404 },
+    };
+  }
+
+  if (vehicle.tenant_id !== tenantId) {
+    return {
+      data: null,
+      error: {
+        message: "This vehicle entry does not match this tenant.",
+        code: 403,
+      },
+    };
+  }
+
+  // 3. Store in Redis
+  try {
+    await redis.set(cacheKey, JSON.stringify(vehicle), { ex: CACHE_TTL_SECONDS });
+  } catch (cacheErr) {
+    console.error(
+      `Redis write error in fetchVehicleDetails (${id}):`,
+      cacheErr,
+    );
+  }
+
+  return { data: vehicle, error: null };
+}
+
 export async function updateVehicleDetails(id: number, vehicleDetails: any) {
   const supabase = await createClient();
   const { data, error } = await supabase

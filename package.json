@@ -3,7 +3,7 @@
   "version": "2.2.3",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "lint": "eslint .",
     "type-check": "tsc --noEmit -p tsconfig.json"
   },

@@ -1,14 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-    // 1. External Images Configuration
+  // 1. External Images Configuration
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**', //change this to cloudflare host for our images
         port: '',
-        pathname: '/**', 
+        pathname: '/**',
       },
     ],
   },
@@ -20,15 +20,6 @@ const nextConfig: NextConfig = {
       use: ["@svgr/webpack"],
     });
     return config;
-  },
-
-  turbopack: {
-    rules: {
-      "*.svg": {
-        loaders: ["@svgr/webpack"],
-        as: "*.js",
-      },
-    },
   },
 };
 

@@ -23,7 +23,7 @@ import Input from "@/components/form/input/InputField";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import DeliveryBanner from "@/components/client-components/DeliveryBanner";
-import { fetchVehicleDetails } from "@/app/actions/vehicles";
+import { fetchTenantVehicleDetails } from "@/app/actions/vehicles";
 import { fetchBookingsForVehicle } from "@/app/actions/bookings";
 import { syncTimeToDateString } from "../hero/searchform";
 import { userVerified } from "@/utils/clients/checkverification";
@@ -76,12 +76,13 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
     }
 
     setLoading(true);
-    fetchVehicleDetails(parseInt(vehicleID))
+    fetchTenantVehicleDetails(parseInt(vehicleID), tenant?.id)
       .then((response) => {
+        console.log('res: ',response)
         if (response.data) {
           setVehicleDetails(response.data);
         } else {
-          console.error("Error fetching vehicle details:", response.error);
+          showToast(response.error.message, 'error')
           setVehicleDetails(null);
         }
       })

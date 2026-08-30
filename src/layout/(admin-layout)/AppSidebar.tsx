@@ -91,6 +91,12 @@ export const navItems: NavItem[] = [
     path: "/map",
     pro: true,
   },
+  {
+    icon: <NavigationOutlinedIcon sx={iconStyle} />,
+    name: "Service Tracker",
+    path: "/vehicel-service",
+    pro: true,
+  },
 
 ];
 
