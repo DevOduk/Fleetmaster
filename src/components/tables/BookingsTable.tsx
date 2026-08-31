@@ -14,6 +14,7 @@ import { CircularProgress } from "@mui/material";
 import { useAdminBooking } from "@/context/AdminBookingContext";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Pagination from "./Pagination";
+import { formatedTimestamp } from "../company-profile/ExpiryBanner";
 
 export default function BookingsTable() {
   const searchParams = useSearchParams();
@@ -170,13 +171,13 @@ export default function BookingsTable() {
                           {booking.renter_name}
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {booking.renter_phone}
+                          +{booking.renter_phone}
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {booking.rental_start} | {booking.rental_days} Days
+                          {formatedTimestamp(booking.rental_start+'T'+booking.rental_time)} | {booking.rental_days} Days
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {booking.rental_end}
+                          {formatedTimestamp(booking.rental_end+'T'+booking.rental_time)}
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
                           Ksh.{" "}

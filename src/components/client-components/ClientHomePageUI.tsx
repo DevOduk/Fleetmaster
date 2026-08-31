@@ -11,9 +11,13 @@ import ViewAllCategories from "@/components/client-components/categories";
 import ViewAllSnapshots from "@/components/client-components/Vehicles/viewallvehiclesSnapshot";
 import { useTenant } from "@/context/TenantContext";
 import Link from "next/link";
+import { useFleet } from "@/context/FleetContext";
+import { useBooking } from "@/context/BookingContext";
 
 export default function ClientHomePageUI() {
   const { tenant: tenantData } = useTenant();
+  const { vehicles, loading } = useFleet();
+  const { bookings, loading: loadingBookings } = useBooking();
 
   return (
     <div>
@@ -25,7 +29,7 @@ export default function ClientHomePageUI() {
       <br />
       <br />
 
-      <StatisticsBanner tenant={tenantData} />
+      <StatisticsBanner vehicles={vehicles} loading={loading} bookings={bookings} loadingBookings={loadingBookings} tenant={tenantData} />
       <br />
 
       <div className="container m-auto grid grid-cols-1 items-center gap-5 p-4 lg:grid-cols-12">

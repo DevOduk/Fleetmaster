@@ -3,15 +3,23 @@ import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFi
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
-import { useFleet } from "@/context/FleetContext";
-import { useBooking } from "@/context/BookingContext";
 import CountUp from "react-countup";
 import { ArrowRightIcon } from "@/icons";
 import Link from "next/link";
 
-function StatisticsBanner({ tenant }: { tenant: any }) {
-  const { vehicles, loading } = useFleet();
-  const { bookings, loading: loadingBookings } = useBooking();
+function StatisticsBanner({
+  tenant,
+  vehicles = [],
+  loading = false,
+  bookings = [],
+  loadingBookings = false,
+}: {
+  tenant: any;
+  vehicles: any[];
+  loading: boolean;
+  bookings: any[];
+  loadingBookings: boolean;
+}) {
 
   // Safely compute values with strict fallbacks
   const vehicleCount = Array.isArray(vehicles) ? vehicles.length : 0;
@@ -22,7 +30,7 @@ function StatisticsBanner({ tenant }: { tenant: any }) {
   const stats = [
     {
       icon: <DirectionsCarFilledOutlinedIcon className="text-gray-500" />,
-      end: vehicleCount,
+      end: vehicleCount || 0,
       isLoading: loading,
       label: "Vehicles",
       desc: "Browse a diverse selection of our fleet at our yards, from economy cars to premium SUVs and Minivans.",
@@ -30,7 +38,7 @@ function StatisticsBanner({ tenant }: { tenant: any }) {
     },
     {
       icon: <CalendarMonthIcon className="text-gray-500" />,
-      end: bookingCount,
+      end: bookingCount || 0,
       isLoading: loadingBookings,
       label: "Bookings",
       desc: "Reliable and seamless booking services tailored to meet your travel needs efficiently.",
@@ -38,7 +46,7 @@ function StatisticsBanner({ tenant }: { tenant: any }) {
     },
     {
       icon: <LocationOnOutlinedIcon className="text-gray-500" />,
-      end: yardCount,
+      end: yardCount || 0,
       isLoading: !tenant,
       label: "Yards/Locations",
       desc: "Conveniently located yards across the region to ensure easy pickup and drop-off access.",
@@ -85,29 +93,34 @@ function StatisticsBanner({ tenant }: { tenant: any }) {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-5 text-center md:grid-cols-4 md:text-left">
-        {stats.map((item, index) => (
-          <div key={index} className="mb-4 md:mb-0">
-            <div className="stat-number text-brand-500 text-2xl font-bold">
-              {item.isLoading ? (
-                <span>0</span>
-              ) : (
-                <CountUp
-                  end={item.end}
-                  duration={5}
-                  decimals={item.decimals || 0}
-                />
-              )}
-              {item.unit || "+"}
+        {stats.map((item, index) => {
+          const countValue = Number.isFinite(item.end) ? item.end : 0;
+
+          return (
+            <div key={index} className="mb-4 md:mb-0">
+              <div className="stat-number text-brand-500 text-2xl font-bold">
+                {item.isLoading ? (
+                  <span>0</span>
+                ) : (
+                  <CountUp
+                    start={0}
+                    end={countValue}
+                    duration={5}
+                    decimals={item.decimals ?? 0}
+                  />
+                )}
+                {item.unit ?? "+"}
+              </div>
+              <div className="stat-label mt-1 mb-1 font-bold text-black dark:text-white">
+                {item.label}
+                <br />
+                <small className="text-xs font-normal text-gray-400">
+                  {item.desc}
+                </small>
+              </div>
             </div>
-            <div className="stat-label mt-1 mb-1 font-bold text-black dark:text-white">
-              {item.label}
-              <br />
-              <small className="text-xs font-normal text-gray-400">
-                {item.desc}
-              </small>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

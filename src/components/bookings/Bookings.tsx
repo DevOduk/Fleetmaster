@@ -231,7 +231,7 @@ const Bookings: React.FC = () => {
             </div>
           ))}
         </div>
-      <div className="flex items-start md:items-center gap-7 justify-between py-3 flex-col md:flex-row">
+        <div className="flex items-start md:items-center gap-7 justify-between py-3 flex-col md:flex-row">
           <div>
             <p className="text-theme-sm mb-2 font-medium text-gray-800 dark:text-white/90">
               View all bookings and manage them. Click Create New Booking to add
@@ -247,7 +247,7 @@ const Bookings: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => reloadBookings()}
-              className="text-theme-sm ms-auto flex items-center justify-center gap-3 rounded-lg p-2 px-3 font-medium text-gray-500 hover:bg-gray-800/70"
+              className="text-theme-sm ms-auto flex items-center justify-center gap-3 rounded-lg m-2 mx-3 p-2 font-medium text-gray-500 hover:bg-gray-800/70"
             >
               <CachedIcon />
             </button>

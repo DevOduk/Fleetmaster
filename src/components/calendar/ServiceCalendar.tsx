@@ -6,8 +6,6 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import {
   EventInput,
-  DateSelectArg,
-  EventClickArg,
   EventContentArg,
 } from "@fullcalendar/core";
 import { useModal } from "@/hooks/useModal";
@@ -74,12 +72,12 @@ const extractBookingOnly = (booking: any) => ({
   priority: booking.priority,
 });
 
-const Calendar: React.FC = () => {
+const ServiceCalendar: React.FC = () => {
   const { bookings, reloadBookings } = useAdminBooking();
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
     null,
   );
-  const { vehicles, loading } = useAdminFleet();
+  const { vehicles } = useAdminFleet();
   const [bookingName, setBookingName] = useState("");
   const [bookingID, setBookingID] = useState(0);
   const [eventStartDate, setEventStartDate] = useState("");
@@ -376,8 +374,8 @@ const Calendar: React.FC = () => {
             eventContent={renderEventContent}
             customButtons={{
               addEventButton: {
-                text: "Create New Booking",
-                click: () => (window.location.href = "/bookings/new"),
+                text: "Create New Entry",
+                click: () => (window.location.href = "/maintenance/new"),
               },
             }}
           />
@@ -881,4 +879,4 @@ const renderEventContent = (eventInfo: EventContentArg) => {
   );
 };
 
-export default Calendar;
+export default ServiceCalendar;
