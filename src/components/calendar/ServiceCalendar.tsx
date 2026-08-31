@@ -44,6 +44,16 @@ interface CalendarEvent extends EventInput {
     rentalTime?: string;
   };
 }
+interface LogProp {
+  id: string;
+  created_at: string;
+  vehicle_id: string;
+  tenant_id: string;
+  date: string;
+  title: string;
+  description: string;
+  milleage?: number | string;
+}
 
 const getNumberOfDays = (start: string, end: string) => {
   const startDate = new Date(start);
@@ -88,7 +98,7 @@ const ServiceCalendar: React.FC = () => {
   const [minDays, setMinDays] = useState(1);
   const [eventLevel, setEventLevel] = useState("");
   const calendarRef = useRef<FullCalendar>(null);
-  const { isOpen, openModal, closeModal } = useModal();
+  const { isOpen, closeModal } = useModal();
   const [renterName, setRenterName] = useState("Austine Otieno");
   const [renterID, setRenterID] = useState("12345678");
   const [renterPhone, setRenterPhone] = useState("0768927617");
@@ -96,6 +106,7 @@ const ServiceCalendar: React.FC = () => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [updatingBooking, setUpdatingBooking] = useState(false);
   const [disableButton, setDisableButton] = useState(false);
+  const [maintenanceLogs, setMaintenanceLogs] = useState<LogProp[]>([]);
 
   const getVehicleDetails = (id: number) => {
     // Search by 'id'
@@ -369,13 +380,22 @@ const ServiceCalendar: React.FC = () => {
                 },
               }))}
             selectable={true}
-            select={() => window.open("/bookings/new")}
-            eventClick={(e) => window.open(`/bookings/${e.event.id}/edit`)}
+            select={() => (
+                  console
+                  // open entry modal with new with prefilled nochange date
+                )}
+            eventClick={(e) => (
+                  console
+                  // open entry modal with edit date can be edited
+                )}
             eventContent={renderEventContent}
             customButtons={{
               addEventButton: {
                 text: "Create New Entry",
-                click: () => (window.location.href = "/maintenance/new"),
+                click: () => (
+                  console
+                  // open entry modal 
+                ),
               },
             }}
           />
