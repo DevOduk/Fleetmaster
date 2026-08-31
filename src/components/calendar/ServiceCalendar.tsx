@@ -17,11 +17,10 @@ import { TableRow } from "@mui/material";
 import { useUser } from "@/context/UserContext";
 import { styled } from '@mui/material/styles';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
-import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
-
-
+import Input from "../form/input/InputField";
+import Radio from "../form/input/Radio";
+import Badge from "../ui/badge/Badge";
 
 interface MaintenanceLog {
   id: number;
@@ -34,6 +33,7 @@ interface MaintenanceLog {
   next_service_date?: string | null;
   next_service_mileage?: number | null;
   recurring?: boolean | null;
+  is_future?: boolean | null;
   vehicle?: {
     id?: number;
     name?: string;
@@ -47,7 +47,6 @@ interface MaintenanceLog {
 
 const normalizeDateInput = (value?: string | null) => {
   if (!value) return "";
-
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
 
   const date = new Date(value);
@@ -62,10 +61,8 @@ const normalizeDateInput = (value?: string | null) => {
 
 const formatDate = (value?: string | null) => {
   if (!value) return "-";
-
   const date = new Date(`${value}`);
   if (Number.isNaN(date.getTime())) return value;
-
   return date.toDateString();
 };
 
@@ -75,12 +72,12 @@ const formatMileage = (value?: number | null) => {
 };
 
 const getVehicleLabel = (vehicle: any) => {
-  return `${vehicle.year || ""} ${vehicle.make || ""} ${vehicle.model || ""}`.trim();
+  if (!vehicle) return "Vehicle";
+  return `${vehicle.year || ""} ${vehicle.make || ""} ${vehicle.model || ""}`.trim() || vehicle.license_plate || "Vehicle";
 };
 
 const getDateOnly = (value?: string | null) => {
   if (!value) return null;
-
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return null;
 
@@ -91,28 +88,6 @@ const getDateOnly = (value?: string | null) => {
   return `${year}-${month}-${day}`;
 };
 
-const getNextVehicleServiceDate = (logs: MaintenanceLog[], currentLog: MaintenanceLog) => {
-  const currentDate = currentLog.date ?? currentLog.next_service_date;
-  if (!currentLog.vehicle_id || !currentDate) {
-    return currentLog.next_service_date ?? null;
-  }
-
-  const nextDates = logs
-    .filter((entry) => {
-      if (entry.id === currentLog.id || entry.vehicle_id !== currentLog.vehicle_id || !entry.date) {
-        return false;
-      }
-
-      const candidate = new Date(`${entry.date}T00:00:00`).getTime();
-      const current = new Date(`${currentDate}T00:00:00`).getTime();
-      return candidate > current;
-    })
-    .map((entry) => getDateOnly(entry.date))
-    .filter(Boolean) as string[];
-
-  return nextDates.sort()[0] ?? currentLog.next_service_date ?? null;
-};
-
 const parseDescription = (value?: string | null) => {
   if (!value) return "";
   return value
@@ -120,6 +95,7 @@ const parseDescription = (value?: string | null) => {
     .filter((line) => !/^Next service date:/i.test(line.trim()))
     .filter((line) => !/^Next service mileage:/i.test(line.trim()))
     .filter((line) => !/^Recurring schedule:/i.test(line.trim()))
+    .filter((line) => !/^Log type:/i.test(line.trim()))
     .join("\n")
     .trim();
 };
@@ -127,10 +103,9 @@ const parseDescription = (value?: string | null) => {
 const normalizeMaintenanceLog = (entry: any): MaintenanceLog => {
   const description = entry?.description ?? "";
   const nextServiceDateMatch = description.match(/Next service date:\s*([^\n]+)/i);
-  const nextServiceMileageMatch = description.match(
-    /Next service mileage:\s*([^\n]+)/i,
-  );
+  const nextServiceMileageMatch = description.match(/Next service mileage:\s*([^\n]+)/i);
   const recurringMatch = description.match(/Recurring schedule:\s*(Yes|No)/i);
+  const typeMatch = description.match(/Log type:\s*(Future|History)/i);
 
   const mileageValue = entry?.mileage ?? null;
   const rawNextServiceDate =
@@ -140,6 +115,9 @@ const normalizeMaintenanceLog = (entry: any): MaintenanceLog => {
     (nextServiceMileageMatch ? Number(nextServiceMileageMatch[1].replace(/[^0-9.]/g, "")) : null);
   const rawRecurring = entry?.recurring ?? entry?.is_recurring ?? entry?.isRecurring ??
     (recurringMatch ? recurringMatch[1] : null);
+
+  const rawIsFuture = entry?.is_future ?? entry?.isFuture ??
+    (typeMatch ? typeMatch[1].toLowerCase() === "future" : (entry?.date ? new Date(entry.date) > new Date() : false));
 
   return {
     ...entry,
@@ -151,10 +129,10 @@ const normalizeMaintenanceLog = (entry: any): MaintenanceLog => {
       : Number(rawNextServiceMileage),
     recurring: rawRecurring === true || rawRecurring === 1 ||
       (typeof rawRecurring === "string" && /^(true|yes|1)$/i.test(rawRecurring)),
+    is_future: Boolean(rawIsFuture),
     vehicle: entry?.vehicle ?? null,
   };
 };
-
 
 const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip describeChild {...props} classes={{ popper: className }} />
@@ -167,7 +145,6 @@ const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
     border: '1px solid #dadde9',
   },
 }));
-
 
 const ServiceCalendar: React.FC = () => {
   const { vehicles } = useAdminFleet();
@@ -182,12 +159,11 @@ const ServiceCalendar: React.FC = () => {
   const [nextServiceMileage, setNextServiceMileage] = useState("");
   const [activitiesDone, setActivitiesDone] = useState("");
   const [repeatSchedule, setRepeatSchedule] = useState(false);
+  const [isFutureLog, setIsFutureLog] = useState(false);
   const [saving, setSaving] = useState(false);
-
 
   const loadMaintenanceLogs = async () => {
     const logs = await getAllMaintenanceLogs();
-
     setMaintenanceLogs(logs.map((log) => normalizeMaintenanceLog(log)));
   };
 
@@ -201,35 +177,48 @@ const ServiceCalendar: React.FC = () => {
       title: string;
       start: string;
       allDay: boolean;
-      extendedProps: { kind: string; mileage?: number | null; nextServiceDate?: string | null; description?: string | null; license_plate: string | null; image_url: string | null; };
+      extendedProps: {
+        kind: string;
+        mileage?: number | null;
+        nextServiceDate?: string | null;
+        description?: string | null;
+        license_plate: string | null;
+        image_url: string | null;
+        is_future: boolean;
+      };
     }> = [];
 
     maintenanceLogs.forEach((log) => {
-      if (log.recurring !== true || !log.next_service_date) return;
+      if (log.recurring !== true) return;
 
-      const start = new Date(`${log.next_service_date}T00:00:00`);
-      if (Number.isNaN(start.getTime())) return;
+      const baseDateStr = log.date;
 
-      for (let index = 0; index < 12; index += 1) {
-        const futureDate = new Date(start);
-        futureDate.setMonth(futureDate.getMonth() + index);
+      if (!baseDateStr) return;
+
+      const baseDate = new Date(baseDateStr);
+      const currentMonth = new Date().getUTCMonth() + 1; //i.e 7 for August
+
+      for (let index = currentMonth; index < 11; index += 1) {
+        baseDate.setMonth(index + 1);
+
         const repeatDate = getDateOnly(
-          `${futureDate.getFullYear()}-${String(futureDate.getMonth() + 1).padStart(2, "0")}-${String(futureDate.getDate()).padStart(2, "0")}`,
+          `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, "0")}-${String(baseDate.getDate()).padStart(2, "0")}`
         );
-        if (!repeatDate) return;
+        if (!repeatDate) continue;
 
         entries.push({
           id: `repeat-${log.id}-${index}`,
-          title: `${getVehicleLabel(log.vehicle)} • scheduled`,
+          title: `${getVehicleLabel(log.vehicle)} • Scheduled`,
           start: repeatDate,
           allDay: true,
           extendedProps: {
             kind: "recurring",
-            mileage: log.next_service_mileage,
+            mileage: log.mileage ? log.mileage + (index * 5000) : null,
             license_plate: log.vehicle?.license_plate ?? null,
             image_url: log.vehicle?.image_url ?? null,
             nextServiceDate: repeatDate,
             description: log.description,
+            is_future: true,
           },
         });
       }
@@ -239,21 +228,24 @@ const ServiceCalendar: React.FC = () => {
   }, [maintenanceLogs]);
 
   const calendarEvents = useMemo(() => {
-    const baseEvents = maintenanceLogs.map((log) => ({
-      id: String(log.id),
-      title: `${getVehicleLabel(log.vehicle)}`,
-      start: log.date ?? new Date().toISOString().split("T")[0],
-      allDay: true,
-      extendedProps: {
-        kind: "service",
-        mileage: log.mileage,
-        nextServiceDate: log.next_service_date,
-        nextServiceMileage: log.next_service_mileage,
-        description: log.description,
-        license_plate: log.vehicle?.license_plate ?? null,
-        image_url: log.vehicle?.image_url ?? null,
-      },
-    }));
+    const baseEvents = maintenanceLogs.map((log) => {
+      return {
+        id: String(log.id),
+        title: `${getVehicleLabel(log.vehicle)}`,
+        start: log.date ?? new Date().toISOString().split("T")[0],
+        allDay: true,
+        extendedProps: {
+          kind: log.is_future ? "future" : "history",
+          mileage: log.mileage,
+          nextServiceDate: log.next_service_date,
+          nextServiceMileage: log.next_service_mileage,
+          description: log.description,
+          license_plate: log.vehicle?.license_plate ?? null,
+          image_url: log.vehicle?.image_url ?? null,
+          is_future: log.is_future,
+        },
+      };
+    });
 
     return [...baseEvents, ...recurringEvents];
   }, [maintenanceLogs, recurringEvents]);
@@ -266,22 +258,10 @@ const ServiceCalendar: React.FC = () => {
     setNextServiceMileage("");
     setActivitiesDone("");
     setRepeatSchedule(false);
+    setIsFutureLog(false);
+    setSelectedLogId(null);
     openModal();
     setSelectedVehicleId(null);
-  };
-
-  const getNextServiceValues = (dateValue: string, mileageValue: string, nextDateValue: string, nextMileageValue: string, isRecurring: boolean) => {
-    if (isRecurring) {
-      return {
-        nextServiceDate: nextDateValue || dateValue || null,
-        nextServiceMileage: nextMileageValue ? Number(nextMileageValue) : mileageValue ? Number(mileageValue) : null,
-      };
-    }
-
-    return {
-      nextServiceDate: nextDateValue || null,
-      nextServiceMileage: nextMileageValue ? Number(nextMileageValue) : null,
-    };
   };
 
   const handleSubmit = async () => {
@@ -293,47 +273,39 @@ const ServiceCalendar: React.FC = () => {
     setSaving(true);
 
     const vehicle = vehicles.find((entry) => entry.id === selectedVehicleId);
-    const nextValues = getNextServiceValues(serviceDate, mileage, nextServiceDate, nextServiceMileage, repeatSchedule);
+
+    const resultPayload = {
+      tenant_id: profile?.tenant_id,
+      vehicle_id: selectedVehicleId,
+      date: serviceDate,
+      title: `${getVehicleLabel(vehicle)} service`,
+      description: activitiesDone.trim(),
+      mileage: Number(mileage),
+      next_service_date: isFutureLog ? null : (nextServiceDate || null),
+      next_service_mileage: isFutureLog ? null : (nextServiceMileage ? Number(nextServiceMileage) : null),
+      recurring: isFutureLog ? repeatSchedule : false,
+      is_future: isFutureLog,
+    };
 
     let result: { error?: any; success?: boolean; };
 
     if (!selectedLogId) {
-      result = await createMaintenanceLog({
-        tenant_id: profile.tenant_id,
-        vehicle_id: selectedVehicleId,
-        date: serviceDate,
-        title: `${getVehicleLabel(vehicle)} service`,
-        description: activitiesDone.trim(),
-        mileage: Number(mileage),
-        next_service_date: nextValues.nextServiceDate,
-        next_service_mileage: nextValues.nextServiceMileage,
-        recurring: repeatSchedule,
-      }, {
+      result = await createMaintenanceLog(resultPayload, {
         id: profile?.id,
         role: profile?.role
       });
     } else {
-      console.log('Updating')
       result = await updateMaintenanceLog({
         id: selectedLogId,
-        tenant_id: profile.tenant_id,
-        vehicle_id: selectedVehicleId,
-        date: serviceDate,
-        title: `${getVehicleLabel(vehicle)} service`,
-        description: activitiesDone.trim(),
-        mileage: Number(mileage),
-        next_service_date: nextValues.nextServiceDate,
-        next_service_mileage: nextValues.nextServiceMileage,
-        recurring: repeatSchedule,
+        ...resultPayload,
       }, {
         id: profile?.id,
         role: profile?.role
       });
     }
 
-
     setSaving(false);
-    console.log(result)
+
     if (!result.success) {
       toast.error(result.error?.message || "Unable to save the maintenance log.");
       return;
@@ -348,7 +320,9 @@ const ServiceCalendar: React.FC = () => {
     setNextServiceMileage("");
     setActivitiesDone("");
     setRepeatSchedule(false);
+    setIsFutureLog(false);
     setSelectedVehicleId(null);
+    setSelectedLogId(null);
 
     await loadMaintenanceLogs();
   };
@@ -357,7 +331,6 @@ const ServiceCalendar: React.FC = () => {
     <>
       <div className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
         <div className="min-h-[60vh] custom-calendar">
-
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
@@ -374,21 +347,28 @@ const ServiceCalendar: React.FC = () => {
               setNextServiceMileage("");
               setActivitiesDone("");
               setRepeatSchedule(false);
+              setIsFutureLog(false);
+              setSelectedLogId(null);
               openModal();
             }}
             events={calendarEvents}
             eventContent={renderMaintenanceEventContent}
             eventClick={(e) => {
-              const log = maintenanceLogs.find((l) => String(l.id) === e.event.id);
+              const rawId = e.event.id.startsWith("repeat-")
+                ? e.event.id.split("-")[1]
+                : e.event.id;
+
+              const log = maintenanceLogs.find((l) => String(l.id) === rawId);
 
               if (log) {
-                setSelectedLogId(log.id)
-                setServiceDate(new Date(log.date).toISOString().split("T")[0] || '');
+                setSelectedLogId(log.id);
+                setServiceDate(log.date ? new Date(log.date).toISOString().split("T")[0] : '');
                 setMileage(String(log.mileage || ""));
                 setNextServiceDate(log.next_service_date || "");
                 setNextServiceMileage(String(log.next_service_mileage || ""));
                 setActivitiesDone(log.description || "");
                 setRepeatSchedule(log.recurring || false);
+                setIsFutureLog(log.is_future || false);
                 setSelectedVehicleId(log.vehicle_id);
                 openModal();
               }
@@ -408,17 +388,18 @@ const ServiceCalendar: React.FC = () => {
           <Table className="min-w-full text-left text-sm text-gray-700 dark:text-gray-300">
             <TableBody className="bg-gray-50 text-xs uppercase tracking-wide text-gray-600 dark:bg-gray-900 dark:text-gray-400">
               <TableRow>
+                <th className="px-4 py-3">Type</th>
                 <th className="px-4 py-3">Date</th>
                 <th className="px-4 py-3">Mileage</th>
                 <th className="px-4 py-3">Next service date</th>
                 <th className="px-4 py-3">Next service mileage</th>
-                <th className="px-4 py-3">Activities done</th>
+                <th className="px-4 py-3">Notes</th>
               </TableRow>
             </TableBody>
             <TableBody>
               {maintenanceLogs.length === 0 && (
                 <TableRow>
-                  <td colSpan={5} className="px-4 py-6 text-center text-gray-500">
+                  <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
                     No service logs yet. Add your first service entry.
                   </td>
                 </TableRow>
@@ -426,9 +407,17 @@ const ServiceCalendar: React.FC = () => {
 
               {maintenanceLogs.map((log) => (
                 <TableRow key={log.id} className="border-t border-gray-200 dark:border-gray-700">
+                  <td className="px-4 py-3 align-top">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${log.is_future ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                      }`}>
+                      {log.is_future ? "Future / Scheduled" : "History"}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 align-top">{formatDate(log.date)}</td>
                   <td className="px-4 py-3 align-top">{formatMileage(log.mileage)}</td>
-                  <td className="px-4 py-3 align-top">{formatedTimestamp(log.next_service_date)}</td>
+                  <td className="px-4 py-3 align-top">
+                    {log.is_future && log.recurring ? formatedTimestamp(new Date(log.date) < new Date() ? new Date(new Date(log.date).setMonth(new Date(log.date).getMonth() + 1)).toDateString() : new Date(log.date).toDateString()) : formatedTimestamp(log.next_service_date)}
+                  </td>
                   <td className="px-4 py-3 align-top">{formatMileage(log.next_service_mileage)}</td>
                   <td className="max-w-md whitespace-pre-wrap px-4 py-3 align-top text-gray-600 dark:text-gray-300">
                     {parseDescription(log.description) || "-"}
@@ -442,24 +431,64 @@ const ServiceCalendar: React.FC = () => {
 
       <Modal isOpen={isOpen} onClose={() => {
         closeModal();
-
         setServiceDate(new Date().toISOString().split("T")[0]);
         setMileage("");
         setNextServiceDate("");
         setNextServiceMileage("");
         setActivitiesDone("");
         setRepeatSchedule(false);
+        setIsFutureLog(false);
         setSelectedVehicleId(null);
+        setSelectedLogId(null);
       }} className="max-w-2xl p-6 lg:p-8">
         <div className="space-y-5">
           <div>
-            <h5 className="text-2xl font-semibold text-gray-800 dark:text-white">Add service log</h5>
+            <h5 className="text-2xl font-semibold text-gray-800 dark:text-white">
+              {selectedLogId ? "Edit service log" : "Add service log"}
+            </h5>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Set a full-day service date, record the mileage at the time of the visit and plan the next service.
+              Record past maintenance history or schedule future upcoming services.
             </p>
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Log Type
+              </label>
+              <div className="flex gap-4 py-2">
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <Radio
+                    id="servicehistory"
+                    label="Service History"
+                    name="logType"
+                    checked={!isFutureLog}
+                    value={String(!isFutureLog)}
+                    onChange={() => {
+                      setIsFutureLog(false);
+                      setRepeatSchedule(false);
+                    }}
+                    className="text-brand-500 focus:ring-brand-500"
+                  />
+                </label>
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <Radio
+                    id="ScheduledMaintenance"
+                    label="Scheduled Maintenance"
+                    name="logType"
+                    checked={isFutureLog}
+                    value={String(isFutureLog)}
+                    onChange={() => {
+                      setIsFutureLog(true);
+                      setNextServiceDate("");
+                      setNextServiceMileage("");
+                    }}
+                    className="text-brand-500 focus:ring-brand-500"
+                  />
+                </label>
+              </div>
+            </div>
+
             <div className="md:col-span-2">
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Vehicle
@@ -480,7 +509,7 @@ const ServiceCalendar: React.FC = () => {
 
             <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Service date
+                {isFutureLog ? "Scheduled Date" : "Service Date"}
               </label>
               <input
                 type="date"
@@ -492,7 +521,7 @@ const ServiceCalendar: React.FC = () => {
 
             <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Mileage at service
+                {isFutureLog ? "Current / Estimated Mileage" : "Mileage at service"}
               </label>
               <input
                 type="number"
@@ -505,7 +534,7 @@ const ServiceCalendar: React.FC = () => {
               />
             </div>
 
-            {!repeatSchedule && (
+            {!isFutureLog && (
               <>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -538,7 +567,7 @@ const ServiceCalendar: React.FC = () => {
 
             <div className="md:col-span-2">
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Activities done
+                Notes
               </label>
               <textarea
                 rows={6}
@@ -550,22 +579,21 @@ const ServiceCalendar: React.FC = () => {
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-                <Checkbox
-                  // type="checkbox"
-                  checked={repeatSchedule}
-                  onChange={(event) => setRepeatSchedule(event)}
-                  className="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
-                />
-                Repeat service in future
-              </label>
-              {repeatSchedule && (
+            {isFutureLog && (
+              <div className="md:col-span-2">
+                <label className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+                  <Checkbox
+                    checked={repeatSchedule}
+                    onChange={(event) => setRepeatSchedule(event)}
+                    className="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
+                  />
+                  Repeat service monthly
+                </label>
                 <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  When enabled, the service schedule will automatically generate future reminders for the upcoming months using the next service date and mileage.
+                  When enabled, this upcoming schedule will automatically repeat monthly on the calendar.
                 </p>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           <div className="mt-6 flex items-center justify-end gap-3">
@@ -573,16 +601,17 @@ const ServiceCalendar: React.FC = () => {
               type="button"
               onClick={() => {
                 closeModal();
-
                 setServiceDate(new Date().toISOString().split("T")[0]);
                 setMileage("");
                 setNextServiceDate("");
                 setNextServiceMileage("");
                 setActivitiesDone("");
                 setRepeatSchedule(false);
+                setIsFutureLog(false);
                 setSelectedVehicleId(null);
+                setSelectedLogId(null);
               }}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3"
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
             >
               Cancel
             </button>
@@ -608,37 +637,39 @@ const renderMaintenanceEventContent = (eventInfo: EventContentArg) => {
   const mileage = eventInfo.event.extendedProps.mileage;
   const next = eventInfo.event.extendedProps.nextServiceDate;
   const description = eventInfo.event.extendedProps.description;
+  const isFuture = eventInfo.event.extendedProps.is_future;
+  const isRecurring = eventInfo.event.id.startsWith("repeat-");
+
+  const badgeColor = isFuture ? "bg-blue-500" : "bg-green-500";
 
   return (
     <HtmlTooltip
       title={
         <React.Fragment>
-          <div className="min-w-0">
-            <div className="uppercase mb-1">
-              <div className="w-full aspect-video relative">
-                <img className="w-full rounded bg-white h-full object-cover object-center" src={eventInfo.event.extendedProps.image_url ?? '/images/default-yard.png'} />
-              </div>
-              <div className="truncate text-xs font-semibold mt-2 text-gray-600">Plate No: {eventInfo.event.extendedProps.license_plate}</div>
+          <div className="min-w-0 py-1">
+            <div className="w-full relative aspect-video mb-1">
+              {isRecurring && <div className="absolute right-1 top-1 text-sm"><Badge size="sm" variant="solid" color="primary">Every Month</Badge></div>}
+              <img className="w-full rounded bg-white h-full object-cover object-center" src={eventInfo.event.extendedProps.image_url ?? '/images/default-yard.png'} />
             </div>
-            <div className="truncate text-xs font-semibold">{title}</div>
-            <div className="truncate text-[10px] text-gray-600">
+            <div className="text-xs font-semibold">{title}</div>
+            <div className="text-[10px] text-gray-600">
+              {eventInfo.event.extendedProps.license_plate} - {" "}
               {mileage ? `${Number(mileage).toLocaleString()} km` : "Service"}
-              {next ? ` • Next - ${new Date(`${next}T00:00:00`).toLocaleDateString()}` : ""}
+              {!isFuture && next ? ` • Next: ${new Date(`${next}T00:00:00`).toLocaleDateString()}` : ""}
+              {isFuture ? " • Scheduled" : " • History"}
             </div>
-            <div className="py-2 whitespace-pre-wrap">
-              <strong>What was/will be done:<br />
-              </strong>
+            <div className="pt-1 whitespace-pre-wrap">
+              <strong>Notes / Activities:<br /></strong>
               {parseDescription(description) || "-"}
             </div>
           </div>
         </React.Fragment>
       }
     >
-
       <div className="flex items-start gap-2 rounded-md bg-brand-500/15 p-2 pb-1.5 text-left text-gray-800 dark:text-white cursor-grab">
-        <span className="mt-1 h-2 w-2 flex-none rounded-full bg-green-500" />
+        <span className={`mt-1 h-2 w-2 flex-none rounded-full ${badgeColor}`} />
         <div className="min-w-0">
-          <div className="flex gap-2 items-center uppercase mb-2">
+          <div className="flex relative gap-2 items-center uppercase mb-2">
             <div className="w-13 aspect-video relative">
               <img className="w-full rounded bg-white h-full object-cover object-center" src={eventInfo.event.extendedProps.image_url ?? '/images/default-yard.png'} />
             </div>
@@ -647,7 +678,8 @@ const renderMaintenanceEventContent = (eventInfo: EventContentArg) => {
           <div className="truncate text-xs font-semibold">{title}</div>
           <div className="truncate text-[10px] text-gray-600 dark:text-gray-300">
             {mileage ? `${Number(mileage).toLocaleString()} km` : "Service"}
-            {next ? ` • Next - ${new Date(`${next}T00:00:00`).toLocaleDateString()}` : ""}
+            {!isFuture && next ? ` • Next ${new Date(`${next}T00:00:00`).toLocaleDateString()}` : ""}
+            {isFuture ? " (Upcoming)" : " (Record)"}
           </div>
         </div>
       </div>

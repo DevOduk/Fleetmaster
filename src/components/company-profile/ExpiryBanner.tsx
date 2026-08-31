@@ -45,13 +45,13 @@ export const getExpiryString = (expiryDate: string) => {
 };
 
 export const formatedTimestamp = (date: string) => {
-  if (!date) return "Enter valid date";
+  if (!date) return "-";
 
   const now = new Date();
   const formated = new Date(date);
 
   if (Number.isNaN(formated.getTime())) {
-    return "Enter valid date";
+    return "-";
   }
 
   const diff = formated.getTime() - now.getTime();
