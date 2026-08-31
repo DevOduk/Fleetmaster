@@ -6,8 +6,6 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import {
   EventInput,
-  DateSelectArg,
-  EventClickArg,
   EventContentArg,
 } from "@fullcalendar/core";
 import { useModal } from "@/hooks/useModal";
@@ -154,7 +152,7 @@ const Calendar: React.FC = () => {
     // get all vehicles and render their names i.e year make model as label and id as value from vehicles
     ...vehicles?.map((vehicle) => ({
       value: vehicle.id.toString(),
-      label: `${vehicle.licensePlate}: ${vehicle.year} ${vehicle.make} ${vehicle.model}`,
+      label: `${vehicle.license_plate}: ${vehicle.year} ${vehicle.make} ${vehicle.model}`,
     })),
   ];
   const handleSelectChange = (value: string) => {
