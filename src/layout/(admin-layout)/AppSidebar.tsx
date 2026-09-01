@@ -117,7 +117,10 @@ export const othersItems: NavItem[] = [
   {
     icon: <PeopleAltOutlinedIcon sx={iconStyle} />,
     name: "System Users",
-    path: "/system-users",
+    subItems: [
+      { name: "Clients", path: "/system-users/clients", new: true, count: [true] },
+      { name: "Admins", path: "/system-users/admins", pro: false, new: false },
+    ],
   },
 ];
 export const accountItems: NavItem[] = [

@@ -17,8 +17,8 @@ import Button from "../ui/button/Button";
 import { useUser } from "@/context/UserContext";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { getTenantAdmins } from "@/app/actions/admin";
 import { subscriptionPlans } from "@/data/globalExports";
-import { fetchClientsForTenant } from "@/app/actions/client";
 import { formatedTimestamp } from "../company-profile/ExpiryBanner";
 
 // 1. Explicitly type your User structure
@@ -35,6 +35,10 @@ export interface AdminUser {
   last_seen?: string | null;
 }
 
+interface SystemUsersProps {
+  initialUsers: AdminUser[];
+  loading?: boolean;
+}
 
 export const getUsersByPlan = (plan: string) => {
   if (!plan) return 0;
@@ -56,7 +60,7 @@ export const getVehiclesByPlan = (plan: string) => {
 };
 
 // 2. Fixed the parameter mapping here
-const SystemUsers = () => {
+const SystemAdmins = () => {
   const [initialUsers, setIinitialUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const isDarkMode =
@@ -71,7 +75,7 @@ const SystemUsers = () => {
     if (!profile?.tenant_id) return;
 
     const getAdmins = async () => {
-      const res = await fetchClientsForTenant(profile?.tenant_id);
+      const res = await getTenantAdmins(profile?.tenant_id);
       if (res.success) {
         setIinitialUsers(res.data);
       }
@@ -147,6 +151,29 @@ const SystemUsers = () => {
     Pro: "Upgrade to Expert to add unlimited users!",
   };
 
+  // 4. Determine the action UI
+  let actionContent;
+
+  if (isLimitReached) {
+    actionContent = (
+      <div className="text-sm font-medium text-red-500">
+        {userCount}/{maxUsers} users used.{" "}
+        {UPSELL_MESSAGES[plan] ?? "Upgrade your plan to add more users!"}
+      </div>
+    );
+  } else {
+    actionContent = (
+      <Link href="/system-users/new">
+        <Button
+          variant="success"
+          size="sm"
+          className="bg-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg p-2 px-3 font-medium text-white"
+        >
+          Create New Admin
+        </Button>
+      </Link>
+    );
+  }
 
   const allowedUsers =
     maxUsers != null && maxUsers !== Infinity
@@ -166,9 +193,10 @@ const SystemUsers = () => {
               add a new user with admin rights.
             </p>
             <span className="text-theme-sm text-start text-gray-500 dark:text-gray-400">
-              {initialUsers.length} of Unlimitted users
+              {initialUsers.length} of {getUsersByPlan(plan)} User accounts
             </span>
           </div>
+          {actionContent}
         </div>
 
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
@@ -262,7 +290,7 @@ const SystemUsers = () => {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className={`text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap ${user.bio ? 'text-gray-500 dark:text-gray-400': 'text-gray-400 dark:text-gray-500'}`}>
+                          <TableCell className={`text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap ${user.bio ? 'text-gray-500 dark:text-gray-400' : 'text-gray-400 dark:text-gray-500'}`}>
                             {user.bio || "[ No bio available ]"}
                           </TableCell>
                           <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
@@ -291,9 +319,35 @@ const SystemUsers = () => {
                               : "—"}
                           </TableCell>
                           <TableCell className="text-theme-sm flex gap-3 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                            {profile?.role === "Super Admin" && (
+                              <Link
+                                href={
+                                  user.id === profile.id
+                                    ? "/profile/edit"
+                                    : `/system-users/${user.id}/edit`
+                                }
+                              >
+                                <Button
+                                  size="sm"
+                                  variant="success-outline"
+                                  endIcon={
+                                    <EditOutlinedIcon
+                                      fontSize="small"
+                                      className="m-0"
+                                    />
+                                  }
+                                >
+                                  Update
+                                </Button>
+                              </Link>
+                            )}
                             <Link
                               target={user.id === profile.id ? "_blank" : "_self"}
-                              href={`/system-users/clients/${user.id}`}
+                              href={
+                                user.id === profile.id
+                                  ? "/profile"
+                                  : `/system-users/${user.id}`
+                              }
                             >
                               <button className="bg-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg p-2 px-3 font-medium text-nowrap text-white">
                                 View User <ArrowRightIcon className="ml-1" />
@@ -330,4 +384,4 @@ const SystemUsers = () => {
   );
 };
 
-export default SystemUsers;
+export default SystemAdmins;

@@ -53,6 +53,11 @@ export async function GET(request: Request) {
       targetAccountType === "admin" || targetAccountType === "client"
         ? targetAccountType
         : "client";
+    const tableName =
+      normalizedType === "admin"
+        ? "fleetmaster_admins"
+        : "fleetmaster_clients";
+
 
     const cacheKey = `user:profile:${decoded.id}:${normalizedType}`;
     let userAccount: any = null;
@@ -76,10 +81,6 @@ export async function GET(request: Request) {
     // 2. CACHE MISS -> FAST SUPABASE LOOKUP
     if (!userAccount) {
       const supabase = createPublicClient();
-      const tableName =
-        normalizedType === "admin"
-          ? "fleetmaster_admins"
-          : "fleetmaster_clients";
 
       const profileFields = `id, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob${normalizedType === "client" ? ", national_id_number, dl_number, verification_error, submitted_document, onboarded" : ""
         }, fleetmaster_tenants(*)`;
@@ -106,10 +107,22 @@ export async function GET(request: Request) {
 
       userAccount = data;
 
+
       // Write back to Redis
       redis
         .set(cacheKey, JSON.stringify(userAccount), { ex: 900 })
         .catch((e) => console.error("Redis write failure:", e));
+    }
+
+    // everytime userdetails fetch is successful, set last seen to now 
+    if (userAccount && tableName === 'fleetmaster_clients') {
+      const supabase = createPublicClient();
+
+      await supabase
+        .from(tableName)
+        .update({ last_seen: new Date().toISOString() })
+        .eq("id", decoded.id)
+        .maybeSingle();
     }
 
     return NextResponse.json(

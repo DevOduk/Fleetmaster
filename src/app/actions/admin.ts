@@ -14,7 +14,6 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
-const CACHE_TTL_SECONDS = 900; // Cache duration: 15 minutes
 const SALT_ROUNDS = Number(process.env.BCRYPT_SALT || "12");
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -121,7 +120,7 @@ export async function getTenantAdmins(tenantId: string) {
   const { data, error } = await supabase
     .from("fleetmaster_admins")
     .select(
-      "id, phone, email, bio, first_name, last_name, role, profile_pic, created_at",
+      "id, phone, email, bio, first_name, last_name, role, profile_pic, created_at, last_seen",
     )
     .eq("tenant_id", tenantId);
 
@@ -131,7 +130,7 @@ export async function getTenantAdmins(tenantId: string) {
 
   // 3. Store in Redis
   try {
-    await redis.set(cacheKey, JSON.stringify(data), { ex: CACHE_TTL_SECONDS });
+    await redis.set(cacheKey, JSON.stringify(data));
   } catch (cacheErr) {
     console.error(
       `Redis write error in getTenantAdmins (${tenantId}):`,
@@ -175,7 +174,7 @@ export async function getTenantAdminDetails(id: string) {
 
   // 3. Store in Redis
   try {
-    await redis.set(cacheKey, JSON.stringify(data), { ex: CACHE_TTL_SECONDS });
+    await redis.set(cacheKey, JSON.stringify(data));
   } catch (cacheErr) {
     console.error(
       `Redis write error in getTenantAdminDetails (${id}):`,

@@ -16,6 +16,7 @@ import { PlusIcon } from "@/icons";
 import { fetchClientsForTenant } from "@/app/actions/client";
 import DemographicCard from "./DemographicCard";
 import UpcomingMaintenance from "../ecommerce/UpcomingMaintenance";
+import TopUsers from "../ecommerce/TopUsers";
 
 function HomePage() {
   const { profile } = useUser();
@@ -245,6 +246,11 @@ function HomePage() {
 
             <div className="col-span-12 xl:col-span-7">
               <MonthlySalesChart bookings={bookings} expenses={expenses} />
+
+              <TopUsers
+                clients={clients}
+                loading={loadingClients}
+              />
             </div>
 
             <div className="col-span-12 xl:col-span-5">

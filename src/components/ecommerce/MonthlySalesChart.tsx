@@ -165,15 +165,15 @@ export default function MonthlySalesChart({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 sm:px-6 sm:pt-6 dark:border-gray-800 dark:bg-white/3">
+    <div className="overflow-hidden mb-4 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/3">
       {loading ? (
-        <div className="h-125 space-y-6 rounded-xl border border-gray-900/60 bg-transparent p-5 xl:col-span-2">
+        <div className="min-h-80 flex flex-col space-y-6 rounded-xl bg-transparent p-5 xl:col-span-2">
           <div className="flex items-center justify-between">
             <div className="h-5 w-36 animate-pulse rounded bg-gray-300 dark:bg-gray-600" />
             <div className="h-5 w-3 animate-pulse rounded bg-gray-400 dark:bg-gray-500" />
           </div>
           {/* Fake Bar Chart Bars */}
-          <div className="flex h-100 items-end justify-between gap-2 px-2 pt-4">
+          <div className="flex h-105 items-end justify-between gap-2 px-2 pt-4">
             {[
               55, 80, 45, 70, 50, 65, 85, 30, 60, 90, 75, 40, 90, 100, 110, 50,
               90, 75, 40, 90, 100,
@@ -181,7 +181,7 @@ export default function MonthlySalesChart({
               <div
                 key={i}
                 style={{ height: `${height}%` }}
-                className="w-full animate-pulse rounded-t bg-gray-300 dark:bg-gray-600"
+                className="w-full animate-pulse rounded-t bg-gray-300 dark:bg-gray-700"
               />
             ))}
           </div>
@@ -212,7 +212,7 @@ export default function MonthlySalesChart({
                   onItemClick={closeDropdown}
                   className="flex w-full rounded-lg text-left font-normal text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                 >
-                  Delete
+                  Reload
                 </DropdownItem>
               </Dropdown>
             </div>
@@ -224,7 +224,7 @@ export default function MonthlySalesChart({
                 options={options}
                 series={series}
                 type="bar"
-                height={450}
+                height={455}
               />
             </div>
           </div>

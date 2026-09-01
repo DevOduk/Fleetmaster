@@ -184,7 +184,7 @@ export default function MonthlyTarget({
                 </Dropdown>
               </div>
             </div>
-            <div className="relative text-center">
+            <div className="relative text-center min-h-60">
               <div className="max-h-80">
                 <ReactApexChart
                   options={options}
@@ -204,7 +204,7 @@ export default function MonthlyTarget({
             </p>
           </div>
 
-          <div className="flex items-center justify-center gap-5 px-6 py-3.5 sm:gap-8 sm:py-5">
+          <div className="flex items-center justify-center gap-5 px-6 py-3.5 pt-4 sm:gap-8 sm:py-5">
             <div>
               <p className="text-theme-xs mb-1 text-center text-gray-500 sm:text-sm dark:text-gray-400">
                 Target

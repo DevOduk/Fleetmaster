@@ -22,6 +22,10 @@ function getUserCacheKey(id: string, role: string = "client") {
   return `user:profile:${id}:${normalizedType}`;
 }
 
+function getTenantClientsCacheKey(tenantId: string) {
+  return `tenant:clients:${tenantId}`;
+}
+
 export async function createTenantClient(newTenantClient: any) {
   let userEmail = "";
 
@@ -84,7 +88,7 @@ export async function createTenantClient(newTenantClient: any) {
     // 3. SET Cache immediately upon creation
     const cacheKey = getUserCacheKey(data.id, data.role || "client");
     await redis
-      .set(cacheKey, JSON.stringify(data), { ex: 900 })
+      .set(cacheKey, JSON.stringify(data))
       .catch((e) => console.error("Redis set failure on create:", e));
 
     // 4. Dispatch the verification email via Resend
@@ -135,7 +139,7 @@ export async function updateProfileDetails({
     // UPDATE/SET Cache with fresh data
     const cacheKey = getUserCacheKey(id, role);
     await redis
-      .set(cacheKey, JSON.stringify(data), { ex: 900 })
+      .set(cacheKey, JSON.stringify(data))
       .catch((e) => console.error("Redis cache update failure:", e));
   }
 
@@ -227,12 +231,87 @@ export async function updatePassword(
 }
 
 export async function fetchClientsForTenant(tenantId: string) {
+  const cacheKey = getTenantClientsCacheKey(tenantId);
+
+  try {
+    const cachedClients = await redis.get(cacheKey);
+
+    if (cachedClients) {
+      const parsedClients =
+        typeof cachedClients === "string"
+          ? JSON.parse(cachedClients)
+          : cachedClients;
+
+      return {
+        data: parsedClients,
+        success: true,
+        error: null,
+      };
+    }
+  } catch (error) {
+    console.error("Redis cache read failure (fetchClientsForTenant):", error);
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_clients")
-    .select(`id, first_name, last_name, country, created_at`)
+    .select(
+      `id, first_name, last_name, country, created_at, bio, email, phone, role, profile_pic, tenant_id, last_seen`,
+    )
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
+  if (!error && data) {
+    await redis
+      .set(cacheKey, JSON.stringify(data))
+      .catch((redisError) =>
+        console.error("Redis cache write failure (fetchClientsForTenant):", redisError),
+      );
+  }
+
   return { data, success: !error, error };
+}
+
+export async function getTenantClientDetails(id: string) {
+  const cacheKey = `user:profile:${id}:client`;
+
+  try {
+    // 1. Read from Redis Cache
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return { data: cachedData, success: true, error: null };
+    }
+  } catch (cacheErr) {
+    console.error(
+      `Redis read error in getTenantClientDetails (${id}):`,
+      cacheErr,
+    );
+  }
+
+  // 2. Fetch from Supabase on cache miss
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("fleetmaster_clients")
+    .select(
+      `id, first_name, last_name, email, phone, created_at, city, verification_status, country, role, tenant_id, profile_pic, fleetmaster_tenants(*)`,
+    )
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    return { data, success: false, error };
+  }
+
+  // 3. Store in Redis
+  try {
+    await redis.set(cacheKey, JSON.stringify(data));
+  } catch (cacheErr) {
+    console.error(
+      `Redis write error in getTenantClientDetails (${id}):`,
+      cacheErr,
+    );
+  }
+
+  return { data, success: true, error: null };
 }
