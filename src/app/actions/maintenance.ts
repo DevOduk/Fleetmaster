@@ -361,7 +361,7 @@ export async function getMaintenanceLog(logId: string) {
 }
 
 
-export async function deleteMaintenanceLog(logId: string) {
+export async function deleteMaintenanceLog(logId: number) {
   const supabase = await createClient();
 
   try {

@@ -8,7 +8,7 @@ import { EventContentArg } from "@fullcalendar/core";
 import { Modal } from "@/components/ui/modal";
 import { useModal } from "@/hooks/useModal";
 import { useAdminFleet } from "@/context/AdminFleetContext";
-import { createMaintenanceLog, getAllMaintenanceLogs, updateMaintenanceLog } from "@/app/actions/maintenance";
+import { createMaintenanceLog, deleteMaintenanceLog, getAllMaintenanceLogs, updateMaintenanceLog } from "@/app/actions/maintenance";
 import { toast, Toaster } from "sonner";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { Table, TableBody } from "../ui/table";
@@ -21,6 +21,7 @@ import Checkbox from "../form/input/Checkbox";
 import Input from "../form/input/InputField";
 import Radio from "../form/input/Radio";
 import Badge from "../ui/badge/Badge";
+import Button from "../ui/button/Button";
 
 interface MaintenanceLog {
   id: number;
@@ -45,11 +46,26 @@ interface MaintenanceLog {
   } | null;
 }
 
-const normalizeDateInput = (value?: string | null) => {
+const toCalendarDateString = (value?: Date | string | null) => {
   if (!value) return "";
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
 
-  const date = new Date(value);
+  if (value instanceof Date) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+    const day = String(value.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  const raw = String(value).trim();
+  if (!raw) return "";
+
+  const dateOnlyMatch = raw.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (dateOnlyMatch) return dateOnlyMatch[1];
+
+  const candidate = raw.split(/[T\s]/)[0];
+  if (/^\d{4}-\d{2}-\d{2}$/.test(candidate)) return candidate;
+
+  const date = new Date(raw);
   if (Number.isNaN(date.getTime())) return "";
 
   const year = date.getFullYear();
@@ -59,10 +75,16 @@ const normalizeDateInput = (value?: string | null) => {
   return `${year}-${month}-${day}`;
 };
 
+const normalizeDateInput = (value?: string | null) => toCalendarDateString(value);
+
+const toLocalDateInput = (value?: Date | string | null) => toCalendarDateString(value);
+
 const formatDate = (value?: string | null) => {
-  if (!value) return "-";
-  const date = new Date(`${value}`);
-  if (Number.isNaN(date.getTime())) return value;
+  const normalized = normalizeDateInput(value);
+  if (!normalized) return value ? String(value) : "-";
+
+  const [year, month, day] = normalized.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
   return date.toDateString();
 };
 
@@ -77,15 +99,8 @@ const getVehicleLabel = (vehicle: any) => {
 };
 
 const getDateOnly = (value?: string | null) => {
-  if (!value) return null;
-  const date = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return null;
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+  const normalized = normalizeDateInput(value);
+  return normalized || null;
 };
 
 const parseDescription = (value?: string | null) => {
@@ -196,7 +211,7 @@ const ServiceCalendar: React.FC = () => {
       if (!baseDateStr) return;
 
       const baseDate = new Date(baseDateStr);
-      const currentMonth = new Date().getUTCMonth() + 1; //i.e 7 for August
+      const currentMonth = new Date().getUTCMonth(); //i.e 7 for August
 
       for (let index = currentMonth; index < 11; index += 1) {
         baseDate.setMonth(index + 1);
@@ -273,6 +288,15 @@ const ServiceCalendar: React.FC = () => {
     setSaving(true);
 
     const vehicle = vehicles.find((entry) => entry.id === selectedVehicleId);
+    const nextMonthDate = repeatSchedule && serviceDate
+      ? (() => {
+        const [year, month, day] = serviceDate.split("-").map(Number);
+        const nextDate = new Date(year, month - 1 + 1, day);
+        return getDateOnly(
+          `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}-${String(nextDate.getDate()).padStart(2, "0")}`
+        );
+      })()
+      : null;
 
     const resultPayload = {
       tenant_id: profile?.tenant_id,
@@ -281,7 +305,7 @@ const ServiceCalendar: React.FC = () => {
       title: `${getVehicleLabel(vehicle)} service`,
       description: activitiesDone.trim(),
       mileage: Number(mileage),
-      next_service_date: isFutureLog ? null : (nextServiceDate || null),
+      next_service_date: repeatSchedule ? (nextMonthDate ?? null) : (nextServiceDate || null),
       next_service_mileage: isFutureLog ? null : (nextServiceMileage ? Number(nextServiceMileage) : null),
       recurring: isFutureLog ? repeatSchedule : false,
       is_future: isFutureLog,
@@ -327,6 +351,35 @@ const ServiceCalendar: React.FC = () => {
     await loadMaintenanceLogs();
   };
 
+
+  const handleDelete = async (logId: number) => {
+    setSaving(true);
+
+    const result = await deleteMaintenanceLog(logId);
+
+    if (result.success) {
+      toast.success("Maintenance log deleted.");
+
+      closeModal();
+
+      setServiceDate(new Date().toISOString().split("T")[0]);
+      setMileage("");
+      setNextServiceDate("");
+      setNextServiceMileage("");
+      setActivitiesDone("");
+      setRepeatSchedule(false);
+      setIsFutureLog(false);
+      setSelectedVehicleId(null);
+      setSelectedLogId(null);
+
+      await loadMaintenanceLogs();
+    } else {
+      toast.error(result.error?.message || "Unable to delete the maintenance log.");
+    }
+    setSaving(false);
+  }
+
+
   return (
     <>
       <div className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
@@ -347,7 +400,7 @@ const ServiceCalendar: React.FC = () => {
               setNextServiceMileage("");
               setActivitiesDone("");
               setRepeatSchedule(false);
-              setIsFutureLog(false);
+              setIsFutureLog(new Date(info.startStr) > new Date() ? true : false);
               setSelectedLogId(null);
               openModal();
             }}
@@ -389,6 +442,7 @@ const ServiceCalendar: React.FC = () => {
             <TableBody className="bg-gray-50 text-xs uppercase tracking-wide text-gray-600 dark:bg-gray-900 dark:text-gray-400">
               <TableRow>
                 <th className="px-4 py-3">Type</th>
+                <th className="px-4 py-3">Vehicle</th>
                 <th className="px-4 py-3">Date</th>
                 <th className="px-4 py-3">Mileage</th>
                 <th className="px-4 py-3">Next service date</th>
@@ -413,6 +467,7 @@ const ServiceCalendar: React.FC = () => {
                       {log.is_future ? "Future / Scheduled" : "History"}
                     </span>
                   </td>
+                  <td className="px-4 py-3 align-top">{getVehicleLabel(log.vehicle)}</td>
                   <td className="px-4 py-3 align-top">{formatDate(log.date)}</td>
                   <td className="px-4 py-3 align-top">{formatMileage(log.mileage)}</td>
                   <td className="px-4 py-3 align-top">
@@ -573,7 +628,7 @@ const ServiceCalendar: React.FC = () => {
                 rows={6}
                 value={activitiesDone}
                 onChange={(event) => setActivitiesDone(event.target.value)}
-                placeholder="Oil change, brake inspection, tyre rotation, fluid top-up..."
+                placeholder="1. Oil change, 2. Brake inspection, 3. Tyre rotation, 4. Fluid top-up..."
                 className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-sm text-gray-800 focus:border-brand-300 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 style={{ resize: "vertical", whiteSpace: "pre-wrap" }}
               />
@@ -593,6 +648,30 @@ const ServiceCalendar: React.FC = () => {
                   When enabled, this upcoming schedule will automatically repeat monthly on the calendar.
                 </p>
               </div>
+            )}
+
+            {selectedLogId && (
+              <form onSubmit={(e) => e.preventDefault()} className="md:col-span-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+                <label className="flex items-center gap-3 text-sm text-red-500">
+                  Delete Log
+                </label>
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  This will permanently delete this service log from the system. This action cannot be undone.
+                </p>
+                <Button
+                  size="sm"
+                  variant='danger'
+                  onClick={async () => {
+                    if (!selectedLogId) return;
+                    const confirmDelete = window.confirm("Are you sure you want to delete this service log? This action cannot be undone.");
+                    if (!confirmDelete) return;
+                    await handleDelete(selectedLogId);
+                  }}
+                  className="mt-2"
+                >
+                  Delete Log
+                </Button>
+              </form>
             )}
           </div>
 
@@ -621,7 +700,7 @@ const ServiceCalendar: React.FC = () => {
               disabled={saving || !selectedVehicleId || !serviceDate || !mileage}
               className="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {saving ? "Saving..." : "Save service log"}
+              {saving ? "Saving changes..." : "Save service log"}
             </button>
           </div>
         </div>
@@ -648,7 +727,7 @@ const renderMaintenanceEventContent = (eventInfo: EventContentArg) => {
         <React.Fragment>
           <div className="min-w-0 py-1">
             <div className="w-full relative aspect-video mb-1">
-              {isRecurring && <div className="absolute right-1 top-1 text-sm"><Badge size="sm" variant="solid" color="primary">Every Month</Badge></div>}
+              {isRecurring && <div className="absolute right-1 top-1 text-sm"><Badge size="sm" variant="solid" color="primary">Repeat</Badge></div>}
               <img className="w-full rounded bg-white h-full object-cover object-center" src={eventInfo.event.extendedProps.image_url ?? '/images/default-yard.png'} />
             </div>
             <div className="text-xs font-semibold">{title}</div>
@@ -666,7 +745,7 @@ const renderMaintenanceEventContent = (eventInfo: EventContentArg) => {
         </React.Fragment>
       }
     >
-      <div className="flex items-start gap-2 rounded-md bg-brand-500/15 p-2 pb-1.5 text-left text-gray-800 dark:text-white cursor-grab">
+      <div className="flex items-start gap-2 rounded-md bg-brand-500/15 p-2 pb-1.5 mb-2 text-left text-gray-800 dark:text-white cursor-grab">
         <span className={`mt-1 h-2 w-2 flex-none rounded-full ${badgeColor}`} />
         <div className="min-w-0">
           <div className="flex relative gap-2 items-center uppercase mb-2">
