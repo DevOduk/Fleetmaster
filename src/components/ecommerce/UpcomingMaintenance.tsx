@@ -4,11 +4,13 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { MoreDotIcon } from "@/icons";
 import { useMemo, useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { useAdminFleet } from '@/context/AdminFleetContext';
 import { useUser } from '@/context/UserContext';
-import { useModal } from '@/hooks/useModal';
 import { getAllMaintenanceLogs } from '@/app/actions/maintenance';
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined"
+import EventBusyOutlinedIcon from "@mui/icons-material/EventBusyOutlined"
+import Link from 'next/link';
+
+
 
 interface MaintenanceLog {
   id: number;
@@ -147,11 +149,16 @@ const normalizeMaintenanceLog = (entry: any): MaintenanceLog => {
 function UpcomingMaintenance() {
   const [open, setIsOpen] = useState(false);
   const [maintenanceLogs, setMaintenanceLogs] = useState<MaintenanceLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { profile } = useUser();
+  const plan = profile?.fleetmaster_tenants?.subscription_plan || '...';
 
 
   const loadMaintenanceLogs = async () => {
+    setLoading(true);
     const logs = await getAllMaintenanceLogs();
     setMaintenanceLogs(logs.map((log) => normalizeMaintenanceLog(log)));
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -267,8 +274,8 @@ function UpcomingMaintenance() {
 
 
   return (
-    <div className="px- mb-7 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-800">
-      <div className="flex justify-between w-full">
+    <div className="px-3.5 mb-7 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-800">
+      <div className="flex justify-between w-full px-3">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
             Upcoming Maintenance
@@ -309,37 +316,64 @@ function UpcomingMaintenance() {
       </div>
 
       <div className="mt-4">
-        {upcomingMaintenanceEvents.length > 0 ? (
-          <ul className="space-y-4 min-h-65">
-            {upcomingMaintenanceEvents.map((event) => (
-              <li key={event.id} className="rounded-2xl border cursor-pointer border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/3 p-1">
-                <div className="flex gap-3 flex-col md:flex-row h-full relative shrink-0 items-start md:items-center">
-                  <img src={event.extendedProps.image_url} alt={''} className="shrink-0 object-cover object-center rounded-lg w-full aspect-square md:w-30" />
-                  <div className='p-1 relative'>
-                    <div className="text-gray-700 text-sm dark:text-brand-400 flex items-center gap-1">
-                      <div className="shrink-0">
-                        <EventAvailableOutlinedIcon fontSize='small' />
+        {
+          plan !== 'Expert' ? (
+            <div className='border border-error-600 rounded-xl '>
+              <div className="text-theme-sm text-error-500 whitespace-pre-wrap max-w-[80%] h-68 mx-auto flex items-center justify-center flex-col text-center gap-3">
+                <EventBusyOutlinedIcon fontSize='large' className="text-3xl mr-2" />
+                Service and Maintenance tracking is not available in this plan ({plan}). Upgrade to Expert to access detailed maintenance scheduling, history and reports.
+              </div>
+            </div>
+          ) :
+            loading ? (
+              <div className="flex flex-col min-h-68 space-y-4 p-2 px-3">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/3 p-1">
+                    <div className="flex gap-3 flex-col md:flex-row h-full relative shrink-0 items-start md:items-center">
+                      <div className="shrink-0 w-full aspect-square rounded-lg bg-gray-300 animate-pulse dark:bg-gray-700 md:w-30" />
+                      <div className="w-full p-1 space-y-2">
+                        <div className="h-4 w-28 animate-pulse rounded bg-gray-300 dark:bg-gray-700" />
+                        <div className="h-5 w-3/4 animate-pulse rounded bg-gray-300 dark:bg-gray-700" />
+                        <div className="h-4 w-1/2 animate-pulse rounded bg-gray-300 dark:bg-gray-700" />
+                        <div className="h-4 w-full animate-pulse rounded bg-gray-300 dark:bg-gray-700" />
                       </div>
-                      {formatDate(event.start)}
                     </div>
-                    <h4 className="font-semibold mt-2 text-sm text-gray-800 dark:text-white/90">
-                      {event.title} {event.extendedProps.license_plate ? ` (${event.extendedProps.license_plate})` : "V-001"}
-                    </h4>
-
-                    <strong className='text-theme-sm text-gray-500 dark:text-gray-400'>Notes:</strong> <br />
-                    <p className="text-theme-xs text-gray-500 dark:text-gray-400 text-wrap">
-                      {event.extendedProps.description.replaceAll(/\n/g, ", ")}
-                    </p>
                   </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-theme-sm text-gray-500 whitespace-pre-wrap dark:text-gray-400 h-32 flex items-center justify-center text-center">
-            No upcoming maintenance events.
-          </p>
-        )}
+                ))}
+              </div>
+            ) : upcomingMaintenanceEvents.length > 0 ? (
+              <ul className="space-y-4 min-h-65">
+                {upcomingMaintenanceEvents.slice(0, 2).map((event) => (
+                  <li key={event.id} className="rounded-2xl border cursor-pointer border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/3 p-1">
+                    <Link href={`/maintenance?event=${event.id}`}>
+                      <div className="flex gap-3 flex-col md:flex-row h-full relative shrink-0 items-start md:items-center">
+                        <img src={event.extendedProps.image_url} alt={''} className="shrink-0 object-cover object-center rounded-lg w-full aspect-square md:w-30" />
+                        <div className='p-1 relative'>
+                          <div className="text-gray-700 text-sm dark:text-brand-400 flex items-center gap-1">
+                            <div className="shrink-0">
+                              <EventAvailableOutlinedIcon fontSize='small' />
+                            </div>
+                            {formatDate(event.start)}
+                          </div>
+                          <h4 className="font-semibold mt-2 text-sm text-gray-800 dark:text-white/90">
+                            {event.title} {event.extendedProps.license_plate ? ` (${event.extendedProps.license_plate})` : "V-001"}
+                          </h4>
+
+                          <strong className='text-theme-sm text-gray-500 dark:text-gray-400'>Notes:</strong> <br />
+                          <p className="text-theme-xs text-gray-500 dark:text-gray-400 text-wrap">
+                            {event.extendedProps.description.replaceAll(/\n/g, ", ")}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-theme-sm text-gray-500 whitespace-pre-wrap dark:text-gray-400 h-32 flex items-center justify-center text-center">
+                No upcoming maintenance events.
+              </p>
+            )}
       </div>
     </div>
   )

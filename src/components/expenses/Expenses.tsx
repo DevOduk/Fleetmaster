@@ -186,7 +186,7 @@ const Expenses: React.FC = () => {
 
   if (plan !== 'Pro' && plan !== 'Expert') {
     return (
-      <FeatureError status="403" icon={<VpnLockOutlinedIcon fontSize="large" className="text-3xl" />} description={`Expense tracking is not available in this plan (${plan}). Upgrade to Pro or Expert to access detailed expense analytics and reports.`} />
+      <FeatureError  title="FEATURE NOT AVAILABLE"  status="403" icon={<VpnLockOutlinedIcon fontSize="large" className="text-3xl" />} description={`Expense tracking is not available in this plan (${plan}). Upgrade to Pro or Expert to access detailed expense analytics and reports.`} />
     )
   };
 

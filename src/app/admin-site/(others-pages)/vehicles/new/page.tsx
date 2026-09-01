@@ -311,7 +311,7 @@ const NewVehiclePage = () => {
               />
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-y-4">
+            <div className="mt-6 grid grid-cols-2 gap-y-4 align-end">
               <div className="p-2">
                 <p className="text-gray-400">Make</p>
                 <Select
@@ -597,17 +597,16 @@ const NewVehiclePage = () => {
                     className="text-brand-500"
                   >
                     Here
-                  </Link>
+                  </Link> & <span className="text-brand-500 cursor-pointer" onClick={() => window.location.reload()}>Reload</span> this page - your progress will not be lost.
                   )
                 </p>
                 <Select
                   options={
                     yards
-                      ?.map((y) => `${y.title}`)
                       ?.map((l) => {
                         return {
-                          value: l,
-                          label: l,
+                          value: l.id,
+                          label: l.title,
                         };
                       }) || []
                   }

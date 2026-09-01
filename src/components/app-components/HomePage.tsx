@@ -79,131 +79,11 @@ function HomePage() {
       />
 
       <div className="grid grid-cols-12 gap-4 text-gray-400 md:gap-6">
-        {loadingVehicles ? (
-          <>
-            <div className="col-span-12">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4">
-                {[...Array(4)].map((_, i) => (
-                  <div
-                    className="bg-brand-500/5 space-y-3 rounded-2xl border border-gray-200 p-5 md:p-6 dark:border-gray-800"
-                    key={i}
-                  >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-700" />
-                    <div className="mt-5 flex items-end justify-between">
-                      <div>
-                        <div className="h-4 w-23 bg-gray-100 dark:bg-white/7" />
-                        <div className="mt-4 flex h-8 w-32 items-center justify-center bg-gray-50 dark:bg-gray-700" />
-                      </div>
-                      <div className="h-5 w-13 rounded-xl bg-gray-700" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="col-span-12 xl:col-span-7">
-              <div className="h-125 space-y-6 rounded-xl border border-gray-900/60 bg-transparent p-5 xl:col-span-2">
-                <div className="flex items-center justify-between">
-                  <div className="h-5 w-36 animate-pulse rounded bg-gray-300 dark:bg-gray-600" />
-                  <div className="h-5 w-3 animate-pulse rounded bg-gray-400 dark:bg-gray-500" />
-                </div>
-                {/* Fake Bar Chart Bars */}
-                <div className="flex h-100 items-end justify-between gap-3 px-2 pt-4">
-                  {[
-                    55, 80, 45, 70, 50, 65, 85, 30, 60, 90, 75, 40, 90, 100,
-                    110, 50, 90, 75, 40, 90, 100,
-                  ].map((height, i) => (
-                    <div
-                      key={i}
-                      style={{ height: `${height}%` }}
-                      className="w-full animate-pulse rounded-t bg-gray-300 dark:bg-gray-800"
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="col-span-12 xl:col-span-5">
-              <div className="relative h-128 space-y-6 rounded-xl border border-gray-900/60 bg-transparent p-5">
-                <div className="mb-4 space-y-3">
-                  <div className="h-8 w-28 animate-pulse rounded bg-gray-800" />
-                  <div className="h-4 w-44 animate-pulse rounded bg-gray-800/50" />
-                </div>
-
-                {/* Circular Gauge Centerpiece Approximation */}
-                <div className="relative mx-auto flex h-64 w-64 animate-pulse items-center justify-center rounded-full border-4 border-dashed border-gray-800">
-                  <div className="space-y-2 text-center">
-                    <div className="mx-auto h-6 w-12 rounded bg-gray-800" />
-                    <div className="mx-auto h-3 w-16 rounded bg-gray-800/60" />
-                  </div>
-                </div>
-
-                <div className="h-10 w-full animate-pulse rounded-lg bg-gray-800/60" />
-                <div className="h-10 w-full animate-pulse rounded-lg bg-gray-800/60" />
-              </div>
-            </div>
-
-            <div className="col-span-12">
-              <div className="relative h-128 space-y-6 rounded-xl border border-gray-900/60 bg-transparent p-5">
-                <div className="flex items-center justify-between">
-                  <div className="mb-4 space-y-3">
-                    <div className="h-8 w-28 animate-pulse rounded bg-gray-800" />
-                    <div className="h-4 w-44 animate-pulse rounded bg-gray-800/50" />
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="h-8 w-30 animate-pulse rounded bg-gray-800" />
-                    <div className="h-8 w-30 animate-pulse rounded bg-gray-800" />
-                    <div className="h-8 w-30 animate-pulse rounded bg-gray-800" />
-                    <div className="ms-2 h-8 w-30 animate-pulse rounded bg-gray-800" />
-                  </div>
-                </div>
-
-                {/* Circular Gauge Centerpiece Approximation */}
-                <div className="relative mx-auto flex h-64 w-full animate-pulse items-center justify-center border-4 border-dashed border-gray-800">
-                  <div className="space-y-2 text-center">
-                    <div className="mx-auto h-6 w-32 rounded bg-gray-800" />
-                    <div className="mx-auto h-3 w-20 rounded bg-gray-800/60" />
-                  </div>
-                </div>
-
-                <div className="h-10 w-full animate-pulse rounded-lg bg-gray-800/60" />
-              </div>
-            </div>
-
-            <div className="col-span-12 xl:col-span-5">
-              <div className="space-y-3">
-                <div className="mb-4 space-y-3">
-                  <div className="h-7 w-28 animate-pulse rounded bg-gray-800" />
-                  <div className="h-4 w-44 animate-pulse rounded bg-gray-800/50" />
-                </div>
-                <div className="h-70 animate-pulse rounded-lg bg-gray-800"></div>
-                <div className="flex items-center justify-between">
-                  <div className="mb-4 space-y-3">
-                    <div className="h-7 w-28 animate-pulse rounded bg-gray-800" />
-                    <div className="h-4 w-44 animate-pulse rounded bg-gray-800/50" />
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="h-6 w-30 animate-pulse rounded bg-gray-800" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-span-12 xl:col-span-7">
-              <div className="space-y-3">
-                <div className="mb-4 space-y-3">
-                  <div className="h-7 w-28 animate-pulse rounded bg-gray-800" />
-                  <div className="h-4 w-44 animate-pulse rounded bg-gray-800/50" />
-                </div>
-                <div className="h-90 animate-pulse rounded-lg bg-gray-800"></div>
-              </div>
-            </div>
-          </>
-        ) : vehicles.length < 1 ? (
-          <div className="col-span-12 m-auto flex min-h-[70vh] w-full flex-col items-center justify-center rounded-2xl p-8 text-center shadow-sm">
-            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white">
+        {!loadingVehicles && vehicles.length === 0 ? (
+          <div className="col-span-12 m-auto flex min-h-[70vh] w-full flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white/40 p-8 text-center shadow-sm dark:border-gray-800 dark:bg-gray-900/40">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400">
               <svg
-                className="text-brand-700 h-8 w-8"
+                className="h-8 w-8"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -220,7 +100,7 @@ function HomePage() {
             <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
               Add your first vehicle
             </h2>
-            <p className="mb-8 max-w-md text-sm text-gray-500">
+            <p className="mb-8 max-w-md text-sm text-gray-500 dark:text-gray-400">
               You're all set up! Start tracking your fleet by adding your first
               vehicle to the system. It only takes a minute.
             </p>
@@ -245,7 +125,7 @@ function HomePage() {
             </div>
 
             <div className="col-span-12 xl:col-span-7">
-              <MonthlySalesChart bookings={bookings} expenses={expenses} />
+              <MonthlySalesChart bookings={bookings} expenses={expenses} loading={LoadingBookings || loading} />
 
               <TopUsers
                 clients={clients}

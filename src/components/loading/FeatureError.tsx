@@ -1,17 +1,15 @@
-import VpnLockOutlinedIcon from "@mui/icons-material/VpnLockOutlined";
-
 interface FeatureErrorProps {
-    status?: string;
-    icon: any;
-    title?: string;
-    description: string;
+  status?: string;
+  icon: any;
+  title?: string;
+  description: string;
 }
-function FeatureError({status = '404', icon, title = 'FEATURE COMING SOON', description}: FeatureErrorProps) {
+function FeatureError({ status = '404', icon, title = 'FEATURE COMING SOON', description }: FeatureErrorProps) {
   return (
     <div>
-      
+
       <div className="mt-10 flex min-h-[75vh] flex-col items-center justify-center gap-4 text-[10px] text-red-300 dark:text-red-700">
-        <VpnLockOutlinedIcon fontSize="large" className="text-3xl" />
+        {icon}
         <p className="font-medium tracking-[0.2em] text-red-400 uppercase dark:text-red-600">
           Status: {status}
         </p>

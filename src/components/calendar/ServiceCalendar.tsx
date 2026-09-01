@@ -18,10 +18,11 @@ import { useUser } from "@/context/UserContext";
 import { styled } from '@mui/material/styles';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import Checkbox from "../form/input/Checkbox";
-import Input from "../form/input/InputField";
+import EventBusyOutlinedIcon from "@mui/icons-material/EventBusyOutlined"
 import Radio from "../form/input/Radio";
 import Badge from "../ui/badge/Badge";
 import Button from "../ui/button/Button";
+import FeatureError from "../loading/FeatureError";
 
 interface MaintenanceLog {
   id: number;
@@ -170,12 +171,13 @@ const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
 }));
 
 const ServiceCalendar: React.FC = () => {
+  const params = new URLSearchParams(window.location.search);
   const { vehicles } = useAdminFleet();
   const { profile } = useUser();
   const { isOpen, openModal, closeModal } = useModal();
   const [maintenanceLogs, setMaintenanceLogs] = useState<MaintenanceLog[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
-  const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
+  const [selectedLogId, setSelectedLogId] = useState<number | null>(Number(params.get("event")) || null);
   const [serviceDate, setServiceDate] = useState("");
   const [mileage, setMileage] = useState("");
   const [nextServiceDate, setNextServiceDate] = useState("");
@@ -184,6 +186,40 @@ const ServiceCalendar: React.FC = () => {
   const [repeatSchedule, setRepeatSchedule] = useState(false);
   const [isFutureLog, setIsFutureLog] = useState(false);
   const [saving, setSaving] = useState(false);
+  const plan = profile?.fleetmaster_tenants?.subscription_plan || '...';
+  // get event from search params if there then intialise open modal and setid 
+  // <Link href={`/maintenance?event=${event.id}`}>
+
+
+
+  const resetModalState = () => {
+    setServiceDate(toLocalDateInput(new Date()));
+    setMileage("");
+    setNextServiceDate("");
+    setNextServiceMileage("");
+    setActivitiesDone("");
+    setRepeatSchedule(false);
+    setIsFutureLog(false);
+    setSelectedVehicleId(null);
+    setSelectedLogId(null);
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("event");
+    window.history.replaceState({}, "", url);
+  };
+
+  const closeServiceModal = () => {
+    closeModal();
+    resetModalState();
+  };
+
+  useEffect(() => {
+    if (!selectedLogId) return;
+    const url = new URL(window.location.href);
+
+    url.searchParams.set("event", String(selectedLogId));
+    window.history.replaceState({}, "", url);
+  }, [selectedLogId]);
 
   const loadMaintenanceLogs = async () => {
     const logs = await getAllMaintenanceLogs();
@@ -193,6 +229,27 @@ const ServiceCalendar: React.FC = () => {
   useEffect(() => {
     void loadMaintenanceLogs();
   }, []);
+
+  useEffect(() => {
+    if (!maintenanceLogs.length) return;
+
+    const eventId = Number(params.get("event"));
+    if (!eventId) return;
+
+    const log = maintenanceLogs.find((entry) => entry.id === eventId);
+    if (!log) return;
+
+    setSelectedLogId(log.id);
+    setServiceDate(normalizeDateInput(log.date));
+    setMileage(String(log.mileage || ""));
+    setNextServiceDate(log.next_service_date || "");
+    setNextServiceMileage(String(log.next_service_mileage || ""));
+    setActivitiesDone(log.description || "");
+    setRepeatSchedule(log.recurring || false);
+    setIsFutureLog(log.is_future || false);
+    setSelectedVehicleId(log.vehicle_id);
+    openModal();
+  }, [maintenanceLogs, params, openModal]);
 
   const recurringEvents = useMemo(() => {
     const entries: Array<{
@@ -345,17 +402,7 @@ const ServiceCalendar: React.FC = () => {
     }
 
     toast.success("Maintenance log details saved.");
-    closeModal();
-
-    setServiceDate(toLocalDateInput(new Date()));
-    setMileage("");
-    setNextServiceDate("");
-    setNextServiceMileage("");
-    setActivitiesDone("");
-    setRepeatSchedule(false);
-    setIsFutureLog(false);
-    setSelectedVehicleId(null);
-    setSelectedLogId(null);
+    closeServiceModal();
 
     await loadMaintenanceLogs();
   };
@@ -369,17 +416,7 @@ const ServiceCalendar: React.FC = () => {
     if (result.success) {
       toast.success("Maintenance log deleted.");
 
-      closeModal();
-
-      setServiceDate(toLocalDateInput(new Date()));
-      setMileage("");
-      setNextServiceDate("");
-      setNextServiceMileage("");
-      setActivitiesDone("");
-      setRepeatSchedule(false);
-      setIsFutureLog(false);
-      setSelectedVehicleId(null);
-      setSelectedLogId(null);
+      closeServiceModal();
 
       await loadMaintenanceLogs();
     } else {
@@ -387,6 +424,14 @@ const ServiceCalendar: React.FC = () => {
     }
     setSaving(false);
   }
+
+
+
+  if (plan !== 'Expert') {
+    return (
+      <FeatureError title="FEATURE NOT AVAILABLE" status="403" icon={<EventBusyOutlinedIcon fontSize="large" className="text-3xl" />} description={`Service & maintenance tracking is not available in this plan (${plan}). Upgrade to Expert to access detailed maintenance scheduling, history and reports.`} />
+    )
+  };
 
 
   return (
@@ -500,16 +545,7 @@ const ServiceCalendar: React.FC = () => {
       </div>
 
       <Modal isOpen={isOpen} onClose={() => {
-        closeModal();
-        setServiceDate(toLocalDateInput(new Date()));
-        setMileage("");
-        setNextServiceDate("");
-        setNextServiceMileage("");
-        setActivitiesDone("");
-        setRepeatSchedule(false);
-        setIsFutureLog(false);
-        setSelectedVehicleId(null);
-        setSelectedLogId(null);
+        closeServiceModal();
       }} className="max-w-2xl p-6 lg:p-8">
         <div className="space-y-5">
           <div>
@@ -694,7 +730,7 @@ const ServiceCalendar: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                closeModal();
+                closeServiceModal();
                 setServiceDate(toLocalDateInput(new Date()));
                 setMileage("");
                 setNextServiceDate("");

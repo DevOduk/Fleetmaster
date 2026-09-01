@@ -82,9 +82,11 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
 export default function MonthlySalesChart({
   bookings,
   expenses,
+  loading
 }: {
-  bookings: any;
-  expenses: any;
+  bookings: any[];
+  expenses: any[];
+  loading: boolean;
 }) {
   const options: ApexOptions = {
     colors: ["var(--color-brand-500)", "var(--color-red-500)"],
@@ -154,7 +156,6 @@ export default function MonthlySalesChart({
   };
   const series = revenueExpenses({ bookings, expenses }).series;
   const [isOpen, setIsOpen] = useState(false);
-  const { loading } = useUser();
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
