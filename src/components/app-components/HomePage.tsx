@@ -1,4 +1,5 @@
 "use client";
+
 import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
 import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
 import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
@@ -14,6 +15,7 @@ import Link from "next/link";
 import { PlusIcon } from "@/icons";
 import { fetchClientsForTenant } from "@/app/actions/client";
 import DemographicCard from "./DemographicCard";
+import UpcomingMaintenance from "../ecommerce/UpcomingMaintenance";
 
 function HomePage() {
   const { profile } = useUser();
@@ -246,6 +248,8 @@ function HomePage() {
             </div>
 
             <div className="col-span-12 xl:col-span-5">
+              <UpcomingMaintenance />
+
               <MonthlyTarget
                 bookings={bookings}
                 loadingBookings={LoadingBookings || loading}
@@ -258,8 +262,8 @@ function HomePage() {
                 bookings={bookings}
                 loadingBookings={LoadingBookings || loading}
                 target={targetMonthly}
-                expenses={expenses} 
-                />
+                expenses={expenses}
+              />
             </div>
 
             <div className="col-span-12 xl:col-span-5">

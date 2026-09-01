@@ -148,7 +148,7 @@ export default function MonthlyTarget({
         </div>
       ) : (
         <>
-          <div className="shadow-default rounded-2xl bg-white px-5 pt-5 pb-11 sm:px-6 sm:pt-6 dark:bg-gray-900">
+          <div className="shadow-default rounded-2xl bg-white px-5 pt-5 pb-5 sm:px-6 sm:pt-6 dark:bg-gray-900">
             <div className="flex justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -198,7 +198,7 @@ export default function MonthlyTarget({
                 +10%
               </span>
             </div>
-            <p className="mx-auto mt-7 w-full max-w-95 text-center text-sm text-gray-500 sm:text-base">
+            <p className="mx-auto mt-5 w-full max-w-95 text-center text-sm text-gray-500 sm:text-base">
               You earned ${formatedValue(totalToday)} today, it&apos;s higher than last month. Keep up
               your good work!
             </p>
