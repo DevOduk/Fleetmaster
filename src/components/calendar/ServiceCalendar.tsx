@@ -103,6 +103,14 @@ const getDateOnly = (value?: string | null) => {
   return normalized || null;
 };
 
+const getLocalDate = (value?: string | null) => {
+  const normalized = normalizeDateInput(value);
+  if (!normalized) return null;
+
+  const [year, month, day] = normalized.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
+
 const parseDescription = (value?: string | null) => {
   if (!value) return "";
   return value
@@ -210,14 +218,15 @@ const ServiceCalendar: React.FC = () => {
 
       if (!baseDateStr) return;
 
-      const baseDate = new Date(baseDateStr);
-      const currentMonth = new Date().getUTCMonth(); //i.e 7 for August
+      const baseDate = getLocalDate(baseDateStr);
+      const currentMonth = new Date().getMonth();
 
       for (let index = currentMonth; index < 11; index += 1) {
-        baseDate.setMonth(index + 1);
+        const nextMonthDate = new Date(baseDate);
+        nextMonthDate.setMonth(index + 1);
 
         const repeatDate = getDateOnly(
-          `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, "0")}-${String(baseDate.getDate()).padStart(2, "0")}`
+          `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, "0")}-${String(nextMonthDate.getDate()).padStart(2, "0")}`
         );
         if (!repeatDate) continue;
 
@@ -247,7 +256,7 @@ const ServiceCalendar: React.FC = () => {
       return {
         id: String(log.id),
         title: `${getVehicleLabel(log.vehicle)}`,
-        start: log.date ?? new Date().toISOString().split("T")[0],
+        start: normalizeDateInput(log.date) || toLocalDateInput(new Date()),
         allDay: true,
         extendedProps: {
           kind: log.is_future ? "future" : "history",
@@ -266,7 +275,7 @@ const ServiceCalendar: React.FC = () => {
   }, [maintenanceLogs, recurringEvents]);
 
   const openCreateModal = () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = toLocalDateInput(new Date());
     setServiceDate(today);
     setMileage("");
     setNextServiceDate("");
@@ -338,7 +347,7 @@ const ServiceCalendar: React.FC = () => {
     toast.success("Maintenance log details saved.");
     closeModal();
 
-    setServiceDate(new Date().toISOString().split("T")[0]);
+    setServiceDate(toLocalDateInput(new Date()));
     setMileage("");
     setNextServiceDate("");
     setNextServiceMileage("");
@@ -362,7 +371,7 @@ const ServiceCalendar: React.FC = () => {
 
       closeModal();
 
-      setServiceDate(new Date().toISOString().split("T")[0]);
+      setServiceDate(toLocalDateInput(new Date()));
       setMileage("");
       setNextServiceDate("");
       setNextServiceMileage("");
@@ -394,7 +403,7 @@ const ServiceCalendar: React.FC = () => {
             }}
             selectable={true}
             select={(info) => {
-              setServiceDate(info.startStr.slice(0, 10));
+              setServiceDate(normalizeDateInput(info.startStr));
               setMileage("");
               setNextServiceDate("");
               setNextServiceMileage("");
@@ -415,7 +424,7 @@ const ServiceCalendar: React.FC = () => {
 
               if (log) {
                 setSelectedLogId(log.id);
-                setServiceDate(log.date ? new Date(log.date).toISOString().split("T")[0] : '');
+                setServiceDate(normalizeDateInput(log.date));
                 setMileage(String(log.mileage || ""));
                 setNextServiceDate(log.next_service_date || "");
                 setNextServiceMileage(String(log.next_service_mileage || ""));
@@ -471,7 +480,13 @@ const ServiceCalendar: React.FC = () => {
                   <td className="px-4 py-3 align-top">{formatDate(log.date)}</td>
                   <td className="px-4 py-3 align-top">{formatMileage(log.mileage)}</td>
                   <td className="px-4 py-3 align-top">
-                    {log.is_future && log.recurring ? formatedTimestamp(new Date(log.date) < new Date() ? new Date(new Date(log.date).setMonth(new Date(log.date).getMonth() + 1)).toDateString() : new Date(log.date).toDateString()) : formatedTimestamp(log.next_service_date)}
+                    {log.is_future && log.recurring ? (() => {
+                      const currentDate = getLocalDate(log.date);
+                      if (!currentDate) return "-";
+                      const candidateDate = new Date(currentDate);
+                      candidateDate.setMonth(candidateDate.getMonth() + 1);
+                      return formatedTimestamp(currentDate < new Date() ? candidateDate.toDateString() : currentDate.toDateString());
+                    })() : formatedTimestamp(log.next_service_date)}
                   </td>
                   <td className="px-4 py-3 align-top">{formatMileage(log.next_service_mileage)}</td>
                   <td className="max-w-md whitespace-pre-wrap px-4 py-3 align-top text-gray-600 dark:text-gray-300">
@@ -486,7 +501,7 @@ const ServiceCalendar: React.FC = () => {
 
       <Modal isOpen={isOpen} onClose={() => {
         closeModal();
-        setServiceDate(new Date().toISOString().split("T")[0]);
+        setServiceDate(toLocalDateInput(new Date()));
         setMileage("");
         setNextServiceDate("");
         setNextServiceMileage("");
@@ -680,7 +695,7 @@ const ServiceCalendar: React.FC = () => {
               type="button"
               onClick={() => {
                 closeModal();
-                setServiceDate(new Date().toISOString().split("T")[0]);
+                setServiceDate(toLocalDateInput(new Date()));
                 setMileage("");
                 setNextServiceDate("");
                 setNextServiceMileage("");
@@ -734,7 +749,7 @@ const renderMaintenanceEventContent = (eventInfo: EventContentArg) => {
             <div className="text-[10px] text-gray-600">
               {eventInfo.event.extendedProps.license_plate} - {" "}
               {mileage ? `${Number(mileage).toLocaleString()} km` : "Service"}
-              {!isFuture && next ? ` • Next: ${new Date(`${next}T00:00:00`).toLocaleDateString()}` : ""}
+              {!isFuture && next ? ` • Next: ${getLocalDate(next)?.toLocaleDateString() ?? next}` : ""}
               {isFuture ? " • Scheduled" : " • History"}
             </div>
             <div className="pt-1 whitespace-pre-wrap">
@@ -757,7 +772,7 @@ const renderMaintenanceEventContent = (eventInfo: EventContentArg) => {
           <div className="truncate text-xs font-semibold">{title}</div>
           <div className="truncate text-[10px] text-gray-600 dark:text-gray-300">
             {mileage ? `${Number(mileage).toLocaleString()} km` : "Service"}
-            {!isFuture && next ? ` • Next ${new Date(`${next}T00:00:00`).toLocaleDateString()}` : ""}
+            {!isFuture && next ? ` • Next ${getLocalDate(next)?.toLocaleDateString() ?? next}` : ""}
             {isFuture ? " (Upcoming)" : " (Record)"}
           </div>
         </div>
