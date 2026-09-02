@@ -11,9 +11,11 @@ import Badge from "../ui/badge/Badge";
 import CachedIcon from "@mui/icons-material/Cached";
 import PageBreadcrumb from "../common/PageBreadCrumb";
 import { useAdminFleet } from "@/context/AdminFleetContext";
+import { useAdminUsers } from "@/context/AdminUsersContext";
 
 const Bookings: React.FC = () => {
-  const { bookings, reloadBookings, loading } = useAdminBooking();
+    const { bookings } = useAdminUsers();
+    const {  reloadBookings } = useAdminBooking();
   const { vehicles, loading: loadingVehicles } = useAdminFleet();
   const isDarkMode =
     typeof window !== "undefined" &&
@@ -83,7 +85,8 @@ const Bookings: React.FC = () => {
   // Formula: Total monthly bookings / Days passed so far this month
   const averageDailyThisMonth =
     today > 0 ? (totalCountThisMonth / today).toFixed(1) : 0;
-  if (loading || loadingVehicles) {
+    
+  if (loadingVehicles) {
     return (
       <div className="min-h-[80vh] animate-pulse space-y-6">
         {/* Header Card Skeleton */}
@@ -112,6 +115,7 @@ const Bookings: React.FC = () => {
       </div>
     );
   }
+
   if (!loadingVehicles && vehicles.length === 0) {
     return (
       <div className="col-span-12 m-auto flex min-h-[70vh] w-full flex-col items-center justify-center rounded-2xl p-8 text-center shadow-sm">
@@ -259,7 +263,7 @@ const Bookings: React.FC = () => {
             </Link>
           </div>
         </div>
-        <BookingsTable />
+        <BookingsTable bookings={bookings} loading={false} />
       </div>
     </div>
   );

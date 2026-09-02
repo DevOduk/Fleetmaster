@@ -13,6 +13,8 @@ import { fetchVehiclesForTenant } from "@/app/actions/vehicles";
 import { getTenantAdmins } from "../actions/admin";
 import { AdminUsersProvider } from "@/context/AdminUsersContext";
 import { fetchClientsForTenant } from "../actions/client";
+import { fetchExpensesForAdmin } from "../actions/expenses";
+import { fetchBookingsForTenant } from "../actions/bookings";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -32,6 +34,8 @@ export default async function RootAdminLayout({
   let initialVehicles: any[] = [];
   let initialAdmins: any[] = [];
   let initialClients: any[] = [];
+  let initialBookings: any[] = [];
+  let initialExpenses: any[] = [];
 
   if (sessionCookie?.value && JWT_SECRET) {
     try {
@@ -70,10 +74,12 @@ export default async function RootAdminLayout({
 
   if (tenantId) {
     try {
-      const [vehicleRes, adminRes, clientRes] = await Promise.all([
+      const [vehicleRes, adminRes, clientRes, bookingRes, expenseRes] = await Promise.all([
         fetchVehiclesForTenant(tenantId),
         getTenantAdmins(tenantId),
         fetchClientsForTenant(tenantId),
+        fetchBookingsForTenant(tenantId),
+        fetchExpensesForAdmin(tenantId),
       ]);
 
       if (vehicleRes?.success) {
@@ -87,6 +93,15 @@ export default async function RootAdminLayout({
       if (clientRes?.success) {
         initialClients = clientRes.data || [];
       }
+
+      if (bookingRes?.success) {
+        initialBookings = bookingRes.data || [];
+      }
+
+      if (expenseRes?.success) {
+        initialExpenses = expenseRes.data || [];
+      }
+
     } catch (err) {
       console.error("Failed to pre-fetch admin data:", err);
     }
@@ -94,7 +109,7 @@ export default async function RootAdminLayout({
 
   return (
     <UserProvider initialUser={serverUser}>
-      <AdminUsersProvider initialAdmins={initialAdmins} initialClients={initialClients}>
+      <AdminUsersProvider initialAdmins={initialAdmins} initialClients={initialClients} initialBookings={initialBookings} initialExpenses={initialExpenses}>
         <SettingsProvider>
           <AdminFleetProvider initialVehicles={initialVehicles}>
             <AdminBookingProvider>

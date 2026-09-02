@@ -37,33 +37,43 @@ export interface Client {
   last_seen: string | null;
 }
 
-interface AdminUsersContextType {
+export interface AdminUsersContextType {
   admins: AdminUser[];
   setAdmins: Dispatch<SetStateAction<AdminUser[]>>;
   clients: Client[];
   setClients: Dispatch<SetStateAction<Client[]>>;
+  expenses: any[];
+  setExpenses: Dispatch<SetStateAction<any[]>>;
+  bookings: any[];
+  setBookings: Dispatch<SetStateAction<any[]>>;
 }
 
 const AdminUsersContext = createContext<
   AdminUsersContextType | undefined
 >(undefined);
 
-interface AdminUsersProviderProps {
+export interface AdminUsersProviderProps {
   children: ReactNode;
   initialAdmins?: AdminUser[];
-    initialClients?: Client[];
+  initialClients?: Client[];
+  initialExpenses?: any[];
+  initialBookings?: any[];
 }
 
 export function AdminUsersProvider({
   children,
   initialAdmins = [],
   initialClients = [],
+  initialExpenses = [],
+  initialBookings = [],
 }: AdminUsersProviderProps) {
   const [admins, setAdmins] = useState<AdminUser[]>(initialAdmins);
   const [clients, setClients] = useState<Client[]>(initialClients);
+  const [expenses, setExpenses] = useState<any[]>(initialExpenses);
+  const [bookings, setBookings] = useState<any[]>(initialBookings);
 
   return (
-    <AdminUsersContext.Provider value={{ admins, setAdmins, clients, setClients }}>
+    <AdminUsersContext.Provider value={{ admins, setAdmins, clients, setClients, expenses, setExpenses, bookings, setBookings }}>
       {children}
     </AdminUsersContext.Provider>
   );

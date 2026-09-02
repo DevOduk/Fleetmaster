@@ -74,19 +74,60 @@ const revenueExpenses = ({ bookings, expenses }: any) => {
   };
 };
 
+const ChartLoading = () => (
+  <div className="min-h-80 flex flex-col space-y-6 rounded-xl bg-transparent p-5 xl:col-span-2">
+    <div className="flex items-center justify-between">
+      <div className="h-5 w-36 animate-pulse rounded bg-gray-300 dark:bg-gray-600" />
+      <div className="h-5 w-3 animate-pulse rounded bg-gray-400 dark:bg-gray-500" />
+    </div>
+    {/* Fake Bar Chart Bars */}
+    <div className="flex h-105 items-end justify-between gap-2 px-2 pt-4">
+      {[
+        55, 80, 45, 70, 50, 65, 85, 30, 60, 90, 75, 40, 90, 100, 110, 50,
+        90, 75, 40, 90, 100,
+      ].map((height, i) => (
+        <div
+          key={i}
+          style={{ height: `${height}%` }}
+          className="w-full animate-pulse rounded-t bg-gray-300 dark:bg-gray-700"
+        />
+      ))}
+    </div>
+  </div>
+);
+// loading ? (
+//   <div className="min-h-80 flex flex-col space-y-6 rounded-xl bg-transparent p-5 xl:col-span-2">
+//     <div className="flex items-center justify-between">
+//       <div className="h-5 w-36 animate-pulse rounded bg-gray-300 dark:bg-gray-600" />
+//       <div className="h-5 w-3 animate-pulse rounded bg-gray-400 dark:bg-gray-500" />
+//     </div>
+//     {/* Fake Bar Chart Bars */}
+//     <div className="flex h-105 items-end justify-between gap-2 px-2 pt-4">
+//       {[
+//         55, 80, 45, 70, 50, 65, 85, 30, 60, 90, 75, 40, 90, 100, 110, 50,
+//         90, 75, 40, 90, 100,
+//       ].map((height, i) => (
+//         <div
+//           key={i}
+//           style={{ height: `${height}%` }}
+//           className="w-full animate-pulse rounded-t bg-gray-300 dark:bg-gray-700"
+//         />
+//       ))}
+//     </div>
+//   </div>
+// ) : 
 // Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
+  loading: ChartLoading,
 });
 
 export default function MonthlySalesChart({
   bookings,
   expenses,
-  loading
 }: {
   bookings: any[];
   expenses: any[];
-  loading: boolean;
 }) {
   const options: ApexOptions = {
     colors: ["var(--color-brand-500)", "var(--color-red-500)"],
@@ -166,71 +207,49 @@ export default function MonthlySalesChart({
   }
 
   return (
-    <div className="overflow-hidden mb-4 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/3">
-      {loading ? (
-        <div className="min-h-80 flex flex-col space-y-6 rounded-xl bg-transparent p-5 xl:col-span-2">
-          <div className="flex items-center justify-between">
-            <div className="h-5 w-36 animate-pulse rounded bg-gray-300 dark:bg-gray-600" />
-            <div className="h-5 w-3 animate-pulse rounded bg-gray-400 dark:bg-gray-500" />
-          </div>
-          {/* Fake Bar Chart Bars */}
-          <div className="flex h-105 items-end justify-between gap-2 px-2 pt-4">
-            {[
-              55, 80, 45, 70, 50, 65, 85, 30, 60, 90, 75, 40, 90, 100, 110, 50,
-              90, 75, 40, 90, 100,
-            ].map((height, i) => (
-              <div
-                key={i}
-                style={{ height: `${height}%` }}
-                className="w-full animate-pulse rounded-t bg-gray-300 dark:bg-gray-700"
-              />
-            ))}
+    <div className="overflow-hidden mb-4 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/3 min-h-80">
+      <div className="min-h-80">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+            Monthly Revenue
+          </h3>
+
+          <div className="relative inline-block">
+            <button onClick={toggleDropdown} className="dropdown-toggle">
+              <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" />
+            </button>
+            <Dropdown
+              isOpen={isOpen}
+              onClose={closeDropdown}
+              className="w-40 p-2"
+            >
+              <DropdownItem
+                onItemClick={closeDropdown}
+                className="flex w-full rounded-lg text-left font-normal text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              >
+                View More
+              </DropdownItem>
+              <DropdownItem
+                onItemClick={closeDropdown}
+                className="flex w-full rounded-lg text-left font-normal text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              >
+                Reload
+              </DropdownItem>
+            </Dropdown>
           </div>
         </div>
-      ) : (
-        <>
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-              Monthly Revenue
-            </h3>
 
-            <div className="relative inline-block">
-              <button onClick={toggleDropdown} className="dropdown-toggle">
-                <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" />
-              </button>
-              <Dropdown
-                isOpen={isOpen}
-                onClose={closeDropdown}
-                className="w-40 p-2"
-              >
-                <DropdownItem
-                  onItemClick={closeDropdown}
-                  className="flex w-full rounded-lg text-left font-normal text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-                >
-                  View More
-                </DropdownItem>
-                <DropdownItem
-                  onItemClick={closeDropdown}
-                  className="flex w-full rounded-lg text-left font-normal text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-                >
-                  Reload
-                </DropdownItem>
-              </Dropdown>
-            </div>
+        <div className="custom-scrollbar max-w-full overflow-x-auto">
+          <div className="-ml-5 min-w-162.5 pl-2 xl:min-w-full">
+            <ReactApexChart
+              options={options}
+              series={series}
+              type="bar"
+              height={455}
+            />
           </div>
-
-          <div className="custom-scrollbar max-w-full overflow-x-auto">
-            <div className="-ml-5 min-w-162.5 pl-2 xl:min-w-full">
-              <ReactApexChart
-                options={options}
-                series={series}
-                type="bar"
-                height={455}
-              />
-            </div>
-          </div>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

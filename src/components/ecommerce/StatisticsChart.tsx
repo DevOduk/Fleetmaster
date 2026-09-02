@@ -23,12 +23,10 @@ const Chart = dynamic(() => import("react-apexcharts"), {
 export default function StatisticsChart({
   expenses,
   bookings,
-  loadingBookings,
   target,
 }: {
   expenses: any[];
   bookings: any[];
-  loadingBookings: boolean;
   target: number;
 }) {
   const datePickerRef = useRef<HTMLInputElement>(null);
@@ -127,7 +125,7 @@ export default function StatisticsChart({
         series: [
           { name: "Revenue", data: days.map((day) => getSumForDay(filteredBookings, day, true)) },
           { name: "Expenses", data: days.map((day) => getSumForDay(filteredExpenses, day, false)) },
-        { name: "Target", data: days.map(() => (target/30).toFixed(0)) }
+          { name: "Target", data: days.map(() => (target / 30).toFixed(0)) }
         ],
       };
     }
@@ -153,7 +151,7 @@ export default function StatisticsChart({
         series: [
           { name: "Revenue", data: days.map((day) => getSumForDay(bookings || [], day, true)) },
           { name: "Expenses", data: days.map((day) => getSumForDay(expenses || [], day, false)) },
-        { name: "Target", data: days.map(() => (target/30).toFixed(0)) }
+          { name: "Target", data: days.map(() => (target / 30).toFixed(0)) }
         ],
       };
     }
@@ -190,7 +188,7 @@ export default function StatisticsChart({
         series: [
           { name: "Revenue", data: salesData },
           { name: "Expenses", data: revenueData },
-        { name: "Target", data: qMap.map(() => target*3) }
+          { name: "Target", data: qMap.map(() => target * 3) }
         ],
       };
     }
@@ -218,7 +216,7 @@ export default function StatisticsChart({
         series: [
           { name: "Revenue", data: salesData },
           { name: "Expenses", data: revenueData },
-          { name: "Target", data: years.map(() => target*12) }
+          { name: "Target", data: years.map(() => target * 12) }
 
         ],
       };
@@ -405,13 +403,15 @@ export default function StatisticsChart({
 
       <div className="custom-scrollbar max-w-full overflow-x-auto">
         <div className="min-w-250 xl:min-w-full">
-          {loadingBookings ? (
-            <div className="h-77.5 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800" />
-          ) : (
-            <div className="overflow-hidden">
-              <Chart options={options} series={chartData.series} type="area" height={510} />
-            </div>
-          )}
+          {
+            // loadingBookings ? (
+            //   <div className="h-77.5 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800" />
+            // ) : 
+            (
+              <div className="overflow-hidden">
+                <Chart options={options} series={chartData.series} type="area" height={510} />
+              </div>
+            )}
         </div>
       </div>
     </div>

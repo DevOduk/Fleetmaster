@@ -12,6 +12,7 @@ import type { ApexOptions } from "apexcharts";
 import { CircularProgress } from "@mui/material";
 import FeatureError from "../loading/FeatureError";
 import VpnLockOutlinedIcon from "@mui/icons-material/VpnLockOutlined";
+import { useAdminUsers } from "@/context/AdminUsersContext";
 
 
 type Expense = {
@@ -22,11 +23,10 @@ type Expense = {
 
 const Expenses: React.FC = () => {
   const { profile } = useUser();
-  const [loading, setLoading] = useState(true);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
   const currency = profile?.fleetmaster_tenants?.currency || "USD";
   const plan = profile?.fleetmaster_tenants?.subscription_plan;
   const [isDark, setIsDark] = useState(false);
+  const { expenses } = useAdminUsers();
 
   // Theme observer for dark mode sync
   useEffect(() => {
@@ -120,20 +120,6 @@ const Expenses: React.FC = () => {
     },
   };
 
-  useEffect(() => {
-    if (!profile?.tenant_id) return;
-    setLoading(true);
-
-    const fetchPayments = async () => {
-      const res = await fetchExpensesForAdmin(profile?.tenant_id);
-
-      if (res.success) {
-        setExpenses(res.data);
-      }
-      setLoading(false);
-    };
-    fetchPayments();
-  }, [profile]);
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -186,7 +172,7 @@ const Expenses: React.FC = () => {
 
   if (plan !== 'Pro' && plan !== 'Expert') {
     return (
-      <FeatureError  title="FEATURE NOT AVAILABLE"  status="403" icon={<VpnLockOutlinedIcon fontSize="large" className="text-3xl" />} description={`Expense tracking is not available in this plan (${plan}). Upgrade to Pro or Expert to access detailed expense analytics and reports.`} />
+      <FeatureError title="FEATURE NOT AVAILABLE" status="403" icon={<VpnLockOutlinedIcon fontSize="large" className="text-3xl" />} description={`Expense tracking is not available in this plan (${plan}). Upgrade to Pro or Expert to access detailed expense analytics and reports.`} />
     )
   };
 
@@ -239,24 +225,26 @@ const Expenses: React.FC = () => {
         id="chart"
         className="flex min-h-7 items-center justify-center rounded-2xl border p-3 py-5 dark:border-gray-500"
       >
-        {loading ? (
-          <div className="flex h-75 items-center justify-center text-gray-600">
-            <CircularProgress color="primary" size={"1.5rem"} />
-          </div>
-        ) : aggregatedData.series.length > 0 ? (
-          <ReactApexChart
-            key={JSON.stringify(aggregatedData.series)} // Force re-render only when data loads
-            options={options}
-            series={aggregatedData.series}
-            type="donut"
-            width={420}
-            className="border-0"
-          />
-        ) : (
-          <div className="flex h-75 items-center justify-center text-gray-600">
-            No expenses found for this month
-          </div>
-        )}
+        {
+          // loading ? (
+          //   <div className="flex h-75 items-center justify-center text-gray-600">
+          //     <CircularProgress color="primary" size={"1.5rem"} />
+          //   </div>
+          // ) : 
+          aggregatedData.series.length > 0 ? (
+            <ReactApexChart
+              key={JSON.stringify(aggregatedData.series)} // Force re-render only when data loads
+              options={options}
+              series={aggregatedData.series}
+              type="donut"
+              width={420}
+              className="border-0"
+            />
+          ) : (
+            <div className="flex h-75 items-center justify-center text-gray-600">
+              No expenses found for this month
+            </div>
+          )}
       </div>
 
       <div className="flex items-start md:items-center gap-7 justify-between py-3 flex-col md:flex-row">
@@ -276,7 +264,8 @@ const Expenses: React.FC = () => {
           </button>
         </Link>
       </div>
-      <ExpensesTable expenses={expenses} loading={loading} />
+      
+      <ExpensesTable expenses={expenses} loading={false} />
     </div>
   );
 };

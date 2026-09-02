@@ -11,6 +11,7 @@ import { Booking } from "@/data/mockFleetData";
 import { useFleet } from "./FleetContext";
 import { fetchBookingsForTenant } from "@/app/actions/bookings";
 import { useTenant } from "./TenantContext";
+import { useAdminUsers } from "./AdminUsersContext";
 
 interface BookingContextType {
   bookings: any[];
@@ -23,8 +24,9 @@ interface BookingContextType {
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
 export const BookingProvider = ({ children }: { children: ReactNode }) => {
+  const { bookings: initialBookings } = useAdminUsers();
   const { vehicles } = useFleet();
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [loading, setLoading] = useState(true);
   const { tenant } = useTenant();
 

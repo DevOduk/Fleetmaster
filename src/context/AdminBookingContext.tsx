@@ -10,6 +10,7 @@ import React, {
 import { useAdminFleet } from "./AdminFleetContext";
 import { useUser } from "./UserContext";
 import { fetchBookingsForTenant } from "@/app/actions/bookings";
+import { useAdminUsers } from "./AdminUsersContext";
 
 interface AdminBookingContextType {
   bookings: any[];
@@ -25,9 +26,10 @@ const AdminBookingContext = createContext<AdminBookingContextType | undefined>(
 );
 
 export const AdminBookingProvider = ({ children }: { children: ReactNode }) => {
+  const { bookings: initialBookings } = useAdminUsers();
   const { profile: adminProfile } = useUser();
   const { vehicles } = useAdminFleet();
-  const [bookings, setBookings] = useState([]);
+  const [bookings, setBookings] = useState(initialBookings);
   const [loading, setLoading] = useState(true);
 
   async function fetchAllBookings() {

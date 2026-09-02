@@ -26,11 +26,9 @@ export const formatedValue = (value: number) => {
 
 export default function MonthlyTarget({
   bookings,
-  loadingBookings,
   target,
 }: {
   bookings: any;
-  loadingBookings: boolean;
   target: number;
 }) {
   const now = new Date();

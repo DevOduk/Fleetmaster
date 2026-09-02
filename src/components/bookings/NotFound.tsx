@@ -22,7 +22,7 @@ const BookingNotFound = () => {
       <h4 className="modal-title text-theme-xl mt-3 mb-2 font-semibold text-gray-800 lg:text-xl dark:text-white/90">
         Booking Not Found!
       </h4>
-      <p className="mb-8 text-sm max-w-2xl text-gray-500 dark:text-gray-400">
+      <p className="mb-8 text-left text-sm max-w-2xl text-gray-500 dark:text-gray-400">
         The booking you are looking for doesn&apos;t exist or has been
         removed/deleted. Please check the ID and try again. If this error persits, contact <Link className="text-blue-500 underline" href={'/support'}>support</Link> with the booking id.
       </p>

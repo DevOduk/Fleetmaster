@@ -11,11 +11,9 @@ import Link from "next/link";
 import { formatedTimestamp } from "../company-profile/ExpiryBanner";
 
 export default function RecentOrders({
-  bookings,
-  loading,
+  bookings
 }: {
-  bookings: any;
-  loading: boolean;
+  bookings: any[];
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-3 sm:px-6 dark:border-gray-800 dark:bg-white/3">
@@ -76,17 +74,19 @@ export default function RecentOrders({
             {/* Table Body */}
 
             <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {loading ? (
-                <>
-                  {[...Array(4)].map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="w-full py-2" colSpan={4}>
-                        <div className="mb-2 h-12 animate-pulse rounded bg-gray-300 text-center dark:bg-gray-600"></div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </>
-              ) : bookings.length > 0 ? (
+              {
+              // loading ? (
+              //   <>
+              //     {[...Array(4)].map((_, i) => (
+              //       <TableRow key={i}>
+              //         <TableCell className="w-full py-2" colSpan={4}>
+              //           <div className="mb-2 h-12 animate-pulse rounded bg-gray-300 text-center dark:bg-gray-600"></div>
+              //         </TableCell>
+              //       </TableRow>
+              //     ))}
+              //   </>
+              // ) : 
+              bookings.length > 0 ? (
                 bookings?.slice(0, 10).map((product, index) => (
                   <TableRow key={index} className="">
                     <TableCell className="py-3">

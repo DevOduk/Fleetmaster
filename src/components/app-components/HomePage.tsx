@@ -17,15 +17,12 @@ import { fetchClientsForTenant } from "@/app/actions/client";
 import DemographicCard from "./DemographicCard";
 import UpcomingMaintenance from "../ecommerce/UpcomingMaintenance";
 import TopUsers from "../ecommerce/TopUsers";
+import { useAdminUsers } from "@/context/AdminUsersContext";
 
 function HomePage() {
   const { profile } = useUser();
-  const { bookings, loading: LoadingBookings } = useAdminBooking();
   const { vehicles, loading: loadingVehicles } = useAdminFleet();
-  const [loading, setLoading] = useState(true);
-  const [loadingClients, setLoadingClients] = useState(true);
-  const [clients, setClients] = useState([]);
-  const [expenses, setExpenses] = useState([]);
+  const { clients, expenses, bookings } = useAdminUsers();
 
   const targetMonthly = useMemo(() => {
     if (profile) {
@@ -33,43 +30,6 @@ function HomePage() {
     }
   }, [profile]);
 
-  useEffect(() => {
-    if (!profile) return;
-
-    async function fetchAllBookings() {
-      try {
-        const response = await fetchExpensesForAdmin(profile?.tenant_id);
-
-        if (response.success) {
-          setExpenses(response.data);
-        } else {
-          console.error("API Error fetching expenses:", response.error);
-        }
-      } catch (err) {
-        console.error("Network connection failure:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    async function fetchAllClients() {
-      try {
-        const res = await fetchClientsForTenant(profile?.tenant_id);
-
-        if (res.success) {
-          setClients(res.data);
-        } else {
-          console.error("API Error fetching clients:", res.error);
-        }
-      } catch (err) {
-        console.error("Network connection failure:", err);
-      } finally {
-        setLoadingClients(false);
-      }
-    }
-
-    fetchAllClients();
-    fetchAllBookings();
-  }, [profile]);
 
   return (
     <div>
@@ -118,18 +78,16 @@ function HomePage() {
             <div className="col-span-12">
               <EcommerceMetrics
                 bookings={bookings}
-                loading={LoadingBookings || loading}
                 vehicles={vehicles}
                 loadingVehicles={loadingVehicles}
               />
             </div>
 
             <div className="col-span-12 xl:col-span-7">
-              <MonthlySalesChart bookings={bookings} expenses={expenses} loading={LoadingBookings || loading} />
+              <MonthlySalesChart bookings={bookings} expenses={expenses}  />
 
               <TopUsers
                 clients={clients}
-                loading={loadingClients}
               />
             </div>
 
@@ -138,7 +96,6 @@ function HomePage() {
 
               <MonthlyTarget
                 bookings={bookings}
-                loadingBookings={LoadingBookings || loading}
                 target={targetMonthly}
               />
             </div>
@@ -146,7 +103,6 @@ function HomePage() {
             <div className="col-span-12">
               <StatisticsChart
                 bookings={bookings}
-                loadingBookings={LoadingBookings || loading}
                 target={targetMonthly}
                 expenses={expenses}
               />
@@ -159,7 +115,6 @@ function HomePage() {
             <div className="col-span-12 xl:col-span-7">
               <RecentOrders
                 bookings={bookings}
-                loading={LoadingBookings || loading}
               />
             </div>
           </>

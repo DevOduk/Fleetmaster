@@ -33,7 +33,6 @@ const calendarsEvents = {
  */
 
 export default function ViewBooking({ BookingID }: { BookingID: number }) {
-  document.title = "View Booking " + BookingID;
   const { loading, profile } = useUser();
   const [eventStartDate, setEventStartDate] = useState(
     new Date().toISOString().split("T")[0],

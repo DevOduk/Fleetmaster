@@ -48,12 +48,10 @@ export const EcommerceMetrics = ({
   vehicles,
   loadingVehicles,
   bookings,
-  loading,
 }: {
   vehicles: any;
   loadingVehicles: boolean;
   bookings: any;
-  loading: boolean;
 }) => {
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -190,7 +188,6 @@ export const EcommerceMetrics = ({
         <AttachMoneyOutlinedIcon className="text-gray-500 dark:text-gray-400" />
       ),
       badge: formatChange(totalRevenueChange),
-      isReady: !loading,
     },
     {
       id: "vehicles",
@@ -201,7 +198,6 @@ export const EcommerceMetrics = ({
         <DirectionsCarFilledOutlinedIcon className="text-gray-500 dark:text-gray-400" />
       ),
       badge: formatChange(vehiclesChange),
-      isReady: !loadingVehicles,
     },
     {
       id: "bookings",
@@ -212,7 +208,6 @@ export const EcommerceMetrics = ({
         <ScheduleOutlinedIcon className="text-gray-500 dark:text-gray-400" />
       ),
       badge: formatChange(completedPercentageChange),
-      isReady: !loading,
     },
     {
       id: "rate",
@@ -223,14 +218,12 @@ export const EcommerceMetrics = ({
         <TrendingUpOutlinedIcon className="text-gray-500 dark:text-gray-400" />
       ),
       badge: formatChange(rateChange),
-      isReady: !loading && !loadingVehicles,
     },
   ];
 
   return (
     <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2 2xl:grid-cols-4">
       {metrics.map((card, i) =>
-        card.isReady ? (
           <div
             className="space-y-3 rounded-2xl border border-gray-200 bg-white px-5 pt-5 md:p-6 dark:border-gray-800 dark:bg-white/3"
             key={i}
@@ -254,21 +247,6 @@ export const EcommerceMetrics = ({
               {card.description}
             </div>
           </div>
-        ) : (
-          <div
-            className="space-y-3 rounded-2xl border border-gray-200 bg-white px-5 pt-5 md:p-6 dark:border-gray-800 dark:bg-white/3"
-            key={i}
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-700" />
-            <div className="mt-5 flex items-end justify-between">
-              <div>
-                <div className="h-4 w-23 bg-gray-100 dark:bg-white/7" />
-                <div className="mt-4 flex h-8 w-32 items-center justify-center bg-gray-50 dark:bg-gray-700" />
-              </div>
-              <div className="h-5 w-13 rounded-xl bg-gray-700" />
-            </div>
-          </div>
-        ),
       )}
     </div>
   );

@@ -16,15 +16,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Pagination from "./Pagination";
 import { formatedTimestamp } from "../company-profile/ExpiryBanner";
 
-export default function BookingsTable() {
+export default function BookingsTable({ bookings, loading }: { bookings: any[]; loading: boolean; }) {
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams.toString());
   const router = useRouter();
   const pathname = usePathname();
   const urlPage = parseInt(searchParams.get("page") || "1", 10);
-  const { bookings: allBookings, loading } = useAdminBooking();
-
-  const totalResults = allBookings.length;
+  const totalResults = bookings.length;
   const [currentPage, setCurrentPage] = useState<number>(urlPage);
   const itemsPerPage = 10;
   const totalPages = Math.max(1, Math.ceil(totalResults / itemsPerPage));
@@ -135,8 +133,8 @@ export default function BookingsTable() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : allBookings.slice(startIndex - 1, endIndex).length > 0 ? (
-                  allBookings
+                ) : bookings.slice(startIndex - 1, endIndex).length > 0 ? (
+                  bookings
                     .slice(startIndex - 1, endIndex)
                     .map((booking: any, i) => (
                       <TableRow key={booking.id}>
@@ -174,10 +172,10 @@ export default function BookingsTable() {
                           +{booking.renter_phone}
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {formatedTimestamp(booking.rental_start+'T'+booking.rental_time)} | {booking.rental_days} Days
+                          {formatedTimestamp(booking.rental_start + 'T' + booking.rental_time)} | {booking.rental_days} Days
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {formatedTimestamp(booking.rental_end+'T'+booking.rental_time)}
+                          {formatedTimestamp(booking.rental_end + 'T' + booking.rental_time)}
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
                           Ksh.{" "}
