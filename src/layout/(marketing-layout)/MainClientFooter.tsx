@@ -66,7 +66,7 @@ const MainClientFooter: React.FC = () => {
                 <Link
                   target="_blank"
                   href="https://github.com/DevOduk"
-                  className="mt-1 inline-block text-sm font-semibold text-brand-500 transition-colors hover:text-blue-600"
+                  className="mt-1 inline-block text-xs font-semibold text-brand-500 transition-colors hover:text-blue-600"
                 >
                   DevOduk Developers
                 </Link>
