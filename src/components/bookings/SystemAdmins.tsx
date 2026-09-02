@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import {
   Table,
@@ -20,6 +21,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getTenantAdmins } from "@/app/actions/admin";
 import { subscriptionPlans } from "@/data/globalExports";
 import { formatedTimestamp } from "../company-profile/ExpiryBanner";
+import { useAdminUsers } from "@/context/AdminUsersContext";
 
 // 1. Explicitly type your User structure
 export interface AdminUser {
@@ -61,8 +63,7 @@ export const getVehiclesByPlan = (plan: string) => {
 
 // 2. Fixed the parameter mapping here
 const SystemAdmins = () => {
-  const [initialUsers, setIinitialUsers] = useState<AdminUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const isDarkMode =
     typeof window !== "undefined" &&
     document.documentElement.classList.contains("dark");
@@ -71,19 +72,8 @@ const SystemAdmins = () => {
   const pathname = usePathname();
   const { profile } = useUser();
 
-  useEffect(() => {
-    if (!profile?.tenant_id) return;
+  const { admins: initialUsers } = useAdminUsers();
 
-    const getAdmins = async () => {
-      const res = await getTenantAdmins(profile?.tenant_id);
-      if (res.success) {
-        setIinitialUsers(res.data);
-      }
-      setLoading(false);
-    };
-
-    getAdmins();
-  }, [profile]);
 
   // Apply dark mode styles to leaflet
   useEffect(() => {
@@ -366,19 +356,17 @@ const SystemAdmins = () => {
         </div>
 
         {/* Pagination Controls Visibility Rule */}
-        {!loading && (
-          <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
-            <span className="text-gray-800 dark:text-white text-sm">
-              Showing {startIndex} to {endIndex} of {initialUsers.length}{" "}
-              results
-            </span>
-            <Pagination
-              onPageChange={handlePageChange}
-              currentPage={activePage}
-              totalPages={totalPages}
-            />
-          </div>
-        )}
+        <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
+          <span className="text-gray-800 dark:text-white text-sm">
+            Showing {startIndex} to {endIndex} of {initialUsers.length}{" "}
+            results
+          </span>
+          <Pagination
+            onPageChange={handlePageChange}
+            currentPage={activePage}
+            totalPages={totalPages}
+          />
+        </div>
       </div>
     </div>
   );

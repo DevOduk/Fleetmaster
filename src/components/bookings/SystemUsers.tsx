@@ -20,6 +20,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { subscriptionPlans } from "@/data/globalExports";
 import { fetchClientsForTenant } from "@/app/actions/client";
 import { formatedTimestamp } from "../company-profile/ExpiryBanner";
+import { useAdminUsers } from "@/context/AdminUsersContext";
 
 // 1. Explicitly type your User structure
 export interface AdminUser {
@@ -57,7 +58,6 @@ export const getVehiclesByPlan = (plan: string) => {
 
 // 2. Fixed the parameter mapping here
 const SystemUsers = () => {
-  const [initialUsers, setIinitialUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const isDarkMode =
     typeof window !== "undefined" &&
@@ -66,20 +66,8 @@ const SystemUsers = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { profile } = useUser();
+  const { clients: initialUsers } = useAdminUsers();
 
-  useEffect(() => {
-    if (!profile?.tenant_id) return;
-
-    const getAdmins = async () => {
-      const res = await fetchClientsForTenant(profile?.tenant_id);
-      if (res.success) {
-        setIinitialUsers(res.data);
-      }
-      setLoading(false);
-    };
-
-    getAdmins();
-  }, [profile]);
 
   // Apply dark mode styles to leaflet
   useEffect(() => {
@@ -262,7 +250,7 @@ const SystemUsers = () => {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className={`text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap ${user.bio ? 'text-gray-500 dark:text-gray-400': 'text-gray-400 dark:text-gray-500'}`}>
+                          <TableCell className={`text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap ${user.bio ? 'text-gray-500 dark:text-gray-400' : 'text-gray-400 dark:text-gray-500'}`}>
                             {user.bio || "[ No bio available ]"}
                           </TableCell>
                           <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
