@@ -27,7 +27,7 @@ export async function generateMetadata({
 export default async function ShopPage({
     params,
 }: {
-    params: { ProductID?: string };
+    params: Promise<{ ProductID: string }>;
 }) {
     const pages = [
         { label: "Home", href: "/" },
@@ -36,7 +36,7 @@ export default async function ShopPage({
     const allParams = await params;
     const productId = allParams.ProductID;
 
-    const ProductDetails: Product = Products.find(p => p.id === productId);
+    const ProductDetails: Product | undefined = Products.find(p => p.id === productId);
 
     if (!ProductDetails) {
         return (<VehicleNotFound name="Product" />)
