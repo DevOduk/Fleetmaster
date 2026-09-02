@@ -18,7 +18,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Helper function to build consistent Redis cache keys matching your GET route
 function getUserCacheKey(id: string, role: string = "client") {
   const normalizedType =
-    role === "admin" || role === "client" ? role : "client";
+    role === "Client" ? "client" : 'admin';
   return `user:profile:${id}:${normalizedType}`;
 }
 
@@ -86,7 +86,7 @@ export async function createTenantClient(newTenantClient: any) {
     }
 
     // 3. SET Cache immediately upon creation
-    const cacheKey = getUserCacheKey(data.id, data.role || "client");
+    const cacheKey = getUserCacheKey(data.id, data.role);
     await redis
       .set(cacheKey, JSON.stringify(data))
       .catch((e) => console.error("Redis set failure on create:", e));
@@ -118,15 +118,10 @@ export async function createTenantClient(newTenantClient: any) {
   }
 }
 
-export async function updateProfileDetails({
-  id,
-  profileDetails,
-  role = "client",
-}: {
-  id: string;
-  profileDetails: any;
-  role?: string;
-}) {
+export async function updateProfileDetails(
+  id: string,
+  profileDetails: any,
+) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_clients")
@@ -137,7 +132,7 @@ export async function updateProfileDetails({
 
   if (!error && data) {
     // UPDATE/SET Cache with fresh data
-    const cacheKey = getUserCacheKey(id, role);
+    const cacheKey = getUserCacheKey(id, "client");
     await redis
       .set(cacheKey, JSON.stringify(data))
       .catch((e) => console.error("Redis cache update failure:", e));
@@ -149,9 +144,11 @@ export async function updateProfileDetails({
 export async function updatePassword(
   id: string,
   profileDetails: any,
-  role = "client",
 ) {
   try {
+    if (profileDetails.role !== "Client") {
+      return { success: false, error: { message: "Access denied.", code: 403, status: "ACCESS_DENIED" } };
+    }
     if (!id) {
       return { success: false, error: { message: "User ID is required." } };
     }
@@ -170,24 +167,24 @@ export async function updatePassword(
     // 1. Fetch current stored password hash
     const { data: user, error: fetchError } = await supabase
       .from("fleetmaster_clients")
-      .select("password_hash")
+      .select("password")
       .eq("id", id)
       .single();
 
     if (fetchError || !user) {
       return {
         success: false,
-        error: { message: "User account not found." },
+        error: { message: fetchError ? fetchError.message : "User account not found." },
       };
     }
 
     // 2. Verify old password against stored hash
-    const isPasswordValid = await compare(old_password, user.password_hash);
+    const isPasswordValid = await compare(old_password, user.password);
 
     if (!isPasswordValid) {
       return {
         success: false,
-        error: { message: "Incorrect current password." },
+        error: { message: "You have entered an Incorrect password." },
       };
     }
 
@@ -207,7 +204,6 @@ export async function updatePassword(
       .single();
 
     if (updateError) {
-      console.error("Supabase update error (updatePassword):", updateError);
       return {
         success: false,
         error: { message: "Failed to update password. Please try again." },
@@ -215,14 +211,13 @@ export async function updatePassword(
     }
 
     // DELETE Cache so the next request forces a fresh fetch with updated state
-    const cacheKey = getUserCacheKey(id, role);
+    const cacheKey = getUserCacheKey(id, profileDetails.role);
     await redis
       .del(cacheKey)
       .catch((e) => console.error("Redis cache deletion failure:", e));
 
     return { success: true, data, error: null };
   } catch (err: any) {
-    console.error("Unexpected error (updatePassword):", err);
     return {
       success: false,
       error: { message: err.message || "An unexpected error occurred." },

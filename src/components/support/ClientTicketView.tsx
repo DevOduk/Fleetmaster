@@ -7,7 +7,6 @@ import TextArea from "@/components/form/input/TextArea";
 import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
 import { useUser } from "@/context/UserContext";
 import Badge from "@/components/ui/badge/Badge";
-import SecondaryHero from "@/components/marketing-components/SecondaryHero";
 import Alert from "@/components/ui/alert/Alert";
 import Button from "@/components/ui/button/Button";
 

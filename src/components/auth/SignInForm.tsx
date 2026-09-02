@@ -70,7 +70,7 @@ export default function SignInForm({ tenant }: Tenant) {
 
     const result = isTenantManager()
       ? await adminLogin(email, password)
-      : await login(isClient() ? "client" : "admin", email, password, tenant);
+      : await login(isClient() ? "Client" : "admin", email, password, tenant);
 
     if (result.success) {
       if (!isTenantManager() && isClient()) {

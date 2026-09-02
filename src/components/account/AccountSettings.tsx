@@ -21,6 +21,7 @@ import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import Alert from "../ui/alert/Alert";
 import Preferences from "./preferences/Preferences";
+import { updateAdminPassword } from "@/app/actions/admin";
 
 export default function AccountSettings({
   profile,
@@ -57,8 +58,8 @@ export default function AccountSettings({
   const [isPending, startTransition] = useTransition();
   const [cooldown, setCooldown] = useState(0); // shorter for sms
   const [errorMessage, setErrorMessage] = useState("");
-  const isNewEmail = profile?.email !== profileDetails?.email;
   const isAdmin = profile?.role !== "Client";
+  const isSystemAdmin = profile?.role === "System Administrator";
 
   const clauses: any[] = [
     { title: "Accessibility" },
@@ -74,17 +75,59 @@ export default function AccountSettings({
   };
 
   const handlePasswordChange = async () => {
+    if (!profileDetails?.old_password.trim() || !profileDetails?.password.trim()) {
+      showToast("Please fill in all password fields.", "error");
+      setErrorMessage("Please fill in all password fields.");
+      return;
+    }
+    if (profileDetails.old_password === profileDetails?.password) {
+      showToast("New password cannot be the same as the old password.", "error");
+      setErrorMessage("New password cannot be the same as the old password.");
+      return;
+    }
+    if (profileDetails.confirm_password !== profileDetails?.password) {
+      showToast("Passwords do not match.", "error");
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
+
     setIsSaving(true);
-    const res = await updatePassword(profile?.id, profileDetails);
+    let res: { success: boolean, error: { message: string } | null, data?: any } = { success: false, error: { message: "Unknown error" } };
+
+    if (isSystemAdmin) { // user is an admin tenant manager
+      // update admin password
+      showToast("Changing system admin password...");
+
+    } else { // user is a tenant (user or admin)
+      if (isAdmin) {
+        // is admin        
+        showToast("Changing admin password...");
+        res = await updateAdminPassword(profile.id, profileDetails);
+      } else {
+        // is client 
+        showToast("Changing client password...");
+        res = await updatePassword(profile.id, profileDetails);
+      }
+    }
 
     if (res.success) {
       showToast(
         "Your password was changed successfully! You will be logged out in all devices.",
         "success",
       );
-      setProfile(res.data);
+      if (isSystemAdmin) {
+        await fetch("/api/v1/auth/admin/logout", { method: "POST" });
+      } else {
+        await fetch("/api/v1/auth/logout", { method: "POST" });
+      }
+
+      setProfile(null);
+      setIsSaving(false);
+    } else {
+      showToast(res.error.message, "error");
+      setErrorMessage(res.error.message);
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
   // Countdown timer effect for resend cooldown
@@ -248,11 +291,10 @@ export default function AccountSettings({
                         `/profile/account-settings/${clause.title.toLowerCase().replaceAll(" ", "_")}`,
                       );
                     }}
-                    className={`flex w-full items-center justify-between rounded-xl p-3 text-left text-xs font-semibold transition-all ${
-                      isActive
-                        ? "bg-green-800 text-white shadow-sm"
-                        : "text-slate-600 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
-                    }`}
+                    className={`flex w-full items-center justify-between rounded-xl p-3 text-left text-xs font-semibold transition-all ${isActive
+                      ? "bg-green-800 text-white shadow-sm"
+                      : "text-slate-600 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+                      }`}
                   >
                     <div className="flex items-center gap-2.5">
                       {/* <Icon className={`w-4! h-4! ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500"}`} /> */}
@@ -305,7 +347,7 @@ export default function AccountSettings({
                       value: "Authenticator App",
                     },
                   ].map((a, i) => (
-                    <div className="mb-3 flex cursor-pointer gap-2 rounded-lg p-2 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+                    <div key={i} className="mb-3 flex cursor-pointer gap-2 rounded-lg p-2 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
                       {i + 1}.
                       <div>
                         <div className="text-sm">{a.title}</div>
@@ -318,7 +360,7 @@ export default function AccountSettings({
                   <div>Phone</div>
                 </div>
 
-                <div className="mt-3 w-full rounded-xl border border-green-500/50 p-3">
+                <div className="mt-3 w-full rounded-xl border border-error-500/50 p-3">
                   <p className="text-muted mb-3 p-4 text-center text-sm text-gray-400">
                     No 2FA Added.
                   </p>
@@ -362,6 +404,9 @@ export default function AccountSettings({
                       placeholder="Enter old password"
                       type="password"
                       label="Old Password"
+                      error={!!errorMessage.includes("Incorrect password") || !!errorMessage.includes("Please fill in all password fields.")}
+                      hint={
+                        (errorMessage.includes('Incorrect password') || errorMessage.includes('Please fill in all password fields.')) ? errorMessage : "Enter your current password to authorize the change."}
                       value={profileDetails?.old_password}
                       onChange={(v) => handleInputChange("old_password", v)}
                     />
@@ -369,6 +414,9 @@ export default function AccountSettings({
                       placeholder="Enter password"
                       type="password"
                       label="New Password"
+                      error={!!errorMessage.includes("Passwords do not match") || !!errorMessage.includes("New password cannot be the same as the old password.") || !!errorMessage.includes("Please fill in all password fields.")}
+                      hint={
+                        (errorMessage.includes('Passwords do not match') || errorMessage.includes('New password cannot be the same as the old password.') || errorMessage.includes('Please fill in all password fields.')) ? errorMessage : "Enter your new password."}
                       value={profileDetails?.password}
                       onChange={(v) => handleInputChange("password", v)}
                     />
@@ -376,6 +424,9 @@ export default function AccountSettings({
                       placeholder="Confirm password"
                       type="password"
                       label="Confirm Password"
+                      error={!!errorMessage.includes("Passwords do not match") || !!errorMessage.includes("New password cannot be the same as the old password.") || !!errorMessage.includes("Please fill in all password fields.")}
+                      hint={
+                        (errorMessage.includes('Passwords do not match') || errorMessage.includes('New password cannot be the same as the old password.') || errorMessage.includes('Please fill in all password fields.')) ? errorMessage : "Confirm your new password."}
                       value={profileDetails?.confirm_password}
                       onChange={(v) => handleInputChange("confirm_password", v)}
                     />

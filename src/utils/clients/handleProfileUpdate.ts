@@ -9,7 +9,7 @@ async function handleProfileUpdate(
 ) {
   setBackDrop(true);
   const { fleetmaster_tenants, ...cleanProfile } = profileDetails;
-  const res = await updateProfileDetails({ id, profileDetails: cleanProfile });
+  const res = await updateProfileDetails( id, cleanProfile );
 
   if (res.success) {
     showToast("Profile was updated successfully!", "success");

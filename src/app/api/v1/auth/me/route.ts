@@ -50,9 +50,7 @@ export async function GET(request: Request) {
 
     const targetAccountType = decoded.accountType || decoded.role;
     const normalizedType =
-      targetAccountType === "admin" || targetAccountType === "client"
-        ? targetAccountType
-        : "client";
+      targetAccountType === "Client" ? "client" : "admin";
     const tableName =
       normalizedType === "admin"
         ? "fleetmaster_admins"
@@ -82,7 +80,7 @@ export async function GET(request: Request) {
     if (!userAccount) {
       const supabase = createPublicClient();
 
-      const profileFields = `id, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob${normalizedType === "client" ? ", national_id_number, dl_number, verification_error, submitted_document, onboarded" : ""
+      const profileFields = `id, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, notify, newsletter, popup, dob${normalizedType === "client" ? ", national_id_number, dl_number, verification_error, submitted_document, onboarded" : ""
         }, fleetmaster_tenants(*)`;
 
       const queryBuilder = decoded.tenant_id

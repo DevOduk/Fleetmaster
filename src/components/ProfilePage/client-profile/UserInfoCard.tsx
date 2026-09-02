@@ -1,19 +1,12 @@
 "use client";
-import React from "react";
-import { useModal } from "../../../hooks/useModal";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 
 export default function UserInfoCard() {
-  const { isOpen, openModal, closeModal } = useModal();
   const { profile } = useUser();
 
-  const handleSave = () => {
-    // Handle save logic here
-    closeModal();
-  };
   return (
     <div className="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
       <div className="flex items-center justify-between">

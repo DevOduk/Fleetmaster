@@ -65,7 +65,7 @@ const modalStyle = {
 const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
   const searchParams = useSearchParams();
   const { vehicles, loading } = useFleet();
-  const { profile } = useUser();
+  const { profile, reloadNotifications } = useUser();
   const { tenant } = useTenant();
   const { showToast } = useToast();
   const [mpesaNumber, setMpesaNumber] = useState((profile?.phone) || "");
@@ -252,7 +252,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
         showToast("Checking rental vehicle availability...", "info");
 
         const availabilityCheckRes = await fetch(
-          "/api/bookings/check-overlap",
+          "/api/v1/bookings/check-overlap",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -285,7 +285,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
           return;
         }
 
-        const res = await fetch("/api/mpesa/stk", {
+        const res = await fetch("/api/v1/mpesa/stk", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -295,7 +295,6 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
         });
 
         const data = await res.json();
-        console.log("Daraja STK Response: ", data);
 
         if (!res.ok || data.ResponseCode !== "0") {
           throw new Error(
@@ -322,7 +321,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
           if (hasHandledCompletion) return;
 
           try {
-            const statusRes = await fetch("/api/mpesa/status", {
+            const statusRes = await fetch("/api/v1/mpesa/status", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ checkoutRequestID: targetCheckoutId }),
@@ -388,7 +387,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                   "Confirmed! Your booking has been processed successfully.",
               };
 
-              const bookingRes = await createNewBooking(
+              await createNewBooking(
                 {
                   ...newBooking,
                   booking_status: "Booked",
@@ -397,10 +396,11 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                 tenant,
                 profile?.first_name
               );
-              const dbRes = await createPayment(newPayment);
+              await createPayment(newPayment);
 
-              console.log("Database payment update response:", dbRes);
-              console.log("Database booking insert response:", bookingRes);
+              setTimeout(() => {
+                reloadNotifications(); // Wait a second then Refresh notifications after successful booking
+              }, 1000);
             } else {
               const failReason =
                 statusData.ResultDesc || "Transaction was canceled or failed.";
@@ -421,7 +421,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                 message: failReason,
               };
 
-              const bookingRes = await createNewBooking({
+              await createNewBooking({
                 ...newBooking,
                 booking_status: "Reserved",
               },
@@ -429,10 +429,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                 tenant,
                 profile?.first_name
               );
-              const dbRes = await createPayment(newPayment);
-
-              console.log("Database payment update response:", dbRes);
-              console.log("Database booking insert response:", bookingRes);
+              await createPayment(newPayment);
             }
           } catch (pollErr) {
             console.error(

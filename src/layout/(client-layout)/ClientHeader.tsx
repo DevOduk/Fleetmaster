@@ -13,20 +13,18 @@ import { useTenant } from "@/context/TenantContext";
 import { useFleet } from "@/context/FleetContext";
 import { fetchUserTickets } from "@/app/actions/support";
 import SearchModal from "@/components/header/SearchModal";
-import { getNotifications } from "@/app/actions/notifications";
 import { fetchBookingsForClient } from "@/app/actions/bookings";
 import { userVerified } from "@/utils/clients/checkverification";
 
 export default function ClientHeader() {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { profile, logout, loading: authLoading } = useUser();
+  const { profile, logout, loading: authLoading, notifications, setNotifications } = useUser();
   const { vehicles } = useFleet();
   const { tenant, loading: tenantLoading } = useTenant();
   const [cachedTickets, setCachedTickets] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [cachedBookings, setCachedBookings] = useState([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
 
   const navLinks = [
     {
@@ -114,19 +112,7 @@ export default function ClientHeader() {
       setCachedBookings(bookingsRes?.data || []);
     };
 
-    const fetchNotifications = async () => {
-      const notificationsRes = await getNotifications(profile.id);
-
-      if (notificationsRes.error) {
-        console.error("Error fetching notifications:", notificationsRes.error);
-        return;
-      }
-
-      setNotifications(notificationsRes.data || []);
-    };
-
     loadSearchData();
-    fetchNotifications();
   }, [profile?.id]);
 
   useEffect(() => {

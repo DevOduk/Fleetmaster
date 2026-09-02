@@ -8,6 +8,7 @@ import {
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 import Link from "next/link";
+import { formatedTimestamp } from "../company-profile/ExpiryBanner";
 
 export default function RecentOrders({
   bookings,
@@ -115,7 +116,7 @@ export default function RecentOrders({
                       {product.total?.toLocaleString()} Ksh.
                     </TableCell>
                     <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
-                      {new Date(product.created_at)?.toLocaleDateString()}
+                      {formatedTimestamp(new Date(product.created_at).toISOString())}
                     </TableCell>
                     <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
                       <Badge

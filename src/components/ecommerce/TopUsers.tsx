@@ -33,7 +33,7 @@ export default function TopUsers({
   loading: boolean;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-3 sm:px-6 dark:border-gray-800 dark:bg-white/3">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-3 sm:px-6 dark:border-gray-800 dark:bg-white/3 min-h-85">
       <div className="mb-4 flex gap-2 justify-between items-center">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">

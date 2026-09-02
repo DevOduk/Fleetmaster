@@ -37,7 +37,7 @@ export default function page() {
     <div>
       <PageBreadcrumb pageTitle="Map" />
 
-      <FeatureError icon={<VpnLockOutlinedIcon fontSize="large" className="text-3xl" />} description="Live maps integration is coming soon. With real-time vehicle traccking and telematics ensring you car is safe, secure and running well. Keep on the watch!" />
+      <FeatureError icon={<VpnLockOutlinedIcon fontSize="large" className="text-3xl" />} description="Live maps integration is coming soon. With real-time vehicle tracking and telematics ensring you car is safe, secure and running well. Keep on the watch!" />
       {/* <Map /> */}
     </div>
   );

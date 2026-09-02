@@ -135,8 +135,8 @@ export default function NotificationDropdown({
         isOpen={isOpen}
         onClose={closeDropdown}
         className={`shadow-theme-lg dark:bg-gray-dark fixed inset-0 z-100! flex h-full w-full flex-col rounded-none border border-gray-200 bg-white p-3 dark:border-gray-300 ${viewAll
-            ? "sm:inset-auto sm:top-4 sm:right-4 sm:bottom-4 sm:h-[calc(100vh-2rem)] sm:w-100 sm:rounded-2xl"
-            : "sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:h-auto sm:max-h-135 sm:w-100 sm:rounded-2xl"
+          ? "sm:inset-auto sm:top-4 sm:right-4 sm:bottom-4 sm:h-[calc(100vh-2rem)] sm:w-100 sm:rounded-2xl"
+          : "sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:h-auto sm:max-h-135 sm:w-100 sm:rounded-2xl"
           } `}
       >
         {/* Fixed Header */}
@@ -217,55 +217,66 @@ export default function NotificationDropdown({
               </div>
             </div>
           ) : displayedNotifications.length > 0 ? (
-            displayedNotifications.map((_notification, index) => (
-              <li key={index} className="mb-2 last:mb-0">
-                <DropdownItem
-                  onItemClick={() => {
-                    setOpenNotification(_notification);
+            <>
+              {
 
-                    markSeen(_notification.id);
-                  }}
-                  className={`flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5 ${_notification.seen ? "" : "bg-brand-500/10"}`}
-                >
-                  <span className="relative z-1 block h-10 w-full max-w-10 shrink-0 rounded-full">
-                    <Image
-                      width={40}
-                      height={40}
-                      sizes="40px"
-                      src={`/images/user/user-01.jpg`}
-                      alt=""
-                      className="w-full overflow-hidden rounded-full"
-                    />
-                    <span className="bg-success-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
-                  </span>
+                displayedNotifications.map((_notification, index) => (
+                  <li key={index} className="mb-2 last:mb-0">
+                    <DropdownItem
+                      onItemClick={() => {
+                        setOpenNotification(_notification);
 
-                  <span className="block">
-                    <span className="text-theme-sm mb-1.5 block space-x-1 text-gray-500 dark:text-gray-400">
-                      <span className="font-medium text-gray-800 dark:text-white/90">
-                        {_notification.title}
+                        markSeen(_notification.id);
+                      }}
+                      className={`flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5 ${_notification.seen ? "" : "bg-brand-500/10"}`}
+                    >
+                      <span className="relative z-1 block h-10 w-full max-w-10 shrink-0 rounded-full">
+                        <Image
+                          width={40}
+                          height={40}
+                          sizes="40px"
+                          src={`/images/user/user-01.jpg`}
+                          alt=""
+                          className="w-full overflow-hidden rounded-full"
+                        />
+                        <span className="bg-success-500 absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"></span>
                       </span>
-                      <br />
-                      <span className="line-clamp-2 max-w-fit text-xs wrap-break-word">
-                        {_notification.notification
-                          .split("\n")
-                          .map((line, index, array) => (
-                            <React.Fragment key={index}>
-                              {line}
-                              {index < array.length - 1 && <br />}
-                            </React.Fragment>
-                          ))}
-                      </span>
-                    </span>
 
-                    <span className="text-brand-500 dark:text-brand-400 flex items-center gap-2 text-xs">
-                      <span>{_notification.category}</span>
-                      <span className="h-1 w-1 rounded-full bg-gray-400"></span>
-                      <span>{formatTime(_notification.created_at)}</span>
-                    </span>
-                  </span>
-                </DropdownItem>
-              </li>
-            ))
+                      <span className="block">
+                        <span className="text-theme-sm mb-1.5 block space-x-1 text-gray-500 dark:text-gray-400">
+                          <span className="font-medium text-gray-800 dark:text-white/90">
+                            {_notification.title}
+                          </span>
+                          <br />
+                          <span className="line-clamp-2 max-w-fit text-xs wrap-break-word">
+                            {_notification.notification
+                              .split("\n")
+                              .map((line, index, array) => (
+                                <React.Fragment key={index}>
+                                  {line}
+                                  {index < array.length - 1 && <br />}
+                                </React.Fragment>
+                              ))}
+                          </span>
+                        </span>
+
+                        <span className="text-brand-500 dark:text-brand-400 flex items-center gap-2 text-xs">
+                          <span>{_notification.category}</span>
+                          <span className="h-1 w-1 rounded-full bg-gray-400"></span>
+                          <span>{formatTime(_notification.created_at)}</span>
+                        </span>
+                      </span>
+                    </DropdownItem>
+                  </li>
+                ))
+              }
+
+              <div className="flex h-full flex-col items-center justify-center gap-2 py-8 text-center">
+                <span className="text-theme-sm text-gray-500 dark:text-gray-400">
+                  No more notifications.
+                </span>
+              </div>
+            </>
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-2 py-8 text-center">
               <span className="text-theme-sm text-gray-500 dark:text-gray-400">
@@ -285,6 +296,6 @@ export default function NotificationDropdown({
           </button>
         )}
       </Dropdown>
-    </div>
+    </div >
   );
 }

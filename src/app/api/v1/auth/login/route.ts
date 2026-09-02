@@ -120,7 +120,7 @@ export async function POST(request: Request) {
     // 6. SEED REDIS CACHE (Eliminates cold cache miss on subsequent /api/v1/auth/me)
     if (redis) {
       try {
-        const normalizedType = role === "admin" ? "admin" : "client";
+        const normalizedType = role === "Client" ? "client" : "admin";
         const cacheKey = `user:profile:${safeUserAccount.id}:${normalizedType}`;
 
         // Cache user profile as stringified JSON for 15 minutes (900 seconds)

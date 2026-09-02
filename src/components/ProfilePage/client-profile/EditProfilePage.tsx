@@ -87,7 +87,7 @@ function EditProfilePage() {
   const verify = async (file?: File) => {
     if (!file || !profileDetails) return;
 
-    showToast('Your documents have een submitted for review! Standby. This can take upto 24hrs to complete. Meanwhile feel free to browse our vehicles!')
+    showToast('Your documents have been submitted for review! Standby. This can take upto 24hrs to complete. Meanwhile feel free to browse our vehicles!')
 
     await submitAndVerifyDocument(
       {
@@ -101,7 +101,6 @@ function EditProfilePage() {
       },
       file
     );
-
   };
 
 
@@ -488,10 +487,10 @@ function EditProfilePage() {
             </div>
           </div>
           {
-            profile.submitted_document && <Alert variant="success" title="Documents submitted successfully!" message="Your documents have been submitted for review! Standby. This can take upto 24hrs to complete. Meanwhile feel free to browse our vehicles!" /> 
+            profile.submitted_document && <Alert variant="success" title="Documents submitted successfully!" message="Your documents have been submitted for review! Standby. This can take upto 24hrs to complete. Meanwhile feel free to browse our vehicles!" />
           }
           {
-            profile.verification_error && <Alert className='mb-3' variant="error" title="Document verification failed!" message={profile.verification_error} /> 
+            profile.verification_error && <Alert className='mb-3' variant="error" title="Document verification failed!" message={profile.verification_error} />
           }
           <DropzoneComponent
             onChange={(files: File[]) => verify(files[0])}

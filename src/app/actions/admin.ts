@@ -1,12 +1,12 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { hash } from "bcrypt-ts";
 import { Redis } from "@upstash/redis";
 import { retryDuration } from "@/data/globalExports";
 import crypto from "crypto";
 import { Resend } from "resend";
 import { VerifyEmailNotification } from "@/utils/templates/email-templates";
+import { hash, compare } from "bcrypt-ts";
 
 // Initialize Upstash Redis Client
 const redis = new Redis({
@@ -16,6 +16,14 @@ const redis = new Redis({
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_SALT || "12");
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Helper function to build consistent Redis cache keys matching your GET route
+function getUserCacheKey(id: string, role: string = "client") {
+  const normalizedType =
+    role === "Client" ? "client" : 'admin';
+  return `user:profile:${id}:${normalizedType}`;
+}
+
 
 export async function createTenantAdmin(newTenantAdmin: any) {
   try {
@@ -212,4 +220,89 @@ export async function updateProfileDetails({
   }
 
   return { data, error, success: !error };
+}
+
+
+export async function updateAdminPassword(
+  id: string,
+  profileDetails: any,
+) {
+  try {
+    if (profileDetails.role === "Client") {
+      return { success: false, error: { message: "Access denied.", code: 403, status: "ACCESS_DENIED" } };
+    }
+    if (!id) {
+      return { success: false, error: { message: "User ID is required." } };
+    }
+
+    const { old_password, confirm_password, ...restDetails } = profileDetails;
+
+    if (!old_password || !confirm_password) {
+      return {
+        success: false,
+        error: { message: "Both current and new passwords are required." },
+      };
+    }
+
+    const supabase = await createClient();
+
+    // 1. Fetch current stored password hash
+    const { data: user, error: fetchError } = await supabase
+      .from("fleetmaster_admins")
+      .select("password")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !user) {
+      return {
+        success: false,
+        error: { message: fetchError ? fetchError.message : "User account not found." },
+      };
+    }
+
+    // 2. Verify old password against stored hash
+    const isPasswordValid = await compare(old_password, user.password);
+
+    if (!isPasswordValid) {
+      return {
+        success: false,
+        error: { message: "You have entered an Incorrect password." },
+      };
+    }
+
+    // 3. Hash the new password
+    const newPasswordHash = await hash(confirm_password, 10);
+
+    // 4. Update password and profile details safely
+    const { data, error: updateError } = await supabase
+      .from("fleetmaster_admins")
+      .update({
+        ...restDetails,
+        password: newPasswordHash,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (updateError) {
+      return {
+        success: false,
+        error: { message: "Failed to update password. Please try again." },
+      };
+    }
+
+    // DELETE Cache so the next request forces a fresh fetch with updated state
+    const cacheKey = getUserCacheKey(id, profileDetails.role);
+    await redis
+      .del(cacheKey)
+      .catch((e) => console.error("Redis cache deletion failure:", e));
+
+    return { success: true, data, error: null };
+  } catch (err: any) {
+    return {
+      success: false,
+      error: { message: err.message || "An unexpected error occurred." },
+    };
+  }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchTenantDetails, updateTenantDetails } from "@/app/actions/tenant";
+import { deleteTenantYard, fetchTenantDetails, updateTenantDetails } from "@/app/actions/tenant";
 import { useUser } from "@/context/UserContext";
 import { useEffect, useState } from "react";
 import ComponentCard from "../common/ComponentCard";
@@ -172,14 +172,13 @@ export default function EditCompanyInfoCard() {
       (y: any) => y.title !== yard.title,
     );
 
-    const res = await updateTenantDetails(profile.tenant_id, {
-      ...companyFormData
-    });
+    const res = await deleteTenantYard(profile.tenant_id, yard.id);
+
     if (res.success) {
       showToast(`Yard "${yard.title}" deleted successfully.`, "success");
       setCompanyFormData((prev: any) => ({ ...prev, yards: updatedYards }));
     } else {
-      showToast("Failed to delete yard.", "error");
+      showToast(res.error.message || "Failed to delete yard.", "error");
     }
   };
 

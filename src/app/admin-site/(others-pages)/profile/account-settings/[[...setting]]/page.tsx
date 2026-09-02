@@ -12,12 +12,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
   // Fallback to DB query if header data isn't present
   if (tenantName) {
-    title = `Map | ${tenantName}: FleetMaster - Premium Car Rental & Fleet Solutions Software`;
+    title = `Account Settings | ${tenantName}: FleetMaster - Premium Car Rental & Fleet Solutions Software`;
     tenantDescription =
       tenantDescription ||
       `${tenantName} offers top-tier vehicle rentals. Book reliable vehicles across multiple locations easily.`;
   } else {
-    title = `Map | FleetMaster - Premium Car Rental & Fleet Solutions Software`;
+    title = `Account Settings | FleetMaster - Premium Car Rental & Fleet Solutions Software`;
   }
 
   return {

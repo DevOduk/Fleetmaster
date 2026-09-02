@@ -1,26 +1,25 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import Select from "../../form/Select";
-import {
-  Snackbar,
-  Alert,
-  ToggleButton,
-  ToggleButtonGroup,
-  Box,
-  MenuItem,
-  TextField,
-  CircularProgress,
-} from "@mui/material";
 import Fade from "@mui/material/Fade";
 import { TransitionProps } from "@mui/material/transitions";
-import { toast } from "sonner";
-import TaskAltIcon from "@mui/icons-material/TaskAlt";
-import { useSettings } from "@/context/SettingsContext";
+
+import {
+  Alert,
+  Snackbar,
+} from "@mui/material";
 import { useTheme } from "@/context/ThemeContext";
 import Checkbox from "../../form/input/Checkbox";
 import { languages } from "@/data/globalExports";
+import { useToast } from "@/context/ToastContext";
+import handleProfileUpdate from "@/utils/clients/handleProfileUpdate";
+import handleAdminProfileUpdate from "@/utils/admins/handleProfileUpdate";
+import { Avatar, Backdrop, CircularProgress } from "@mui/material";
+
+
 
 export default function Preferences(
   { profile, loading }: { profile?: any; loading?: boolean } = {
@@ -28,20 +27,18 @@ export default function Preferences(
     loading: false,
   },
 ) {
-  const [formData, setFormData] = useState<any>(null);
+  const [newProfile, setNewProfile] = useState<any>(profile || null);
   const [isSaving, setIsSaving] = useState(false);
-  const { position: preferredPopupPosition, setPosition } = useSettings();
+  const [open, setIsOpen] = useState(false);
+  const { showToast, position, setPosition } = useToast();
+  const [preferredPopupPosition, setPreferredPopupPosition] = useState<['top' | 'bottom', 'left' | 'center' | 'right']>(position);
 
   useEffect(() => {
     if (!profile || loading) return;
-    setFormData(profile);
+    setNewProfile(profile);
   }, [profile]);
 
-  // States for the popup simulator
-  const [vertical, setVertical] = useState<"top" | "bottom">("top");
-  const [horizontal, setHorizontal] = useState<"left" | "center" | "right">(
-    "right",
-  );
+
   const [size, setSize] = useState<"small" | "medium" | "large">("medium");
   const { theme, setUserTheme } = useTheme();
 
@@ -66,17 +63,6 @@ export default function Preferences(
     Transition: Fade,
   });
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-    }));
-  };
-
   const handleClose = () => {
     setState({
       ...state,
@@ -84,16 +70,42 @@ export default function Preferences(
     });
   };
   const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    } finally {
-      setIsSaving(false);
-    }
+      if (profile.role === 'Client') {
+        handleProfileUpdate(profile.id, newProfile, setIsSaving, showToast, setNewProfile);
+      } else {
+        handleAdminProfileUpdate(profile.id, newProfile, setIsSaving, showToast, setNewProfile);
+      }
   };
+
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
+      <Backdrop
+        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+        open={isSaving}
+        onClick={() => null}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
+
+      <Snackbar
+        open={open}
+        autoHideDuration={3000}
+        onClose={() => setIsOpen(false)}
+        anchorOrigin={{ vertical: preferredPopupPosition[0], horizontal: preferredPopupPosition[1] }}
+        sx={{ zIndex: 100000 }}
+      >
+        <Alert
+          onClose={() => setIsOpen(false)}
+          severity={'success'}
+          variant="filled"
+          sx={{ width: "100%", borderRadius: "8px", fontWeight: 500 }}
+        >
+          This is how your toast notifications will appear!
+        </Alert>
+      </Snackbar>
+
       {/* Preferences Section */}
       <div className="no-scrollbar relative w-full overflow-y-auto rounded-3xl bg-white p-4 lg:p-8 dark:bg-gray-900">
         <h3 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">
@@ -106,43 +118,16 @@ export default function Preferences(
               <Label className="mb-3" htmlFor="language">
                 Language
               </Label>
-              {/* <p className="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">
-                {formData.language}
-              </p> */}
               <Select
                 options={languages}
-                defaultValue={formData?.language}
+                defaultValue={newProfile?.language}
                 placeholder="Select an option"
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, language: e }))
+                  setNewProfile((prev) => ({ ...prev, language: e }))
                 }
                 className="dark:bg-dark-900"
               />
             </div>
-            {/* <div>
-              <Label className="mb-3" htmlFor="timezone">Timezone</Label>
-              <Select
-                options={[
-                  // Operations Default
-                  { value: "Africa/Nairobi", label: "Nairobi (EAT - UTC+3)" },
-
-                  // Global/Common Timezones
-                  { value: "UTC", label: "Coordinated Universal Time (UTC)" },
-                  { value: "Europe/London", label: "London (GMT/BST)" },
-                  { value: "America/New_York", label: "New York (EST/EDT)" },
-                  { value: "America/Chicago", label: "Chicago (CST/CDT)" },
-                  { value: "America/Los_Angeles", label: "Los Angeles (PST/PDT)" },
-                  { value: "Europe/Paris", label: "Paris (CET/CEST)" },
-                  { value: "Asia/Dubai", label: "Dubai (GST - UTC+4)" },
-                  { value: "Asia/Singapore", label: "Singapore (SGT - UTC+8)" },
-                  { value: "Australia/Sydney", label: "Sydney (AEST/AEDT)" },
-                ]}
-                defaultValue={formData.timezone || "Africa/Nairobi"}
-                placeholder="Select a timezone"
-                onChange={(e) => setFormData((prev) => ({ ...prev, timezone: e }))}
-                className="dark:bg-dark-900"
-              />
-            </div> */}
 
             <div>
               <Label className="mb-3" htmlFor="theme">
@@ -182,53 +167,36 @@ export default function Preferences(
 
           <div className="grid grid-cols-2 gap-3 py-4 sm:grid-cols-3 lg:grid-cols-6">
             {[
-              "top-right",
               "top-left",
-              "bottom-right",
-              "bottom-left",
               "top-center",
+              "top-right",
+              "bottom-right",
               "bottom-center",
+              "bottom-left",
             ].map((pos) => (
               <Button
                 className="px-6! py-3! text-nowrap!"
                 size="sm"
                 key={pos}
-                // turn green bg if selected
                 variant={
-                  preferredPopupPosition === pos
+                  preferredPopupPosition?.join("-") === pos
                     ? "success-outline"
                     : "primary-outline"
                 }
                 onClick={() => {
                   setPosition(
-                    pos as
-                    | "top-left"
-                    | "top-right"
-                    | "bottom-left"
-                    | "bottom-right"
-                    | "top-center"
-                    | "bottom-center",
+                    pos.split("-") as ["top" | "bottom", "left" | "center" | "right"]
+                  );
+                  setPreferredPopupPosition(
+                    pos.split("-") as ["top" | "bottom", "left" | "center" | "right"]
                   );
 
-                  toast(
-                    <div className="flex items-center gap-2 font-bold">
-                      <TaskAltIcon style={{ width: 16, height: 16 }} /> New
-                      Notification!
-                    </div>,
-                    {
-                      description: (
-                        <span className="font-sm">
-                          Your popup notifications will now look like this.
-                        </span>
-                      ),
-                      // Adding custom colors via style or className
-                      style: {
-                        padding: "10px 12px",
-                        color: "green", // Dark green text
-                      },
-                    },
-                  );
-                  localStorage.setItem("preferredPopupPosition", pos);
+                  setIsOpen(true);
+
+                  localStorage.setItem("preferredPopupPosition", JSON.stringify([
+                    pos.split("-")[0] as "top" | "bottom",
+                    pos.split("-")[1] as "left" | "center" | "right"
+                  ]));
                 }}
               >
                 {pos.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
@@ -239,63 +207,47 @@ export default function Preferences(
           <div>
             <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
               <span className="font-semibold">Current Settings:</span>{" "}
-              {vertical}-{horizontal}, {size} size
+              {position[0]}-{position[1]}, {size} size
             </p>
           </div>
         </div>
+        {
+          [
+            {
+              name: "popup",
+              label: "Popup Notifications",
+              description: "Receive updates about your account activity",
+            },
+            {
+              name: "notify",
+              label: "Email Notifications",
+              description: "Receive updates about your account activity",
+            },
+            {
+              name: "newsletter",
+              label: "Newsletter",
+              description: "Subscribe to our weekly newsletter for updates and features",
+            },
+          ].map((notification, i) => (
+            <div key={i} className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/40">
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {notification.label}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  {notification.description}
+                </p>
+              </div>
+              <Checkbox
+                checked={newProfile?.[notification.name]}
+                onChange={(e) => setNewProfile((prev) => ({ ...prev, [notification.name]: e }))}
+                className="accent-brand-500 h-5 w-5 cursor-pointer rounded border-gray-300"
+              />
+            </div>
+          ))
+        }
 
-        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/40">
-          <div>
-            <p className="font-medium text-gray-900 dark:text-white">
-              Popup Notifications
-            </p>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Receive updates about your account activity
-            </p>
-          </div>
-          <Checkbox
-            checked={formData?.popup}
-            onChange={(e) => setFormData((prev) => ({ ...prev, popup: e }))}
-            className="accent-brand-500 h-5 w-5 cursor-pointer rounded border-gray-300"
-          />
-        </div>
-        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/40">
-          <div>
-            <p className="font-medium text-gray-900 dark:text-white">
-              Email Notifications
-            </p>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Receive updates about your account activity
-            </p>
-          </div>
-
-          <Checkbox
-            checked={formData?.popup || false}
-            onChange={(e) => setFormData((prev) => ({ ...prev, popup: e }))}
-            className="accent-brand-500 h-5 w-5 cursor-pointer rounded border-gray-300"
-          />
-        </div>
-
-        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/40">
-          <div>
-            <p className="font-medium text-gray-900 dark:text-white">
-              Newsletter
-            </p>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Subscribe to our weekly newsletter for updates and features
-            </p>
-          </div>
-
-          <Checkbox
-            checked={formData?.newsletter || false}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, newsletter: e }))
-            }
-            className="accent-brand-500 h-5 w-5 cursor-pointer rounded border-gray-300"
-          />
-        </div>
-
-        <button className="bg-brand-600 border-brand-600 text-theme-sm hover:bg-brand-700 mt-3 flex w-full items-center justify-center rounded-lg border p-2 px-4 font-medium text-nowrap text-white">
+        <Button disabled={(profile === newProfile)} variant="primary" size="sm" onClick={handleSave} className="bg-brand-600 border-brand-600 text-theme-sm hover:bg-brand-700 mt-3 flex w-full items-center justify-center rounded-lg border p-2 px-4 font-medium text-nowrap text-white">
           <svg
             className="h-4 w-4 fill-current"
             viewBox="0 0 18 18"
@@ -309,7 +261,7 @@ export default function Preferences(
             />
           </svg>
           &nbsp; Save Preferences
-        </button>
+        </Button>
       </div>
 
       {/* Simulated Alert Popup */}
@@ -321,6 +273,6 @@ export default function Preferences(
         key={state.Transition.name}
         autoHideDuration={1200}
       />
-    </div>
+    </div >
   );
 }

@@ -20,6 +20,8 @@ interface ToastContextType {
   hideToast: () => void;
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  setPosition: React.Dispatch<React.SetStateAction<['top' | 'bottom', 'left' | 'center' | 'right']>>;
+  position: ['top' | 'bottom', 'left' | 'center' | 'right'];
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -31,6 +33,15 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     open: false,
     message: "",
     severity: "success", // Safe fallback initialization
+  });
+
+  const [position, setPosition] = useState<
+    ['top' | 'bottom', 'left' | 'center' | 'right']
+  >(() => {
+    if (typeof window === "undefined") return ["top", "center"];
+
+    const savedPosition = window.localStorage.getItem("preferredPopupPosition");
+    return savedPosition ? JSON.parse(savedPosition) : ["top", "center"];
   });
 
   // 2. High-utility trigger method for clean component-level calling
@@ -52,7 +63,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ToastContext.Provider
-      value={{ showToast, hideToast, loading, setLoading }}
+      value={{ showToast, hideToast, loading, setLoading, setPosition, position }}
     >
       {children}
 
@@ -60,7 +71,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
         open={toast.open}
         autoHideDuration={3000}
         onClose={handleCloseToast}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: position[0], horizontal: position[1] }}
         sx={{ zIndex: 100000 }}
       >
         <Alert

@@ -12,15 +12,16 @@ import { fetchVehiclesForTenant } from "@/app/actions/vehicles";
 import { getCachedTenant } from "@/utils/tenant-cache";
 import { Redis } from "@upstash/redis";
 import jwt from "jsonwebtoken";
+import { SettingsProvider } from "@/context/SettingsContext";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const redis =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
     ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
     : null;
 
 export default async function TenantLayout({
@@ -79,22 +80,24 @@ export default async function TenantLayout({
   }
 
   return (
-    <ToastProvider>
-      <TenantProvider initialTenant={tenantData}>
-        <FleetProvider initialVehicles={initialVehicles}>
-          <UserProvider initialUser={serverUser}>
-            <BookingProvider>
-              <TenantLoadingScreenGuard>
-                <div>
-                  <ClientHeader />
-                  <main className="w-full flex-1">{children}</main>
-                  <ClientFooter />
-                </div>
-              </TenantLoadingScreenGuard>
-            </BookingProvider>
-          </UserProvider>
-        </FleetProvider>
-      </TenantProvider>
-    </ToastProvider>
+    <SettingsProvider>
+      <ToastProvider>
+        <TenantProvider initialTenant={tenantData}>
+          <FleetProvider initialVehicles={initialVehicles}>
+            <UserProvider initialUser={serverUser}>
+              <BookingProvider>
+                <TenantLoadingScreenGuard>
+                  <div>
+                    <ClientHeader />
+                    <main className="w-full flex-1">{children}</main>
+                    <ClientFooter />
+                  </div>
+                </TenantLoadingScreenGuard>
+              </BookingProvider>
+            </UserProvider>
+          </FleetProvider>
+        </TenantProvider>
+      </ToastProvider>
+    </SettingsProvider>
   );
 }

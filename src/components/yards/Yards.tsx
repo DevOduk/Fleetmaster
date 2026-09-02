@@ -104,7 +104,7 @@ const YardsContent: React.FC = () => {
 
       setIsSaving(false);
     } else {
-      showToast("Failed to delete yard. Try again later!", "error");
+      showToast(res.error.message || "Failed to delete yard. Try again later!", "error");
 
       setIsSaving(false);
     }

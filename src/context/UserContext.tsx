@@ -5,12 +5,44 @@ import { useRouter } from "next/navigation";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useToast } from "./ToastContext";
 import { applyThemeVariables } from "@/components/ThemeInitializer";
+import { getNotifications } from "@/app/actions/notifications";
+
+interface User {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  created_at: string;
+  city: string;
+  verification_status: Record<string, boolean>;
+  country: string;
+  role: string | null;
+  bio: string | null;
+  tenant_id: string;
+  national_id?: string | null;
+  profile_pic: string | null;
+  national_id_number: string | null;
+  is_otp: boolean;
+  notify: boolean;
+  newsletter: boolean;
+  popup: boolean;
+  verification_error: string | null;
+  dl_number?: string | null;
+  submitted_document?: boolean | null;
+  language?: string | null;
+  dob: string | null;
+  postal_code: string | null;
+  timezone: string | null;
+  socials: Record<string, any> | null;
+  fleetmaster_tenants: Record<string, any> | null;
+}
 
 interface UserContextType {
-  profile: any | null;
+  profile: User | null;
   loading: boolean;
   login: (
-    role: "client" | "admin",
+    role: string | null,
     email: string,
     password: string,
     tenant: string,
@@ -23,7 +55,10 @@ interface UserContextType {
     is_otp: boolean;
   }>;
   logout: () => void;
-  setProfile: React.Dispatch<React.SetStateAction<any | null>>;
+  setProfile: React.Dispatch<React.SetStateAction<User | null>>;
+  notifications: any[];
+  setNotifications: React.Dispatch<React.SetStateAction<any[]>>;
+  reloadNotifications: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -33,17 +68,18 @@ export function UserProvider({
   initialUser = null,
 }: {
   children: React.ReactNode;
-  initialUser: any;
+  initialUser: User | null;
 }) {
   // Populate the profile state with the full server-side profile object immediately
-  const [profile, setProfile] = useState<any | null>(initialUser);
+  const [profile, setProfile] = useState<User | null>(initialUser);
 
   // If the server provided full data, turn loading off right away (false).
   // Otherwise, if a token exists but no profile cache was found, set to true to look it up.
   const [loading, setLoading] = useState<boolean>(!initialUser);
-
   const router = useRouter();
   const { showToast } = useToast();
+  const [notifications, setNotifications] = useState<any[]>([]);
+
 
   useEffect(() => {
     // If the server successfully found and passed the full profile data from Redis,
@@ -96,7 +132,7 @@ export function UserProvider({
   }, [initialUser]); // Listen to initial data streams safely
 
   const login = async (
-    role: "client" | "admin",
+    role: string | null,
     email: string,
     password: string,
     tenant: string,
@@ -155,9 +191,41 @@ export function UserProvider({
     }
   };
 
+  // fetch notifications for the user when the profile is set 
+
+  useEffect(() => {
+    if (profile) {
+      const fetchNotifications = async () => {
+        const notificationsRes = await getNotifications(profile.id);
+
+        if (notificationsRes.error) {
+          console.error("Error fetching notifications:", notificationsRes.error);
+          return;
+        }
+
+        setNotifications(notificationsRes.data || []);
+      };
+
+      fetchNotifications();
+    };
+
+  }, [profile]);
+
+
+  const reloadNotifications = async () => {
+    if (profile) {
+      const notificationsRes = await getNotifications(profile.id);
+      if (notificationsRes.error) {
+        console.error("Error fetching notifications:", notificationsRes.error);
+        return;
+      }
+      setNotifications(notificationsRes.data || []);
+    }
+  };
+
   return (
     <UserContext.Provider
-      value={{ profile, loading, login, logout, setProfile }}
+      value={{ profile, loading, login, logout, setProfile, notifications, setNotifications, reloadNotifications }}
     >
       {children}
     </UserContext.Provider>
