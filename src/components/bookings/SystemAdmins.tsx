@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -37,10 +37,6 @@ export interface AdminUser {
   last_seen?: string | null;
 }
 
-interface SystemUsersProps {
-  initialUsers: AdminUser[];
-  loading?: boolean;
-}
 
 export const getUsersByPlan = (plan: string) => {
   if (!plan) return 0;
@@ -61,9 +57,7 @@ export const getVehiclesByPlan = (plan: string) => {
   }
 };
 
-// 2. Fixed the parameter mapping here
 const SystemAdmins = () => {
-  const [loading, setLoading] = useState(false);
   const isDarkMode =
     typeof window !== "undefined" &&
     document.documentElement.classList.contains("dark");
@@ -243,7 +237,97 @@ const SystemAdmins = () => {
 
                 {/* Table Body */}
                 <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
-                  {loading ? (
+                  {paginatedUsers.length > 0 ? (
+                    paginatedUsers.map((user, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="px-5 py-4 text-start sm:px-6">
+                          <div className="flex min-w-45 items-center gap-3">
+                            <Avatar
+                              className="object-fit-cover w-25 object-center"
+                              style={{
+                                objectFit: "cover",
+                                objectPosition: "center",
+                              }}
+                              src={user.profile_pic || undefined}
+                            />
+                            <div>
+                              <span className="text-theme-sm block font-medium text-gray-800 uppercase dark:text-white/90">
+                                {user.first_name || "N/A"}{" "}
+                                {user.id === profile.id && "(You)"}
+                              </span>
+                              <span className="text-theme-xs block pt-2 text-gray-500 dark:text-gray-400">
+                                {user.first_name} {user.last_name}
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className={`text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap ${user.bio ? 'text-gray-500 dark:text-gray-400' : 'text-gray-400 dark:text-gray-500'}`}>
+                          {user.bio || "[ No bio available ]"}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                          {user.email ? (
+                            <a
+                              className="text-brand-500 hover:underline"
+                              href={`mailto:${user.email}`}
+                            >
+                              {user.email}
+                            </a>
+                          ) : (
+                            <span>—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                          {user.phone || "—"}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                          {/* <Badge variant={user.role === 'super_admin' ? 'success' : 'primary'}> */}
+                          {user.role}
+                          {/* </Badge> */}
+                        </TableCell>
+                        <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
+                          {user.last_seen
+                            ? formatedTimestamp(new Date(user.last_seen).toISOString())
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="text-theme-sm flex gap-3 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                          {profile?.role === "Super Admin" && (
+                            <Link
+                              href={
+                                user.id === profile.id
+                                  ? "/profile/edit"
+                                  : `/system-users/${user.id}/edit`
+                              }
+                            >
+                              <Button
+                                size="sm"
+                                variant="success-outline"
+                                endIcon={
+                                  <EditOutlinedIcon
+                                    fontSize="small"
+                                    className="m-0"
+                                  />
+                                }
+                              >
+                                Update
+                              </Button>
+                            </Link>
+                          )}
+                          <Link
+                            target={user.id === profile.id ? "_blank" : "_self"}
+                            href={
+                              user.id === profile.id
+                                ? "/profile"
+                                : `/system-users/${user.id}`
+                            }
+                          >
+                            <button className="bg-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg p-2 px-3 font-medium text-nowrap text-white">
+                              View User <ArrowRightIcon className="ml-1" />
+                            </button>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
                     <TableRow>
                       <TableCell
                         colSpan={7}
@@ -251,104 +335,13 @@ const SystemAdmins = () => {
                       >
                         <div className="text-theme-sm flex w-full flex-col items-center justify-center gap-3 py-4 text-gray-500 dark:text-gray-400">
                           <CircularProgress color="secondary" size="small" />
-                          <span>Loading users...</span>
+                          <span>
+                            You have no users here!
+                          </span>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ) : // 3. Loop through your live initialUsers data dynamically
-                    paginatedUsers.length > 0 ? (
-                      paginatedUsers.map((user, i) => (
-                        <TableRow key={i}>
-                          <TableCell className="px-5 py-4 text-start sm:px-6">
-                            <div className="flex min-w-45 items-center gap-3">
-                              <Avatar
-                                className="object-fit-cover w-25 object-center"
-                                style={{
-                                  objectFit: "cover",
-                                  objectPosition: "center",
-                                }}
-                                src={user.profile_pic || undefined}
-                              />
-                              <div>
-                                <span className="text-theme-sm block font-medium text-gray-800 uppercase dark:text-white/90">
-                                  {user.first_name || "N/A"}{" "}
-                                  {user.id === profile.id && "(You)"}
-                                </span>
-                                <span className="text-theme-xs block pt-2 text-gray-500 dark:text-gray-400">
-                                  {user.first_name} {user.last_name}
-                                </span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className={`text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap ${user.bio ? 'text-gray-500 dark:text-gray-400' : 'text-gray-400 dark:text-gray-500'}`}>
-                            {user.bio || "[ No bio available ]"}
-                          </TableCell>
-                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                            {user.email ? (
-                              <a
-                                className="text-brand-500 hover:underline"
-                                href={`mailto:${user.email}`}
-                              >
-                                {user.email}
-                              </a>
-                            ) : (
-                              <span>—</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                            {user.phone || "—"}
-                          </TableCell>
-                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                            {/* <Badge variant={user.role === 'super_admin' ? 'success' : 'primary'}> */}
-                            {user.role}
-                            {/* </Badge> */}
-                          </TableCell>
-                          <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
-                            {user.last_seen
-                              ? formatedTimestamp(new Date(user.last_seen).toISOString())
-                              : "—"}
-                          </TableCell>
-                          <TableCell className="text-theme-sm flex gap-3 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                            {profile?.role === "Super Admin" && (
-                              <Link
-                                href={
-                                  user.id === profile.id
-                                    ? "/profile/edit"
-                                    : `/system-users/${user.id}/edit`
-                                }
-                              >
-                                <Button
-                                  size="sm"
-                                  variant="success-outline"
-                                  endIcon={
-                                    <EditOutlinedIcon
-                                      fontSize="small"
-                                      className="m-0"
-                                    />
-                                  }
-                                >
-                                  Update
-                                </Button>
-                              </Link>
-                            )}
-                            <Link
-                              target={user.id === profile.id ? "_blank" : "_self"}
-                              href={
-                                user.id === profile.id
-                                  ? "/profile"
-                                  : `/system-users/${user.id}`
-                              }
-                            >
-                              <button className="bg-brand-500 text-theme-sm hover:bg-brand-600 flex items-center justify-center rounded-lg p-2 px-3 font-medium text-nowrap text-white">
-                                View User <ArrowRightIcon className="ml-1" />
-                              </button>
-                            </Link>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <>There was a problem with the page oyu requested!</>
-                    )}
+                  )}
                 </TableBody>
               </Table>
             </div>

@@ -7,18 +7,14 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import Badge from "../ui/badge/Badge";
-import { ArrowRightIcon, PencilIcon } from "@/icons";
+import { ArrowRightIcon } from "@/icons";
 import { Avatar, CircularProgress } from "@mui/material";
 import "leaflet/dist/leaflet.css";
 import Pagination from "../tables/Pagination";
 import Link from "next/link";
-import Button from "../ui/button/Button";
 import { useUser } from "@/context/UserContext";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { subscriptionPlans } from "@/data/globalExports";
-import { fetchClientsForTenant } from "@/app/actions/client";
 import { formatedTimestamp } from "../company-profile/ExpiryBanner";
 import { useAdminUsers } from "@/context/AdminUsersContext";
 
@@ -58,7 +54,6 @@ export const getVehiclesByPlan = (plan: string) => {
 
 // 2. Fixed the parameter mapping here
 const SystemUsers = () => {
-  const [loading, setLoading] = useState(true);
   const isDarkMode =
     typeof window !== "undefined" &&
     document.documentElement.classList.contains("dark");
@@ -101,10 +96,7 @@ const SystemUsers = () => {
 
   // Fallback safeguard to handle bounds correctly if users apply filters that shrink the page footprint
   const activePage = Math.max(1, Math.min(urlPage, totalPages));
-
   const indexStart = (activePage - 1) * itemsPerPage;
-  const indexEnd = indexStart + itemsPerPage;
-  const paginatedVehicles = initialUsers.slice(indexStart, indexEnd);
 
   const startIndex = initialUsers.length === 0 ? 0 : indexStart + 1;
   const endIndex = Math.min(activePage * itemsPerPage, initialUsers.length);
@@ -213,19 +205,7 @@ const SystemUsers = () => {
 
                 {/* Table Body */}
                 <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
-                  {loading ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={7}
-                        className="border-b border-gray-200 px-5 py-4 dark:border-gray-800"
-                      >
-                        <div className="text-theme-sm flex w-full flex-col items-center justify-center gap-3 py-4 text-gray-500 dark:text-gray-400">
-                          <CircularProgress color="secondary" size="small" />
-                          <span>Loading users...</span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : // 3. Loop through your live initialUsers data dynamically
+                  {
                     paginatedUsers.length > 0 ? (
                       paginatedUsers.map((user, i) => (
                         <TableRow key={i}>
@@ -291,7 +271,19 @@ const SystemUsers = () => {
                         </TableRow>
                       ))
                     ) : (
-                      <>There was a problem with the page oyu requested!</>
+                      <TableRow>
+                        <TableCell
+                          colSpan={7}
+                          className="border-b border-gray-200 px-5 py-4 dark:border-gray-800"
+                        >
+                          <div className="text-theme-sm flex w-full flex-col items-center justify-center gap-3 py-4 text-gray-500 dark:text-gray-400">
+                            <CircularProgress color="secondary" size="small" />
+                            <span>
+                              You have no users here!
+                            </span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     )}
                 </TableBody>
               </Table>
@@ -300,19 +292,17 @@ const SystemUsers = () => {
         </div>
 
         {/* Pagination Controls Visibility Rule */}
-        {!loading && (
-          <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
-            <span className="text-gray-800 dark:text-white text-sm">
-              Showing {startIndex} to {endIndex} of {initialUsers.length}{" "}
-              results
-            </span>
-            <Pagination
-              onPageChange={handlePageChange}
-              currentPage={activePage}
-              totalPages={totalPages}
-            />
-          </div>
-        )}
+        <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
+          <span className="text-gray-800 dark:text-white text-sm">
+            Showing {startIndex} to {endIndex} of {initialUsers.length}{" "}
+            results
+          </span>
+          <Pagination
+            onPageChange={handlePageChange}
+            currentPage={activePage}
+            totalPages={totalPages}
+          />
+        </div>
       </div>
     </div>
   );
