@@ -9,7 +9,9 @@ import VehicleNotFound from "@/components/vehicles/NotFound";
 export async function generateMetadata({
     params,
 }: {
-    params: { ProductID?: string };
+    params: Promise<{
+        ProductID: string
+    }>;
 }): Promise<Metadata> {
     const { ProductID } = await params;
     const product = Products.find((p) => p.id === ProductID);

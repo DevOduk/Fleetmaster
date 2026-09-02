@@ -16,7 +16,8 @@ interface User {
   created_at: string;
   city: string;
   verification_status: Record<string, boolean>;
-  country: string;
+  country: string|null;
+  county: string|null;
   role: string | null;
   bio: string | null;
   tenant_id: string;
