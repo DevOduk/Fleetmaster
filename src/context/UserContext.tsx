@@ -183,9 +183,7 @@ export function UserProvider({
     if (response.ok) {
       setProfile(null);
       showToast("You have been logged out successfully!", "info");
-      setTimeout(() => {
-        router.push("/");
-      }, 3000);
+      
       return { success: true };
     } else {
       return { success: false };
