@@ -29,13 +29,13 @@ export async function POST(request: Request) {
 
     const supabase = await createClient();
     let userAccount: any = null;
-
+    const normalizedType = role === "Client" ? "client" : "admin";
     const targetEmail = email.trim().toLowerCase();
     const targetTenantSlug =
       tenant && tenant.trim() ? tenant.trim().toLowerCase() : null;
 
     // 1. QUERY ADMIN ACCOUNTS
-    if (role === "admin") {
+    if (normalizedType === "admin") {
       const queryBuilder = targetTenantSlug
         ? supabase
           .from("fleetmaster_admins")
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       userAccount = data;
     }
     // 2. QUERY CLIENT ACCOUNTS
-    else if (role === "client") {
+    else if (normalizedType === "client") {
       if (!targetTenantSlug) {
         return NextResponse.json(
           {
@@ -108,8 +108,8 @@ export async function POST(request: Request) {
       id: userAccount.id,
       tenant_id: userAccount.tenant_id,
       email: userAccount.email,
-      role: role === "admin" ? userAccount.role : "Client",
-      accountType: role,
+      role: normalizedType === "admin" ? userAccount.role : "Client",
+      accountType: normalizedType,
     };
 
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: "7d" });
@@ -120,7 +120,6 @@ export async function POST(request: Request) {
     // 6. SEED REDIS CACHE (Eliminates cold cache miss on subsequent /api/v1/auth/me)
     if (redis) {
       try {
-        const normalizedType = role === "Client" ? "client" : "admin";
         const cacheKey = `user:profile:${safeUserAccount.id}:${normalizedType}`;
 
         // Cache user profile as stringified JSON for 15 minutes (900 seconds)
