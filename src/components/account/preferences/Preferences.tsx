@@ -6,7 +6,6 @@ import Label from "../../form/Label";
 import Select from "../../form/Select";
 import Fade from "@mui/material/Fade";
 import { TransitionProps } from "@mui/material/transitions";
-
 import {
   Alert,
   Snackbar,
@@ -17,7 +16,8 @@ import { languages } from "@/data/globalExports";
 import { useToast } from "@/context/ToastContext";
 import handleProfileUpdate from "@/utils/clients/handleProfileUpdate";
 import handleAdminProfileUpdate from "@/utils/admins/handleProfileUpdate";
-import { Avatar, Backdrop, CircularProgress } from "@mui/material";
+import handleSystemAdminProfileUpdate from "@/utils/system-admins/handleProfileUpdate";
+import { Backdrop, CircularProgress } from "@mui/material";
 
 
 
@@ -27,20 +27,19 @@ export default function Preferences(
     loading: false,
   },
 ) {
-  const [newProfile, setNewProfile] = useState<any>(profile || null);
+  const [newProfile, setNewProfile] = useState<any>(profile);
   const [isSaving, setIsSaving] = useState(false);
   const [open, setIsOpen] = useState(false);
   const { showToast, position, setPosition } = useToast();
   const [preferredPopupPosition, setPreferredPopupPosition] = useState<['top' | 'bottom', 'left' | 'center' | 'right']>(position);
+  const [size] = useState<"small" | "medium" | "large">("medium");
+  const { theme, setUserTheme } = useTheme();
 
   useEffect(() => {
     if (!profile || loading) return;
     setNewProfile(profile);
   }, [profile]);
 
-
-  const [size, setSize] = useState<"small" | "medium" | "large">("medium");
-  const { theme, setUserTheme } = useTheme();
 
   // If your Select component passes an object or value directly:
   const handleThemeChange = (selectedOption: any) => {
@@ -70,11 +69,13 @@ export default function Preferences(
     });
   };
   const handleSave = async () => {
-      if (profile.role === 'Client') {
-        handleProfileUpdate(profile.id, newProfile, setIsSaving, showToast, setNewProfile);
-      } else {
-        handleAdminProfileUpdate(profile.id, newProfile, setIsSaving, showToast, setNewProfile);
-      }
+    if (profile.role === 'Client') {
+      handleProfileUpdate(profile.id, newProfile, setIsSaving, showToast, setNewProfile);
+    } else if (profile.role === 'System Administrator') {
+      handleSystemAdminProfileUpdate(profile.id, newProfile, setIsSaving, showToast, setNewProfile);
+    } else {
+      handleAdminProfileUpdate(profile.id, newProfile, setIsSaving, showToast, setNewProfile);
+    }
   };
 
 
@@ -260,7 +261,7 @@ export default function Preferences(
               d="M15.0911 2.78206C14.2125 1.90338 12.7878 1.90338 11.9092 2.78206L4.57524 10.116C4.26682 10.4244 4.0547 10.8158 3.96468 11.2426L3.31231 14.3352C3.25997 14.5833 3.33653 14.841 3.51583 15.0203C3.69512 15.1996 3.95286 15.2761 4.20096 15.2238L7.29355 14.5714C7.72031 14.4814 8.11172 14.2693 8.42013 13.9609L15.7541 6.62695C16.6327 5.74827 16.6327 4.32365 15.7541 3.44497L15.0911 2.78206ZM12.9698 3.84272C13.2627 3.54982 13.7376 3.54982 14.0305 3.84272L14.6934 4.50563C14.9863 4.79852 14.9863 5.2734 14.6934 5.56629L14.044 6.21573L12.3204 4.49215L12.9698 3.84272ZM11.2597 5.55281L5.6359 11.1766C5.53309 11.2794 5.46238 11.4099 5.43238 11.5522L5.01758 13.5185L6.98394 13.1037C7.1262 13.0737 7.25666 13.003 7.35947 12.9002L12.9833 7.27639L11.2597 5.55281Z"
             />
           </svg>
-          &nbsp; Save Preferences
+          &nbsp; {isSaving ? 'Saving ...' : "Save Preferences"}
         </Button>
       </div>
 

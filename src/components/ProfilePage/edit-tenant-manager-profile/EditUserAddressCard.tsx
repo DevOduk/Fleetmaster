@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/context/ToastContext";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { useAdmin } from "@/context/AdminContext";
-import handleProfileUpdate from "@/utils/managers/handleProfileUpdate";
+import handleProfileUpdate from "@/utils/system-admins/handleProfileUpdate";
 import { hex } from "../client-profile/ProfilePage";
 import { usePathname, useSearchParams } from "next/navigation";
 

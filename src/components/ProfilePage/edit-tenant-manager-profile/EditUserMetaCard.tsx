@@ -6,7 +6,7 @@ import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined";
 import { handleImageFileUpload } from "@/utils/uploads/imageUpload";
 import { useToast } from "@/context/ToastContext";
 import { useAdmin } from "@/context/AdminContext";
-import handleProfileUpdate from "@/utils/managers/handleProfileUpdate";
+import handleProfileUpdate from "@/utils/system-admins/handleProfileUpdate";
 
 export default function EditAdminMetaCard() {
   const {

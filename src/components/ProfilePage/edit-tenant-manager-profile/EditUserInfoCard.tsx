@@ -8,7 +8,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { useAdmin } from "@/context/AdminContext";
-import handleProfileUpdate from "@/utils/managers/handleProfileUpdate";
+import handleProfileUpdate from "@/utils/system-admins/handleProfileUpdate";
 
 export default function EditUserInfoCard() {
   const {

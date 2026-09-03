@@ -42,7 +42,7 @@ export default function AccountSettings({
   const [confirmPhone, setConfirmPhone] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState(false);
   const { showToast } = useToast();
-  const [profileDetails, setProfileDetails] = useState(null);
+  const [profileDetails, setProfileDetails] = useState(profile);
   const [activeTab, setActiveTab] = useState<string>(
     currentSetting,
     // "Change Phone"
@@ -80,12 +80,12 @@ export default function AccountSettings({
       setErrorMessage("Please fill in all password fields.");
       return;
     }
-    if (profileDetails.old_password === profileDetails?.password) {
+    if (profileDetails?.old_password === profileDetails?.password) {
       showToast("New password cannot be the same as the old password.", "error");
       setErrorMessage("New password cannot be the same as the old password.");
       return;
     }
-    if (profileDetails.confirm_password !== profileDetails?.password) {
+    if (profileDetails?.confirm_password !== profileDetails?.password) {
       showToast("Passwords do not match.", "error");
       setErrorMessage("Passwords do not match.");
       return;
@@ -240,6 +240,7 @@ export default function AccountSettings({
     });
   };
 
+  console.log('profileDetails',profile)
   // Rebuild the accurate current page URL dynamically
   const currentPageUrl = encodeURIComponent(
     searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
@@ -825,7 +826,7 @@ export default function AccountSettings({
                         return;
                       }
                       const oldEmail = profile.email?.trim();
-                      const newEmail = profileDetails.new_email?.trim();
+                      const newEmail = profileDetails?.new_email?.trim();
                       const isNewEmail = oldEmail !== newEmail;
 
                       if (isNewEmail) {
