@@ -9,7 +9,7 @@ import {
 import Badge from "../ui/badge/Badge";
 import Link from "next/link";
 import { Avatar } from "@mui/material";
-import { User } from "@/context/UserContext";
+import { User } from "@/data/globalExports";
 
 
 export default function TopUsers({
