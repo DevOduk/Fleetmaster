@@ -137,9 +137,10 @@ function RegisterFormInner() {
         "success",
       );
 
-      router.push(
+      window.open(
         `/verify-email?v=${btoa(JSON.stringify({ email, id: res.data.id, role: "admin" }))}`,
-      );
+      )
+      router.push('/signin');
     } else {
       showToast(`Failed to register details: ${res.error.message}`, "error");
       setIsLoading(false);

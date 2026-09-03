@@ -437,13 +437,13 @@ function ProfilePage() {
               value={profile?.email || "N/A"}
               verified={profile?.verification_status?.email}
               action={
-                <a
+                <Link
                   target="_blank"
                   href={`/verify-email?v=${btoa(JSON.stringify(verifyData))}`}
                   className="text-theme-sm mt-3 flex w-full items-center justify-center rounded-lg border border-blue-500 bg-blue-500 p-2 px-4 font-medium text-nowrap text-white hover:bg-blue-600"
                 >
                   Verify Email
-                </a>
+                </Link>
               }
             />
             <DataViewSchema

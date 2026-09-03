@@ -410,13 +410,13 @@ function ProfilePage({ userProfile }: { userProfile?: any }) {
                 value={userDetails?.email || "N/A"}
                 verified={userDetails?.verification_status?.email || false}
                 action={
-                  <a
+                  <Link
                     target="_blank"
                     href={`/verify-email?v=${btoa(JSON.stringify(verifyData))}`}
                     className="text-theme-sm mt-3 flex w-full items-center justify-center rounded-lg border border-blue-500 bg-blue-500 p-2 px-4 font-medium text-nowrap text-white hover:bg-blue-600"
                   >
                     Verify Email
-                  </a>
+                  </Link>
                 }
               />
               <DataViewSchema

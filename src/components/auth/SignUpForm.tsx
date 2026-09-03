@@ -203,9 +203,10 @@ export default function SignUpForm() {
         "success",
       );
 
-      router.push(
+      window.open(
         `/verify-email?v=${btoa(JSON.stringify({ email: formData.email, id: res.data.id, role: 'Client', tenant: tenant.slug.trim() }))}`,
-      );
+      )
+      router.push('/signin');
     } else {
       showToast(
         `Failed to register details: ${res?.error?.message || "An error occurred"}`,
