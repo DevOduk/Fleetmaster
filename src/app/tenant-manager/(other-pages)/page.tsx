@@ -18,8 +18,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const tenants = await getAllTenants();
-  const payments = await fetchAllSubscriptionPayments();
+  const [tenants, payments] = await Promise.all([
+    getAllTenants(),
+    fetchAllSubscriptionPayments(),
+  ]);
 
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">

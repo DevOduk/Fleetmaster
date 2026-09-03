@@ -11,8 +11,10 @@ interface VehiclePageProps {
 }
 
 export async function generateMetadata({ params }: VehiclePageProps): Promise<Metadata> {
-  const { tenantData } = await getAdminTenant();
-  const bookingID = (await params).bookingID;
+  const [{ tenantData }, { bookingID }] = await Promise.all([
+    getAdminTenant(),
+    params,
+  ]);
 
 
   let title;

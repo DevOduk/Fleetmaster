@@ -1,4 +1,3 @@
-import { fetchExpenseDetails } from "@/app/actions/expenses";
 import { fetchPaymentDetails } from "@/app/actions/payments";
 import ViewPaymentPage from "@/components/payments/ViewPayment";
 import Button from "@/components/ui/button/Button";

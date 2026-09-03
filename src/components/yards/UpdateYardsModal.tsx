@@ -13,6 +13,7 @@ import {
 } from "@/app/actions/tenant";
 import { CheckLineIcon } from "@/icons";
 import { CircularProgress } from "@mui/material";
+import { Yard } from "@/data/globalExports";
 
 // Dynamically import the map to prevent hydration/window errors
 const MapPicker = dynamic(() => import("../map/MapPicker"), {
@@ -22,13 +23,7 @@ const MapPicker = dynamic(() => import("../map/MapPicker"), {
   ),
 });
 
-type Yard = {
-  id?: string;
-  title: string;
-  description: string;
-  image_url: string;
-  location: [number, number];
-};
+
 
 type CompanyFormData = {
   yards: Yard[];
@@ -39,18 +34,18 @@ type UpdateYardsModalProps = {
   tenantId: string;
   isOpen: boolean;
   yardDetails?: Yard;
-  setCompanyFormData: React.Dispatch<React.SetStateAction<CompanyFormData>>;
+  setCompanyFormDataAction: React.Dispatch<React.SetStateAction<CompanyFormData>>;
   companyFormData: CompanyFormData;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsOpenAction: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function UpdateYardsModal({
   tenantId,
   isOpen,
   yardDetails,
-  setCompanyFormData,
+  setCompanyFormDataAction,
   companyFormData,
-  setIsOpen,
+  setIsOpenAction,
 }: UpdateYardsModalProps): React.JSX.Element {
   const [isUpdloading, setIsUploading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -98,13 +93,13 @@ export default function UpdateYardsModal({
     }
 
     if (res.success) {
-      setCompanyFormData((prev) => ({ ...prev, yards: newYards }));
+      setCompanyFormDataAction((prev) => ({ ...prev, yards: newYards }));
       showToast(
         `Yard ${isUpdate ? "updated" : "created"} successfully.`,
         "success",
       );
       setTimeout(() => {
-        setIsOpen(false);
+        setIsOpenAction(false);
         setIsUpdating(false);
       }, 2000);
     } else {
@@ -116,7 +111,7 @@ export default function UpdateYardsModal({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={() => setIsOpen(false)}
+      onClose={() => setIsOpenAction(false)}
       className="max-w-175 p-6 lg:p-10"
     >
       <div className="custom-scrollbar flex max-h-[calc(100vh-120px)] flex-col overflow-y-auto px-2">
@@ -188,7 +183,7 @@ export default function UpdateYardsModal({
           <Button
             size="sm"
             variant="danger-outline"
-            onClick={() => setIsOpen(false)}
+            onClick={() => setIsOpenAction(false)}
           >
             Cancel
           </Button>

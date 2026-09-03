@@ -2,9 +2,9 @@
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
-import React, { useState } from "react";
+import { useState } from "react";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { useTenant } from "@/context/TenantContext";
 import { useToast } from "@/context/ToastContext";
@@ -37,6 +37,7 @@ export default function SignUpForm() {
   const router = useRouter();
   const { tenant } = useTenant();
   const { showToast } = useToast();
+  const [profileStep, setProfileStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("123456789");
@@ -44,12 +45,100 @@ export default function SignUpForm() {
     first_name: "Austine",
     last_name: "Oduk",
     email: "austine.oduk@gmail.com",
-    phone: "768927608",
+    phone: "768927629",
     password: "123456789",
     country: "Kenya",
+    bio: "",
+    dob: "2001-10-01",
+    city: "Nairobi",
+    address: "5th Park Av, House 6",
   });
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const totalSteps = 3;
+
+
+  const validateStep = (step: number) => {
+    setErrorMessage("");
+
+    if (step === 1) {
+      if (
+        !formData.first_name.trim() ||
+        !formData.last_name.trim() ||
+        !formData.email.trim() ||
+        !formData.phone.trim()
+      ) {
+        showToast("Please fill out all the required fields!", "error");
+        return false;
+      }
+
+      const selectedCountry = countries.find(
+        (c) => c.country === formData.country,
+      );
+
+      if (!selectedCountry) {
+        showToast("Please select a valid country!", "error");
+        return false;
+      }
+
+      const e164Phone = formatToE164(
+        formData.phone,
+        selectedCountry.code,
+      );
+
+      if (!e164Phone) {
+        showToast("Please enter a valid phone number!", "error");
+        setErrorMessage("Please enter a valid phone number!");
+        setProfileStep(1)
+        return false;
+      }
+
+      return true;
+    }
+
+    if (step === 2) {
+      if (!formData.dob.trim() || !formData.city.trim()) {
+        showToast("Please fill out all the required fields!", "error");
+        return false;
+      }
+
+      return true;
+    }
+
+    if (step === 3) {
+      if (
+        !formData.password.trim() ||
+        !confirmPassword.trim()
+      ) {
+        showToast("Please enter and confirm your password!", "error");
+        return false;
+      }
+
+      if (formData.password !== confirmPassword) {
+        showToast("Passwords do not match!", "error");
+        setErrorMessage("Passwords do not match!");
+        setProfileStep(totalSteps)
+        return false;
+      }
+
+      if (!isChecked) {
+        showToast(
+          "Please read and agree to the Terms and Conditions!",
+          "error",
+        );
+        setErrorMessage(
+          "Please read and agree to the Terms and Conditions!",
+        );
+        setProfileStep(totalSteps)
+        return false;
+      }
+
+      return true;
+    }
+
+    return true;
+  };
+
 
   const handleCreateAccount = async () => {
     if (!tenant || !tenant?.id) {
@@ -72,12 +161,14 @@ export default function SignUpForm() {
     if (formData.password.trim() !== confirmPassword.trim()) {
       showToast("Passwords do not match!", "error");
       setErrorMessage("Passwords do not match!");
+      setProfileStep(totalSteps)
       return;
     }
 
     if (!isChecked) {
       showToast("Please read and agree to the Terms and Conditions!", "error");
       setErrorMessage("Please read and agree to the Terms and Conditions!");
+      setProfileStep(totalSteps)
       return;
     }
     // 1. Find the country first
@@ -95,6 +186,7 @@ export default function SignUpForm() {
     if (e164Phone === null) {
       showToast("Please enter a valid phone number!", "error");
       setErrorMessage("Please enter a valid phone number!");
+      setProfileStep(1)
       return;
     }
 
@@ -112,7 +204,7 @@ export default function SignUpForm() {
       );
 
       router.push(
-        `/verify-email?v=${btoa(JSON.stringify({ email: formData.email, id: res.data.id }))}`,
+        `/verify-email?v=${btoa(JSON.stringify({ email: formData.email, id: res.data.id, role: 'Client', tenant: tenant.slug.trim() }))}`,
       );
     } else {
       showToast(
@@ -121,6 +213,7 @@ export default function SignUpForm() {
       );
       setErrorMessage(res?.error?.message || "An error occurred");
       setIsLoading(false);
+      setProfileStep(1)
     }
   };
 
@@ -134,7 +227,7 @@ export default function SignUpForm() {
               Sign Up
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email and password to sign up!
+              <strong>Step {profileStep}</strong> of <strong>{totalSteps}</strong> steps: Enter your details below to sign up!
             </p>
           </div>
           <div>
@@ -193,214 +286,345 @@ export default function SignUpForm() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                e.stopPropagation();
+
+                if (!validateStep(profileStep)) {
+                  return;
+                }
+
+                if (profileStep < totalSteps) {
+                  setProfileStep((prev) => prev + 1);
+                  return;
+                }
 
                 handleCreateAccount();
               }}
             >
               <div className="space-y-5">
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  {/* <!-- First Name --> */}
-                  <div className="sm:col-span-1">
-                    <Label>
-                      First Name<span className="text-error-500">*</span>
-                    </Label>
-                    <Input
-                      type="text"
-                      id="fname"
-                      name="fname"
-                      value={formData.first_name}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          first_name: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter your first name"
-                    />
-                  </div>
-                  {/* <!-- Last Name --> */}
-                  <div className="sm:col-span-1">
-                    <Label>Last Name</Label>
-                    <Input
-                      type="text"
-                      id="lname"
-                      name="lname"
-                      value={formData.last_name}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          last_name: e.target.value,
-                        }))
-                      }
+                {
+                  profileStep === 1 && (
+                    <>
+                      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        {/* <!-- First Name --> */}
+                        <div className="sm:col-span-1">
+                          <Label>
+                            First Name<span className="text-error-500">*</span>
+                          </Label>
+                          <Input
+                            type="text"
+                            id="fname"
+                            name="fname"
+                            value={formData.first_name}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                first_name: e.target.value,
+                              }))
+                            }
+                            placeholder="Enter your first name"
+                          />
+                        </div>
+                        {/* <!-- Last Name --> */}
+                        <div className="sm:col-span-1">
+                          <Label>Last Name</Label>
+                          <Input
+                            type="text"
+                            id="lname"
+                            name="lname"
+                            value={formData.last_name}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                last_name: e.target.value,
+                              }))
+                            }
 
-                      placeholder="Enter your last name"
-                    />
-                  </div>
-                </div>
-                {/* <!-- Email --> */}
-                <div>
-                  <Label>
-                    Email<span className="text-error-500">*</span>
-                  </Label>
-                  <Input
-                    type="email"
-                    error={!!errorMessage.includes("email")}
-                    hint={
-                      errorMessage.includes("email") ? errorMessage : undefined
-                    }
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        email: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter your email"
-                  />
-                </div>
+                            placeholder="Enter your last name"
+                          />
+                        </div>
+                      </div>
 
-                {/* <!-- Phone --> */}
-                <div>
-                  <Label>
-                    Phone<span className="text-error-500">*</span>
-                  </Label>
-                  <div className="relative grid grid-cols-1 gap-2 lg:grid-cols-2">
-                    <Select
-                      className="w-full"
-                      defaultValue={"Kenya"}
-                      value={formData.country}
-                      options={countries.map((c) => {
-                        return {
-                          value: c.country,
-                          label: `${c.country} (${c.label})`,
-                        };
-                      })}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, country: e }))
-                      }
-                    />
+                      {/* <!-- Email --> */}
+                      <div>
+                        <Label>
+                          Email<span className="text-error-500">*</span>
+                        </Label>
+                        <Input
+                          type="email"
+                          error={!!errorMessage.includes("email")}
+                          hint={
+                            errorMessage.includes("email") ? errorMessage : undefined
+                          }
+                          id="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              email: e.target.value,
+                            }))
+                          }
+                          placeholder="Enter your email"
+                        />
+                      </div>
 
-                    <Input
-                      type="tel"
-                      className="w-full"
-                      id="phone"
-                      error={!!errorMessage.includes("phone")}
-                      hint={
-                        errorMessage.includes("phone")
-                          ? errorMessage
-                          : undefined
-                      }
-                      name="phone"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          phone: e.target.value,
-                        }))
-                      }
+                      {/* <!-- Phone --> */}
+                      <div>
+                        <Label>
+                          Phone<span className="text-error-500">*</span>
+                        </Label>
+                        <div className="relative grid grid-cols-1 gap-2 lg:grid-cols-2">
+                          <Select
+                            className="w-full"
+                            defaultValue={"Kenya"}
+                            value={formData.country}
+                            options={countries.map((c) => {
+                              return {
+                                value: c.country,
+                                label: `${c.country} (${c.label})`,
+                              };
+                            })}
+                            onChange={(e) =>
+                              setFormData((prev) => ({ ...prev, country: e }))
+                            }
+                          />
 
-                      placeholder="555 555-0199"
-                    />
-                  </div>
-                </div>
-                {/* <!-- Password --> */}
-                <div>
-                  <Label>Password</Label>
-                  <div className="relative">
-                    <Input
-                      placeholder="Enter your password"
-                      value={formData.password}
-                      type={showPassword ? "text" : "password"}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          password: e.target.value,
-                        }))
-                      }
-                      error={!!errorMessage.includes("password")}
-                      hint={
-                        errorMessage.includes("password")
-                          ? errorMessage
-                          : undefined
-                      }
-                    />
-                    <span
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute top-1/2 right-4 z-30 -translate-y-1/2 cursor-pointer"
-                    >
-                      {showPassword ? (
-                        <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
-                      ) : (
-                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <Label>Confirm Password</Label>
-                  <div className="relative">
-                    <Input
-                      placeholder="Enter your password"
-                      value={confirmPassword}
-                      type={showPassword ? "text" : "password"}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      error={!!errorMessage.includes("password")}
-                      hint={
-                        errorMessage.includes("password")
-                          ? errorMessage
-                          : undefined
-                      }
-                    />
-                    <span
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute top-1/2 right-4 z-30 -translate-y-1/2 cursor-pointer"
-                    >
-                      {showPassword ? (
-                        <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
-                      ) : (
-                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
-                      )}
-                    </span>
-                  </div>
-                </div>
-                {/* <!-- Checkbox --> */}
-                <div className="flex cursor-pointer items-center gap-3">
-                  <Checkbox
-                    className="h-5 w-5"
-                    checked={isChecked}
-                    onChange={setIsChecked}
-                  />
-                  <p
-                    onClick={() => setIsChecked(!isChecked)}
-                    className="inline-block text-sm font-normal text-gray-500 dark:text-gray-400"
-                  >
-                    By creating an account means you agree to the{" "}
-                    {/* open in popup window  */}
-                    <a target="_blank" href="/terms" className="text-blue-500">
-                      Terms and Conditions,
-                    </a>{" "}
-                    and our{" "}
-                    <a
-                      target="_blank"
-                      href="/privacy"
-                      className="text-blue-500"
-                    >
-                      Privacy Policy
-                    </a>
-                  </p>
-                </div>
+                          <Input
+                            type="tel"
+                            className="w-full"
+                            id="phone"
+                            error={!!errorMessage.includes("phone")}
+                            hint={
+                              errorMessage.includes("phone")
+                                ? errorMessage
+                                : undefined
+                            }
+                            name="phone"
+                            value={formData.phone}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                phone: e.target.value,
+                              }))
+                            }
+
+                            placeholder="555 555-0199"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )
+                }
+                {
+                  profileStep === 2 && (
+                    <>
+                      {/* <!-- DOB --> */}
+                      <div>
+                        <Label>
+                          Date of Birth<span className="text-error-500">*</span>
+                        </Label>
+                        <Input
+                          type="date"
+                          error={!!errorMessage.includes("dob")}
+                          hint={
+                            errorMessage.includes("dob") ? errorMessage : undefined
+                          }
+                          id="dob"
+                          name="dob"
+                          value={formData.dob}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              dob: e.target.value,
+                            }))
+                          }
+                          placeholder="Enter your dob"
+                        />
+                      </div>
+
+                      {/* <!-- county --> */}
+                      <div>
+                        <Label>
+                          City/County<span className="text-error-500">*</span>
+                        </Label>
+                        <Input
+                          type="text"
+                          error={!!errorMessage.includes("email")}
+                          hint={
+                            errorMessage.includes("email") ? errorMessage : undefined
+                          }
+                          id="city"
+                          name="city"
+                          value={formData.city}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              city: e.target.value,
+                            }))
+                          }
+                          placeholder="Enter your city e.g Westlands, NRB"
+                        />
+                      </div>
+
+                      {/* <!-- adress --> */}
+                      <div>
+                        <Label>
+                          Address 1
+                        </Label>
+                        <Input
+                          type="text"
+                          error={!!errorMessage.includes("address")}
+                          hint={
+                            errorMessage.includes("address") ? errorMessage : undefined
+                          }
+                          id="address"
+                          name="address"
+                          value={formData.address}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              address: e.target.value,
+                            }))
+                          }
+                          placeholder="5th Park Av, House 6"
+                        />
+                      </div>
+                    </>
+                  )
+                }
+
+                {
+                  profileStep === 3 && (
+                    <>
+                      {/* <!-- About --> */}
+                      <div>
+                        <Label>
+                          About<span className="text-gray-500"> (Optional)</span>
+                        </Label>
+                        <Input
+                          type="text"
+                          error={!!errorMessage.includes("email")}
+                          hint={
+                            errorMessage.includes("email") ? errorMessage : undefined
+                          }
+                          id="bio"
+                          name="bio"
+                          value={formData.bio}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              bio: e.target.value,
+                            }))
+                          }
+                          placeholder="Enter an about"
+                        />
+                      </div>
+
+                      {/* <!-- Password --> */}
+                      <div>
+                        <Label>Password</Label>
+                        <div className="relative">
+                          <Input
+                            placeholder="Enter your password"
+                            value={formData.password}
+                            type={showPassword ? "text" : "password"}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                password: e.target.value,
+                              }))
+                            }
+                            error={!!errorMessage.includes("password")}
+                            hint={
+                              errorMessage.includes("password")
+                                ? errorMessage
+                                : undefined
+                            }
+                          />
+                          <span
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute top-1/2 right-4 z-30 -translate-y-1/2 cursor-pointer"
+                          >
+                            {showPassword ? (
+                              <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
+                            ) : (
+                              <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label>Confirm Password</Label>
+                        <div className="relative">
+                          <Input
+                            placeholder="Enter your password"
+                            value={confirmPassword}
+                            type={showPassword ? "text" : "password"}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            error={!!errorMessage.includes("password")}
+                            hint={
+                              errorMessage.includes("password")
+                                ? errorMessage
+                                : undefined
+                            }
+                          />
+                          <span
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute top-1/2 right-4 z-30 -translate-y-1/2 cursor-pointer"
+                          >
+                            {showPassword ? (
+                              <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
+                            ) : (
+                              <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+
+                      {/* <!-- Checkbox --> */}
+                      <div className="flex cursor-pointer items-center gap-3">
+                        <Checkbox
+                          className="h-5 w-5"
+                          checked={isChecked}
+                          onChange={setIsChecked}
+                        />
+                        <p
+                          onClick={() => setIsChecked(!isChecked)}
+                          className="inline-block text-sm font-normal text-gray-500 dark:text-gray-400"
+                        >
+                          By creating an account means you agree to the{" "}
+                          {/* open in popup window  */}
+                          <a target="_blank" href="/terms" className="text-blue-500">
+                            Terms and Conditions,
+                          </a>{" "}
+                          and our{" "}
+                          <a
+                            target="_blank"
+                            href="/privacy"
+                            className="text-blue-500"
+                          >
+                            Privacy Policy
+                          </a>
+                        </p>
+                      </div>
+                    </>
+                  )
+                }
+
                 {/* <!-- Button --> */}
                 <div>
                   <Button
                     type="submit"
                     variant="primary"
                     disabled={isLoading}
-                    className="w-full px-4! py-3! text-sm"
+                    className="w-full px-4! py-2.5! text-sm"
                   >
-                    {isLoading ? "Signing Up..." : "Sign Up"}
+                    {isLoading
+                      ? "Signing Up..."
+                      : profileStep < totalSteps
+                        ? "Next"
+                        : "Sign Up"}
                   </Button>
                 </div>
               </div>
@@ -413,13 +637,13 @@ export default function SignUpForm() {
                   href="/signin"
                   className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
                 >
-                  Sign In Here
+                  Sign In Here.
                 </Link>
               </p>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

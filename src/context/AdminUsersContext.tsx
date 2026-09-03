@@ -2,6 +2,7 @@
 
 "use client";
 
+import { User } from "@/data/globalExports";
 import React, {
   createContext,
   useContext,
@@ -11,37 +12,26 @@ import React, {
   type SetStateAction,
 } from "react";
 
-export interface AdminUser {
-  id: string;
-  phone: string;
-  email: string;
-  bio: string | null;
-  first_name: string;
-  last_name: string;
-  role: string | null;
-  profile_pic: string | null;
-  created_at: string;
-  last_seen: string | null;
-}
+// export interface AdminUser {
+//   id: string;
+//   phone: string;
+//   email: string;
+//   bio: string | null;
+//   first_name: string;
+//   last_name: string;
+//   role: string | null;
+//   profile_pic: string | null;
+//   created_at: string;
+//   last_seen: string | null;
+// }
 
-export interface Client {
-  id: string;
-  phone: string;
-  email: string;
-  bio: string | null;
-  first_name: string;
-  last_name: string;
-  role: string | null;
-  profile_pic: string | null;
-  created_at: string;
-  last_seen: string | null;
-}
+
 
 export interface AdminUsersContextType {
-  admins: AdminUser[];
-  setAdmins: Dispatch<SetStateAction<AdminUser[]>>;
-  clients: Client[];
-  setClients: Dispatch<SetStateAction<Client[]>>;
+  admins: User[];
+  setAdmins: Dispatch<SetStateAction<User[]>>;
+  clients: User[];
+  setClients: Dispatch<SetStateAction<User[]>>;
   expenses: any[];
   setExpenses: Dispatch<SetStateAction<any[]>>;
   bookings: any[];
@@ -54,8 +44,8 @@ const AdminUsersContext = createContext<
 
 export interface AdminUsersProviderProps {
   children: ReactNode;
-  initialAdmins?: AdminUser[];
-  initialClients?: Client[];
+  initialAdmins?: User[];
+  initialClients?: User[];
   initialExpenses?: any[];
   initialBookings?: any[];
 }
@@ -67,8 +57,8 @@ export function AdminUsersProvider({
   initialExpenses = [],
   initialBookings = [],
 }: AdminUsersProviderProps) {
-  const [admins, setAdmins] = useState<AdminUser[]>(initialAdmins);
-  const [clients, setClients] = useState<Client[]>(initialClients);
+  const [admins, setAdmins] = useState<User[]>(initialAdmins);
+  const [clients, setClients] = useState<User[]>(initialClients);
   const [expenses, setExpenses] = useState<any[]>(initialExpenses);
   const [bookings, setBookings] = useState<any[]>(initialBookings);
 

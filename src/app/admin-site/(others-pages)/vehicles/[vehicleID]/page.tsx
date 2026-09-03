@@ -57,10 +57,12 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
   const isDashboard =
     referer.includes("dashboard") || xUrl.includes("dashboard");
 
-  const response = await fetchVehicleDetails(Number(vehicleID));
-  const VehicleDetails = response?.data;
+  const [vehicleDetailsResponse, bookingsResponse] = await Promise.all([
+    fetchVehicleDetails(Number(vehicleID)),
+    fetchBookingsForVehicle(vehicleID),
+  ]);
 
-  const bookingsResponse = await fetchBookingsForVehicle(vehicleID);
+  const VehicleDetails = vehicleDetailsResponse?.data;
 
   if (bookingsResponse.success) {
     loading = false;
@@ -109,11 +111,10 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
               </div>
               <div>
                 <span
-                  className={`font-sm mt-2 mb-1 rounded-full px-3 py-1 text-xs ${
-                    VehicleDetails.status === "Available"
+                  className={`font-sm mt-2 mb-1 rounded-full px-3 py-1 text-xs ${VehicleDetails.status === "Available"
                       ? "bg-green-100 text-green-700"
                       : "bg-amber-100 text-amber-700"
-                  }`}
+                    }`}
                 >
                   {VehicleDetails.status}
                 </span>

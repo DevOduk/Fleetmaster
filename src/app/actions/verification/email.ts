@@ -173,7 +173,7 @@ export async function sendEmailVerification(
 /**
  * Resends the verification OTP when requested by user
  */
-export async function resendOTP(encodedEmail: string, role?: string) {
+export async function resendOTP(encodedEmail: string, role?: string, tenant?: string | null) {
   try {
     const userEmail = await decodeEmail(encodedEmail);
     if (!userEmail) {
@@ -191,14 +191,23 @@ export async function resendOTP(encodedEmail: string, role?: string) {
 
     const supabase = await createClient();
     const tableSource =
-      role === "admin" ? "fleetmaster_admins" : "fleetmaster_clients";
+      role.toLowerCase() === "client" ? "fleetmaster_clients" : "fleetmaster_admins";
 
     // Check if user exists
-    const { data: user, error: userError } = await supabase
+    let userQuery = supabase
       .from(tableSource)
-      .select("id, email")
-      .eq("email", userEmail)
-      .single();
+      .select("id, email, fleetmaster_tenants!inner(*)")
+      .eq("email", userEmail);
+
+    if (role?.toLowerCase() === "client" && tenant) {
+      userQuery = userQuery.eq("fleetmaster_tenants.slug", tenant);
+    }
+
+    if (role?.toLowerCase() === "client" && !tenant) {
+      throw new Error("Tenant is required for client verification.");
+    }
+
+    const { data: user, error: userError } = await userQuery.single();
 
     if (userError || !user) {
       return {

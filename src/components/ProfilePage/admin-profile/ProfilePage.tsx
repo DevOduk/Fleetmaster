@@ -35,7 +35,7 @@ function ProfilePage({ userProfile }: { userProfile?: any }) {
   const [cooldown, setCooldown] = useState(0); // shorter for sms
   const [errorMessage, setErrorMessage] = useState("");
   const phone = profile?.phone || "";
-  const verifyData = { email: profile?.email, id: profile?.id, role: "admin" };
+  const verifyData = { email: profile?.email, id: profile?.id, role: "admin", tenant: profile?.fleetmaster_tenants?.slug.trim() };
 
   // Countdown timer effect for resend cooldown
   useEffect(() => {

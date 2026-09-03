@@ -9,20 +9,7 @@ import {
 import Badge from "../ui/badge/Badge";
 import Link from "next/link";
 import { Avatar } from "@mui/material";
-
-// 1. Explicitly type your User structure
-export interface User {
-  id: string;
-  phone: string | null;
-  email: string;
-  bio: string | null;
-  first_name: string;
-  last_name: string;
-  role: string;
-  profile_pic: string | null;
-  created_at: string;
-  last_seen?: string | null;
-}
+import { User } from "@/context/UserContext";
 
 
 export default function TopUsers({

@@ -77,7 +77,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         return {
           success: true,
           emailVerified: data.user?.verification_status?.email ?? false,
-          phoneVerified: data.user?.phone_verified ?? false,
+          phoneVerified: data.user?.verification_status?.phone ?? false,
           id: data.user?.id,
           is_otp: data.user?.is_otp ?? false,
         };

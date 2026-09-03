@@ -17,7 +17,7 @@ import UpdateYardsModal from "../yards/UpdateYardsModal";
 import { applyThemeVariables } from "../ThemeInitializer";
 import { createClient } from "@/utils/supabase/client";
 import Checkbox from "../form/input/Checkbox";
-import { allCountriesDB, languages, timezones } from "@/data/globalExports";
+import { allCountriesDB, languages, Tenant, timezones } from "@/data/globalExports";
 import Select from "../form/Select";
 import LoadingInfo from "../loading/LoadingInfo";
 
@@ -32,10 +32,10 @@ export const allTimezones = () => {
 
 export default function EditCompanyInfoCard() {
   const { profile } = useUser();
-  const [company, setCompany] = useState<any>(null);
+  const [company, setCompany] = useState<Tenant>(null);
   const [loadingCompany, setLoadingCompany] = useState<boolean>(true);
   const [updatingCompany, setUpdatingCompany] = useState<boolean>(false);
-  const [companyFormData, setCompanyFormData] = useState<any>(null);
+  const [companyFormData, setCompanyFormData] = useState<Tenant>(null);
   const { showToast } = useToast();
   const supabase = createClient();
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -220,9 +220,9 @@ export default function EditCompanyInfoCard() {
         <UpdateYardsModal
           tenantId={profile?.tenant_id}
           isOpen={isOpen}
-          setIsOpen={setIsOpen}
+          setIsOpenAction={setIsOpen}
           yardDetails={selectedEvent}
-          setCompanyFormData={setCompanyFormData}
+          setCompanyFormDataAction={setCompanyFormData}
           companyFormData={companyFormData}
         />
       )}
@@ -392,14 +392,14 @@ export default function EditCompanyInfoCard() {
               disabled={updatingCompany}
               type="number"
               label="Buffer (Hours)"
-              value={companyFormData.buffer}
+              value={String(companyFormData.buffer)}
               onChange={(v) => handleInputChange("buffer", v)}
             />
             <EditableInput
               disabled={updatingCompany}
               type="number"
               label="Monthly Target"
-              value={companyFormData.monthly_target}
+              value={String(companyFormData.monthly_target)}
               onChange={(v) => handleInputChange("monthly_target", v)}
             />
             <EditableInput

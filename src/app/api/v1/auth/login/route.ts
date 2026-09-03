@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { compare } from "bcrypt-ts";
 import jwt from "jsonwebtoken";
 import { Redis } from "@upstash/redis";
+import { User } from "@/data/globalExports";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
 
@@ -28,32 +29,36 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient();
-    let userAccount: any = null;
+    type AuthUser = Partial<User> & {
+      password?: string | null;
+      [key: string]: any;
+    };
+
+    let userAccount: AuthUser | null = null;
     const normalizedType = role === "Client" ? "client" : "admin";
     const targetEmail = email.trim().toLowerCase();
     const targetTenantSlug =
       tenant && tenant.trim() ? tenant.trim().toLowerCase() : null;
+    const profileFields = `id, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, notify, newsletter, popup, dob${normalizedType === "client" ? ", national_id_number, dl_number, verification_error, submitted_document, onboarded" : ""
+      }, fleetmaster_tenants!inner(*)`;
 
     // 1. QUERY ADMIN ACCOUNTS
     if (normalizedType === "admin") {
       const queryBuilder = targetTenantSlug
         ? supabase
           .from("fleetmaster_admins")
-          .select(
-            `id, password, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, fleetmaster_tenants!inner(*)`,
-          )
+          .select(`password, ${profileFields}`)
           .eq("fleetmaster_tenants.slug", targetTenantSlug)
         : supabase
           .from("fleetmaster_admins")
-          .select(
-            `id, password, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, fleetmaster_tenants!inner(*)`,
-          );
+          .select(`password, ${profileFields}`);
 
       const { data, error } = await queryBuilder
         .eq("email", targetEmail)
         .maybeSingle();
 
       if (error) throw error;
+
       userAccount = data;
     }
     // 2. QUERY CLIENT ACCOUNTS
@@ -70,9 +75,7 @@ export async function POST(request: Request) {
 
       const { data, error } = await supabase
         .from("fleetmaster_clients")
-        .select(
-          "id, password, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, dob, national_id_number, dl_number, fleetmaster_tenants(*)",
-        )
+        .select(`password, ${profileFields}`)
         .eq("email", targetEmail)
         .eq("fleetmaster_tenants.slug", targetTenantSlug)
         .maybeSingle();
@@ -134,15 +137,17 @@ export async function POST(request: Request) {
       { status: 200 },
     );
 
-    response.cookies.set({
-      name: "user_session",
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
+    if (userAccount.verification_status?.email) {
+      response.cookies.set({
+        name: "user_session",
+        value: token,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: "/",
+      });
+    }
 
     return response;
   } catch (err: any) {

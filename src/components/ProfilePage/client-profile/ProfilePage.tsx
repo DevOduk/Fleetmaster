@@ -65,7 +65,7 @@ function ProfilePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const phone = profile?.phone || "";
-  const verifyData = { email: profile?.email, id: profile?.id };
+  const verifyData = { email: profile?.email, id: profile?.id, role: profile?.role };
 
   // Countdown timer effect for resend cooldown
   useEffect(() => {

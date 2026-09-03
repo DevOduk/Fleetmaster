@@ -382,13 +382,19 @@ const CreateNewBookingForm = () => {
                   "Confirmed! Your booking has been processed successfully.",
               };
 
-              const bookingRes = await createNewBooking({
-                ...newBooking,
-                booking_status: "Booked",
-                payment_status: "COMPLETE",
-              }, profile?.email, profile?.fleetmaster_tenants, profile?.first_name);
-              const dbRes = await createPayment(newPayment);
-
+              await Promise.all([
+                createNewBooking(
+                  {
+                    ...newBooking,
+                    booking_status: "Booked",
+                    payment_status: "COMPLETE",
+                  },
+                  profile?.email,
+                  profile?.fleetmaster_tenants,
+                  profile?.first_name,
+                ),
+                createPayment(newPayment),
+              ]);
 
               reloadBookings(); // <-- Trigger a refresh of the bookings list in the parent component
             } else {
@@ -412,12 +418,14 @@ const CreateNewBookingForm = () => {
               };
 
 
-              await createNewBooking({
-                ...newBooking,
-                booking_status: "Reserved",
-                payment_status: "FAILED",
-              }, profile?.email, profile?.fleetmaster_tenants, profile?.first_name);
-              await createPayment(newPayment);
+              await Promise.all([
+                createNewBooking({
+                  ...newBooking,
+                  booking_status: "Reserved",
+                  payment_status: "FAILED",
+                }, profile?.email, profile?.fleetmaster_tenants, profile?.first_name),
+                createPayment(newPayment),
+              ]);
             }
           } catch (pollErr) {
             console.error(

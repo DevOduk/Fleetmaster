@@ -18,9 +18,9 @@ export default async function ViewExpense({
 }: {
   params: Promise<{ expenseID: string }>;
 }) {
-  const { expenseID } = await params;
+  const [{ expenseID }] = await Promise.all([params]);
   let expense = null;
-  const res = await fetchExpenseDetails(expenseID);
+  const [res] = await Promise.all([fetchExpenseDetails(expenseID)]);
 
   if (res.success) {
     expense = res.data;

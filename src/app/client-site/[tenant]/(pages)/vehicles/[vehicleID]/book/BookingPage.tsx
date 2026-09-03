@@ -387,16 +387,18 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                   "Confirmed! Your booking has been processed successfully.",
               };
 
-              await createNewBooking(
-                {
-                  ...newBooking,
-                  booking_status: "Booked",
-                },
-                profile?.email,
-                tenant,
-                profile?.first_name
-              );
-              await createPayment(newPayment);
+              await Promise.all([
+                createNewBooking(
+                  {
+                    ...newBooking,
+                    booking_status: "Booked",
+                  },
+                  profile?.email,
+                  tenant,
+                  profile?.first_name
+                ),
+                createPayment(newPayment),
+              ]);
 
               setTimeout(() => {
                 reloadNotifications(); // Wait a second then Refresh notifications after successful booking
@@ -421,15 +423,18 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                 message: failReason,
               };
 
-              await createNewBooking({
-                ...newBooking,
-                booking_status: "Reserved",
-              },
-                profile?.email,
-                tenant,
-                profile?.first_name
-              );
-              await createPayment(newPayment);
+              await Promise.all([
+                createNewBooking(
+                  {
+                    ...newBooking,
+                    booking_status: "Reserved",
+                  },
+                  profile?.email,
+                  tenant,
+                  profile?.first_name,
+                ),
+                createPayment(newPayment),
+              ]);
             }
           } catch (pollErr) {
             console.error(

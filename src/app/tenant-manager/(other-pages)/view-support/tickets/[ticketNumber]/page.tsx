@@ -21,7 +21,6 @@ export async function generateMetadata({
 
 // 2. Server Component
 export default async function ManageTicketPage({ params }: PageProps) {
-  // Await the params (required in Next.js 15+)
   const { ticketNumber } = await params;
 
   const displayTicketNumber = `#${ticketNumber}`;

@@ -6,38 +6,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useToast } from "./ToastContext";
 import { applyThemeVariables } from "@/components/ThemeInitializer";
 import { getNotifications } from "@/app/actions/notifications";
+import { User } from "@/data/globalExports";
 
-interface User {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  created_at: string;
-  city: string;
-  verification_status: Record<string, boolean>;
-  country: string|null;
-  county: string|null;
-  role: string | null;
-  bio: string | null;
-  tenant_id: string;
-  national_id?: string | null;
-  profile_pic: string | null;
-  national_id_number: string | null;
-  is_otp: boolean;
-  notify: boolean;
-  newsletter: boolean;
-  popup: boolean;
-  verification_error: string | null;
-  dl_number?: string | null;
-  submitted_document?: boolean | null;
-  language?: string | null;
-  dob: string | null;
-  postal_code: string | null;
-  timezone: string | null;
-  socials: Record<string, any> | null;
-  fleetmaster_tenants: Record<string, any> | null;
-}
 
 interface UserContextType {
   profile: User | null;
@@ -77,7 +47,6 @@ export function UserProvider({
   // If the server provided full data, turn loading off right away (false).
   // Otherwise, if a token exists but no profile cache was found, set to true to look it up.
   const [loading, setLoading] = useState<boolean>(!initialUser);
-  const router = useRouter();
   const { showToast } = useToast();
   const [notifications, setNotifications] = useState<any[]>([]);
 
@@ -147,12 +116,15 @@ export function UserProvider({
       const data = await response.json();
 
       if (response.ok) {
-        setProfile(data.user);
-        applyThemeVariables(data.user?.fleetmaster_tenants?.color);
+        // only set profile if user is verified 
+        if (data.user?.verification_status?.phone && data.user?.verification_status?.email) {
+          setProfile(data.user);
+          applyThemeVariables(data.user?.fleetmaster_tenants?.color);
+        }
         return {
           success: true,
           emailVerified: data.user?.verification_status?.email,
-          phoneVerified: data.user?.phone_verified,
+          phoneVerified: data.user?.verification_status?.phone,
           id: data.user?.id,
           is_otp: data.user?.is_otp,
         };
@@ -183,7 +155,7 @@ export function UserProvider({
     if (response.ok) {
       setProfile(null);
       showToast("You have been logged out successfully!", "info");
-      
+
       return { success: true };
     } else {
       return { success: false };

@@ -9,7 +9,6 @@ import Button from "../ui/button/Button";
 import {
   verifyOTP,
   resendOTP,
-  sendEmailVerification,
 } from "@/app/actions/verification/email";
 import { retryDuration } from "@/data/globalExports";
 
@@ -18,13 +17,13 @@ export default function ValidateEmailForm({
 }: {
   params: { tenant: string };
 }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
   const [otp, setOtp] = useState("");
   const [email, setEmail] = useState("");
   const [id, setId] = useState("");
   const [role, setRole] = useState("");
+  const [tenant, setTenant] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sendingCode, setSendingCode] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -41,9 +40,11 @@ export default function ValidateEmailForm({
     if (verificationParam) {
       try {
         const decodedData = JSON.parse(atob(verificationParam));
+        console.log(decodedData)
         if (decodedData.email) setEmail(decodedData.email);
         if (decodedData.id) setId(decodedData.id);
         if (decodedData.role) setRole(decodedData.role);
+        if (decodedData.tenant) setTenant(decodedData.tenant);
       } catch (error) {
         console.error("Failed to decode verification parameter:", error);
       }
@@ -73,14 +74,11 @@ export default function ValidateEmailForm({
     const res = await verifyOTP(btoa(JSON.stringify({ email, id, otp })), role);
 
     if (res.success) {
-      showToast(
-        `Email verification complete! You will be redirected to login in 5 sec.`,
-        "success",
-      );
+      showToast(`Email verification complete! You can now login.`);
 
       setTimeout(() => {
         window.close();
-      }, 5000);
+      }, 3000);
     } else {
       showToast(`${res.error?.message || "Failed to verify OTP"}`, "error");
       setErrorMessage(`${res.error?.message || "Failed to verify OTP"}`);
@@ -93,7 +91,7 @@ export default function ValidateEmailForm({
     if (cooldown > 0 || !email) return;
 
     startTransition(async () => {
-      const res = await resendOTP(btoa(email), role);
+      const res = await resendOTP(btoa(email), role, role === 'Client' ? tenant.trim() : null );
 
       if (res.success) {
         showToast("A new verification code has been sent.", "success");
@@ -110,9 +108,9 @@ export default function ValidateEmailForm({
   // Safe email masking helper
   const maskedEmail = email
     ? email.replace(/(.{2})(.*)(?=@)/, (_, start, middle) => {
-        const maskedMiddle = middle.replace(/./g, "*").slice(0, 5);
-        return `${start}${maskedMiddle}`;
-      })
+      const maskedMiddle = middle.replace(/./g, "*").slice(0, 5);
+      return `${start}${maskedMiddle}`;
+    })
     : "";
 
   return (

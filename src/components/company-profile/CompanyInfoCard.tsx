@@ -9,10 +9,12 @@ import ExpiryBanner from "./ExpiryBanner";
 import { formatedValue } from "../ecommerce/MonthlyTarget";
 import Checkbox from "../form/input/Checkbox";
 import LoadingInfo from "../loading/LoadingInfo";
+import { Tenant } from "@/data/globalExports";
+
 
 export default function CompanyInfoCard() {
   const { profile } = useUser();
-  const [company, setCompany] = useState<any>(null);
+  const [company, setCompany] = useState<Tenant>(null);
   const [loadingCompany, setLoadingCompany] = useState<boolean>(true);
 
   useEffect(() => {

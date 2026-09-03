@@ -35,7 +35,7 @@ export default function SignInForm({ tenant }: Tenant) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [host, setHost] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [verifyData, setVerifyData] = useState({ email: "", id: null });
+  const [verifyData, setVerifyData] = useState({ email: "", id: null, role: '', tenant: '' });
 
   useEffect(() => {
     // This code only runs in the browser
@@ -73,7 +73,10 @@ export default function SignInForm({ tenant }: Tenant) {
       : await login(isClient() ? "Client" : "admin", email, password, tenant);
 
     if (result.success) {
-      if (!isTenantManager() && isClient()) {
+      // for now we will try verification for non tenant mnagers meaning clients and admins 
+
+      // if (!isTenantManager() && isClient()) {
+      if (!isTenantManager()) {
         // check if email is verified before redirecting to dashboard
         if (!result.emailVerified) {
           showToast(
@@ -82,8 +85,8 @@ export default function SignInForm({ tenant }: Tenant) {
           );
           setIsRedirecting(false);
           setErrorMessage("Please verify your email to access your account.");
-
-          setVerifyData({ email, id: result.id });
+          setIsLoggingIn(false);
+          setVerifyData({ email, id: result.id, role: isClient() ? "Client" : "admin", tenant: tenant.trim() });
           return;
         }
       }
@@ -199,12 +202,13 @@ export default function SignInForm({ tenant }: Tenant) {
                   {errorMessage.includes(
                     "Please verify your email to access your account.",
                   ) && (
-                      <a
+                      <Link
+                        target="_blank"
                         href={`/verify-email?v=${btoa(JSON.stringify(verifyData))}`}
                         className="mt-1 text-xs text-blue-500 underline"
                       >
                         Verify Now
-                      </a>
+                      </Link>
                     )}
                 </div>
                 <div>
@@ -269,13 +273,13 @@ export default function SignInForm({ tenant }: Tenant) {
 
             <div className="mt-5">
               <p className="text-center text-sm font-normal text-gray-700 sm:text-start dark:text-gray-400">
-                Don&apos;t have an account? {""}
+                Don&apos;t have an account? {" "}
                 {tenant ? (
                   <Link
                     href="/signup"
                     className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
                   >
-                    Signup
+                    Signup for an account.
                   </Link>
                 ) : (
                   <Link

@@ -57,10 +57,11 @@ const VehiclePage = async ({ params }: VehiclePageProps) => {
   const isDashboard =
     referer.includes("dashboard") || xUrl.includes("dashboard");
 
-  const response = await fetchVehicleDetails(Number(vehicleID));
+  const [response, bookingsResponse] = await Promise.all([
+    fetchVehicleDetails(Number(vehicleID)),
+    fetchBookingsForVehicle(vehicleID),
+  ]);
   const VehicleDetails = response?.data;
-
-  const bookingsResponse = await fetchBookingsForVehicle(vehicleID);
 
   if (bookingsResponse.success) {
     loading = false;

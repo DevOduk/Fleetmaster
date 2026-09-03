@@ -7,6 +7,7 @@ import BluetoothDriveOutlinedIcon from "@mui/icons-material/BluetoothDriveOutlin
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import type { ElementType } from "react";
 
+// DATA TYPES AND INTERFACES 
 export interface PricingFeature {
   text: string;
   included: boolean;
@@ -39,6 +40,83 @@ export interface Product {
   discount: number;
 }
 
+
+export interface User {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  created_at: string;
+  city: string;
+  verification_status: Record<string, boolean>;
+  country: string | null;
+  county: string | null;
+  role: string | null;
+  bio: string | null;
+  tenant_id: string;
+  national_id?: string | null;
+  profile_pic: string | null;
+  national_id_number: string | null;
+  is_otp: boolean;
+  notify: boolean;
+  newsletter: boolean;
+  popup: boolean;
+  verification_error: string | null;
+  dl_number?: string | null;
+  submitted_document?: boolean | null;
+  language?: string | null;
+  password?: string | null;
+  last_seen?: string | null;
+  dob: string | null;
+  postal_code: string | null;
+  timezone: string | null;
+  socials: Record<string, any> | null;
+  fleetmaster_tenants: Record<string, any> | null;
+}
+
+export type Yard = {
+  id?: string;
+  title: string;
+  description: string;
+  image_url: string;
+  location: [number, number];
+};
+
+export interface Tenant {
+  id: string;
+  slug: string;
+  name: string;
+  phone: string | null;
+  about: string | null;
+  email: string | null;
+  country: string | null;
+  county: string | null;
+  timezone: string | null;
+  description: string | null;
+  tenant_logo: string | null;
+  subscription_status: string | null;
+  subscription_plan: string | null;
+  created_at: string;
+  expiry_date: string | null;
+  website?: string | null;
+  zip_code?: string | null;
+  address?: string | null;
+  language: string | null;
+  color: string | null;
+  city: string | null;
+  currency: string | null;
+  employees: string | null;
+  buffer: number;
+  leasing_accepted: boolean;
+  monthly_target: number;
+  admins: User[];
+  yards: Yard[];
+}
+
+
+
+// VALUES AND CONSTANTS 
 export const retryDuration = 60 * 2; //2.5 minutes in seconds
 
 export const defaultVehicleImages = [

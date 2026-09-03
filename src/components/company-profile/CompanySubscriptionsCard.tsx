@@ -72,8 +72,10 @@ export default function CompanySubscriptionsCard() {
         return;
       }
       if (profile?.tenant_id) {
-        const res = await fetchTenantDetails(profile.tenant_id);
-        const subRes = await fetchTenantSubscriptions(profile.tenant_id);
+        const [res, subRes] = await Promise.all([
+          fetchTenantDetails(profile.tenant_id),
+          fetchTenantSubscriptions(profile.tenant_id),
+        ]);
 
         setCompany(res.data);
         setSubScriptionsList([...(subRes.data || []), defaultSubscription]);
@@ -255,9 +257,6 @@ export default function CompanySubscriptionsCard() {
                 description: `Subscription renewal for package: ${subscriptionPlans[selectedIndex]?.name}`,
               };
 
-              await createPayment(newPayment);
-              await createExpense(newExpense);
-
               const { admins, yards, ...cleanData } = company;
 
               const updatedTenant = {
@@ -267,9 +266,17 @@ export default function CompanySubscriptionsCard() {
                 expiry_date: newExpiryIsoString,
               }
 
-              const { data } = await updateTenantDetails(profile?.tenant_id, updatedTenant);
-              setCompany(data);
+              await Promise.all([
+                createPayment(newPayment),
+                createExpense(newExpense),
+              ]);
 
+              const [{ data }, subRes] = await Promise.all([
+                updateTenantDetails(profile?.tenant_id, updatedTenant),
+                fetchTenantSubscriptions(profile.tenant_id),
+              ]);
+
+              setCompany(data);
               setProfile((profile: any) => ({
                 ...profile,
                 fleetmaster_tenants: {
@@ -278,9 +285,6 @@ export default function CompanySubscriptionsCard() {
                   expiry_date: newExpiryIsoString
                 }
               }))
-
-              const subRes = await fetchTenantSubscriptions(profile.tenant_id);
-
               setSubScriptionsList([
                 ...(subRes.data || []),
                 defaultSubscription,

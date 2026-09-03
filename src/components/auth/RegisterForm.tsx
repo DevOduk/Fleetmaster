@@ -36,7 +36,6 @@ function RegisterFormInner() {
   const [tenantId, setTenantId] = useState<string | null>(
     searchParams.get("id"),
   );
-
   const [first, setFirst] = useState("First");
   const [last, setLast] = useState("Last");
   const [email, setEmail] = useState("admin@gmail.com");
@@ -44,7 +43,6 @@ function RegisterFormInner() {
   const [password, setPassword] = useState("123456789");
   const [confirmPassword, setConfirmPassword] = useState("123456789");
   const [showPassword, setShowPassword] = useState(false);
-
   const [companyStep, setCompanyStep] = useState(1);
   const [companyDetils, setCompanyDetails] = useState({
     name: "Test Company",

@@ -190,9 +190,9 @@ const YardsContent: React.FC = () => {
         <UpdateYardsModal
           tenantId={adminProfile?.tenant_id}
           isOpen={isOpen}
-          setIsOpen={setIsOpen}
+          setIsOpenAction={setIsOpen}
           yardDetails={selectedEvent}
-          setCompanyFormData={setCompanyFormData}
+          setCompanyFormDataAction={setCompanyFormData}
           companyFormData={companyFormData}
         />
       )}

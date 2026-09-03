@@ -549,7 +549,6 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
 
             const statusData = await statusRes.json();
             const resultCode = statusData.ResultCode;
-            const responseCode = statusData.ResponseCode;
 
             // Ignore intermediate processing states (e.g. "The service request has been accepted successfully" with no ResultCode yet)
             if (!resultCode || resultCode === "PROCESSING") {
@@ -588,16 +587,17 @@ export default function ViewBooking({ BookingID }: { BookingID: number }) {
                   "Confirmed! Your booking has been processed successfully.",
               };
 
-              await updateBookingDetails(BookingID, {
-                total: Number(bookingDetails.total + grandTotalAmount),
-                renter_phone: sanitizedNumber,
-                rental_end: newBookingDetails.rental_end,
-                rental_days: Number(dayGap + bookingDetails?.rental_days),
-                intasend_invoice_id: targetCheckoutId,
-                payment_ref: mpesaRef,
-              });
-
-              const dbRes = await createPayment(newPayment);
+              const [, dbRes] = await Promise.all([
+                updateBookingDetails(BookingID, {
+                  total: Number(bookingDetails.total + grandTotalAmount),
+                  renter_phone: sanitizedNumber,
+                  rental_end: newBookingDetails.rental_end,
+                  rental_days: Number(dayGap + bookingDetails?.rental_days),
+                  intasend_invoice_id: targetCheckoutId,
+                  payment_ref: mpesaRef,
+                }),
+                createPayment(newPayment),
+              ]);
               if (!dbRes.success) {
                 await createPayment(newPayment);
               }

@@ -79,7 +79,7 @@ export async function createTenantAdmin(newTenantAdmin: any) {
           error.details?.includes("email")
         ) {
           friendlyMessage =
-            "An account with this email address already exists. Sign in or use a different email.";
+            "Email Blocked. Sign in or use a different email.";
         } else if (
           error.message.includes("phone") ||
           error.details?.includes("phone")

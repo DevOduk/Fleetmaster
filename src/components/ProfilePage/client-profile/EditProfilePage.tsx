@@ -297,7 +297,7 @@ function EditProfilePage() {
               />
 
               {/* use a different page to change phone and if email changes redirect to verify again  */}
-              <EditableInput
+              {/* <EditableInput
                 placeholder="example@email.com"
                 type="email"
                 label="Email Address"
@@ -309,7 +309,7 @@ function EditProfilePage() {
                 label="Phone"
                 value={profileDetails?.phone}
                 onChange={(v) => handleInputChange("phone", v)}
-              />
+              /> */}
               <EditableInput
                 placeholder="Write a short bio about yourself"
                 type="text"

@@ -164,7 +164,7 @@ export default function ClientHeader() {
 
   return (
     <>
-      {showVerificationMessage && (
+      {profile && showVerificationMessage && (
         <div className="border-error-500 bg-error-50 dark:border-error-500/30 dark:bg-error-500/15 relative z-40 container m-2 mx-auto flex items-center gap-3 rounded-xl border p-3">
           <svg
             className="fill-current"
@@ -183,8 +183,8 @@ export default function ClientHeader() {
           </svg>
           <p className="w-full text-sm text-gray-500 dark:text-gray-400">
             Your account is not verified. Some features may not work.{" "}
-            <Link className="text-brand-500" href={"/profile/edit#documents"}>
-              Verify Now
+            <Link className="text-brand-500" href={"/profile/edit"}>
+              Finish Setup
             </Link>
           </p>
           <CloseOutlinedIcon

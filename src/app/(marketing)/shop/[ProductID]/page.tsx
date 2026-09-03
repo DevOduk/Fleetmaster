@@ -33,9 +33,7 @@ export default async function ShopPage({
         { label: "Home", href: "/" },
         { label: "Shop", href: "/shop" },
     ];
-    const allParams = await params;
-    const productId = allParams.ProductID;
-
+    const productId = (await params).ProductID;
     const ProductDetails: Product | undefined = Products.find(p => p.id === productId);
 
     if (!ProductDetails) {

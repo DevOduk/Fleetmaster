@@ -153,16 +153,17 @@ export async function submitAndVerifyDocument(
       ? `Dear ${userDetails.first_name},\nYour driving license document have been successfully verified!`
       : `Dear ${userDetails.first_name},\nYour verification process failed due to the following reasons:\n${errors.join("\n")}\nPlease update your profile details and re-upload clear documents.`;
 
-    await resend.emails.send({
-      from: "FleetMaster <onboarding@resend.dev>", // Update with your custom verified domain
-      to: email,
-      subject: emailSubject,
-      html: emailHtml,
-    }).catch((emailErr) => {
-      console.error("Resend email delivery failure:", emailErr);
-    });
-
-    await dispatchSystemNotification(emailSubject, userDetails.id, "System", notificationBody)
+    await Promise.all([
+      resend.emails.send({
+        from: "FleetMaster <onboarding@resend.dev>", // Update with your custom verified domain
+        to: email,
+        subject: emailSubject,
+        html: emailHtml,
+      }).catch((emailErr) => {
+        console.error("Resend email delivery failure:", emailErr);
+      }),
+      dispatchSystemNotification(emailSubject, userDetails.id, "System", notificationBody),
+    ]);
   }
 
   return { success: allPassed, data, error: null };
