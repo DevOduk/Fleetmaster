@@ -22,6 +22,7 @@ import { getTenantAdmins } from "@/app/actions/admin";
 import { subscriptionPlans } from "@/data/globalExports";
 import { formatedTimestamp } from "../company-profile/ExpiryBanner";
 import { useAdminUsers } from "@/context/AdminUsersContext";
+import { Clipboard } from "../ecommerce/TopUsers";
 
 // 1. Explicitly type your User structure
 export interface AdminUser {
@@ -266,18 +267,24 @@ const SystemAdmins = () => {
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
                           {user.email ? (
-                            <a
-                              className="text-brand-500 hover:underline"
-                              href={`mailto:${user.email}`}
-                            >
-                              {user.email}
-                            </a>
+                            <div className="flex items-center gap-2">
+                              <a
+                                className="text-brand-500 hover:underline"
+                                href={`mailto:${user.email}`}
+                              >
+                                {user.email}
+                              </a>
+                              <Clipboard text={user.email} />
+                            </div>
                           ) : (
                             <span>—</span>
                           )}
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                          {user.phone || "—"}
+                          <div className="flex items-center gap-2">
+                            {user.phone || "—"}
+                            <Clipboard text={user.phone} />
+                          </div>
                         </TableCell>
                         <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
                           {/* <Badge variant={user.role === 'super_admin' ? 'success' : 'primary'}> */}

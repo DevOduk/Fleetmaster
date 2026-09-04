@@ -177,13 +177,13 @@ const AppHeader: React.FC = () => {
 
               <Link href="/" className="text-gray-400 lg:hidden">
                 {profile?.fleetmaster_tenants?.subscription_plan ===
-                "Expert" ? (
+                  "Expert" ? (
                   <>
                     <Image
                       width={154}
                       height={32}
-              sizes="(max-width: 768px) 120px, 154px"
-              priority
+                      sizes="(max-width: 768px) 120px, 154px"
+                      priority
                       className="dark:hidden"
                       src="./images/logo/logo_expert.svg"
                       alt=""
@@ -191,8 +191,8 @@ const AppHeader: React.FC = () => {
                     <Image
                       width={154}
                       height={32}
-              sizes="(max-width: 768px) 120px, 154px"
-              priority
+                      sizes="(max-width: 768px) 120px, 154px"
+                      priority
                       className="hidden dark:block"
                       src="./images/logo/logo_expert_dark.svg"
                       alt=""
@@ -204,8 +204,8 @@ const AppHeader: React.FC = () => {
                     <Image
                       width={154}
                       height={32}
-              sizes="(max-width: 768px) 120px, 154px"
-              priority
+                      sizes="(max-width: 768px) 120px, 154px"
+                      priority
                       className="dark:hidden"
                       src="./images/logo/logo_pro.svg"
                       alt=""
@@ -213,8 +213,8 @@ const AppHeader: React.FC = () => {
                     <Image
                       width={154}
                       height={32}
-              sizes="(max-width: 768px) 120px, 154px"
-              priority
+                      sizes="(max-width: 768px) 120px, 154px"
+                      priority
                       className="hidden dark:block"
                       src="./images/logo/logo_pro_dark.svg"
                       alt=""
@@ -225,8 +225,8 @@ const AppHeader: React.FC = () => {
                     <Image
                       width={154}
                       height={32}
-              sizes="(max-width: 768px) 120px, 154px"
-              priority
+                      sizes="(max-width: 768px) 120px, 154px"
+                      priority
                       className="dark:hidden"
                       src="/images/logo/logo.svg"
                       alt=""
@@ -234,8 +234,8 @@ const AppHeader: React.FC = () => {
                     <Image
                       width={154}
                       height={32}
-              sizes="(max-width: 768px) 120px, 154px"
-              priority
+                      sizes="(max-width: 768px) 120px, 154px"
+                      priority
                       className="hidden dark:block"
                       src="/images/logo/logo-dark.svg"
                       alt=""
@@ -311,9 +311,8 @@ const AppHeader: React.FC = () => {
             </div>
           </div>
           <div
-            className={`${
-              isApplicationMenuOpen ? "flex" : "hidden"
-            } shadow-theme-md w-full items-center justify-between gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0 lg:shadow-none`}
+            className={`${isApplicationMenuOpen ? "flex" : "hidden"
+              } shadow-theme-md w-full items-center justify-between gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0 lg:shadow-none`}
           >
             <div className="2xsm:gap-3 flex items-center gap-2">
               {profile?.fleetmaster_tenants?.name && (

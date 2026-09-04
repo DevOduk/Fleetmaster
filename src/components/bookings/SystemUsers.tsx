@@ -17,6 +17,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { subscriptionPlans } from "@/data/globalExports";
 import { formatedTimestamp } from "../company-profile/ExpiryBanner";
 import { useAdminUsers } from "@/context/AdminUsersContext";
+import { Clipboard } from "../ecommerce/TopUsers";
 
 // 1. Explicitly type your User structure
 export interface AdminUser {
@@ -62,7 +63,6 @@ const SystemUsers = () => {
   const pathname = usePathname();
   const { profile } = useUser();
   const { clients: initialUsers } = useAdminUsers();
-console.log(initialUsers)
 
   // Apply dark mode styles to leaflet
   useEffect(() => {
@@ -174,6 +174,12 @@ console.log(initialUsers)
                       isHeader
                       className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
                     >
+                      Country
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
+                    >
                       Email
                     </TableCell>
                     <TableCell
@@ -234,24 +240,31 @@ console.log(initialUsers)
                             {user.bio || "[ No bio available ]"}
                           </TableCell>
                           <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                            {user.country}
+                          </TableCell>
+                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
                             {user.email ? (
-                              <a
-                                className="text-brand-500 hover:underline"
-                                href={`mailto:${user.email}`}
-                              >
-                                {user.email}
-                              </a>
+                              <div className="flex items-center gap-2">
+                                <a
+                                  className="text-brand-500 hover:underline"
+                                  href={`mailto:${user.email}`}
+                                >
+                                  {user.email}
+                                </a>
+                                <Clipboard text={user.email} />
+                              </div>
                             ) : (
                               <span>—</span>
                             )}
                           </TableCell>
                           <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                            {user.phone || "—"}
+                            <div className="flex items-center gap-2">
+                              {user.phone || "—"}
+                              <Clipboard text={user.phone} />
+                            </div>
                           </TableCell>
                           <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                            {/* <Badge variant={user.role === 'super_admin' ? 'success' : 'primary'}> */}
                             {user.role}
-                            {/* </Badge> */}
                           </TableCell>
                           <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
                             {user.last_seen

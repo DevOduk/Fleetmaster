@@ -7,12 +7,11 @@ import Button from "@/components/ui/button/Button";
 import { useUser } from "@/context/UserContext";
 import {
   ArrowRightIcon,
-  ChevronLeftIcon,
   EyeCloseIcon,
   EyeIcon,
 } from "@/icons";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { useToast } from "@/context/ToastContext";
@@ -33,17 +32,16 @@ export default function SignInForm({ tenant }: Tenant) {
   const [isChecked, setIsChecked] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [host, setHost] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [verifyData, setVerifyData] = useState({ email: "", id: null, role: '', tenant: '' });
-
-  useEffect(() => {
-    // This code only runs in the browser
-    if (typeof window !== "undefined") {
-      setHost(window.location.host);
-    }
-  }, []);
-
+  const searchParams = new URLSearchParams(
+    typeof window !== "undefined" ? window.location.search : ""
+  );
+  const encodedRef = searchParams.get("r");
+  const originalUrl = encodedRef ? decodeURIComponent(atob(encodedRef)) : "/";
+  const safeOriginalUrl = originalUrl.startsWith("/") ? originalUrl : `/${originalUrl}`;
+console.log('originalUrl',originalUrl)
+console.log('safeOriginalUrl',safeOriginalUrl)
   const handleSubmit = async () => {
     setIsLoggingIn(true);
     setErrorMessage("");
@@ -73,9 +71,7 @@ export default function SignInForm({ tenant }: Tenant) {
       : await login(isClient() ? "Client" : "admin", email, password, tenant);
 
     if (result.success) {
-      // for now we will try verification for non tenant mnagers meaning clients and admins 
-
-      // if (!isTenantManager() && isClient()) {
+      // verifying both clients and admins with the exception of system admins 
       if (!isTenantManager()) {
         // check if email is verified before redirecting to dashboard
         if (!result.emailVerified) {
@@ -104,17 +100,13 @@ export default function SignInForm({ tenant }: Tenant) {
         "Login successful! Redirecting in 5 seconds...",
         "success",
       );
-
       setIsRedirecting(true);
-      const searchParams = new URLSearchParams(window.location.search);
-      const encodedRef = searchParams.get("r");
 
       setTimeout(() => {
         if (encodedRef) {
           try {
             // Decode the URL-encoded path safely
-            const originalUrl = decodeURIComponent(atob(encodedRef));
-            router.push(originalUrl);
+            router.push(safeOriginalUrl);
 
             return;
           } catch {
@@ -123,7 +115,7 @@ export default function SignInForm({ tenant }: Tenant) {
         }
 
         // Fallback only if no encodedRef was found or decoding failed
-        router.replace("/");
+        router.replace(safeOriginalUrl);
       }, 5000);
     } else {
       showToast(result.error || "Invalid credentials", "error");
@@ -139,7 +131,7 @@ export default function SignInForm({ tenant }: Tenant) {
           <div className="mb-5 sm:mb-8">
             {(profile || adminProfile) && (
               <Link
-                href={"/"}
+                href={safeOriginalUrl}
                 className="text-brand-500 mb-2 flex items-center gap-2"
               >
                 <ArrowRightIcon className="r rotate-180" /> Signed in as{" "}

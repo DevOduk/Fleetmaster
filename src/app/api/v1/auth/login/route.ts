@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     // 3. Fail explicitly if no user matches filters
     if (!userAccount) {
       return NextResponse.json(
-        { error: "No user found with this email and tenant combination." },
+        { error: "No user found with these credentials." },
         { status: 401 },
       );
     }

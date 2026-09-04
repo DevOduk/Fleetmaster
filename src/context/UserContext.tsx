@@ -117,7 +117,9 @@ export function UserProvider({
 
       if (response.ok) {
         // only set profile if user is verified 
-        if (data.user?.verification_status?.phone && data.user?.verification_status?.email) {
+        if (
+          data.user?.verification_status?.email
+        ) {
           setProfile(data.user);
           applyThemeVariables(data.user?.fleetmaster_tenants?.color);
         }

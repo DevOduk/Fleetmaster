@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
@@ -8,7 +9,7 @@ import Badge from "@/components/ui/badge/Badge";
 import { useUser } from "@/context/UserContext";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import { usePathname, useSearchParams } from "next/navigation";
-import { userVerified } from "@/utils/clients/checkverification";
+import { adminUserVerified } from "@/utils/clients/checkverification";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -57,9 +58,8 @@ export default function UserDropdown() {
           </span>
 
           <svg
-            className={`stroke-gray-500 transition-transform duration-200 dark:stroke-gray-400 ${
-              isOpen ? "rotate-180" : ""
-            }`}
+            className={`stroke-gray-500 transition-transform duration-200 dark:stroke-gray-400 ${isOpen ? "rotate-180" : ""
+              }`}
             width="18"
             height="20"
             viewBox="0 0 18 20"
@@ -92,7 +92,7 @@ export default function UserDropdown() {
         <div>
           <span className="text-theme-sm block font-medium text-gray-700 dark:text-gray-300">
             {profile?.first_name} {profile?.last_name} ●{" "}
-            {userVerified(profile) ? (
+            {adminUserVerified(profile) ? (
               <Badge size="sm" color="success">
                 Verified
               </Badge>

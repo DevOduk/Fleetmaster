@@ -1,4 +1,6 @@
 "use client";
+
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,7 +12,49 @@ import Badge from "../ui/badge/Badge";
 import Link from "next/link";
 import { Avatar } from "@mui/material";
 import { User } from "@/data/globalExports";
+import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
+import InventoryOutlinedIcon from "@mui/icons-material/InventoryOutlined";
+import { useToast } from "@/context/ToastContext";
 
+export const Clipboard = ({ text }: { text: string }) => {
+  const [copied, setCopied] = useState(false);
+  const { showToast } = useToast();
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      showToast('Item Copied to Clipboard!');
+
+      window.setTimeout(() => setCopied(false), 4000);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      aria-label={copied ? "Copied to clipboard" : "Copy to clipboard"}
+      className="flex items-center justify-center rounded-md p-1 text-gray-500 transition hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+      title={copied ? "Copied!" : "Copy"}
+    >
+      {copied ? (
+        <InventoryOutlinedIcon
+          className="cursor-pointer text-success-500"
+          sx={{ fontSize: "1rem" }}
+          color="inherit"
+        />
+      ) : (
+        <ContentCopyOutlinedIcon
+          className="cursor-pointer text-brand-500"
+          sx={{ fontSize: "1rem" }}
+        />
+      )}
+    </button>
+  );
+};
 
 export default function TopUsers({
   clients,
@@ -95,17 +139,19 @@ export default function TopUsers({
                               <p className="text-theme-sm font-medium text-gray-800 dark:text-white/90">
                                 {client.first_name} {client.last_name}
                               </p>
-                              <span className="text-theme-xs text-gray-500 dark:text-gray-400">
-                                {client.email}
+                              <span className="text-theme-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                {client.email} <Clipboard text={client.email} />
                               </span>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
-                          {client.role || "Customer"}
+                          {client.role}
                         </TableCell>
                         <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
-                          {client.phone || "N/A"}
+                          <div className="flex items-center gap-2">
+                            {client.phone || "N/A"} <Clipboard text={client.phone} />
+                          </div>
                         </TableCell>
                         <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
                           {new Date(client.created_at).toLocaleDateString()}
