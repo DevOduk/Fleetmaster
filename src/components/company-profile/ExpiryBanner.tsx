@@ -33,15 +33,24 @@ export const getExpiryString = (expiryDate: string) => {
   const minutes = Math.floor((diff % msPerHour) / msPerMinute);
   const seconds = Math.floor((diff % msPerMinute) / msPerSecond);
 
-  if (months > 0)
-    return `Expires in ${months} month${months > 1 ? "s" : ""} ${days} day${days !== 1 ? "s" : ""}`;
-  if (weeks > 0)
-    return `Expires in ${weeks} week${weeks > 1 ? "s" : ""} ${days} day${days !== 1 ? "s" : ""}`;
-  if (days > 0)
-    return `Expires in ${days} day${days !== 1 ? "s" : ""} ${hours} hour${hours !== 1 ? "s" : ""}`;
-  if (hours > 0)
-    return `Expires in ${hours} hour${hours !== 1 ? "s" : ""} ${minutes} min${minutes !== 1 ? "s" : ""}`;
-  return `Expires in ${minutes} min${minutes !== 1 ? "s" : ""} ${seconds} sec${seconds !== 1 ? "s" : ""}`;
+  const formatValue = (value: number, singular: string, plural = `${singular}s`) =>
+    `${value} ${value === 1 ? singular : plural}`;
+
+  const units = [
+    [months, "month"],
+    [weeks, "week"],
+    [days, "day"],
+    [hours, "hour"],
+    [minutes, "min"],
+    [seconds, "sec"],
+  ] as const;
+
+  const remaining = units
+    .filter(([value]) => value > 0)
+    .map(([value, unit]) => formatValue(value, unit));
+
+  // Keep the countdown meaningful even when less than one second remains.
+  return `Expires in ${remaining.slice(0,2).join(" ")}`;
 };
 
 export const formatedTimestamp = (date: string) => {

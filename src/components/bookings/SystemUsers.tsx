@@ -62,7 +62,7 @@ const SystemUsers = () => {
   const pathname = usePathname();
   const { profile } = useUser();
   const { clients: initialUsers } = useAdminUsers();
-
+console.log(initialUsers)
 
   // Apply dark mode styles to leaflet
   useEffect(() => {

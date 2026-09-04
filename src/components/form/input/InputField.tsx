@@ -1,22 +1,24 @@
-import React, { FC } from "react";
+import React, { forwardRef } from "react";
 
 interface InputProps {
   type?:
-    | "text"
-    | "number"
-    | "email"
-    | "password"
-    | "date"
-    | "time"
-    | "datetime-local"
-    | string;
+  | "text"
+  | "number"
+  | "email"
+  | "password"
+  | "date"
+  | "time"
+  | "datetime-local"
+  | string;
   id?: string;
   name?: string;
   placeholder?: string;
   value?: string | number;
   defaultValue?: string | number;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onBlur?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   className?: string;
   min?: string;
   max?: string;
@@ -29,7 +31,7 @@ interface InputProps {
   hint?: string; // Optional hint text
 }
 
-const Input: FC<InputProps> = ({
+const Input = forwardRef<HTMLInputElement, InputProps>(({
   type = "text",
   id,
   name,
@@ -38,6 +40,8 @@ const Input: FC<InputProps> = ({
   defaultValue,
   onChange,
   onBlur,
+  onKeyDown,
+  onFocus,
   className = "",
   min,
   max,
@@ -48,7 +52,7 @@ const Input: FC<InputProps> = ({
   success = false,
   error = false,
   hint,
-}) => {
+}, ref) => {
   // Determine input styles based on state (disabled, success, error)
   let inputClasses = `h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 ${className}`;
 
@@ -66,6 +70,7 @@ const Input: FC<InputProps> = ({
   return (
     <div className="relative" suppressHydrationWarning>
       <input
+        ref={ref}
         type={type}
         id={id}
         name={name}
@@ -73,6 +78,8 @@ const Input: FC<InputProps> = ({
         value={value ?? ""}
         {...(type !== "tel" && { defaultValue })}
         onChange={onChange}
+        onKeyDown={onKeyDown}
+        onFocus={onFocus}
         onBlur={onBlur}
         min={min}
         max={max}
@@ -86,19 +93,20 @@ const Input: FC<InputProps> = ({
       {/* Optional Hint Text */}
       {hint && (
         <p
-          className={`mt-1.5 text-xs ${
-            error
-              ? "text-error-500"
-              : success
-                ? "text-success-500"
-                : "text-gray-500"
-          }`}
+          className={`mt-1.5 text-xs ${error
+            ? "text-error-500"
+            : success
+              ? "text-success-500"
+              : "text-gray-500"
+            }`}
         >
           {hint}
         </p>
       )}
     </div>
   );
-};
+});
+
+Input.displayName = "Input";
 
 export default Input;

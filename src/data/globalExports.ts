@@ -2601,19 +2601,28 @@ export const timezones = [
   },
 ];
 
+
+const starterUserAccounts = 1;
+const proUserAccounts = 5;
+const expertUserAccounts = 30;
+
 export const subscriptionPlans: PricingPlan[] = [
   {
     name: "Starter",
-    tagline: "Solo entrepreneur, freelancer, one-person business",
+    tagline: "Solo entrepreneur, freelancer, one-person rental business",
     price: "450",
     currency: "Ksh",
     popular: false,
-    userAccounts: 1,
+    userAccounts: starterUserAccounts,
     ctaText: "Start free trial",
     ctaLink: "#",
     featuresTitle: "What you get",
     features: [
-      { text: " account", included: true, highlightedText: "1 user" },
+      {
+        text: " accounts",
+        included: true,
+        highlightedText: `${starterUserAccounts} user`,
+      },
       { text: " listings", included: true, highlightedText: "50 vehicles" },
       { text: "M-Pesa payment links", included: true },
       { text: "KRA eTIMS compliant receipts", included: true },
@@ -2633,12 +2642,16 @@ export const subscriptionPlans: PricingPlan[] = [
     price: "899",
     currency: "Ksh",
     popular: true,
-    userAccounts: 3,
+    userAccounts: 5,
     ctaText: "Start free trial",
     ctaLink: "#",
     featuresTitle: "Everything in Starter, plus",
     features: [
-      { text: " accounts", included: true, highlightedText: "3 user" },
+      {
+        text: " accounts",
+        included: true,
+        highlightedText: `${proUserAccounts} user`,
+      },
       { text: " listings", included: true, highlightedText: "200 vehicles" },
       {
         text: " (License verification)",
@@ -2670,12 +2683,16 @@ export const subscriptionPlans: PricingPlan[] = [
     price: "1299",
     currency: "Ksh",
     popular: false,
-    userAccounts: 30,
+    userAccounts: expertUserAccounts,
     ctaText: "Get started now",
     ctaLink: "#",
     featuresTitle: "Everything in Pro, plus",
     features: [
-      { text: " accounts", included: true, highlightedText: "30 user" },
+      {
+        text: " accounts",
+        included: true,
+        highlightedText: `${expertUserAccounts} user`,
+      },
       { text: " listings", included: true, highlightedText: "Unlimited" },
       { text: " expenses", included: true, highlightedText: "Unlimited" },
       { text: " custom domains", included: true, highlightedText: "Unlimited" },

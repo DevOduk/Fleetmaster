@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useTransition } from "react";
+import React, { useEffect, useRef, useState, useTransition } from "react";
 import { Avatar, Backdrop, CircularProgress } from "@mui/material";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
@@ -51,6 +51,7 @@ export default function AccountSettings({
     // "Change Email"
     // "Manage Your Account"
   );
+  const otpLength = 6;
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sendingCode, setSendingCode] = useState(false);
@@ -58,6 +59,8 @@ export default function AccountSettings({
   const [isPending, startTransition] = useTransition();
   const [cooldown, setCooldown] = useState(0); // shorter for sms
   const [errorMessage, setErrorMessage] = useState("");
+  const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+
   const isAdmin = profile?.role !== "Client";
   const isSystemAdmin = profile?.role === "System Administrator";
 
@@ -187,6 +190,29 @@ export default function AccountSettings({
     }
   };
 
+
+
+  const handleOtpDigitChange = (index: number, value: string) => {
+    const digits = value.replace(/[^0-9]/g, "");
+    if (!digits) {
+      const nextOtp = otp.split("");
+      nextOtp[index] = "";
+      setOtp(nextOtp.join(""));
+      return;
+    }
+
+    const nextOtp = otp.split("");
+    digits.slice(0, otpLength - index).split("").forEach((digit, offset) => {
+      nextOtp[index + offset] = digit;
+    });
+    const updatedOtp = nextOtp.slice(0, otpLength).join("");
+    setOtp(updatedOtp);
+
+    const nextIndex = Math.min(index + digits.length, otpLength - 1);
+    otpInputRefs.current[nextIndex]?.focus();
+  };
+
+
   const handleSendCode = async () => {
     setSendingCode(true);
     setSentCode(true);
@@ -240,7 +266,7 @@ export default function AccountSettings({
     });
   };
 
-  console.log('profileDetails',profile)
+  console.log('profileDetails', profile)
   // Rebuild the accurate current page URL dynamically
   const currentPageUrl = encodeURIComponent(
     searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
@@ -468,7 +494,7 @@ export default function AccountSettings({
                         .code,
                     ).slice(-3)}
                     . Please check your inbox and enter the code below to verify
-                    your email.
+                    your Phone.  If you did not receive it click 'Resend OTP'.
                   </p>
                   {/* phone verification otp block  */}
                   <div>
@@ -490,28 +516,51 @@ export default function AccountSettings({
                           <Label>
                             Enter OTP<span className="text-error-500">*</span>
                           </Label>
-                          <Input
-                            error={!!errorMessage}
-                            hint={
-                              errorMessage ||
-                              "Enter the 6-digit code sent to your phone."
+                          <p className="mt-1.5 text-xs text-gray-500"                  >
+                            Enter the 6-digit code sent to your phone.
+                          </p>
+                          <div className="mt-3 flex justify-center gap-3">
+                            {
+                              [...Array(otpLength)].map((_, i) => (
+                                <Input
+                                  error={!!errorMessage}
+                                  type="number"
+                                  id={"otp-" + i}
+                                  className="h-12 aspect-square text-center tracking-wide appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                  name={"otp-" + i}
+                                  maxLength={1}
+                                  value={otp[i] || ""}
+                                  ref={(input) => {
+                                    otpInputRefs.current[i] = input;
+                                  }}
+                                  onFocus={(e) => {
+                                    setErrorMessage('')
+                                    e.currentTarget.select()
+                                  }}
+                                  onChange={(e) => {
+                                    handleOtpDigitChange(i, e.target.value);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Backspace" && !otp[i] && i > 0) {
+                                      const previousIndex = i - 1;
+                                      const nextOtp = otp.split("");
+                                      nextOtp[previousIndex] = "";
+                                      setOtp(nextOtp.join(""));
+                                      otpInputRefs.current[previousIndex]?.focus();
+                                    }
+                                  }}
+                                  disabled={isLoading || sendingCode}
+                                />
+                              )
+                              )
                             }
-                            type="tel"
-                            id="otp"
-                            className="mt-2 w-full text-center tracking-wide"
-                            name="otp"
-                            maxLength={6}
-                            value={otp}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(
-                                /[^0-9]/g,
-                                "",
-                              );
-                              setOtp(value);
-                            }}
-                            placeholder="000000"
-                            disabled={isLoading || sendingCode}
-                          />
+                          </div>
+                          {
+                            errorMessage &&
+                            <p className="mt-3.5 text-xs text-center text-error-500">
+                              {errorMessage}
+                            </p>
+                          }
                         </div>
                         {/* <!-- Button --> */}
                         <div>
@@ -527,7 +576,7 @@ export default function AccountSettings({
                             className="w-full px-4! py-3! text-sm"
                           >
                             {!sentCode
-                              ? "Send OTP"
+                              ? "Resend OTP"
                               : isLoading
                                 ? "Verifying..."
                                 : sendingCode
@@ -676,7 +725,7 @@ export default function AccountSettings({
                   <p className="text-sm leading-6 text-gray-500 dark:text-gray-400">
                     We have sent a verification code to your email{" "}
                     {profileDetails?.new_email}. Please check your inbox and
-                    enter the code below to verify your email.
+                    enter the code below to verify your email. If you did not receive it check spam and click 'Resend OTP'.
                   </p>
                   {/* phone verification otp block  */}
                   <div>
@@ -698,28 +747,51 @@ export default function AccountSettings({
                           <Label>
                             Enter OTP<span className="text-error-500">*</span>
                           </Label>
-                          <Input
-                            error={!!errorMessage}
-                            hint={
-                              errorMessage ||
-                              "Enter the 6-digit code sent to your email."
+                          <p className="mt-1.5 text-xs text-gray-500"                  >
+                            Enter the 6-digit code sent to your email.
+                          </p>
+                          <div className="mt-3 flex justify-center gap-3">
+                            {
+                              [...Array(otpLength)].map((_, i) => (
+                                <Input
+                                  error={!!errorMessage}
+                                  type="number"
+                                  id={"otp-" + i}
+                                  className="h-12 aspect-square text-center tracking-wide appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                  name={"otp-" + i}
+                                  maxLength={1}
+                                  value={otp[i] || ""}
+                                  ref={(input) => {
+                                    otpInputRefs.current[i] = input;
+                                  }}
+                                  onFocus={(e) => {
+                                    setErrorMessage('')
+                                    e.currentTarget.select()
+                                  }}
+                                  onChange={(e) => {
+                                    handleOtpDigitChange(i, e.target.value);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Backspace" && !otp[i] && i > 0) {
+                                      const previousIndex = i - 1;
+                                      const nextOtp = otp.split("");
+                                      nextOtp[previousIndex] = "";
+                                      setOtp(nextOtp.join(""));
+                                      otpInputRefs.current[previousIndex]?.focus();
+                                    }
+                                  }}
+                                  disabled={isLoading || sendingCode}
+                                />
+                              )
+                              )
                             }
-                            type="tel"
-                            id="otp"
-                            className="mt-2 w-full text-center tracking-wide"
-                            name="otp"
-                            maxLength={6}
-                            value={otp}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(
-                                /[^0-9]/g,
-                                "",
-                              );
-                              setOtp(value);
-                            }}
-                            placeholder="000000"
-                            disabled={isLoading || sendingCode}
-                          />
+                          </div>
+                          {
+                            errorMessage &&
+                            <p className="mt-3.5 text-xs text-center text-error-500">
+                              {errorMessage}
+                            </p>
+                          }
                         </div>
                         {/* <!-- Button --> */}
                         <div>
@@ -735,7 +807,7 @@ export default function AccountSettings({
                             className="w-full px-4! py-3! text-sm"
                           >
                             {!sentCode
-                              ? "Send OTP"
+                              ? "Resend OTP"
                               : isLoading
                                 ? "Verifying..."
                                 : sendingCode

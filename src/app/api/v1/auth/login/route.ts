@@ -41,7 +41,11 @@ export async function POST(request: Request) {
       tenant && tenant.trim() ? tenant.trim().toLowerCase() : null;
     const profileFields = `id, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, notify, newsletter, popup, dob${normalizedType === "client" ? ", national_id_number, dl_number, verification_error, submitted_document, onboarded" : ""
       }, fleetmaster_tenants!inner(*)`;
-
+    const tableName =
+      normalizedType === "admin"
+        ? "fleetmaster_admins"
+        : "fleetmaster_clients";
+        
     // 1. QUERY ADMIN ACCOUNTS
     if (normalizedType === "admin") {
       const queryBuilder = targetTenantSlug
@@ -148,6 +152,32 @@ export async function POST(request: Request) {
         path: "/",
       });
     }
+
+        // alter the profile returned by /me.
+        if (userAccount) {
+          void (async () => {
+            try {
+              const supabase = await createClient();
+              const lastSeen = new Date().toISOString();
+    
+              const { error: lastSeenError } = await supabase
+                .from(tableName)
+                .update({ last_seen: lastSeen })
+                .eq("id", userAccount.id);
+    
+              if (lastSeenError) {
+                console.error("Failed to update user last_seen:", lastSeenError);
+                return;
+              }
+    
+              await Promise.all([
+                redis.del(`tenant:clients:${userAccount.tenant_id}`),
+              ]);
+            } catch (backgroundError) {
+              console.error("Background last_seen update failed:", backgroundError);
+            }
+          })();
+        }
 
     return response;
   } catch (err: any) {

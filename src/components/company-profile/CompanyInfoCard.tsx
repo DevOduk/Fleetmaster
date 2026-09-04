@@ -5,7 +5,7 @@ import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import ComponentCard from "../common/ComponentCard";
-import ExpiryBanner from "./ExpiryBanner";
+import ExpiryBanner, { getExpiryString } from "./ExpiryBanner";
 import { formatedValue } from "../ecommerce/MonthlyTarget";
 import Checkbox from "../form/input/Checkbox";
 import LoadingInfo from "../loading/LoadingInfo";
@@ -84,8 +84,13 @@ export default function CompanyInfoCard() {
             )}
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+            <h2 className="text-lg flex items-center gap-3 font-bold text-gray-900 dark:text-white">
               {company.name}
+              <span
+                className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${company.subscription_status === "Active" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-gray-100 text-gray-600"}`}
+              >
+                {company.subscription_status || "Inactive"}
+              </span>
             </h2>
             <div className="flex items-center gap-2">
               <p className="text-xs font-medium text-gray-500">
@@ -97,11 +102,9 @@ export default function CompanyInfoCard() {
                 {company.subscription_plan || "N/A"} Plan
               </p>
               <span className="text-xs text-gray-400">|</span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${company.subscription_status === "Active" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-gray-100 text-gray-600"}`}
-              >
-                {company.subscription_status || "Inactive"}
-              </span>
+              <p className="text-xs font-medium text-gray-500">
+                {getExpiryString(company.expiry_date)}
+              </p>
             </div>
           </div>
         </div>

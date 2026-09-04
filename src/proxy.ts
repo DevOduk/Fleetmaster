@@ -129,11 +129,14 @@ export async function proxy(req: NextRequest) {
   const isSignInPage =
     pathname.includes("/signin") || pathname.includes("/signup");
   const isRegisterPage = pathname.includes("/register");
+  const isVerifyEmailPage = pathname.includes("/verify-email");
 
   const isPrivateTenantAdmin =
     targetPathname.startsWith("/admin-site") &&
     !isSignInPage &&
+    !isVerifyEmailPage &&
     !isRegisterPage;
+    
   const isPrivateAdmin =
     targetPathname.startsWith("/tenant-manager") && !isSignInPage;
 

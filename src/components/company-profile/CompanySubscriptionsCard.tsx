@@ -91,7 +91,8 @@ export default function CompanySubscriptionsCard() {
 
   const monthlyAmount = Number(subscriptionPlans[selectedIndex].price);
   const subtotalAmount = monthlyAmount * (billingPeriod);
-  const vatAmount = subtotalAmount * 0.05;
+  const vat = 0.16;
+  const vatAmount = subtotalAmount * vat;
   const grandTotalAmount = Math.round(subtotalAmount + vatAmount);
 
 
@@ -159,7 +160,7 @@ export default function CompanySubscriptionsCard() {
 
       try {
         // --- 1. CALL YOUR CUSTOM DARAJA STK ROUTE ---
-        const res = await fetch("/api/mpesa/stk", {
+        const res = await fetch("/api/v1/mpesa/stk", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -207,7 +208,7 @@ export default function CompanySubscriptionsCard() {
         // --- 2. POLL DARAJA STATUS ENDPOINT ---
         intervalId = setInterval(async () => {
           try {
-            const statusRes = await fetch("/api/mpesa/status", {
+            const statusRes = await fetch("/api/v1/mpesa/status", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ checkoutRequestID: targetCheckoutId }),
@@ -282,6 +283,7 @@ export default function CompanySubscriptionsCard() {
                 fleetmaster_tenants: {
                   ...profile.fleetmaster_tenants,
                   subscription_status: 'Active',
+                  subscription_plan: subscriptionPlans[selectedIndex]?.name,
                   expiry_date: newExpiryIsoString
                 }
               }))
@@ -680,7 +682,7 @@ export default function CompanySubscriptionsCard() {
                       ))}
                   </div>
                   <div className="flex justify-between px-4 py-3 text-gray-600 dark:text-gray-300">
-                    <span>VAT (5%)</span>
+                    <span>VAT ({vat * 100}%)</span>
                     <span>Ksh. {vatAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between px-4 py-3 text-gray-600 dark:text-gray-300">

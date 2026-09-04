@@ -2,7 +2,7 @@
 
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import React, { useState, useEffect, useCallback, useTransition } from "react";
+import React, { useState, useEffect, useCallback, useRef, useTransition } from "react";
 import { useToast } from "@/context/ToastContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Button from "../ui/button/Button";
@@ -19,6 +19,7 @@ export default function ValidateEmailForm({
 }) {
   const searchParams = useSearchParams();
   const { showToast } = useToast();
+  const otpLength = 6;
   const [otp, setOtp] = useState("");
   const [email, setEmail] = useState("");
   const [id, setId] = useState("");
@@ -27,12 +28,9 @@ export default function ValidateEmailForm({
   const [isLoading, setIsLoading] = useState(false);
   const [sendingCode, setSendingCode] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [cooldown, setCooldown] = useState(
-    // set to 0 now for instant resend enabled
-    0,
-    // retryDuration
-  );
+  const [cooldown, setCooldown] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+  const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const verificationParam = searchParams.get("v");
 
   // Parse verification token safely on client mount
@@ -40,7 +38,7 @@ export default function ValidateEmailForm({
     if (verificationParam) {
       try {
         const decodedData = JSON.parse(atob(verificationParam));
-        console.log(decodedData)
+
         if (decodedData.email) setEmail(decodedData.email);
         if (decodedData.id) setId(decodedData.id);
         if (decodedData.role) setRole(decodedData.role);
@@ -86,12 +84,32 @@ export default function ValidateEmailForm({
     }
   };
 
+  const handleOtpDigitChange = (index: number, value: string) => {
+    const digits = value.replace(/[^0-9]/g, "");
+    if (!digits) {
+      const nextOtp = otp.split("");
+      nextOtp[index] = "";
+      setOtp(nextOtp.join(""));
+      return;
+    }
+
+    const nextOtp = otp.split("");
+    digits.slice(0, otpLength - index).split("").forEach((digit, offset) => {
+      nextOtp[index + offset] = digit;
+    });
+    const updatedOtp = nextOtp.slice(0, otpLength).join("");
+    setOtp(updatedOtp);
+
+    const nextIndex = Math.min(index + digits.length, otpLength - 1);
+    otpInputRefs.current[nextIndex]?.focus();
+  };
+
   const handleResendCode = () => {
     setSendingCode(true);
     if (cooldown > 0 || !email) return;
 
     startTransition(async () => {
-      const res = await resendOTP(btoa(email), role, role === 'Client' ? tenant.trim() : null );
+      const res = await resendOTP(btoa(email), role, role === 'Client' ? tenant.trim() : null);
 
       if (res.success) {
         showToast("A new verification code has been sent.", "success");
@@ -123,8 +141,8 @@ export default function ValidateEmailForm({
               Verify email
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              We have sent a verification code to your email address{" "}
-              {maskedEmail}. Please check your inbox and enter the code below to
+              We have sent a verification code to your email address
+              {maskedEmail ? " " + maskedEmail : ''}. Please check your inbox and enter the code below to
               verify your email.
             </p>
           </div>
@@ -144,25 +162,51 @@ export default function ValidateEmailForm({
                   <Label>
                     Enter OTP<span className="text-error-500">*</span>
                   </Label>
-                  <Input
-                    error={!!errorMessage}
-                    hint={
-                      errorMessage ||
-                      "Enter the 6-digit code sent to your email."
+                  <p className="mt-1.5 text-xs text-gray-500"                  >
+                    Enter the 6-digit code sent to your email.
+                  </p>
+                  <div className="mt-3 flex justify-center gap-3">
+                    {
+                      [...Array(otpLength)].map((_, i) => (
+                        <Input
+                          error={!!errorMessage}
+                          type="number"
+                          id={"otp-" + i}
+                          className="h-12 aspect-square text-center tracking-wide appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                          name={"otp-" + i}
+                          maxLength={1}
+                          value={otp[i] || ""}
+                          ref={(input) => {
+                            otpInputRefs.current[i] = input;
+                          }}
+                          onFocus={(e) => {
+                            setErrorMessage('')
+                            e.currentTarget.select()
+                          }}
+                          onChange={(e) => {
+                            handleOtpDigitChange(i, e.target.value);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Backspace" && !otp[i] && i > 0) {
+                              const previousIndex = i - 1;
+                              const nextOtp = otp.split("");
+                              nextOtp[previousIndex] = "";
+                              setOtp(nextOtp.join(""));
+                              otpInputRefs.current[previousIndex]?.focus();
+                            }
+                          }}
+                          disabled={isLoading || sendingCode}
+                        />
+                      )
+                      )
                     }
-                    type="tel"
-                    id="otp"
-                    className="mt-2 w-full text-center tracking-wide"
-                    name="otp"
-                    maxLength={6}
-                    value={otp}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, "");
-                      setOtp(value);
-                    }}
-                    placeholder="000000"
-                    disabled={isLoading || sendingCode}
-                  />
+                  </div>
+                  {
+                    errorMessage &&
+                    <p className="mt-3.5 text-xs text-center text-error-500">
+                      {errorMessage}
+                    </p>
+                  }
                 </div>
                 {/* <!-- Button --> */}
                 <div>
@@ -209,7 +253,7 @@ export default function ValidateEmailForm({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

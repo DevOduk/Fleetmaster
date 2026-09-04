@@ -1,4 +1,5 @@
 "use server";
+
 import { createClient } from "@/utils/supabase/server";
 import { hash, compare } from "bcrypt-ts";
 import { Resend } from "resend";
@@ -90,6 +91,7 @@ export async function createTenantClient(newTenantClient: any) {
     await redis
       .set(cacheKey, JSON.stringify(data))
       .catch((e) => console.error("Redis set failure on create:", e));
+    redis.del(`tenant:clients:${data.tenant_id}`)
 
     // 4. Dispatch the verification email via Resend
     const { error: mailError } = await resend.emails.send({
@@ -125,7 +127,7 @@ export async function updateProfileDetails(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fleetmaster_clients")
-    .update({ ...profileDetails, updated_at: new Date() })
+    .update({ ...profileDetails, updated_at: new Date(), last_seen: new Date().toISOString() })
     .eq("id", id)
     .select()
     .single();
@@ -133,6 +135,7 @@ export async function updateProfileDetails(
   if (!error && data) {
     // UPDATE/SET Cache with fresh data
     const cacheKey = getUserCacheKey(id, "client");
+    redis.del(`tenant:clients:${data.tenant_id}`)
     await redis
       .set(cacheKey, JSON.stringify(data))
       .catch((e) => console.error("Redis cache update failure:", e));
@@ -198,6 +201,7 @@ export async function updatePassword(
         ...restDetails,
         password: newPasswordHash,
         updated_at: new Date().toISOString(),
+        last_seen: new Date().toISOString(),
       })
       .eq("id", id)
       .select()

@@ -9,7 +9,6 @@ import { Modal } from "@/components/ui/modal";
 import { useModal } from "@/hooks/useModal";
 import { useAdminFleet } from "@/context/AdminFleetContext";
 import { createMaintenanceLog, deleteMaintenanceLog, getAllMaintenanceLogs, updateMaintenanceLog } from "@/app/actions/maintenance";
-import { toast, Toaster } from "sonner";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { Table, TableBody } from "../ui/table";
 import { formatedTimestamp } from "../company-profile/ExpiryBanner";
@@ -23,6 +22,7 @@ import Radio from "../form/input/Radio";
 import Badge from "../ui/badge/Badge";
 import Button from "../ui/button/Button";
 import FeatureError from "../loading/FeatureError";
+import { useToast } from "@/context/ToastContext";
 
 interface MaintenanceLog {
   id: number;
@@ -180,6 +180,7 @@ const ServiceCalendar: React.FC = () => {
   const [selectedLogId, setSelectedLogId] = useState<number | null>(Number(params.get("event")) || null);
   const [serviceDate, setServiceDate] = useState("");
   const [mileage, setMileage] = useState("");
+  const { showToast } = useToast()
   const [nextServiceDate, setNextServiceDate] = useState("");
   const [nextServiceMileage, setNextServiceMileage] = useState("");
   const [activitiesDone, setActivitiesDone] = useState("");
@@ -347,7 +348,7 @@ const ServiceCalendar: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!selectedVehicleId || !serviceDate || !mileage) {
-      toast.error("Please select a vehicle, service date and service mileage.");
+      showToast("Please select a vehicle, service date and service mileage.", 'error');
       return;
     }
 
@@ -397,11 +398,11 @@ const ServiceCalendar: React.FC = () => {
     setSaving(false);
 
     if (!result.success) {
-      toast.error(result.error?.message || "Unable to save the maintenance log.");
+      showToast(result.error?.message || "Unable to save the maintenance log.", 'error');
       return;
     }
 
-    toast.success("Maintenance log details saved.");
+    showToast("Maintenance log details saved.");
     closeServiceModal();
 
     await loadMaintenanceLogs();
@@ -414,13 +415,12 @@ const ServiceCalendar: React.FC = () => {
     const result = await deleteMaintenanceLog(logId);
 
     if (result.success) {
-      toast.success("Maintenance log deleted.");
+      showToast("Maintenance log deleted.");
 
+      setMaintenanceLogs((logs) => logs.filter((log) => log.id !== logId));
       closeServiceModal();
-
-      await loadMaintenanceLogs();
     } else {
-      toast.error(result.error?.message || "Unable to delete the maintenance log.");
+      showToast(result.error?.message || "Unable to delete the maintenance log.", 'error');
     }
     setSaving(false);
   }
@@ -756,8 +756,6 @@ const ServiceCalendar: React.FC = () => {
           </div>
         </div>
       </Modal>
-
-      <Toaster richColors position="top-right" />
     </>
   );
 };

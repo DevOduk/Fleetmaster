@@ -674,7 +674,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
                 </Button>
               </div>
             ) : (
-              <Link target="_blank" href={`/signin?r=${currentPageUrl}`}>
+              <Link href={`/signin?r=${currentPageUrl}`}>
                 <Button className="mt-5 w-full" size="sm">
                   Signin to Book
                 </Button>

@@ -86,7 +86,7 @@ export default function SignInForm({ tenant }: Tenant) {
           setIsRedirecting(false);
           setErrorMessage("Please verify your email to access your account.");
           setIsLoggingIn(false);
-          setVerifyData({ email, id: result.id, role: isClient() ? "Client" : "admin", tenant: tenant.trim() });
+          setVerifyData({ email, id: result.id, role: isClient() ? "Client" : "admin", tenant: tenant?.trim() ?? null });
           return;
         }
       }

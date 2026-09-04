@@ -26,7 +26,6 @@ import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlin
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import EmojiTransportationOutlinedIcon from "@mui/icons-material/EmojiTransportationOutlined";
 import { useAdminFleet } from "@/context/AdminFleetContext";
-import { useAdminBooking } from "@/context/AdminBookingContext";
 import { useUser } from "@/context/UserContext";
 import SidebarExpiryWidget from "./SidebarExpiryWidget";
 import {
@@ -34,6 +33,7 @@ import {
   getRemainingDays,
 } from "@/components/company-profile/ExpiryBanner";
 import ContentPasteSearchOutlinedIcon from "@mui/icons-material/ContentPasteSearchOutlined"
+import { useAdminUsers } from "@/context/AdminUsersContext";
 
 
 type NavItem = {
@@ -118,7 +118,7 @@ export const othersItems: NavItem[] = [
     icon: <PeopleAltOutlinedIcon sx={iconStyle} />,
     name: "System Users",
     subItems: [
-      { name: "Clients", path: "/system-users/clients", new: true, count: [true] },
+      { name: "Clients", path: "/system-users/clients", new: true, count: [true, 0] },
       { name: "Admins", path: "/system-users/admins", pro: false, new: false },
     ],
   },
@@ -135,6 +135,11 @@ export const accountItems: NavItem[] = [
     path: "/profile",
   },
   {
+    icon: <ManageAccountsOutlinedIcon sx={iconStyle} />,
+    name: "Account Settings",
+    path: "/profile/account-settings",
+  },
+  {
     icon: <EmojiTransportationOutlinedIcon sx={iconStyle} />,
     name: "Company",
     subItems: [
@@ -145,45 +150,59 @@ export const accountItems: NavItem[] = [
       },
     ],
   },
-  {
-    icon: <ManageAccountsOutlinedIcon sx={iconStyle} />,
-    name: "Account Settings",
-    path: "/profile/account-settings",
-  },
 ];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
   const { profile } = useUser();
-  const { bookings } = useAdminBooking();
+  const { bookings, clients } = useAdminUsers();
   const { vehicles } = useAdminFleet();
 
   const hydratedNavItems = useMemo(() => {
     return navItems.map((nav) => {
-      // Create a copy so we don't mutate the original exported constant
       const updatedNav = { ...nav };
 
-      // 1. Inject count for Vehicles
       if (updatedNav.path === "/vehicles") {
         updatedNav.count = [true, vehicles.length];
       }
 
-      // 2. Inject count for nested Bookings
       if (updatedNav.subItems) {
         updatedNav.subItems = updatedNav.subItems.map((sub) => {
           const updatedSub = { ...sub };
+
           if (updatedSub.path === "/bookings") {
             updatedSub.count = [true, bookings.length];
           }
+
           return updatedSub;
         });
       }
 
       return updatedNav;
     });
-  }, [vehicles.length, bookings.length]); // Re-run only when counts change
 
+  }, [vehicles.length, bookings.length]);
+
+  const hydratedOthersItems = useMemo(() => {
+    return othersItems.map((nav) => {
+      const updatedNav = { ...nav };
+
+      if (updatedNav.subItems) {
+        updatedNav.subItems = updatedNav.subItems.map((sub) => {
+          const updatedSub = { ...sub };
+
+          if (updatedSub.path === "/system-users/clients") {
+            updatedSub.count = [true, clients.length];
+          }
+
+          return updatedSub;
+        });
+      }
+
+      return updatedNav;
+    });
+  }, [clients.length]);
   const renderMenuItems = (
     navItems: NavItem[],
     menuType: "main" | "others" | "account",
@@ -195,8 +214,8 @@ const AppSidebar: React.FC = () => {
             <button
               onClick={() => handleSubmenuToggle(index, menuType)}
               className={`menu-item group ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? "menu-item-active"
-                  : "menu-item-inactive"
+                ? "menu-item-active"
+                : "menu-item-inactive"
                 } cursor-pointer ${!isExpanded && !isHovered
                   ? "lg:justify-center"
                   : "lg:justify-start"
@@ -204,8 +223,8 @@ const AppSidebar: React.FC = () => {
             >
               <span
                 className={` ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? "menu-item-icon-active"
-                    : "menu-item-icon-inactive"
+                  ? "menu-item-icon-active"
+                  : "menu-item-icon-inactive"
                   }`}
               >
                 {nav.icon}
@@ -216,9 +235,9 @@ const AppSidebar: React.FC = () => {
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
                   className={`ml-auto h-5 w-5 transition-transform duration-200 ${openSubmenu?.type === menuType &&
-                      openSubmenu?.index === index
-                      ? "text-brand-500 rotate-180"
-                      : ""
+                    openSubmenu?.index === index
+                    ? "text-brand-500 rotate-180"
+                    : ""
                     }`}
                 />
               )}
@@ -232,8 +251,8 @@ const AppSidebar: React.FC = () => {
               >
                 <span
                   className={`${isActive(nav.path)
-                      ? "menu-item-icon-active"
-                      : "menu-item-icon-inactive"
+                    ? "menu-item-icon-active"
+                    : "menu-item-icon-inactive"
                     }`}
                 >
                   {nav.icon}
@@ -245,8 +264,8 @@ const AppSidebar: React.FC = () => {
                 {nav.pro && (
                   <span
                     className={`ml-auto ${isActive("/")
-                        ? "menu-dropdown-badge-active"
-                        : "menu-dropdown-badge-inactive"
+                      ? "menu-dropdown-badge-active"
+                      : "menu-dropdown-badge-inactive"
                       } menu-dropdown-badge`}
                   >
                     pro
@@ -255,8 +274,8 @@ const AppSidebar: React.FC = () => {
                 {nav.expert && (
                   <span
                     className={`ml-auto ${isActive("/")
-                        ? "menu-dropdown-badge-success"
-                        : "menu-dropdown-badge-success-inactive"
+                      ? "menu-dropdown-badge-success"
+                      : "menu-dropdown-badge-success-inactive"
                       } menu-dropdown-badge text-green-500!`}
                   >
                     expert
@@ -265,8 +284,8 @@ const AppSidebar: React.FC = () => {
                 {nav.count?.[0] && (
                   <span
                     className={`ml-auto ${isActive("/")
-                        ? "menu-dropdown-badge-active"
-                        : "menu-dropdown-badge-inactive"
+                      ? "menu-dropdown-badge-active"
+                      : "menu-dropdown-badge-inactive"
                       } menu-dropdown-badge`}
                   >
                     {nav.count?.[1] || 0}
@@ -294,8 +313,8 @@ const AppSidebar: React.FC = () => {
                     <Link
                       href={subItem.path}
                       className={`menu-dropdown-item ${isActive(subItem.path)
-                          ? "menu-dropdown-item-active"
-                          : "menu-dropdown-item-inactive"
+                        ? "menu-dropdown-item-active"
+                        : "menu-dropdown-item-inactive"
                         }`}
                     >
                       {subItem.name}
@@ -303,8 +322,8 @@ const AppSidebar: React.FC = () => {
                         {subItem.new && (
                           <span
                             className={`ml-auto ${isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
+                              ? "menu-dropdown-badge-active"
+                              : "menu-dropdown-badge-inactive"
                               } menu-dropdown-badge`}
                           >
                             new
@@ -313,29 +332,29 @@ const AppSidebar: React.FC = () => {
                         {subItem.pro && (
                           <span
                             className={`ml-auto ${isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
+                              ? "menu-dropdown-badge-active"
+                              : "menu-dropdown-badge-inactive"
                               } menu-dropdown-badge`}
                           >
                             pro
                           </span>
                         )}
 
-                {nav.expert && (
-                  <span
-                    className={`ml-auto ${isActive("/")
-                        ? "menu-dropdown-badge-success"
-                        : "menu-dropdown-badge-success-inactive"
-                      } menu-dropdown-badge text-green-500!`}
-                  >
-                    expert
-                  </span>
-                )}
+                        {nav.expert && (
+                          <span
+                            className={`ml-auto ${isActive("/")
+                              ? "menu-dropdown-badge-success"
+                              : "menu-dropdown-badge-success-inactive"
+                              } menu-dropdown-badge text-green-500!`}
+                          >
+                            expert
+                          </span>
+                        )}
                         {subItem.count?.[0] && (
                           <span
                             className={`ml-auto ${isActive("/bookings")
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
+                              ? "menu-dropdown-badge-active"
+                              : "menu-dropdown-badge-inactive"
                               } menu-dropdown-badge`}
                           >
                             {subItem.count?.[1] || 0}
@@ -535,8 +554,8 @@ const AppSidebar: React.FC = () => {
             <div>
               <h2
                 className={`mb-4 flex text-xs leading-5 text-gray-400 uppercase ${!isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
+                  ? "lg:justify-center"
+                  : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -551,8 +570,8 @@ const AppSidebar: React.FC = () => {
             <div className="">
               <h2
                 className={`mb-4 flex text-xs leading-5 text-gray-400 uppercase ${!isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
+                  ? "lg:justify-center"
+                  : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -561,14 +580,14 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(othersItems, "others")}
+              {renderMenuItems(hydratedOthersItems, "others")}
             </div>
 
             <div className="">
               <h2
                 className={`mb-4 flex text-xs leading-5 text-gray-400 uppercase ${!isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
+                  ? "lg:justify-center"
+                  : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
