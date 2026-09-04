@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const targetEmail = email.trim().toLowerCase();
     const targetTenantSlug =
       tenant && tenant.trim() ? tenant.trim().toLowerCase() : null;
-    const profileFields = `id, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, notify, newsletter, popup, dob${normalizedType === "client" ? ", national_id_number, dl_number, verification_error, submitted_document, onboarded" : ""
+    const profileFields = `id, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, notify, newsletter, popup, dob, last_seen${normalizedType === "client" ? ", national_id_number, dl_number, verification_error, submitted_document, onboarded" : ""
       }, fleetmaster_tenants!inner(*)`;
     const tableName =
       normalizedType === "admin"
@@ -124,13 +124,25 @@ export async function POST(request: Request) {
     // Strip raw password hash before saving to cache or returning
     const { password: _, ...safeUserAccount } = userAccount;
 
+    // Record activity before returning so the update is not lost when the
+    // serverless request is finalized.
+    const lastSeen = new Date().toISOString();
+    const { error: lastSeenError } = await supabase
+      .from(tableName)
+      .update({ last_seen: lastSeen })
+      .eq("id", userAccount.id);
+
+    if (lastSeenError) {
+      console.error("Failed to update user last_seen during login:", lastSeenError);
+    } else {
+      safeUserAccount.last_seen = lastSeen;
+    }
+
     // 6. SEED REDIS CACHE (Eliminates cold cache miss on subsequent /api/v1/auth/me)
     if (redis) {
       try {
         const cacheKey = `user:profile:${safeUserAccount.id}:${normalizedType}`;
-
-        // Cache user profile as stringified JSON for 15 minutes (900 seconds)
-        await redis.set(cacheKey, JSON.stringify(safeUserAccount), { ex: 900 });
+        await redis.set(cacheKey, JSON.stringify(safeUserAccount));
       } catch (cacheErr) {
         console.error("Non-blocking Redis login caching failure:", cacheErr);
       }
@@ -153,31 +165,13 @@ export async function POST(request: Request) {
       });
     }
 
-        // alter the profile returned by /me.
-        if (userAccount) {
-          void (async () => {
-            try {
-              const supabase = await createClient();
-              const lastSeen = new Date().toISOString();
-    
-              const { error: lastSeenError } = await supabase
-                .from(tableName)
-                .update({ last_seen: lastSeen })
-                .eq("id", userAccount.id);
-    
-              if (lastSeenError) {
-                console.error("Failed to update user last_seen:", lastSeenError);
-                return;
-              }
-    
-              await Promise.all([
-                redis.del(`tenant:clients:${userAccount.tenant_id}`),
-              ]);
-            } catch (backgroundError) {
-              console.error("Background last_seen update failed:", backgroundError);
-            }
-          })();
-        }
+    if (redis && !lastSeenError && userAccount.tenant_id) {
+      await redis
+        .del(`tenant:clients:${userAccount.tenant_id}`)
+        .catch((cacheError) =>
+          console.error("Tenant client cache invalidation failed:", cacheError),
+        );
+    }
 
     return response;
   } catch (err: any) {

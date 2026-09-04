@@ -112,32 +112,6 @@ export async function GET(request: Request) {
         .catch((e) => console.error("Redis write failure:", e));
     }
 
-    // Perform this maintenance work in the background; it must not delay or
-    // alter the profile returned by /me.
-    if (userAccount) {
-      void (async () => {
-        try {
-          const supabase = createPublicClient();
-          const lastSeen = new Date().toISOString();
-
-          const { error: lastSeenError } = await supabase
-            .from(tableName)
-            .update({ last_seen: lastSeen })
-            .eq("id", decoded.id);
-
-          if (lastSeenError) {
-            console.error("Failed to update user last_seen:", lastSeenError);
-            return;
-          }
-
-          await Promise.all([
-            redis.del(`tenant:clients:${userAccount.tenant_id}`),
-          ]);
-        } catch (backgroundError) {
-          console.error("Background last_seen update failed:", backgroundError);
-        }
-      })();
-    }
 
     return NextResponse.json(
       { user: userAccount },

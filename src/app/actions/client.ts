@@ -125,9 +125,10 @@ export async function updateProfileDetails(
   profileDetails: any,
 ) {
   const supabase = await createClient();
+  const lastSeen = new Date().toISOString();
   const { data, error } = await supabase
     .from("fleetmaster_clients")
-    .update({ ...profileDetails, updated_at: new Date(), last_seen: new Date().toISOString() })
+    .update({ ...profileDetails, updated_at: lastSeen, last_seen: lastSeen })
     .eq("id", id)
     .select()
     .single();
@@ -135,7 +136,11 @@ export async function updateProfileDetails(
   if (!error && data) {
     // UPDATE/SET Cache with fresh data
     const cacheKey = getUserCacheKey(id, "client");
-    redis.del(`tenant:clients:${data.tenant_id}`)
+    await redis
+      .del(`tenant:clients:${data.tenant_id}`)
+      .catch((cacheError) =>
+        console.error("Tenant client cache invalidation failed:", cacheError),
+      );
     await redis
       .set(cacheKey, JSON.stringify(data))
       .catch((e) => console.error("Redis cache update failure:", e));
