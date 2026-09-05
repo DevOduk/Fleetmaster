@@ -179,60 +179,83 @@ export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
 
       {/* Testimonials Bento Grid Layout */}
       <div className="group relative my-auto flex w-full items-center">
-
         {/* Inner Scrollable Track */}
         <div
           ref={sliderRef}
-          className="no-scrollbar grid h-full w-full grid-flow-col grid-rows-1 gap-0 gap-y-6 overflow-x-auto snap-x snap-mandatory scroll-smooth auto-cols-[calc(100%-2rem)] sm:auto-cols-full md:auto-cols-[calc((100%)/2)] xl:grid-rows-2"
+          className="no-scrollbar grid h-fit w-full grid-flow-col grid-rows-1 gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth auto-cols-[calc(100%-3rem)] sm:auto-cols-full md:auto-cols-[calc((100%)/1)] px-4 sm:px-0"
         >
           {testimonials.map((item, index) => (
             <div
               key={index}
-              className="flex h-full snap-start min-w-0 flex-col mx-4 justify-between rounded-2xl border border-gray-100 bg-gray-100 p-6 shadow-md shadow-zinc-300/50 transition-all duration-200 hover:border-gray-200 sm:p-8 dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-zinc-500/90 dark:hover:border-gray-700"
+              className="flex h-full snap-start min-w-full flex-col justify-center px-1 py-6 sm:px-6"
             >
-              {/* Rating Row */}
-              <div className="mb-4 flex items-center gap-0.5 text-amber-500">
-                <Rating
-                  readOnly
-                  value={item.rating || 0}
-                  max={5} // Adjusted to 5-star metric standard, can set to 10 if needed
-                  size="small"
-                  precision={.5}
-                  sx={{
-                    "& .MuiRating-iconEmpty": {
-                      color:
-                        theme.palette.mode === "dark"
-                          ? "rgba(255,255,255,0.2)"
-                          : "#cbd5e1",
-                    },
-                  }}
-                />
+
+              <div className="relative pl-3 mt-3 mx-auto w-full max-w-2xl leading-0">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none z-2 font-serif text-9xl font-black leading-8 text-gray-500"
+                >
+                  “
+                </span>
               </div>
 
-              {/* Narrative Quote Content */}
-              <p className="text-sm mb-2 font-semibold text-green-600 sm:text-base dark:text-green-400">
-                {item?.title || 'Cool'}
-              </p>
-              {/* Narrative Quote Content */}
-              <p className="flex-1 text-xs leading-relaxed font-normal text-gray-600 italic sm:text-base dark:text-zinc-300">
-                &quot;{item.quote}&quot;
-              </p>
-
-              {/* Author Profile Footer Row */}
-              <div className="mt-6 flex items-center gap-4 border-t border-gray-50 pt-6 dark:border-zinc-800">
+              <div className="relative mx-auto w-full max-w-2xl">
                 <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold tracking-wide ${item.color}`}
+                  className="flex min-h-80 h-full w-full flex-col justify-between rounded-2xl border border-gray-200/80 bg-gray-50/90 p-6 shadow-lg shadow-zinc-300/40 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl sm:p-8 dark:border-zinc-700 dark:bg-zinc-800/90 dark:shadow-zinc-950/40 dark:hover:border-zinc-600"
                 >
-                  {item.initials}
-                </div>
-                <div className="min-w-0">
-                  <h4 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                    {item.author}
-                  </h4>
-                  <p className="mt-0.5 truncate text-xs text-gray-400 dark:text-zinc-500">
-                    {item.role}
+                  {/* Rating Row */}
+                  <div className="mb-4 flex items-center gap-0.5 text-amber-500">
+                    <Rating
+                      readOnly
+                      value={item.rating || 0}
+                      max={5} // Adjusted to 5-star metric standard, can set to 10 if needed
+                      size="small"
+                      precision={0.5}
+                      sx={{
+                        "& .MuiRating-iconEmpty": {
+                          color:
+                            theme.palette.mode === "dark"
+                              ? "rgba(255,255,255,0.2)"
+                              : "#cbd5e1",
+                        },
+                      }}
+                    />
+                  </div>
+
+                  {/* Narrative Quote Content */}
+                  <p className="mb-2 text-sm font-semibold text-green-600 sm:text-base dark:text-green-400">
+                    {item?.title || "Cool"}
                   </p>
+                  {/* Narrative Quote Content */}
+                  <p className="flex-1 text-sm font-normal italic leading-relaxed text-gray-600 sm:text-base dark:text-zinc-300">
+                    &quot;{item.quote}&quot;
+                  </p>
+
+                  {/* Author Profile Footer Row */}
+                  <div className="mt-6 flex items-center gap-4 border-t border-gray-50 pt-6 dark:border-zinc-800">
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold tracking-wide ${item.color}`}
+                    >
+                      {item.initials}
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                        {item.author}
+                      </h4>
+                      <p className="mt-0.5 truncate text-xs text-gray-400 dark:text-zinc-500">
+                        {item.role}
+                      </p>
+                    </div>
+                  </div>
                 </div>
+              </div>
+              <div className="pr-3 mt-3 mx-auto w-full max-w-2xl text-right">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none font-serif text-9xl font-black leading-none text-gray-500"
+                >
+                  ”
+                </span>
               </div>
             </div>
           ))}
@@ -254,7 +277,7 @@ export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
 
 
         <div className="flex gap-2">
-          {Array.from({ length: Math.ceil(testimonials.length / itemsPerView) }, (_, i) => {
+          {Array.from({ length: Math.ceil(testimonials.length / 1) }, (_, i) => {
             const isActive = i === activeIndex;
             return (
               <button
