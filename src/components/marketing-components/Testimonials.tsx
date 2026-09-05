@@ -71,16 +71,6 @@ export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [resetToken, setResetToken] = useState(0);
-  const [itemsPerView, setItemsPerView] = useState(1);
-
-  useEffect(() => {
-    const updateItemsPerView = () => {
-      setItemsPerView(window.innerWidth >= 1280 ? 4 : window.innerWidth >= 768 ? 2 : 1);
-    };
-    updateItemsPerView();
-    window.addEventListener("resize", updateItemsPerView);
-    return () => window.removeEventListener("resize", updateItemsPerView);
-  }, []);
 
 
 
@@ -101,7 +91,7 @@ export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
           behavior: "smooth",
         });
       }
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(autoScrollTimer);
   }, [testimonials.length, resetToken]);
