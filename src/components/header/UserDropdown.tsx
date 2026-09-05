@@ -9,7 +9,7 @@ import Badge from "@/components/ui/badge/Badge";
 import { useUser } from "@/context/UserContext";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import { usePathname, useSearchParams } from "next/navigation";
-import { adminUserVerified } from "@/utils/clients/checkverification";
+import { adminUserVerified, userVerified } from "@/utils/clients/checkverification";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,6 +32,9 @@ export default function UserDropdown() {
   const currentPageUrl = encodeURIComponent(
     searchString ? btoa(`${pathname}?${searchString}`) : btoa(pathname),
   );
+
+  const isProfileVerified = !!profile &&
+    (profile.role === "Client" ? userVerified(profile) : adminUserVerified(profile));
 
   return (
     <div className="relative flex items-center">
@@ -92,15 +95,16 @@ export default function UserDropdown() {
         <div>
           <span className="text-theme-sm block font-medium text-gray-700 dark:text-gray-300">
             {profile?.first_name} {profile?.last_name} ●{" "}
-            {adminUserVerified(profile) ? (
-              <Badge size="sm" color="success">
-                Verified
-              </Badge>
-            ) : (
-              <Badge size="sm" color="error">
-                Not Verified
-              </Badge>
-            )}
+            {
+              isProfileVerified ? (
+                <Badge size="sm" color="success">
+                  Verified
+                </Badge>
+              ) : (
+                <Badge size="sm" color="error">
+                  Not Verified
+                </Badge>
+              )}
           </span>
           <span className="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400">
             {profile?.email}

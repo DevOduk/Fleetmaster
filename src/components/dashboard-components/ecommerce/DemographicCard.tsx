@@ -15,7 +15,13 @@ export default function DemographicCard({ tenants }: { tenants: any[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [allTenants, setAllTenants] = useState(tenants || []);
-  const countries = [...new Set(allTenants?.flatMap((t) => t.country))];
+  const countries = [
+    ...new Set(allTenants?.flatMap((t) => t.country))
+  ].sort(
+    (a, b) =>
+      allTenants.filter((client) => client?.country === b).length -
+      allTenants.filter((client) => client?.country === a).length,
+  );
 
   function toggleDropdown() {
     setIsOpen(!isOpen);

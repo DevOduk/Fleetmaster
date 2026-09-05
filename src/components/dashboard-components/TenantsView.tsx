@@ -14,7 +14,8 @@ import Pagination from "../tables/Pagination";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowRightIcon, PlusIcon } from "@/icons";
-import { getExpiryString } from "../company-profile/ExpiryBanner";
+import { formatedTimestamp, getExpiryString } from "../company-profile/ExpiryBanner";
+import { Clipboard } from "../ecommerce/TopUsers";
 
 // 1. Explicitly type your User structure
 export interface AdminUser {
@@ -75,7 +76,6 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
   }, [isDarkMode]);
 
 
-  
   const urlPage = parseInt(searchParams.get("page") || "1", 10);
 
   // --- 3. PAGINATION MATH MATRICS ---
@@ -129,7 +129,7 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
               {initialTenants.length} Tenants
             </span>
           </div>
-          <Link target="_blank" href="/register">
+          <Link target="_blank" href="http://app.localhost:3000/register">
             <button className="text-theme-sm flex items-center justify-center rounded-lg border border-green-600 bg-green-600 p-2 px-4 font-medium text-nowrap text-white hover:bg-green-700">
               New Tenant <PlusIcon />
             </button>
@@ -160,12 +160,12 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
                   >
                     Sub-Domain
                   </TableCell>
-                  <TableCell
+                  {/* <TableCell
                     isHeader
                     className="text-theme-xs px-5 py-3 text-start font-medium text-nowrap text-gray-500 dark:text-gray-400"
                   >
                     Email
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell
                     isHeader
                     className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
@@ -186,7 +186,7 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                    className="text-theme-xs text-nowrap px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                   >
                     Date Created
                   </TableCell>
@@ -256,8 +256,8 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-theme-sm max-w-90 min-w-45 truncate px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                            {tenant.about || "No bio available"}
+                          <TableCell className={`text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap ${tenant.about ? 'text-gray-500 dark:text-gray-400' : 'text-gray-400 dark:text-gray-500'}`}>
+                            {tenant.about || "[ No bio available ]"}
                           </TableCell>
                           <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
                             {tenant.slug ? (
@@ -272,7 +272,7 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
                               <span>—</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
+                          {/* <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
                             {tenant.email ? (
                               <a
                                 className="text-brand-500 hover:underline"
@@ -283,10 +283,12 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
                             ) : (
                               <span>—</span>
                             )}
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                            {tenant.phone || "—"}
-                          </TableCell>
+                            <div className="flex items-center gap-2">
+                              {tenant.phone || "—"}
+                              <Clipboard text={tenant.phone} />
+                            </div>                          </TableCell>
                           <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
                             {tenant.yards?.length || 0}
                           </TableCell>
@@ -298,7 +300,7 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
                           </TableCell>
                           <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
                             {tenant.created_at
-                              ? new Date(tenant.created_at).toLocaleString()
+                              ? formatedTimestamp(new Date(tenant.created_at).toISOString())
                               : "—"}
                           </TableCell>
                           <TableCell className="text-theme-sm px-4 py-3 text-nowrap text-gray-500 dark:text-gray-400">
@@ -343,7 +345,7 @@ const TenantsView = ({ initialTenants, loading }: SystemUsersProps) => {
         {/* Pagination Controls Visibility Rule */}
         {!loading && (
           <div className="flex items-center justify-between pt-8 pb-3 flex-col md:flex-row gap-8">
-        <span className="text-gray-800 dark:text-white text-sm">
+            <span className="text-gray-800 dark:text-white text-sm">
               Showing {startIndex} to {endIndex} of {initialTenants.length}{" "}
               results
             </span>

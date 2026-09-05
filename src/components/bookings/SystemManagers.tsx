@@ -231,8 +231,8 @@ const SystemManagers = () => {
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
-                              {user.bio || "No bio available"}
+                            <TableCell className={`text-theme-sm max-w-90 truncate px-4 py-3 text-start text-nowrap ${user.bio ? 'text-gray-500 dark:text-gray-400' : 'text-gray-400 dark:text-gray-500'}`}>
+                              {user.bio || "[ No bio available ]"}
                             </TableCell>
                             <TableCell className="text-theme-sm px-4 py-3 text-start text-nowrap text-gray-500 dark:text-gray-400">
                               {user.email ? (
