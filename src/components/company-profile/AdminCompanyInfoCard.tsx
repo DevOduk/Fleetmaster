@@ -4,6 +4,7 @@ import { fetchTenantDetails } from "@/app/actions/tenant";
 import { useEffect, useState } from "react";
 import ComponentCard from "../common/ComponentCard";
 import ExpiryBanner, { getExpiryString } from "./ExpiryBanner";
+import Button from "../ui/button/Button";
 
 export default function AdminCompanyInfoCard({
   TenantID,
@@ -222,27 +223,27 @@ export default function AdminCompanyInfoCard({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {company.admins?.length > 0
               ? company.admins
-                  ?.sort(
-                    (a, b) =>
-                      new Date(a.created_at).getTime() -
-                      new Date(b.created_at).getTime(),
-                  )
-                  .map((admin, i) => (
-                    <>
-                      <div
-                        key={i}
-                        className="text-md text-brand-500 col-span-full font-semibold"
-                      >
-                        {i + 1}. {admin?.first_name} {admin?.last_name}{" "}
-                        {i === 0 && "(Super Admin)"}
-                      </div>
-                      <DataPoint label="Role" value={admin.role} />
-                      <DataPoint label="Email" value={admin.email} />
-                      <DataPoint label="Phone" value={admin.phone} />
-                      <DataPoint label="Country" value={admin.country} />
-                      <DataPoint label="Location" value={admin.city} />
-                    </>
-                  ))
+                ?.sort(
+                  (a, b) =>
+                    new Date(a.created_at).getTime() -
+                    new Date(b.created_at).getTime(),
+                )
+                .map((admin, i) => (
+                  <>
+                    <div
+                      key={i}
+                      className="text-md text-brand-500 col-span-full font-semibold"
+                    >
+                      {i + 1}. {admin?.first_name} {admin?.last_name}{" "}
+                      {i === 0 && "(Super Admin)"}
+                    </div>
+                    <DataPoint label="Role" value={admin.role} />
+                    <DataPoint label="Email" value={admin.email} />
+                    <DataPoint label="Phone" value={admin.phone} />
+                    <DataPoint label="Country" value={admin.country} />
+                    <DataPoint label="Location" value={admin.city} />
+                  </>
+                ))
               : "We couldnt find admin details!"}
           </div>
         </ComponentCard>
@@ -272,6 +273,15 @@ export default function AdminCompanyInfoCard({
             </div>
           </ComponentCard>
         )}
+
+        {/* manage tenant  */}
+        <ComponentCard title="System Settings">
+          <p className="text-sm text-gray-900 dark:text-white">
+            This will suspend the tenant profile preventing any activity on client and admin side. Proceed with caution!!!
+          </p>
+
+          <Button className="w-full" variant="danger">Suspend Tenant</Button>
+        </ComponentCard>
       </div>
 
       {/* Footer / About Section */}
