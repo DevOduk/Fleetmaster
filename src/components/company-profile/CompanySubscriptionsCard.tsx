@@ -26,7 +26,7 @@ import { createPayment } from "@/app/actions/payments";
 import Alert from "../ui/alert/Alert";
 import { Modal } from "../ui/modal";
 import { ArrowRightIcon } from "@/icons";
-import { createExpense } from "@/app/actions/expenses";
+import { createSubscription } from "@/app/actions/expenses";
 import LoadingInfo from "../loading/LoadingInfo";
 
 export const mpesaPollingIterval = 22000;
@@ -55,14 +55,15 @@ export default function CompanySubscriptionsCard() {
 
   const defaultSubscription: Subscription = {
     label: "Free Trial Plan",
-    value: "Welcome to fleetmaster crm dashboard where you can manage your rental fleet with ease!",
+    value:
+      "Welcome to fleetmaster crm dashboard where you can manage your rental fleet with ease!",
     amount: 0,
     method: "M-PESA",
     date: company?.created_at || profile?.fleetmaster_tenants?.created_at,
   };
 
   const [subscriptionsList, setSubScriptionsList] = useState<Subscription[]>([
-    defaultSubscription
+    defaultSubscription,
   ]);
 
   useEffect(() => {
@@ -89,12 +90,17 @@ export default function CompanySubscriptionsCard() {
     getTenantDetails();
   }, [profile?.tenant_id]);
 
-  const monthlyAmount = Number(subscriptionPlans[selectedIndex].price);
-  const subtotalAmount = monthlyAmount * (billingPeriod);
-  const vat = 0.16;
-  const vatAmount = subtotalAmount * vat;
-  const grandTotalAmount = Math.round(subtotalAmount + vatAmount);
+  // in percentage
+  const discount = billingPeriod === 12 ? 0.12 : 0;
 
+  const monthlyAmount = Number(subscriptionPlans[selectedIndex].price);
+  const subtotalAmountWithoutDiscount = monthlyAmount * billingPeriod;
+  const subtotalAmount = Math.round(
+    monthlyAmount * billingPeriod * (1 - discount),
+  );
+  const vat = 0.16;
+  const vatAmount = Math.round(subtotalAmount * vat);
+  const grandTotalAmount = Math.round(subtotalAmount + vatAmount);
 
   // 1. Determine the base date to add 30 days to
   const currentExpiry = company?.expiry_date
@@ -104,12 +110,12 @@ export default function CompanySubscriptionsCard() {
 
   // If current expiry is in the future, add 30 days to it. Otherwise, add to today.
   const baseTime = currentExpiry > now ? currentExpiry : now;
-  const thirtyDaysInMs = (30 * 24 * 60 * 60 * 1000) * billingPeriod;
+  const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000 * billingPeriod;
   const newExpiryTimestamp = baseTime + thirtyDaysInMs;
 
   // 2. Convert to ISO string for Supabase timestamptz compatibility
   const newExpiryIsoString = new Date(newExpiryTimestamp).toISOString();
-
+  const newStartIsoString = new Date(baseTime).toISOString();
 
   const createNewPayment = async () => {
     setError(null);
@@ -174,8 +180,8 @@ export default function CompanySubscriptionsCard() {
         if (!res.ok || data.ResponseCode !== "0") {
           throw new Error(
             data.errorMessage ||
-            data.ResponseDescription ||
-            "Failed to dispatch M-Pesa push.",
+              data.ResponseDescription ||
+              "Failed to dispatch M-Pesa push.",
           );
         }
 
@@ -248,13 +254,16 @@ export default function CompanySubscriptionsCard() {
                 message: `Subscription renewal for package: ${subscriptionPlans[selectedIndex]?.name}`,
               };
 
-              const newExpense = {
+              const newSubscription = {
                 tenant_id: profile?.tenant_id,
                 category: "Subscription",
                 method: "M-PESA",
                 currency: "KES",
                 amount: Number(grandTotalAmount),
                 payment_ref: mpesaRef,
+                start_date: newStartIsoString,
+                end_date: newExpiryIsoString,
+                subscription_plan: subscriptionPlans[selectedIndex]?.name,
                 description: `Subscription renewal for package: ${subscriptionPlans[selectedIndex]?.name}`,
               };
 
@@ -265,11 +274,11 @@ export default function CompanySubscriptionsCard() {
                 subscription_status: "Active",
                 subscription_plan: subscriptionPlans[selectedIndex]?.name,
                 expiry_date: newExpiryIsoString,
-              }
+              };
 
               await Promise.all([
                 createPayment(newPayment),
-                createExpense(newExpense),
+                createSubscription(newSubscription),
               ]);
 
               const [{ data }, subRes] = await Promise.all([
@@ -282,11 +291,11 @@ export default function CompanySubscriptionsCard() {
                 ...profile,
                 fleetmaster_tenants: {
                   ...profile.fleetmaster_tenants,
-                  subscription_status: 'Active',
+                  subscription_status: "Active",
                   subscription_plan: subscriptionPlans[selectedIndex]?.name,
-                  expiry_date: newExpiryIsoString
-                }
-              }))
+                  expiry_date: newExpiryIsoString,
+                },
+              }));
               setSubScriptionsList([
                 ...(subRes.data || []),
                 defaultSubscription,
@@ -458,7 +467,7 @@ export default function CompanySubscriptionsCard() {
       {/* Header Section */}
       <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5 dark:border-gray-800">
         <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 shrink-0 aspect-square items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+          <div className="flex aspect-square h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
             {company.tenant_logo ? (
               <img
                 src={company.tenant_logo}
@@ -500,8 +509,25 @@ export default function CompanySubscriptionsCard() {
       </div>
 
       <div className="space-y-8 py-6">
+        {/* Invoice */}
+        <ComponentCard title="Upcoming Invoice">
+          <div className="grid grid-cols-1 gap-4">
+            <DataPoint
+              amount={Number(
+                subscriptionPlans.find(
+                  (plan) => plan.name == company.subscription_plan,
+                ).price || "0",
+              )}
+              method={"MPESA"}
+              date={company.expiry_date}
+              label={"PACKAGE: " + company.subscription_plan}
+              value={"Recurring Plan invoice due soon. Renew below to avoid service disruptions."}
+            />
+          </div>
+        </ComponentCard>
+
         {/* new  subscription */}
-        <ComponentCard title="Contact Information">
+        <ComponentCard title="Renew Subscription">
           <div className="text-gray-400">
             New subscriptions are automatically added to existing ones and
             features will update within 1 day
@@ -606,29 +632,51 @@ export default function CompanySubscriptionsCard() {
                     key={months}
                     type="button"
                     onClick={() => setBillingPeriod(months)}
-                    className={`rounded-t-lg border px-4 py-2 text-sm font-medium transition-colors ${billingPeriod === months
-                      ? "border-brand-500 bg-brand-500 text-white"
-                      : "border-gray-200 text-gray-600 hover:border-brand-300 dark:border-gray-700 dark:text-gray-300"
-                      }`}
+                    className={`rounded-t-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                      billingPeriod === months
+                        ? "border-brand-500 bg-brand-500 text-white"
+                        : "hover:border-brand-300 border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-300"
+                    }`}
                   >
-                    {months === 3 ? "Quarterly" : months === 6 ? "6 Months" : "1 Year"}
+                    {months === 3
+                      ? "Quarterly"
+                      : months === 6
+                        ? "6 Months"
+                        : "1 Year (12% OFF)"}
                   </button>
                 ))}
               </div>
 
               <div className="overflow-hidden rounded-b-xl border border-gray-200 dark:border-gray-800">
                 <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 pt-5 dark:border-gray-800 dark:bg-gray-800/40">
-                  <h4 className="text-sm font-bold text-gray-900 dark:text-white">Invoice Summary</h4>
-                  <p className="mt-1 text-xs text-gray-500">Minimum billing period is quarterly.</p>
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+                    Invoice Summary
+                  </h4>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Minimum billing period is quarterly.
+                  </p>
                 </div>
                 <div className="divide-y divide-gray-100 text-sm dark:divide-gray-800">
                   <div className="flex justify-between px-4 py-3 text-gray-600 dark:text-gray-300">
-                    <span>{subscriptionPlans[selectedIndex].name} ({billingPeriod} months)</span>
-                    <span>Ksh. {subtotalAmount.toLocaleString()}</span>
+                    <span>
+                      {subscriptionPlans[selectedIndex].name} ({billingPeriod}{" "}
+                      months)
+                    </span>
+                    <span>
+                      Ksh. {subtotalAmount.toLocaleString()}{" "}
+                      {subtotalAmountWithoutDiscount !== subtotalAmount && (
+                        <span className="text-gray-500 line-through dark:text-gray-400">
+                          Ksh.{" "}
+                          {subtotalAmountWithoutDiscount.toLocaleString()}{" "}
+                        </span>
+                      )}
+                    </span>
                   </div>
 
-                  <div className="space-y-2.5 mx-4 p-3 rounded-lg border-brand-500/50 mt-2 border">
-                    <p className="font font-semibold text-brand-500">What you get:</p>
+                  <div className="border-brand-500/50 mx-4 mt-2 space-y-2.5 rounded-lg border p-3">
+                    <p className="font text-brand-500 font-semibold">
+                      What you get:
+                    </p>
                     {subscriptionPlans[selectedIndex]?.features
                       .filter((f) => f.included)
                       .map((feature, i) => (
@@ -683,15 +731,22 @@ export default function CompanySubscriptionsCard() {
                   </div>
                   <div className="flex justify-between px-4 py-3 text-gray-600 dark:text-gray-300">
                     <span>VAT ({vat * 100}%)</span>
-                    <span>Ksh. {vatAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    <span>
+                      Ksh.{" "}
+                      {vatAmount.toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
                   </div>
                   <div className="flex justify-between px-4 py-3 text-gray-600 dark:text-gray-300">
                     <span>Next Expiry</span>
-                    <span>{(new Date(newExpiryTimestamp)).toLocaleString()}</span>
+                    <span>{new Date(newExpiryTimestamp).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between bg-gray-50 px-4 py-4 font-bold text-gray-900 dark:bg-gray-800/40 dark:text-white">
                     <span>Total Due</span>
-                    <span className="text-brand-500">Ksh. {grandTotalAmount.toLocaleString()}</span>
+                    <span className="text-brand-500">
+                      Ksh. {grandTotalAmount.toLocaleString()}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -712,10 +767,11 @@ export default function CompanySubscriptionsCard() {
                   {/* M-Pesa Option Layout Box */}
                   <div
                     onClick={() => setPaymentMethod("m-pesa")}
-                    className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${paymentMethod === "m-pesa"
-                      ? "border-brand-500 bg-brand-50/5"
-                      : "border-gray-200 dark:border-gray-800"
-                      }`}
+                    className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${
+                      paymentMethod === "m-pesa"
+                        ? "border-brand-500 bg-brand-50/5"
+                        : "border-gray-200 dark:border-gray-800"
+                    }`}
                   >
                     <FormControlLabel
                       value="m-pesa"
@@ -737,10 +793,11 @@ export default function CompanySubscriptionsCard() {
                   {/* Card Option Layout Box */}
                   <div
                     onClick={() => setPaymentMethod("card")}
-                    className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${paymentMethod === "card"
-                      ? "border-brand-500 bg-brand-50/5"
-                      : "border-gray-200 dark:border-gray-800"
-                      }`}
+                    className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${
+                      paymentMethod === "card"
+                        ? "border-brand-500 bg-brand-50/5"
+                        : "border-gray-200 dark:border-gray-800"
+                    }`}
                   >
                     <FormControlLabel
                       value="card"
@@ -796,8 +853,8 @@ export default function CompanySubscriptionsCard() {
                           type="text"
                           placeholder="Card number"
                           className="pl-15.5"
-                        // value={cardNumber}
-                        // onChange={(e) => setCardNumber(e.target.value)}
+                          // value={cardNumber}
+                          // onChange={(e) => setCardNumber(e.target.value)}
                         />
                         <span className="absolute top-1/2 left-0 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
                           <svg
@@ -807,8 +864,18 @@ export default function CompanySubscriptionsCard() {
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
                           >
-                            <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
-                            <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
+                            <circle
+                              cx="6.25"
+                              cy="10"
+                              r="5.625"
+                              fill="#E80B26"
+                            />
+                            <circle
+                              cx="13.75"
+                              cy="10"
+                              r="5.625"
+                              fill="#F59D31"
+                            />
                             <path
                               d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
                               fill="#FC6020"
@@ -830,8 +897,8 @@ export default function CompanySubscriptionsCard() {
                           max={"5"}
                           placeholder="MM/YY"
                           className="mt-2 w-full text-center"
-                        // value={expiry}
-                        // onChange={(e) => handleExpiryChange(e.target.value)}
+                          // value={expiry}
+                          // onChange={(e) => handleExpiryChange(e.target.value)}
                         />
                       </div>
 
@@ -845,8 +912,8 @@ export default function CompanySubscriptionsCard() {
                           max={"4"}
                           placeholder="•••"
                           className="mt-2 w-full text-center tracking-widest"
-                        // value={cvv}
-                        // onChange={(e) => setCvv(e.target.value)}
+                          // value={cvv}
+                          // onChange={(e) => setCvv(e.target.value)}
                         />
                       </div>
                     </div>
@@ -874,7 +941,8 @@ export default function CompanySubscriptionsCard() {
                   title="Payment Error!"
                   variant="error"
                   message={
-                    error?.message || "An error occured. Please try again later!"
+                    error?.message ||
+                    "An error occured. Please try again later!"
                   }
                 />
               )}

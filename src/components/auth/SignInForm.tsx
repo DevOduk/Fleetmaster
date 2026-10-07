@@ -40,8 +40,7 @@ export default function SignInForm({ tenant }: Tenant) {
   const encodedRef = searchParams.get("r");
   const originalUrl = encodedRef ? decodeURIComponent(atob(encodedRef)) : "/";
   const safeOriginalUrl = originalUrl.startsWith("/") ? originalUrl : `/${originalUrl}`;
-console.log('originalUrl',originalUrl)
-console.log('safeOriginalUrl',safeOriginalUrl)
+
   const handleSubmit = async () => {
     setIsLoggingIn(true);
     setErrorMessage("");

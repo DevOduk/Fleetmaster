@@ -94,24 +94,23 @@ export async function fetchTenantSubscriptions(tenantId: string) {
   try {
     const cachedData = await redis.get<any[]>(cacheKey);
     if (cachedData) {
+      console.log('found')
       return { data: cachedData, error: null, success: true };
-    }
+    }    
   } catch (cacheErr) {
     console.error(`Redis read error in fetchTenantSubscriptions (${tenantId}):`, cacheErr);
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("fleetmaster_expenses")
+    .from("fleetmaster_subscriptions")
     .select("amount, tenant_id, description, method, currency, category, created_at")
     .eq("tenant_id", tenantId)
-    .ilike("category", "subscription")
     .order("created_at", { ascending: false });
 
   if (error || !data) {
     return { data: [], error, success: false };
   }
-
   const subscriptions = data.map((item) => {
     return {
       label: item.description.split("Subscription renewal for package: ")[1],
@@ -121,6 +120,7 @@ export async function fetchTenantSubscriptions(tenantId: string) {
       method: item.method,
     };
   });
+console.log('subs: ',subscriptions)
 
   try {
     await redis.set(cacheKey, JSON.stringify(subscriptions), {

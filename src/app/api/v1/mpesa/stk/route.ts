@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       PartyB: shortCode,
       PhoneNumber: phoneNumber,
       CallBackURL: "https://cvj3465l-3000.inc1.devtunnels.ms/",
-      AccountReference: "FM-" + new Date().getTime(),
+      AccountReference: "FLEETMASTER-#" + new Date().getTime(),
       TransactionDesc: "Fleetmaster CRM Payment",
     };
 

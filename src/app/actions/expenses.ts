@@ -111,6 +111,34 @@ export async function createExpense(expenseDetails: any) {
   return result;
 }
 
+export async function createSubscription(subscriptionDetails: any) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("fleetmaster_subscriptions")
+    .insert(subscriptionDetails)
+    .select()
+    .single();
+
+  const result = { data, error, success: !error };
+
+  // Invalidate cache on creation
+  if (redis && !error) {
+    try {
+      const keysToInvalidate = ["subscriptions:all", `subscriptions:tenant:${subscriptionDetails.tenant_id}`];
+
+      if (subscriptionDetails?.tenant_id) {
+        keysToInvalidate.push(`subscriptions:tenant:${subscriptionDetails.tenant_id}`);
+      }
+
+      await redis.del(...keysToInvalidate);
+    } catch (e) {
+      console.error("Redis cache invalidation error (createSubscription):", e);
+    }
+  }
+
+  return result;
+}
+
 export async function fetchExpensesForAdmin(tenantId: string) {
   const cacheKey = `expenses:tenant:${tenantId}`;
 

@@ -88,12 +88,13 @@ export const navItems: NavItem[] = [
     name: "Yards",
     path: "/yards",
   },
-  {
-    icon: <NavigationOutlinedIcon sx={iconStyle} />,
-    name: "Live Map",
-    path: "/map",
-    pro: true,
-  },
+  // disable for now 
+  // {
+  //   icon: <NavigationOutlinedIcon sx={iconStyle} />,
+  //   name: "Live Map",
+  //   path: "/map",
+  //   pro: true,
+  // },
   {
     icon: <ContentPasteSearchOutlinedIcon sx={iconStyle} />,
     name: "Maintenance",

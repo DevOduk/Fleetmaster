@@ -104,7 +104,7 @@ const NewVehiclePage = () => {
       { key: "seats", label: "Seats", validate: (v) => v > 0 },
       { key: "image_url", label: "Image" },
       { key: "body_type", label: "Body Type" },
-    ];
+    ]; 
 
     for (const field of fields) {
       const value = details?.[field.key];
