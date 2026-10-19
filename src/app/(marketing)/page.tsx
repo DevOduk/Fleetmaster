@@ -196,7 +196,7 @@ export default async function Home() {
 
 
       {/* Info Split Section */}
-      <div className="container m-auto mt-8 mb-8 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
+      <div className="container border m-auto mt-8 mb-8 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
         <div className="lg:col-span-6 relative aspect-video">
           <Image
             className="aspect-video w-full rounded-xl object-cover shadow-sm"
