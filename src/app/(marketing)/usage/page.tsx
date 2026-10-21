@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 
 // MUI Icon Imports for Use Case Features
+import ComputerOutlinedIcon from "@mui/icons-material/ComputerOutlined";
 import CarRentalOutlinedIcon from "@mui/icons-material/CarRentalOutlined";
 import HttpIcon from "@mui/icons-material/Http";
 import SubtitlesOutlinedIcon from "@mui/icons-material/SubtitlesOutlined";
@@ -18,6 +19,7 @@ import LayersIcon from "@mui/icons-material/Layers";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import Link from "next/link";
 import Image from "next/image";
+import { UsageCases } from "@/data/UseCases";
 
 export const metadata: Metadata = {
   title: "Use Cases | FleetMaster - Fleet Management Solution",
@@ -42,16 +44,16 @@ export default function UseCasesPage() {
         description="See how business operators use FleetMaster's built-in tool suite to eliminate scattered management software, scale assets safely, and reduce operational overhead."
       />
 
-      <div className="container  m-auto mt-5 mb-5 grid grid-cols-1 items-start gap-6 p-4 lg:grid-cols-12">
+      <div className="mt-5 mb-5 grid w-full grid-cols-1 items-start gap-6 p-4 md:container md:mx-auto lg:grid-cols-12">
         {/* 3. Swapped col-7 for col-span-7 */}
-        <div className="lg:col-span-6 relative aspect-video">
+        <div className="relative aspect-video lg:col-span-6">
           <Image
             className="w-full rounded-xl"
             alt="What Next ..."
             preload
             fill
             sizes="(max-width: 1024px) 50vw, 33vw"
-            style={{ objectFit: 'cover' }}
+            style={{ objectFit: "cover" }}
             src={
               "/images/user/Professional_business_concept_image_showing_a_Flor-1765206733138.webp"
             }
@@ -120,7 +122,7 @@ export default function UseCasesPage() {
       </section>
 
       {/* Main Grid Content Area */}
-      <main className="container mx-auto px-4 pb-24">
+      <main className="w-full px-4 pb-24 md:container md:mx-auto">
         <div className="grid w-full grid-cols-1 items-start gap-12 lg:grid-cols-12">
           {/* Full Width Container: Essential for the alternating layout effect */}
           <div className="relative mx-auto max-w-4xl space-y-12 px-4 lg:col-span-8">
@@ -131,68 +133,7 @@ export default function UseCasesPage() {
             {/* Center Timeline Line Indicator: Centered on desktop, shifted to the left edge on mobile screens */}
             <div className="pointer-events-none absolute top-24 bottom-6 left-6.5 w-0.5 -translate-x-1/2 bg-slate-200 md:left-1/2 dark:bg-zinc-800" />
 
-            {[
-              {
-                imgSrc: "/images/product/3.webp",
-                badgeText: "Overview",
-                icon: CarRentalOutlinedIcon,
-                title: "1. Centralized Dispatch & Fleet Overview",
-                description:
-                  "One single source of truth. Eliminate messy spreadsheets and scattered communication. Manage vehicle assignments, active rentals, invoicing, and contract history from a single, unified dashboard designed for quick decision-making.",
-                imgClassName:
-                  "rounded-t-2xl mb-3 aspect-4/2 w-full object-cover",
-              },
-              {
-                imgSrc: "/images/product/2.webp",
-                badgeText: "Easy Setup",
-                icon: HttpIcon,
-                title: "2. Free Domain & Zero-Config",
-                description:
-                  "We handle the infrastructure. Avoid the hidden costs of buying, configuring, and maintaining separate web domains. Launch instantly with a secure, fully-managed yourbrand.fleetmaster.com portal completely free.",
-                imgClassName:
-                  "rounded-t-2xl bg-gray-200 mb-3 aspect-4/2 w-full object-cover",
-              },
-              {
-                imgSrc: "/images/product/4.webp",
-                badgeText: "Live Dashboard",
-                icon: SubtitlesOutlinedIcon,
-                title: "3. Live Fleet Telematics",
-                description:
-                  "We help you setup Real-time tracking and other features. Monitor vehicle diagnostics, live locations, and battery health on a unified map. Catch mechanical issues and unauthorized route deviations instantly before they become costly repairs.",
-                imgClassName:
-                  "rounded-t-2xl bg-gray-200 mb-3 aspect-4/2 w-full object-cover",
-              },
-              {
-                imgSrc: "/images/product/5.webp",
-                badgeText: "AI Automation",
-                icon: VerifiedUserOutlinedIcon,
-                title: "4. Automated Driver Vetting",
-                description:
-                  "Security-first verification. Protect high-value vehicles from liability risks. The onboarding pipeline automatically scans and verifies driver's licenses and credentials before a vehicle can ever be booked.",
-                imgClassName:
-                  "rounded-t-2xl mb-3 aspect-4/2 w-full object-cover",
-              },
-              {
-                imgSrc: "/images/product/6.webp",
-                badgeText: "Easy Management",
-                icon: NoCrashOutlinedIcon,
-                title: "5. Manage Bookings in One Place",
-                description:
-                  "Easily view and manage all your vehicles on one place. Our live vehicle status checks lets clients know which cars are available and which are not. Preview all bookings before a booking even commence.",
-                imgClassName:
-                  "rounded-t-2xl mb-3 aspect-4/2 w-full object-cover",
-              },
-              {
-                imgSrc: "/images/product/1.webp",
-                badgeText: "Save Time",
-                icon: CalendarMonthIcon,
-                title: "6. Saves you Time & Money",
-                description:
-                  "Save time with our built in Calendar that helps you plan dropoffs and pickups helping you keep track of all pending bookings. All in one place!",
-                imgClassName:
-                  "rounded-t-2xl mb-3 aspect-4/2 w-full object-cover",
-              },
-            ].map((feature, index) => {
+            {UsageCases.map((feature, index) => {
               const FeatureIcon = feature.icon;
               const isEven = index % 2 === 0;
 
@@ -209,7 +150,7 @@ export default function UseCasesPage() {
                   {/* Content Card Wrapper (Image Container) */}
                   {/* md:order-first and md:order-last push the image dynamically based on item index */}
                   <div
-                    className={`mb-10 flex aspect-3/2 relative overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900 ${isEven ? "md:order-first" : "md:order-last"}`}
+                    className={`relative mb-10 flex aspect-3/2 overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900 ${isEven ? "md:order-first" : "md:order-last"}`}
                   >
                     <Image
                       src={feature.imgSrc}
@@ -217,7 +158,7 @@ export default function UseCasesPage() {
                       preload
                       fill
                       sizes="(max-width: 1024px) 50vw, 33vw"
-                      style={{ objectFit: 'cover' }}
+                      style={{ objectFit: "cover" }}
                       className="aspect-3/2 w-full bg-gray-200 object-cover"
                     />
                   </div>
@@ -298,10 +239,10 @@ export default function UseCasesPage() {
                     >
                       {/* Step Indicator Node Badge */}
                       <div
-                        className={`before:absolute before:h-full before:w-full before:bg-white dark:before:bg-zinc-950 before:-z-10 absolute before:rounded-full -left-7 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center rounded-full border-4 border-white p-2 dark:border-zinc-950 ${step.iconColorClass}`}
+                        className={`absolute top-1/2 -left-7 z-10 flex -translate-y-1/2 items-center justify-center rounded-full border-4 border-white p-2 before:absolute before:-z-10 before:h-full before:w-full before:rounded-full before:bg-white dark:border-zinc-950 dark:before:bg-zinc-950 ${step.iconColorClass}`}
                       >
-                        <div className="absolute inset-0 rounded-full bg-current opacity-15 dark:opacity-30 -z-10" />
-                        
+                        <div className="absolute inset-0 -z-10 rounded-full bg-current opacity-15 dark:opacity-30" />
+
                         <StepIcon fontSize="medium" />
                       </div>
 

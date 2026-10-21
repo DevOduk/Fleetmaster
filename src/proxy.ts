@@ -41,16 +41,25 @@ export async function proxy(req: NextRequest) {
   // 2. IDENTIFY SUBDOMAIN / ROUTING SLUG
   let subdomain = "";
   const rawBaseDomain =
-    process.env.NEXT_PUBLIC_BASE_DOMAIN || "fleetmaster-lemon.vercel.app";
+    process.env.NEXT_PUBLIC_BASE_DOMAIN || "fleetmaster-lemon.vercel.app" || "loca.lt";
   const baseDomain = rawBaseDomain.split(":")[0].toLowerCase();
 
   const isVercelDomain = hostname.endsWith(".vercel.app");
-  const pathSegments = pathname.split("/").filter(Boolean); // e.g. ["client-site", "oduk"]
+  const pathSegments = pathname.split("/").filter(Boolean);
+
+  // ADD THIS: Check if the hostname is an IP address with a subdomain (e.g., oduk.192.168.0.103)
+  const isIpAddress = /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname);
 
   if (hostname.includes("localhost")) {
     const parts = hostname.split(".");
     if (parts.length > 1 && parts[parts.length - 1] === "localhost") {
       subdomain = parts.slice(0, -1).join(".");
+    }
+  } else if (isIpAddress) {
+    // If testing via local IP like oduk.192.168.0.103, grab the first part as the subdomain
+    const parts = hostname.split(".");
+    if (parts.length === 5) { // e.g. oduk.192.168.0.103 has 5 segments
+      subdomain = parts[0];
     }
   } else if (isVercelDomain) {
     // Vercel app environment (path-based routing)

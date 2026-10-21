@@ -29,7 +29,7 @@ export default function ShopPage() {
         description="Get commercial-grade, pre-configured trackers and telemetry sensors built to link directly with your FleetMaster dashboard right out of the box."
       />
 
-      <div className="container m-auto mt-5 mb-5 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
+      <div className="w-full md:container md:mx-auto mt-5 mb-5 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
         {/* 3. Swapped col-7 for col-span-7 */}
         <div className="lg:col-span-6 aspect-video relative">
           <Image

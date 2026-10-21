@@ -21,7 +21,7 @@ export default function ClientHomePageUI() {
 
   return (
     <div>
-      <div className="container m-auto mt-3 grid grid-cols-1 xl:grid-cols-2">
+      <div className="mt-3 grid w-full grid-cols-1 md:container md:m-auto xl:grid-cols-2">
         <SearchForm tenant={tenantData} />
         <HeroSlider />
       </div>
@@ -29,10 +29,16 @@ export default function ClientHomePageUI() {
       <br />
       <br />
 
-      <StatisticsBanner vehicles={vehicles} loading={loading} bookings={bookings} loadingBookings={loadingBookings} tenant={tenantData} />
+      <StatisticsBanner
+        vehicles={vehicles}
+        loading={loading}
+        bookings={bookings}
+        loadingBookings={loadingBookings}
+        tenant={tenantData}
+      />
       <br />
 
-      <div className="container m-auto grid grid-cols-1 items-center gap-5 p-4 lg:grid-cols-12">
+      <div className="grid w-full grid-cols-1 items-center gap-5 p-4 md:container md:m-auto lg:grid-cols-12">
         <div className="lg:col-span-7">
           <ViewAllCategories tenantData={tenantData} />
         </div>
@@ -53,7 +59,7 @@ export default function ClientHomePageUI() {
               </>
             )}
           </p>
-          <Link href={'/about'}>
+          <Link href={"/about"}>
             <Button variant="primary" size="sm" className="ml-auto px-8! py-2!">
               Read More <ChevronRightIcon />
             </Button>
@@ -71,15 +77,19 @@ export default function ClientHomePageUI() {
           compact cars to luxury sedans, we have the perfect vehicle for your
           needs.
         </p>
-        <div className="container m-auto mt-5">
+        <div className="mt-5 w-full md:container md:m-auto">
           <ViewAllSnapshots tenant={tenantData?.slug} />
 
           <div className="flex items-center justify-between">
             <p className="text-gray-500 dark:text-gray-500">
               View our fleet across the country ...
             </p>
-            <Link href={'/vehicles'}>
-              <Button variant="primary" size="sm" className="ml-auto px-8! py-2!">
+            <Link href={"/vehicles"}>
+              <Button
+                variant="primary"
+                size="sm"
+                className="ml-auto px-8! py-2!"
+              >
                 View All <ChevronRightIcon />
               </Button>
             </Link>
@@ -101,7 +111,7 @@ export default function ClientHomePageUI() {
 
         <ViewAllLocations tenantData={tenantData} />
       </div>
-      <div className="container m-auto mb-5 border-t border-gray-500"></div>
+      <div className="mb-5 w-full border-t border-gray-500 md:container md:m-auto"></div>
 
       <div className="grid grid-cols-1 gap-3 p-4 lg:grid-cols-12">
         <div className="lg:col-span-5">

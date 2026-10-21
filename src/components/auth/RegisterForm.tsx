@@ -157,7 +157,7 @@ function RegisterFormInner() {
             <ArrowRightIcon className="r rotate-180" /> Signin instead.
           </Link>
           <h1 className="text-title-md mb-2 font-semibold text-gray-800 dark:text-white/90">
-            {step === "company" ? "Register workspace" : "Complete Admin Setup"}
+            {step === "company" ? "Register organization" : "Complete Admin Setup"}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {step === "company"

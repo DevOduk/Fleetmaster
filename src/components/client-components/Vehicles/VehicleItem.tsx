@@ -50,11 +50,9 @@ function VehicleItem({ VehicleDetails, isBooked, filters }: VehicleDetails) {
         className="relative"
         href={`/vehicles/${VehicleDetails.id}?start=${safeStart}&end=${safeEnd}`}
       >
-        <div
-          className="relative aspect-video w-full mb-3"
-        >
+        <div className="relative mb-3 aspect-video w-full">
           <Box
-            className="flex gap-2 z-2"
+            className="z-2 flex gap-2"
             sx={{ position: "absolute", top: 10, right: 10 }}
           >
             <Chip
@@ -79,27 +77,27 @@ function VehicleItem({ VehicleDetails, isBooked, filters }: VehicleDetails) {
             preload
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            style={{ objectFit: 'cover' }}
+            style={{ objectFit: "cover" }}
             className="rounded-xl rounded-b-none bg-white object-cover"
           />
         </div>
       </Link>
 
       <div className="px-3 pb-4">
-        <h4 className="mb-1 font-bold text-black dark:text-gray-200 truncate">
+        <h4 className="mb-1 truncate font-bold text-black dark:text-gray-200">
           {/* {VehicleDetails.year} */}
-          {VehicleDetails.make}{" "}
-          {VehicleDetails.model}{" "}
+          {VehicleDetails.make} {VehicleDetails.model}{" "}
           {VehicleDetails.category}{" "}
         </h4>
         <div className="mb-1 flex flex-wrap items-center gap-2 text-sm">
           <div
-            className={`inline-flex items-center gap-1.5 py-1 ${isBooked
-              ? "text-rose-700 dark:text-rose-400"
-              : VehicleDetails.status === "Available"
-                ? "dark:text-green-400"
-                : "dark:text-amber-400"
-              }`}
+            className={`inline-flex items-center gap-1.5 py-1 ${
+              isBooked
+                ? "text-rose-700 dark:text-rose-400"
+                : VehicleDetails.status === "Available"
+                  ? "dark:text-green-400"
+                  : "dark:text-amber-400"
+            }`}
           >
             {isBooked ? (
               <CloseOutlinedIcon sx={{ fontSize: "1rem" }} />
@@ -117,12 +115,14 @@ function VehicleItem({ VehicleDetails, isBooked, filters }: VehicleDetails) {
             </span>
           </div>
 
-          {isMounted && totalDays > 0 && totalDays < VehicleDetails?.min_rental_days && (
-            <div className="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
-              <span className="">●</span>
-              <span>{VehicleDetails.min_rental_days} Days required!</span>
-            </div>
-          )}
+          {isMounted &&
+            totalDays > 0 &&
+            totalDays < VehicleDetails?.min_rental_days && (
+              <div className="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
+                <span className="">●</span>
+                <span>{VehicleDetails.min_rental_days} Days required!</span>
+              </div>
+            )}
         </div>
         <div className="flex flex-wrap gap-0">
           <div className="mr-2 flex items-center gap-1 p-1 text-sm text-gray-500 dark:text-gray-400">
@@ -139,8 +139,13 @@ function VehicleItem({ VehicleDetails, isBooked, filters }: VehicleDetails) {
             {VehicleDetails.fuel_type}
           </div>
         </div>
+
+        <div className="p-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+          {VehicleDetails.description}
+        </div>
+
         <h5 className="text-right text-sm font-bold text-green-500">
-          Ksh. {VehicleDetails.daily_rate.toLocaleString()}{" "}
+          Ksh. {VehicleDetails.daily_rate.toLocaleString()}
           <span className="mt-1 text-right text-xs font-medium text-gray-500">
             /day
           </span>

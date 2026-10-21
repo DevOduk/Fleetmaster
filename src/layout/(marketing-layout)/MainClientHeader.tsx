@@ -31,10 +31,10 @@ export default function MainClientHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 container mx-auto w-full md:px-4 pt-4 lg:px-8">
+    <header className="sticky top-0 z-50 w-full px-2 pt-4 md:container md:mx-auto">
       {/* 1. MOBILE NAVIGATION OVERLAY (Moved outside the card wrapper for clean stacking) */}
       {isMobileOpen && (
-        <nav className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-7 bg-white px-6 pt-20 text-sm font-medium text-gray-600 dark:bg-zinc-950 dark:text-zinc-400 lg:hidden">
+        <nav className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-7 bg-white px-6 pt-20 text-sm font-medium text-gray-600 lg:hidden dark:bg-zinc-950 dark:text-zinc-400">
           <Link
             href="/about"
             onClick={() => setIsMobileOpen(false)}
@@ -82,9 +82,9 @@ export default function MainClientHeader() {
       )}
 
       {/* Rounded floating card container */}
-      <div className="relative z-50 flex items-center justify-between rounded-full border border-gray-200/50 dark:border-zinc-600/50 bg-white/80 px-5 md:px-6 py-2.5 shadow-sm backdrop-blur-md dark:bg-zinc-950/60">
+      <div className="relative z-[60] flex items-center justify-between rounded-full border border-gray-200/50 bg-white/80 px-5 py-2.5 shadow-sm backdrop-blur-md md:px-6 dark:border-zinc-600/50 dark:bg-zinc-950/60">
         {/* Logo / Brand */}
-        <div className="flex cursor-pointer items-center gap-2 z-50">
+        <div className="z-56 flex cursor-pointer items-center gap-2">
           <Link href="/" className="">
             <Image
               width={154}
@@ -156,8 +156,9 @@ export default function MainClientHeader() {
 
           {/* 2. HAMBURGER BUTTON (Changed to z-50 to stay visible on top of overlay) */}
           <button
+            title="Toggle Theme"
             onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className="relative z-50 flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 lg:hidden dark:text-gray-400 dark:hover:bg-gray-800"
+            className="relative z-56 flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 lg:hidden dark:text-gray-400 dark:hover:bg-gray-800"
           >
             {isMobileOpen ? (
               <svg

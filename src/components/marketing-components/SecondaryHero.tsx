@@ -71,7 +71,7 @@ export default function SecondaryHero({
           <h1 className="mb-3 text-2xl leading-[1.1] font-bold tracking-tight text-black sm:text-3xl dark:text-white">
             {title}{" "}
             {highlightedText && (
-              <span className="from-brand-500 bg-linear-to-r to-indigo-500 bg-clip-text text-transparent">
+              <span className="from-brand-400 bg-linear-to-r to-brand-800 bg-clip-text text-transparent">
                 {highlightedText}
               </span>
             )}

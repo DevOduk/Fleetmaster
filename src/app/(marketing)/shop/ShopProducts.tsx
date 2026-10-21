@@ -52,7 +52,7 @@ function ShopProducts() {
                             {/* Card Main Body Content Elements */}
                             <div className="flex grow flex-col justify-between p-4">
                                 <div>
-                                    <div className="mb-2 flex items-center gap-1.5 font-bold text-purple-500">
+                                    <div className="mb-2 flex items-center gap-1.5 font-bold text-brand-500">
                                         <ProductIcon className="h-4 w-4" />
                                         <span className="text-xs tracking-wider uppercase">
                                             {product.category}
@@ -92,11 +92,11 @@ function ShopProducts() {
                                         </div>
                                     </div>
 
-                                    <div className="bg-zinc-700 inline-flex items-center overflow-hidden rounded-lg text-xs font-semibold text-white shadow-sm">
+                                    <div className="dark:bg-zinc-700 inline-flex items-center overflow-hidden rounded-lg text-xs font-semibold dark:text-white shadow-sm">
                                         <button
                                             type="button"
                                             aria-label={`Decrease quantity of ${product.title}`}
-                                            className="px-3 py-1 transition-colors hover:bg-zinc-600 active:scale-95"
+                                            className="px-3 py-1 transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-600 active:scale-95"
                                             onClick={() => {
                                                 setQuantities((current) => ({
                                                     ...current,
@@ -112,7 +112,7 @@ function ShopProducts() {
                                         <button
                                             type="button"
                                             aria-label={`Increase quantity of ${product.title}`}
-                                            className="px-3 py-1 transition-colors hover:bg-zinc-600 active:scale-95"
+                                            className="px-3 py-1 transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-600 active:scale-95"
                                             onClick={() =>
 
                                                 setQuantities((current) => ({
@@ -137,7 +137,7 @@ function ShopProducts() {
                                             "noopener,noreferrer",
                                         );
                                     }}
-                                    className="bg-brand-500 justify-center hover:bg-brand-600 inline-flex items-center gap-2 rounded-lg px-3 p-2 text-xs font-semibold text-white shadow-sm transition-all active:scale-95"
+                                    className="bg-brand-50 dark:bg-gray-700 text-black justify-center hover:bg-brand-600 hover:text-white inline-flex items-center gap-2 rounded-lg px-3 p-2 text-xs font-semibold dark:text-white shadow-sm transition-all active:scale-95"
                                 >
                                     <ShoppingCartOutlinedIcon fontSize="small" />
                                     Order Now

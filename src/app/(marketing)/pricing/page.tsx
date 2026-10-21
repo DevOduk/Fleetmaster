@@ -20,9 +20,9 @@ export const metadata: Metadata = {
 
 // Unified Matrix Definition Map to capture mismatched strings across tiers cleanly
 const UNIFIED_MATRIX_CONFIG = [
+  { label: "Driver Vetting", matchKeywords: ["vetting", "verification"] },
   { label: "User Accounts", matchKeywords: ["user account", "user"] },
   { label: "Vehicle Listings", matchKeywords: ["vehicle", "listings"] },
-  { label: "Driver Vetting", matchKeywords: ["vetting", "verification"] },
   {
     label: "Expense Tracking",
     matchKeywords: ["expense tracking", "expenses"],
@@ -116,7 +116,7 @@ export default function Page() {
               <p
                 className={`text-muted-foreground mb-6 text-xs ${selectedIndex === index ? "text-white" : "text-muted"}`}
               >
-                per month, billed monthly
+                per month, billed quarterly
               </p>
               <a
                 href="#"
@@ -229,7 +229,7 @@ export default function Page() {
       </section>
 
       <section>
-        <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        <div className="w-full px-0 py-10 md:container md:mx-auto lg:px-4">
           <h3 className="text-center text-amber-500" id="feature-comparison">
             Full Feature Comparison
           </h3>

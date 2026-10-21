@@ -20,7 +20,7 @@ export default function CallToAction() {
             </h2>
 
             {/* Value Prop Subtext */}
-            <p className="mx-auto max-w-md text-gray-500 dark:text-gray-400">
+            <p className="mx-auto w-full md:max-w-md text-gray-500 dark:text-gray-400">
               Claim your free domain today and deploy a premium, security-first
               booking engine in under five minutes.
             </p>

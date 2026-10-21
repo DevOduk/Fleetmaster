@@ -147,7 +147,7 @@ export default function RootLayout({
             })();`,
               }}
             />
-            <ThemeInitializer defaultColor="#465fff" />
+            <ThemeInitializer defaultColor="#ff6115" />
             <ClientLinkInterceptor />
             <ToastProvider>{children}</ToastProvider>
           </body>

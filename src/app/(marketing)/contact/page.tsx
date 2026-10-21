@@ -51,7 +51,7 @@ export default function Page() {
       </section>
 
       {/* Main Content: Form & Info Grid */}
-      <main className="container mx-auto px-4 pb-24">
+      <main className="w-full md:container md:mx-auto px-4 pb-24">
         <div className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-12 lg:grid-cols-12">
           {/* Left Column: Contact Form */}
           <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm lg:col-span-7 dark:border-slate-800 dark:bg-zinc-950">

@@ -32,7 +32,7 @@ export default function TenantTermsPage() {
       />
 
       {/* Info Split Section */}
-      <div className="container m-auto mt-8 mb-8 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
+      <div className="w-full md:container md:mx-auto mt-8 mb-8 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
         <div className="lg:col-span-6 aspect-video relative">
           <Image
             className="aspect-video w-full rounded-xl object-cover shadow-sm"

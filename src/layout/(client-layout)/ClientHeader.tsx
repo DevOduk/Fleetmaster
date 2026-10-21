@@ -165,7 +165,7 @@ export default function ClientHeader() {
   return (
     <>
       {profile && showVerificationMessage && (
-        <div className="border-error-500 bg-error-50 dark:border-error-500/30 dark:bg-error-500/15 relative z-40 container m-2 mx-auto flex items-center gap-3 rounded-xl border p-3">
+        <div className="border-error-500 bg-error-50 dark:border-error-500/30 dark:bg-error-500/15 relative z-40 m-2 w-full md:container md:m-auto flex items-center gap-3 rounded-xl border p-3">
           <svg
             className="fill-current"
             width="24"
@@ -195,7 +195,7 @@ export default function ClientHeader() {
         </div>
       )}
       <header className="sticky top-0 z-40 flex w-full border-gray-200 bg-white lg:border-b dark:border-gray-800 dark:bg-gray-900">
-        <div className="container m-auto flex grow flex-col items-center justify-between lg:flex-row lg:px-2 border">
+        <div className="w-full md:container md:m-auto flex grow flex-col items-center justify-between lg:flex-row lg:px-2">
           <div className="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4 dark:border-gray-800">
             <Link href="/" className="lg:block">
               {tenantLoading ? (

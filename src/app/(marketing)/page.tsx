@@ -16,6 +16,7 @@ import CallToAction from "@/components/marketing-components/CallToAction";
 import Link from "next/link";
 import Image from "next/image";
 import { getAllFeedbacks } from "../actions/feedbacks";
+import { UsageCases } from "@/data/UseCases";
 
 export const metadata: Metadata = {
   title: "Home | FleetMaster - Fleet Management Solution",
@@ -46,12 +47,18 @@ export default async function Home() {
         <main className="relative mx-auto max-w-7xl px-4 pt-16 pb-48 sm:px-6 sm:pt-24 lg:px-8 lg:pt-32">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             {/* Typography & Actions */}
-            <div className="max-w-2xl space-y-6 lg:col-span-7">
+            <div className="max-w-3xl space-y-6 lg:col-span-7">
               {/* Main Headline */}
-              <h1 className="mx-auto max-w-2xl text-4xl leading-[1.1] font-bold tracking-tight text-black sm:text-5xl lg:mx-0 xl:text-6xl dark:text-white">
-                The intelligent way to manage your{" "}
+              <div className="flex items-center gap-3">
+                <div className="h-1.5 w-20 rounded bg-green-600"></div>{" "}
+                <span className="text-green-600 uppercase">
+                  START earning, stop worrying
+                </span>
+              </div>
+              <h1 className="mx-auto max-w-3xl text-4xl leading-[1.1] font-bold tracking-tight text-black sm:text-5xl lg:mx-0 xl:text-6xl dark:text-white">
+                Keep your rental fleet moving the{" "}
                 <span className="from-brand-500 to-brand-700 bg-linear-to-r bg-clip-text text-transparent">
-                  entire fleet
+                  intelligent way
                 </span>
               </h1>
 
@@ -75,7 +82,7 @@ export default async function Home() {
                 <Link
                   target="_blank"
                   href="http://app.localhost:3000/register"
-                  className="group flex cursor-pointer items-center gap-1 rounded-xl bg-amber-600 px-5 py-3 text-sm font-medium text-white shadow-md transition-all hover:bg-amber-700"
+                  className="group bg-brand-600 hover:bg-brand-700 flex cursor-pointer items-center gap-1 rounded-xl px-5 py-3 text-sm font-medium text-white shadow-md transition-all"
                 >
                   Get Started Now
                   <KeyboardArrowRightIcon
@@ -193,18 +200,16 @@ export default async function Home() {
         </div>
       </div>
 
-
-
       {/* Info Split Section */}
-      <div className="container border m-auto mt-8 mb-8 grid grid-cols-1 items-center gap-6 p-4 lg:grid-cols-12">
-        <div className="lg:col-span-6 relative aspect-video">
+      <div className="mt-8 mb-8 grid w-full grid-cols-1 items-center gap-6 p-4 md:container md:mx-auto lg:grid-cols-12">
+        <div className="relative aspect-video lg:col-span-6">
           <Image
             className="aspect-video w-full rounded-xl object-cover shadow-sm"
             alt="FleetMaster Platform"
             preload
             fill
             sizes="(max-width: 1024px) 50vw, 33vw"
-            style={{ objectFit: 'cover' }}
+            style={{ objectFit: "cover" }}
             src="/images/product/BMW-MY26-X6-cosy-1-extended.jpg"
           />
         </div>
@@ -213,18 +218,20 @@ export default async function Home() {
           <h3 className="text-sm font-semibold tracking-wider text-amber-600">
             ABOUT US
           </h3>
-          <h2 className="mt-2 mb-3 text-3xl font-bold text-slate-900 dark:text-white">
+          <h2 className="mt-2 mb-3 text-3xl font-bold text-slate-900 dark:text-gray-300">
             Empowering Fleet Operators with Intelligent Technology
           </h2>
           <p className="max-w-175 text-sm leading-relaxed text-slate-600 dark:text-gray-400">
-            FleetMaster is the ultimate fleet management dashboard built with modern technology and designed for Africa. We streamline vehicle rentals, track real-time diagnostics, and verify user credentials from a single, beautifully unified workspace
-            ...
+            FleetMaster is the ultimate fleet management dashboard built with
+            modern technology and designed for Africa. We streamline vehicle
+            rentals, track real-time diagnostics, and verify user credentials
+            from a single, beautifully unified workspace ...
           </p>
 
           <div className="mt-5 flex items-center gap-4 pt-2">
             <Link
               href="/about"
-              className="group flex cursor-pointer items-center gap-1 rounded-xl bg-amber-600 px-5 py-3 text-sm font-medium text-white shadow-md transition-all hover:bg-amber-700"
+              className="group bg-brand-600 hover:bg-brand-700 flex cursor-pointer items-center gap-1 rounded-xl px-5 py-3 text-sm font-medium text-white shadow-md transition-all"
             >
               Read More
               <KeyboardArrowRightIcon
@@ -236,12 +243,11 @@ export default async function Home() {
         </div>
       </div>
 
-
       <div className="mx-auto mt-8 mb-8 grid w-full grid-cols-1 gap-3 p-4 md:container lg:grid-cols-12">
         {/* 2. Swapped col-5 for col-span-5 */}
-        <div className="col-span-12 lg:col-span-5 mb-8">
-          <h3 className="text-amber-500">Where We Come In</h3>
-          <h2 className="mt-4 mb-3 text-3xl font-bold text-black dark:text-white">
+        <div className="col-span-12 mb-8 lg:col-span-5">
+          <h3 className="text-green-500">Where We Come In</h3>
+          <h2 className="mt-4 mb-3 text-3xl font-bold text-black dark:text-gray-300">
             Focus on Business. Leave the Software Hassle to Us!
           </h2>
           {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}
@@ -263,7 +269,7 @@ export default async function Home() {
             <Link
               target="_blank"
               href="http://app.localhost:3000/register"
-              className="group flex cursor-pointer items-center gap-1 rounded-xl bg-amber-600 px-5 py-3 text-sm font-medium text-white shadow-md transition-all hover:bg-amber-700"
+              className="group flex cursor-pointer items-center gap-1 rounded-xl bg-green-600 px-5 py-3 text-sm font-medium text-white shadow-md transition-all hover:bg-green-700"
             >
               Get Started Now
               <KeyboardArrowRightIcon
@@ -274,72 +280,15 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="col-span-12 relative py-3 mx-auto max-w-4xl space-y-12 px-4 lg:col-span-7">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-12 block md:hidden">
+        <div className="relative col-span-12 mx-auto max-w-4xl space-y-12 px-4 py-3 lg:col-span-7">
+          <h2 className="mb-12 block text-2xl font-bold text-slate-900 md:hidden dark:text-white">
             Core Applications
           </h2>
 
           {/* Center Timeline Line Indicator: Centered on desktop, shifted to the left edge on mobile screens */}
           <div className="pointer-events-none absolute top-24 bottom-6 left-6.5 w-0.5 -translate-x-1/2 bg-slate-200 md:left-1/2 dark:bg-slate-800" />
 
-          {[
-            {
-              imgSrc: "/images/product/3.webp",
-              badgeText: "Overview",
-              icon: CarRentalOutlinedIcon,
-              title: "1. Centralized Dispatch & Fleet Overview",
-              description:
-                "One single source of truth. Eliminate messy spreadsheets and scattered communication. Manage vehicle assignments, active rentals, invoicing, and contract history from a single, unified dashboard designed for quick decision-making.",
-              imgClassName: "rounded-t-2xl mb-3 aspect-4/2 w-full object-cover",
-            },
-            {
-              imgSrc: "/images/product/2.webp",
-              badgeText: "Easy Setup",
-              icon: HttpIcon,
-              title: "2. Free Domain & Zero-Config",
-              description:
-                "We handle the infrastructure. Avoid the hidden costs of buying, configuring, and maintaining separate web domains. Launch instantly with a secure, fully-managed yourbrand.fleetmaster.com portal completely free.",
-              imgClassName:
-                "rounded-t-2xl bg-gray-200 mb-3 aspect-4/2 w-full object-cover",
-            },
-            {
-              imgSrc: "/images/product/4.webp",
-              badgeText: "Live Dashboard",
-              icon: SubtitlesOutlinedIcon,
-              title: "3. Live Fleet Telematics",
-              description:
-                "We help you setup Real-time tracking and other features. Monitor vehicle diagnostics, live locations, and battery health on a unified map. Catch mechanical issues and unauthorized route deviations instantly before they become costly repairs.",
-              imgClassName:
-                "rounded-t-2xl bg-gray-200 mb-3 aspect-4/2 w-full object-cover",
-            },
-            {
-              imgSrc: "/images/product/5.webp",
-              badgeText: "AI Automation",
-              icon: VerifiedUserOutlinedIcon,
-              title: "4. Automated Driver Vetting",
-              description:
-                "Security-first verification. Protect high-value vehicles from liability risks. The onboarding pipeline automatically scans and verifies driver's licenses and credentials before a vehicle can ever be booked.",
-              imgClassName: "rounded-t-2xl mb-3 aspect-4/2 w-full object-cover",
-            },
-            {
-              imgSrc: "/images/product/6.webp",
-              badgeText: "Easy Management",
-              icon: NoCrashOutlinedIcon,
-              title: "5. Manage Bookings in One Place",
-              description:
-                "Easily view and manage all your vehicles on one place. Our live vehicle status checks lets clients know which cars are available and which are not. Preview all bookings before a booking even commence.",
-              imgClassName: "rounded-t-2xl mb-3 aspect-4/2 w-full object-cover",
-            },
-            {
-              imgSrc: "/images/product/1.webp",
-              badgeText: "Save Time",
-              icon: CalendarMonthIcon,
-              title: "6. Saves you Time & Money",
-              description:
-                "Save time with our built in Calendar that helps you plan dropoffs and pickups helping you keep track of all pending bookings. All in one place!",
-              imgClassName: "rounded-t-2xl mb-3 aspect-4/2 w-full object-cover",
-            },
-          ].map((feature, index) => {
+          {UsageCases.map((feature, index) => {
             const FeatureIcon = feature.icon;
             const isEven = index % 2 === 0;
 
@@ -356,7 +305,7 @@ export default async function Home() {
                 {/* Content Card Wrapper (Image Container) */}
                 {/* md:order-first and md:order-last push the image dynamically based on item index */}
                 <div
-                  className={`mb-0 md:mb-10 flex aspect-3/2 relative overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900 ${isEven ? "md:order-first" : "md:order-last"}`}
+                  className={`relative mb-0 flex aspect-3/2 overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md md:mb-10 dark:bg-slate-900 ${isEven ? "md:order-first" : "md:order-last"}`}
                 >
                   <Image
                     src={feature.imgSrc}
@@ -364,7 +313,7 @@ export default async function Home() {
                     preload
                     fill
                     sizes="(min-width: 768px) 50vw, 100vw"
-                    style={{ objectFit: 'cover' }}
+                    style={{ objectFit: "cover" }}
                     className="aspect-3/2 w-full bg-gray-200 object-cover"
                   />
                 </div>
@@ -400,16 +349,16 @@ export default async function Home() {
       <br />
       <div className="p-3">
         <h3 className="text-brand-500 md:text-center">Choose Convenience</h3>
-        <h2 className="mt-4 mb-3 md:text-center text-3xl font-bold text-black dark:text-white">
+        <h2 className="mt-4 mb-3 text-3xl font-bold text-black md:text-center dark:text-gray-300">
           Be Among Hundreds of our Happy Clients Worldwide!
         </h2>
-        <p className="m-auto mb-5 max-w-175 md:text-center text-sm text-gray-500 dark:text-gray-400">
+        <p className="m-auto mb-5 max-w-175 text-sm text-gray-500 md:text-center dark:text-gray-400">
           Browse our extensive collection of well-maintained vehicles across
           divers locations. From compact cars to luxury sedans, we have the
           perfect vehicle for your needs.
         </p>
 
-        <div className="container m-auto mb-4 grid grid-cols-1 md:grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="mb-4 grid w-full grid-cols-1 gap-3 md:container md:mx-auto md:grid-cols-2 lg:grid-cols-4">
           <div className="mb-6 rounded-2xl border-l-0 border-l-blue-500 bg-gray-700/9 p-4 shadow shadow-blue-500/60">
             <PeopleAltOutlinedIcon className="text-gray-500" />
             <h2 className="text-brand-500 mt-2 mb-2 text-2xl font-extrabold">
@@ -464,16 +413,16 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="container m-auto mt-5 mb-5 grid grid-cols-1 items-center gap-6 p-3 lg:grid-cols-12">
+      <div className="mt-5 mb-5 grid w-full grid-cols-1 items-center gap-6 p-3 md:container md:mx-auto lg:grid-cols-12">
         {/* 3. Swapped col-7 for col-span-7 */}
-        <div className="lg:col-span-6 aspect-video relative">
+        <div className="relative aspect-video lg:col-span-6">
           <Image
             className="w-full rounded-xl"
             alt="What Next ..."
             preload
             fill
             sizes="(min-width: 768px) 50vw, 100vw"
-            style={{ objectFit: 'cover' }}
+            style={{ objectFit: "cover" }}
             src={
               "/images/user/Professional_business_concept_image_showing_a_Flor-1765206733138.webp"
             }
@@ -483,7 +432,7 @@ export default async function Home() {
         {/* 2. Swapped col-5 for col-span-5 */}
         <div className="lg:col-span-6">
           <h3 className="text-amber-500">SO, WHAT NEXT?</h3>
-          <h2 className="mt-4 mb-3 text-3xl font-bold text-black dark:text-white">
+          <h2 className="mt-4 mb-3 text-3xl font-bold text-black dark:text-gray-300">
             Get a Software that Works for You
           </h2>
           {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}

@@ -156,12 +156,12 @@ export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
   }, [testimonials.length]);
 
   return (
-    <div className="container mx-auto px-3 py-10">
-      <h3 className="md:text-center text-amber-500">Client Testimonials</h3>
-      <h2 className="mt-4 mb-3 md:text-center text-3xl font-bold text-black dark:text-white">
+    <div className="w-full md:container md:mx-auto px-3 py-10">
+      <h3 className="text-amber-500 md:text-center">Client Testimonials</h3>
+      <h2 className="mt-4 mb-3 text-3xl font-bold text-black md:text-center dark:text-gray-300">
         See What our Clients Had To Say!
       </h2>
-      <p className="m-auto mb-5 max-w-175 md:text-center text-sm text-gray-500 dark:text-gray-400">
+      <p className="m-auto mb-5 max-w-175 text-sm text-gray-500 md:text-center dark:text-gray-400">
         From independent fleet operators to enterprise rental networks,
         thousands rely on FleetMaster to automate operations, track hardware
         diagnostics, and secure their assets.
@@ -172,27 +172,24 @@ export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
         {/* Inner Scrollable Track */}
         <div
           ref={sliderRef}
-          className="no-scrollbar grid h-fit w-full grid-flow-col grid-rows-1 gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth auto-cols-[calc(100%-3rem)] sm:auto-cols-full md:auto-cols-[calc((100%)/1)] px-4 sm:px-0"
+          className="no-scrollbar sm:auto-cols-full grid h-fit w-full snap-x snap-mandatory auto-cols-[calc(100%-3rem)] grid-flow-col grid-rows-1 gap-4 overflow-x-auto scroll-smooth px-4 sm:px-0 md:auto-cols-[calc((100%)/1)]"
         >
           {testimonials.map((item, index) => (
             <div
               key={index}
-              className="flex h-full snap-start min-w-full flex-col justify-center px-1 py-6 sm:px-6"
+              className="flex h-full min-w-full snap-start flex-col justify-center px-1 py-6 sm:px-6"
             >
-
-              <div className="relative pl-3 mt-3 mx-auto w-full max-w-2xl leading-0">
+              <div className="relative mx-auto mt-3 w-full max-w-2xl pl-3 leading-0">
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none z-2 font-serif text-9xl font-black leading-8 text-gray-500"
+                  className="pointer-events-none z-2 font-serif text-9xl leading-8 font-black text-gray-500"
                 >
                   “
                 </span>
               </div>
 
               <div className="relative mx-auto w-full max-w-2xl">
-                <div
-                  className="flex min-h-80 h-full w-full flex-col justify-between rounded-2xl border border-gray-200/80 bg-gray-50/90 p-6 shadow-lg shadow-zinc-300/40 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl sm:p-8 dark:border-zinc-700 dark:bg-zinc-800/90 dark:shadow-zinc-950/40 dark:hover:border-zinc-600"
-                >
+                <div className="flex h-full min-h-80 w-full flex-col justify-between rounded-2xl border border-gray-200/80 bg-gray-50/90 p-6 shadow-lg shadow-zinc-300/40 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl sm:p-8 dark:border-zinc-700 dark:bg-zinc-800/90 dark:shadow-zinc-950/40 dark:hover:border-zinc-600">
                   {/* Rating Row */}
                   <div className="mb-4 flex items-center gap-0.5 text-amber-500">
                     <Rating
@@ -217,7 +214,7 @@ export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
                     {item?.title || "Cool"}
                   </p>
                   {/* Narrative Quote Content */}
-                  <p className="flex-1 text-sm font-normal italic leading-relaxed text-gray-600 sm:text-base dark:text-zinc-300">
+                  <p className="flex-1 text-sm leading-relaxed font-normal text-gray-600 italic sm:text-base dark:text-zinc-300">
                     &quot;{item.quote}&quot;
                   </p>
 
@@ -239,10 +236,10 @@ export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
                   </div>
                 </div>
               </div>
-              <div className="pr-3 mt-3 mx-auto w-full max-w-2xl text-right">
+              <div className="mx-auto mt-3 w-full max-w-2xl pr-3 text-right">
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none font-serif text-9xl font-black leading-none text-gray-500"
+                  className="pointer-events-none font-serif text-9xl leading-none font-black text-gray-500"
                 >
                   ”
                 </span>
@@ -252,48 +249,49 @@ export default function TestimonialsSection({ feedbacks }: { feedbacks: any }) {
         </div>
       </div>
 
-
       {/* --- FIXED DOT INDICATOR PANEL OVERLAY --- */}
-      <div className="relative flex items-center justify-between gap-2 px-0 py-4 mt-2">
+      <div className="relative mt-2 flex items-center justify-between gap-2 px-0 py-4">
         {/* Left Button */}
         <button
           onClick={() => handleScroll("left")}
-          className="flex items-center text-lg justify-center rounded-lg bg-gray-300 p-2.5 text-black shadow-md ring-1 ring-zinc-600/50 shadow-zinc-400 dark:shadow-zinc-500/90 backdrop-blur-sm transition hover:scale-105 active:scale-95 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+          className="flex items-center justify-center rounded-lg bg-gray-300 p-2.5 text-lg text-black shadow-md ring-1 shadow-zinc-400 ring-zinc-600/50 backdrop-blur-sm transition hover:scale-105 active:scale-95 dark:bg-zinc-800 dark:text-white dark:shadow-zinc-500/90 dark:hover:bg-zinc-700"
           aria-label="Previous slide"
           title="Previous slide"
         >
           <ChevronLeftIcon fontSize="medium" />
         </button>
 
-
         <div className="flex gap-2">
-          {Array.from({ length: Math.ceil(testimonials.length / 1) }, (_, i) => {
-            const isActive = i === activeIndex;
-            return (
-              <button
-                key={`dot-${i}`}
-                onClick={() => handleDotClick(i)}
-                className={`m-0 h-2 rounded-full transition-all duration-300 outline-none ${isActive
-                  ? "w-6 bg-blue-500" // Highlighted Active Pill Indicator
-                  : "w-2 bg-gray-500 hover:bg-gray-400" // Inactive point dot color
+          {Array.from(
+            { length: Math.ceil(testimonials.length / 1) },
+            (_, i) => {
+              const isActive = i === activeIndex;
+              return (
+                <button
+                  key={`dot-${i}`}
+                  onClick={() => handleDotClick(i)}
+                  className={`m-0 h-2 rounded-full transition-all duration-300 outline-none ${
+                    isActive
+                      ? "w-6 bg-blue-500" // Highlighted Active Pill Indicator
+                      : "w-2 bg-gray-500 hover:bg-gray-400" // Inactive point dot color
                   }`}
-                aria-label={`Jump directly to testimonial group ${i + 1}`}
-              />
-            );
-          })}
+                  aria-label={`Jump directly to testimonial group ${i + 1}`}
+                />
+              );
+            },
+          )}
         </div>
 
         {/* Right Button */}
         <button
           onClick={() => handleScroll("right")}
-          className="flex items-center text-lg justify-center rounded-lg bg-gray-300 p-2.5 text-black shadow-md ring-1 ring-zinc-600/50 shadow-zinc-400 dark:shadow-zinc-500/90 backdrop-blur-sm transition hover:scale-105 active:scale-95 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+          className="flex items-center justify-center rounded-lg bg-gray-300 p-2.5 text-lg text-black shadow-md ring-1 shadow-zinc-400 ring-zinc-600/50 backdrop-blur-sm transition hover:scale-105 active:scale-95 dark:bg-zinc-800 dark:text-white dark:shadow-zinc-500/90 dark:hover:bg-zinc-700"
           aria-label="Next slide"
           title="Next slide"
         >
           <ChevronRightIcon />
         </button>
       </div>
-
 
       {/* HIGH-FIDELITY TRUSTPILOT INTEGRATION COMPONENT */}
       <div className="container mx-auto border-t border-gray-100 pt-4 shadow dark:border-zinc-900">

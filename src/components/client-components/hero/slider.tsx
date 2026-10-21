@@ -24,13 +24,16 @@ export default function HeroSlider() {
             ...defaultVehicleImages,
           ];
 
+  const trimmedImages = allImageUrls.slice(0, 10);
+  trimmedImages.reverse();
+
   const triggerUserInteraction = () => {
     setResetToken((prev) => prev + 1);
   };
 
   // Auto-scroll loop
   useEffect(() => {
-    if (allImageUrls.length <= 1) return;
+    if (trimmedImages.length <= 1) return;
 
     const autoScrollTimer = setInterval(() => {
       if (sliderRef.current && !isScrollingRef.current) {
@@ -52,7 +55,7 @@ export default function HeroSlider() {
     }, 5000);
 
     return () => clearInterval(autoScrollTimer);
-  }, [allImageUrls.length, resetToken, activeIndex]);
+  }, [trimmedImages.length, resetToken, activeIndex]);
 
   const handleScroll = (direction: "left" | "right") => {
     if (isScrollingRef.current || !sliderRef.current) return;
@@ -62,9 +65,11 @@ export default function HeroSlider() {
     let targetIndex = activeIndex;
 
     if (direction === "right") {
-      targetIndex = scrollLeft + clientWidth >= scrollWidth - 5 ? 0 : activeIndex + 1;
+      targetIndex =
+        scrollLeft + clientWidth >= scrollWidth - 5 ? 0 : activeIndex + 1;
     } else {
-      targetIndex = scrollLeft <= 5 ? allImageUrls.length - 1 : activeIndex - 1;
+      targetIndex =
+        scrollLeft <= 5 ? trimmedImages.length - 1 : activeIndex - 1;
     }
 
     isScrollingRef.current = true;
@@ -81,7 +86,8 @@ export default function HeroSlider() {
   };
 
   const handleDotClick = (index: number) => {
-    if (isScrollingRef.current || !sliderRef.current || index === activeIndex) return;
+    if (isScrollingRef.current || !sliderRef.current || index === activeIndex)
+      return;
     triggerUserInteraction();
 
     const { clientWidth } = sliderRef.current;
@@ -120,7 +126,7 @@ export default function HeroSlider() {
       slider.removeEventListener("scroll", handleScrollTracking);
       clearTimeout(timeoutId);
     };
-  }, [allImageUrls.length]);
+  }, [trimmedImages.length]);
 
   return (
     <div className="group relative my-auto hidden aspect-8/5 w-full items-center xl:flex">
@@ -147,10 +153,10 @@ export default function HeroSlider() {
         ref={sliderRef}
         className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto"
       >
-        {allImageUrls.map((img, i) => (
+        {trimmedImages.map((img, i) => (
           <div
             key={i}
-            className="relative w-full min-w-full shrink-0 snap-start rounded-2xl overflow-hidden"
+            className="relative w-full min-w-full shrink-0 snap-start overflow-hidden rounded-2xl"
           >
             <Image
               className="h-full w-full object-cover object-center"
@@ -166,8 +172,8 @@ export default function HeroSlider() {
       </div>
 
       {/* --- FIXED DOT INDICATOR PANEL OVERLAY --- */}
-      <div className="absolute right-5 -bottom-1.5 z-20 flex gap-2 rounded-t-2xl bg-white px-5 py-3.5 dark:bg-gray-900">
-        {allImageUrls.map((_, i) => {
+      <div className="absolute right-5 -bottom-1.5 z-20 flex items-center gap-2 rounded-t-2xl bg-white px-5 py-3.5 dark:bg-gray-900">
+        {trimmedImages.map((_, i) => {
           const isActive = i === activeIndex;
           return (
             <button
@@ -181,7 +187,10 @@ export default function HeroSlider() {
               aria-label={`Jump directly to panel view frame index number ${i + 1}`}
             />
           );
-        })}
+        })}{" "}
+        <span className="text-xs text-gray-500">
+          ({activeIndex + 1} of {trimmedImages.length})
+        </span>
       </div>
     </div>
   );

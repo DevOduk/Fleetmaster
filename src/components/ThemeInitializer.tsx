@@ -7,7 +7,7 @@ import mixPlugin from "colord/plugins/mix";
 
 extend([mixPlugin]);
 
-export function ThemeInitializer({ defaultColor = "#465fff" }) {
+export function ThemeInitializer({ defaultColor = "#ff6115" }) {
   useEffect(() => {
     const updateTheme = () => {
       const savedColor = localStorage.getItem("brand-color") || defaultColor;
