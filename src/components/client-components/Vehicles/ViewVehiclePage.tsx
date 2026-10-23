@@ -431,7 +431,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
             </div>
           )}
 
-          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div>
             <div className="mb-6 items-start justify-between flex flex-col-reverse md-flex-row gap-3">
               <div className="mt-2">
                 <h2 className="mb-1 text-2xl font-bold text-gray-900 dark:text-white">

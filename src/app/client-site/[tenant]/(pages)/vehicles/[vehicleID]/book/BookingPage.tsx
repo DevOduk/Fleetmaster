@@ -517,7 +517,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
   }
 
   return (
-    <main className="w-full p-6 md:container md:m-auto">
+    <main className="w-full p-2 md:container md:m-auto">
       {/* Dynamic Header Promo Banner */}
       <DeliveryBanner />
 
@@ -551,7 +551,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
       <div className="grid grid-cols-12 gap-6">
         {/* ================= LEFT SIDE: VEHICLE & LOGISTICS PRODUCTION PANEL (col-span-7) ================= */}
         <div className="col-span-12 space-y-6 lg:col-span-7">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div>
             {/* Header Identity Meta */}
             <div className="mb-4 flex items-start justify-between">
               <div>
@@ -559,10 +559,6 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                   {VehicleDetails.year} {VehicleDetails.make}{" "}
                   {VehicleDetails.model}
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Category: {VehicleDetails.category} | Class:{" "}
-                  {VehicleDetails.group}
-                </p>
               </div>
               <div className="flex gap-2">
                 <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">

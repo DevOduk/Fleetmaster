@@ -4,7 +4,7 @@ function DeliveryBanner() {
   return (
     <div className="bg-brand-50 flex-col md:flex-row dark:bg-brand-500/10 col-span-full mb-5 flex items-center gap-3 rounded-xl border p-3 dark:border-gray-700">
       <img
-        className="w-50"
+        className="w-full md:w-50"
         src={
           "https://indigocarhire.co.uk/wp-content/uploads/header_22-768x281.png"
         }
