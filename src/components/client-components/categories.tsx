@@ -41,7 +41,7 @@ export default function ViewAllCategories({ tenantData }: Tenant) {
     <div
       key={tenantData?.id}
       datatype={tenantData?.slug}
-      className="container m-auto mt-5 mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3"
+      className="w-full md:container md:m-auto mt-5 mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3"
     >
       {allMyCategories.slice(0, 6).map((item) => (
         <Link key={item.category} href={`/vehicles?category=${item.category}`}>

@@ -499,7 +499,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
 
   if (loading) {
     return (
-      <main className="container m-auto animate-pulse space-y-6 p-6">
+      <main className="w-full md:container md:m-auto animate-pulse space-y-6 p-6">
         <div className="mb-6 h-6 w-1/4 rounded bg-gray-200 dark:bg-gray-800" />
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-12 space-y-6 lg:col-span-7">
@@ -517,7 +517,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
   }
 
   return (
-    <main className="container m-auto p-6">
+    <main className="w-full p-6 md:container md:m-auto">
       {/* Dynamic Header Promo Banner */}
       <DeliveryBanner />
 
@@ -572,14 +572,14 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
             </div>
 
             {/* Media Presentation Display Canvas */}
-            <div className="relative mb-6 overflow-hidden aspect-video rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-950">
+            <div className="relative mb-6 aspect-video overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-950">
               <Image
                 src={VehicleDetails.image_url}
                 alt={""}
                 preload
                 fill
                 sizes="(max-width: 1024px) 50vw, 33vw"
-                style={{ objectFit: 'cover' }}
+                style={{ objectFit: "cover" }}
                 className="relative w-full object-cover object-center"
               />
               <Box
@@ -657,7 +657,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
               <div>
                 <p className="text-xs text-gray-400">Station Location</p>
                 <p className="mt-1 font-medium text-gray-900 dark:text-gray-200">
-                  {VehicleDetails.location?.title || ''}
+                  {VehicleDetails.location?.title || ""}
                 </p>
               </div>
               <div>
@@ -685,14 +685,15 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                     className="space-y-2"
                   >
                     <div
-                      className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === VehicleDetails?.location?.title || '' ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
+                      className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === VehicleDetails?.location?.title || "" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
                     >
                       <FormControlLabel
-                        value={VehicleDetails?.location?.title || ''}
+                        value={VehicleDetails?.location?.title || ""}
                         control={<Radio size="small" color="primary" />}
                         label={
                           <span className="text-sm dark:text-gray-200">
-                            Station Handover ({VehicleDetails?.location?.title || ''})
+                            Station Handover (
+                            {VehicleDetails?.location?.title || ""})
                           </span>
                         }
                       />
@@ -823,10 +824,14 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                       className="space-y-2"
                     >
                       {tenant?.yards.filter(
-                        (y) => y.title !== VehicleDetails?.location?.title || '',
+                        (y) =>
+                          y.title !== VehicleDetails?.location?.title || "",
                       ).length > 0 ? (
                         tenant?.yards
-                          .filter((y) => y.title !== VehicleDetails?.location?.title || '')
+                          .filter(
+                            (y) =>
+                              y.title !== VehicleDetails?.location?.title || "",
+                          )
                           .map((y) => (
                             <div
                               key={y.title}
@@ -870,32 +875,36 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
 
             {/* Explicit Modal Checkpoint Anchor */}
             <div
-              className={`mt-6 flex flex-col items-start justify-between gap-3 rounded-xl border bg-amber-50/50 p-4 transition-colors duration-200 sm:flex-row sm:items-center ${policiesAccepted
-                ? "border-emerald-200 dark:border-emerald-900/50 dark:bg-emerald-950/20"
-                : "border-red-200 dark:border-red-900/50 dark:bg-red-950/20"
-                }`}
+              className={`mt-6 flex flex-col items-start justify-between gap-3 rounded-xl border bg-amber-50/50 p-4 transition-colors duration-200 sm:flex-row sm:items-center ${
+                policiesAccepted
+                  ? "border-emerald-200 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+                  : "border-red-200 dark:border-red-900/50 dark:bg-red-950/20"
+              }`}
             >
               <div className="flex items-start gap-3">
                 <InfoOutlinedIcon
-                  className={`mt-0.5 ${policiesAccepted
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-red-600 dark:text-red-400"
-                    }`}
+                  className={`mt-0.5 ${
+                    policiesAccepted
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-red-600 dark:text-red-400"
+                  }`}
                 />
                 <div>
                   <h4
-                    className={`text-sm font-bold text-red-800 ${policiesAccepted
-                      ? "dark:text-emerald-300"
-                      : "dark:text-red-500"
-                      }`}
+                    className={`text-sm font-bold text-red-800 ${
+                      policiesAccepted
+                        ? "dark:text-emerald-300"
+                        : "dark:text-red-500"
+                    }`}
                   >
                     Review Legal Rules & Handover Policies
                   </h4>
                   <p
-                    className={`mt-2 text-xs ${policiesAccepted
-                      ? "text-emerald-700 dark:text-emerald-400"
-                      : "text-red-700 dark:text-red-400"
-                      }`}
+                    className={`mt-2 text-xs ${
+                      policiesAccepted
+                        ? "text-emerald-700 dark:text-emerald-400"
+                        : "text-red-700 dark:text-red-400"
+                    }`}
                   >
                     You must review and acknowledge the documentation, liability
                     thresholds, and insurance policies prior to booking
@@ -909,7 +918,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                   </p>
                 </div>
               </div>
-              <Checkbox onChange={() => { }} checked={policiesAccepted} />
+              <Checkbox onChange={() => {}} checked={policiesAccepted} />
             </div>
           </div>
         </div>
@@ -1036,10 +1045,11 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                 {/* M-Pesa Option Layout Box */}
                 <div
                   onClick={() => setPaymentMethod("m-pesa")}
-                  className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${paymentMethod === "m-pesa"
-                    ? "border-brand-500 bg-brand-50/5"
-                    : "border-gray-200 dark:border-gray-800"
-                    }`}
+                  className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${
+                    paymentMethod === "m-pesa"
+                      ? "border-brand-500 bg-brand-50/5"
+                      : "border-gray-200 dark:border-gray-800"
+                  }`}
                 >
                   <FormControlLabel
                     value="m-pesa"
@@ -1061,10 +1071,11 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                 {/* Card Option Layout Box */}
                 <div
                   onClick={() => setPaymentMethod("card")}
-                  className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${paymentMethod === "card"
-                    ? "border-brand-500 bg-brand-50/5"
-                    : "border-gray-200 dark:border-gray-800"
-                    }`}
+                  className={`flex cursor-pointer items-center justify-between rounded-xl border bg-white px-3 py-2 transition-colors dark:bg-gray-900 ${
+                    paymentMethod === "card"
+                      ? "border-brand-500 bg-brand-50/5"
+                      : "border-gray-200 dark:border-gray-800"
+                  }`}
                 >
                   <FormControlLabel
                     value="card"
@@ -1119,8 +1130,8 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                         type="text"
                         placeholder="Card number"
                         className="pl-15.5"
-                      // value={cardNumber}
-                      // onChange={(e) => setCardNumber(e.target.value)}
+                        // value={cardNumber}
+                        // onChange={(e) => setCardNumber(e.target.value)}
                       />
                       <span className="absolute top-1/2 left-0 flex h-11 w-11.5 -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
                         <svg
@@ -1153,8 +1164,8 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                         max={"5"}
                         placeholder="MM/YY"
                         className="mt-2 w-full text-center"
-                      // value={expiry}
-                      // onChange={(e) => handleExpiryChange(e.target.value)}
+                        // value={expiry}
+                        // onChange={(e) => handleExpiryChange(e.target.value)}
                       />
                     </div>
 
@@ -1168,8 +1179,8 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                         max={"4"}
                         placeholder="•••"
                         className="mt-2 w-full text-center tracking-widest"
-                      // value={cvv}
-                      // onChange={(e) => setCvv(e.target.value)}
+                        // value={cvv}
+                        // onChange={(e) => setCvv(e.target.value)}
                       />
                     </div>
                   </div>

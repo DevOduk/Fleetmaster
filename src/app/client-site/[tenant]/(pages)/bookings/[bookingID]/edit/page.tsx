@@ -29,7 +29,7 @@ const EditBookingsPage = ({ params }: VehiclePageProps) => {
         highlightedText={"Booking #" + bookingID}
         description="Monitor your fleet performance and track your active rentals."
       />
-      <div className="container mx-auto space-y-6">
+      <div className="w-full md:container md:m-auto space-y-6">
         <EditBookingForm BookingID={parseInt(bookingID)} />
       </div>
     </main>

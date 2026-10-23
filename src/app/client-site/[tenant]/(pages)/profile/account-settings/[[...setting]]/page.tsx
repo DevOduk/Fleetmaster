@@ -58,7 +58,7 @@ export default async function SettingsPage({
       : "Accessibility";
 
   return (
-    <div className="container m-auto min-h-screen">
+    <div className="min-h-screen w-full md:container md:m-auto">
       <div className="mt-4 mb-4 rounded-2xl border border-gray-200 bg-white p-5 lg:p-6 dark:border-gray-800 dark:bg-white/3">
         <div className="mb-4 flex items-center gap-3">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">

@@ -77,7 +77,7 @@ export default function ClientHomePageUI() {
           compact cars to luxury sedans, we have the perfect vehicle for your
           needs.
         </p>
-        <div className="mt-5 w-full md:container md:m-auto">
+        <div className="mt-5 w-full md:container md:m-auto p-2">
           <ViewAllSnapshots tenant={tenantData?.slug} />
 
           <div className="flex items-center justify-between">
@@ -111,9 +111,9 @@ export default function ClientHomePageUI() {
 
         <ViewAllLocations tenantData={tenantData} />
       </div>
-      <div className="mb-5 w-full border-t border-gray-500 md:container md:m-auto"></div>
+      <div className="py-5 w-full border-t border-gray-500 md:container md:m-auto"></div>
 
-      <div className="grid grid-cols-1 gap-3 p-4 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-3 p-4 lg:grid-cols-12 py-8">
         <div className="lg:col-span-5">
           <h3 className="text-amber-500">For all Activities</h3>
           <h2 className="mt-4 mb-3 text-3xl font-bold text-black dark:text-white">

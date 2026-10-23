@@ -1,13 +1,5 @@
 "use client";
-import { useFleet } from "@/context/FleetContext";
-import { Box, Chip } from "@mui/material";
-import LocalGasStationOutlinedIcon from "@mui/icons-material/LocalGasStationOutlined";
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
-import LuggageOutlinedIcon from "@mui/icons-material/LuggageOutlined";
-import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined";
-import Button from "../ui/button/Button";
+import { Box } from "@mui/material";
 import Image from "next/image";
 import { defaultVehicleImages } from "@/data/globalExports";
 import Link from "next/link";
@@ -22,7 +14,7 @@ export default function ViewAllLocations({ tenantData }: Tenant) {
     <div
       key={tenantData?.id}
       datatype={tenantData?.slug}
-      className="container m-auto mt-5 mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3"
+      className="w-full md:container md:m-auto grid grid-cols-2 gap-3 lg:grid-cols-3 py-8"
     >
       {tenantData?.yards?.length > 0
         ? tenantData?.yards?.slice(0, 6).map((VehicleDetails, i) => (

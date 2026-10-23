@@ -2,6 +2,7 @@
 
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
+import NewsletterSubscription from "@/components/NewsletterSubscription";
 import Button from "@/components/ui/button/Button";
 import Image from "next/image";
 import Link from "next/link";
@@ -143,18 +144,7 @@ const MainClientFooter: React.FC = () => {
                 </p>
               </div>
 
-              <div className="col-span-12">
-                <p className="text-md mb-2 font-semibold text-gray-900 dark:text-white">
-                  Subscribe to Newsletter
-                </p>
-                <Label>
-                  Get latest news and offers right in your inbox. Cancel anytime
-                </Label>
-                <div className="mt-2 grid grid-cols-2 gap-3">
-                  <Input placeholder="Enter email address ..." />
-                  <Button variant="primary" size="sm">Submit</Button>
-                </div>
-              </div>
+                <NewsletterSubscription />
             </div>
           </div>
           {/* Bottom Bar */}

@@ -59,11 +59,28 @@ const Feedback: React.FC = () => {
   // Handle Form Submission
   const handleSubmit = async () => {
     // 1. Guard check: make sure description text exists
+    if (!category.trim()) {
+      showToast("Please enter a valid title before submitting.", "error");
+      setStatusMessage({
+        type: "error",
+        text: "Please enter a valid review title before submitting.",
+      });
+      return;
+    }
     if (!description.trim()) {
       showToast("Please enter a valid description before submitting.", "error");
       setStatusMessage({
         type: "error",
         text: "Please enter a valid description before submitting.",
+      });
+      return;
+    }
+
+    if (rating === 0) {
+      showToast("Please pick a valid rating before submitting.", "error");
+      setStatusMessage({
+        type: "error",
+        text: "Please pick a valid rating before submitting.",
       });
       return;
     }
@@ -88,7 +105,7 @@ const Feedback: React.FC = () => {
     const result = await submitUserFeedback(
       {
         category,
-        rating: rating / 2 || 0,
+        rating: (rating / 2) || 0.5,
         feedback_text: description,
       },
       {

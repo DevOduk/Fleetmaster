@@ -274,14 +274,14 @@ export default function AccountSettings({
 
   if (loading) {
     return (
-      <div className="container mx-auto min-h-[80vh] max-w-6xl p-5 text-gray-400">
+      <div className="w-full md:container md:m-auto min-h-[80vh] max-w-6xl p-5 text-gray-400">
         Loading profile ...
       </div>
     );
   } else if (!loading && !profile) {
     window.location.href = `/signin?r=${currentPageUrl}`;
     return (
-      <div className="container mx-auto min-h-[80vh] max-w-6xl p-5 text-gray-400">
+      <div className="w-full md:container md:m-auto min-h-[80vh] max-w-6xl p-5 text-gray-400">
         Redirecting to signin ...
       </div>
     );

@@ -157,7 +157,8 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
 
   if (loading) {
     return (
-      <main className="container m-auto animate-pulse space-y-6 p-6">
+      <main className="w-full md:container md:m-auto animate-pulse space-y-6 p-6">
+        
         {/* Breadcrumb Skeleton */}
         <div className="mb-6 h-6 w-1/4 rounded bg-gray-200 dark:bg-gray-800" />
 
@@ -249,7 +250,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
   const grandTotalAmount = subTotalBeforeVat + vatAmount;
 
   return (
-    <main className="container m-auto p-6">
+    <main className="w-full md:container md:m-auto p-6">
       <PageBreadcrumb
         items={breadcrumbItems}
         pageTitle={`${VehicleDetails?.make} ${VehicleDetails?.model}`}
@@ -273,10 +274,9 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
 
           {/* Price Range Fields */}
           <div className="mb-2">
-            <p className="mb-2 text-black dark:text-white">
-              Rental Dates (All Times in {tenant?.timezone || "Nairobi (UTC+3)"}
-              )
-            </p>
+             <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                      All Times in {tenant?.timezone || "Nairobi (UTC+3)"}
+                    </p>
             <div className="mt-4 mb-8 grid grid-cols-1 gap-3">
               <div className="col-span-6 lg:col-span-12">
                 <Label>Start Date</Label>

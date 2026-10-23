@@ -236,8 +236,8 @@ export default function ClientVehiclesPage() {
 
       {/* Price Range Fields */}
       <div className="mb-2">
-        <p className="mb-2 text-black dark:text-white">
-          Rental Dates (All Times in {tenant?.timezone || "Nairobi (UTC+3)"})
+        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+          All Times in {tenant?.timezone || "Nairobi (UTC+3)"}
         </p>
         <div className="mt-4 mb-8 grid grid-cols-1 items-end gap-3 lg:grid-cols-12">
           <div className="col-span-6 md:col-span-4">

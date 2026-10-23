@@ -93,10 +93,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Fail explicitly if no user matches filters
+    // 3. Fail explicitly if no user matches filters just say invalid
     if (!userAccount) {
       return NextResponse.json(
-        { error: "No user found with these credentials." },
+        { error: "Invalid user credentials." },
         { status: 401 },
       );
     }

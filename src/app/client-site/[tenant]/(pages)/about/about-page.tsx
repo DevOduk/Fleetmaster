@@ -89,7 +89,7 @@ export default function AboutPageContent() {
         highlightedText="Our Team"
         description="Have questions about features, setup, or scaling your enterprise operations? Drop us a message and our fleet experts will handle the rest."
       />
-      <div className="container m-auto grid grid-cols-1 items-center gap-5 p-4 lg:grid-cols-12">
+      <div className="w-full md:container md:m-auto grid grid-cols-1 items-center gap-5 p-4 lg:grid-cols-12">
         {/* 3. Swapped col-7 for col-span-7 */}
         <div className="lg:col-span-7">
           <ViewAllCategories tenantData={tenantData} />
@@ -113,7 +113,7 @@ export default function AboutPageContent() {
               </>
             )}
           </p>
-          {/* 4. Removed m-auto so text aligns nicely to the left edge of its container */}
+
           <p className="max-w-175 text-sm text-gray-500 dark:text-gray-400">
             {tenantData.description?.trim() ? (
               tenantData.description
@@ -150,13 +150,18 @@ export default function AboutPageContent() {
         <h2 className="mt-4 mb-10 text-center text-3xl font-bold text-black dark:text-white">
           View Our Photo Gallery
         </h2>
-        <ImageList className="p pointer-events-none select-none" variant="masonry" cols={4} gap={8}>
+        <ImageList
+          className="p pointer-events-none select-none"
+          variant="masonry"
+          cols={4}
+          gap={8}
+        >
           {images.slice(0, 30).map((item, i) => (
             <ImageListItem key={i}>
               <img
                 srcSet={`${item}?w=248&fit=crop&auto=format&dpr=2 2x`}
                 src={`${item}?w=248&fit=crop&auto=format`}
-                alt={''}
+                alt={""}
                 loading="lazy"
               />
             </ImageListItem>
@@ -165,7 +170,7 @@ export default function AboutPageContent() {
       </div>
       <br />
 
-      <div className="container m-auto">
+      <div className="w-full md:container md:m-auto">
         <h3 className="text-brand-500 text-center">Available Countrywide</h3>
         <h2 className="mt-4 mb-3 text-center text-3xl font-bold text-black dark:text-white">
           Explore Our Locations

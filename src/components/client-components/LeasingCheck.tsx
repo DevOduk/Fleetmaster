@@ -69,8 +69,43 @@ export default function LeasingCheck() {
             description="Ready to monetize your vehicle? Our fleet experts are here to guide you through the seamless leasing process."
           />
 
+          {/* Existing Content */}
+          <div className="mt-10 grid w-full grid-cols-1 items-center gap-5 p-4 md:container md:m-auto lg:grid-cols-12">
+            <div className="lg:col-span-6">
+              <img
+                className="rounded-3xl shadow-lg"
+                src="https://www.pigiame.co.ke/discover/wp-content/uploads/2025/06/Car-Hire-Nairobi.jpg"
+                alt="lease"
+              />
+            </div>
+            <div className="lg:col-span-6">
+              <h3 className="text-amber-500">LEASE WITH US</h3>
+              <h2 className="mt-2 mb-3 text-3xl font-bold text-black dark:text-white">
+                Start earning today
+              </h2>
+              <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                At {tenant.name}, we value high-standard vehicles. If your car
+                meets our eligibility criteria above, we provide the platform,
+                the insurance, and the clients to ensure your vehicle works for
+                you.
+              </p>
+              <div className="mt-5 flex gap-3">
+                <Link href={`tel:${tenant.phone || "#"}`}>
+                  <Button variant="success" size="sm">
+                    Enquire <PhoneEnabledOutlinedIcon fontSize="small" />
+                  </Button>
+                </Link>
+                <Link href={`mailto:${tenant.email || "#"}`}>
+                  <Button variant="primary" size="sm">
+                    Send an Email <EmailOutlinedIcon fontSize="small" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
           {/* Verification Criteria Section */}
-          <section className="container mx-auto mt-10 rounded-2xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-800 dark:bg-gray-900">
+          <section className="mt-10 w-full rounded-2xl border border-gray-200 bg-gray-50 p-6 md:container md:m-auto dark:border-gray-800 dark:bg-gray-900">
             <h3 className="mb-6 text-xl font-bold text-black dark:text-white">
               Vehicle Eligibility Criteria
             </h3>
@@ -94,7 +129,7 @@ export default function LeasingCheck() {
           </section>
 
           {/* Vehicle Makes & Models Grid */}
-          <section className="container mx-auto mt-10 px-4">
+          <section className="mt-10 mb-10 w-full px-4 py-8 md:container md:m-auto">
             <h3 className="mb-6 text-xl font-bold text-black dark:text-white">
               Common vehicles Currently Leasing
             </h3>
@@ -116,44 +151,9 @@ export default function LeasingCheck() {
             </div>
           </section>
 
-          {/* Existing Content */}
-          <div className="container m-auto mt-10 grid grid-cols-1 items-center gap-5 p-4 lg:grid-cols-12">
-            <div className="lg:col-span-6">
-              <img
-                className="rounded-3xl shadow-lg"
-                src="https://www.pigiame.co.ke/discover/wp-content/uploads/2025/06/Car-Hire-Nairobi.jpg"
-                alt="lease"
-              />
-            </div>
-            <div className="lg:col-span-6">
-              <h3 className="text-amber-500">LEASE WITH US</h3>
-              <h2 className="mt-2 mb-3 text-3xl font-bold text-black dark:text-white">
-                Start earning today
-              </h2>
-              <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                At Oduk CarHire, we value high-standard vehicles. If your car
-                meets our eligibility criteria above, we provide the platform,
-                the insurance, and the clients to ensure your vehicle works for
-                you.
-              </p>
-              <div className="mt-5 flex gap-3">
-                <Link href={`tel:${tenant.phone || "#"}`}>
-                  <Button variant="success" size="sm">
-                    Enquire <PhoneEnabledOutlinedIcon fontSize="small" />
-                  </Button>
-                </Link>
-                <Link href={`mailto:${tenant.email || "#"}`}>
-                  <Button variant="primary" size="sm">
-                    Send an Email <EmailOutlinedIcon fontSize="small" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-
           <LeaseInput />
 
-          <section className="container mx-auto mt-16 px-4">
+          <section className="mt-16 w-full px-4 md:container md:m-auto">
             <h3 className="mb-2 text-center text-amber-500">
               PARTNERSHIP TERMS
             </h3>
@@ -183,7 +183,7 @@ export default function LeasingCheck() {
         </>
       ) : (
         <>
-          <div className="container m-auto mt-10 mb-9 grid grid-cols-1 items-center gap-5 p-4 lg:grid-cols-12">
+          <div className="mt-10 mb-9 grid w-full grid-cols-1 items-center gap-5 p-4 md:container md:m-auto lg:grid-cols-12">
             <div className="lg:col-span-6">
               <img
                 className="rounded-3xl shadow-lg"
@@ -200,6 +200,9 @@ export default function LeasingCheck() {
                 Unfortunately we are not accepting leases at the moment. This
                 page will be updated once a leasing agreement has been made!
                 Thank you.
+              </p>
+              <p className="max-w-175 text-sm text-gray-400">
+                If you think this is a mistake, call Support.
               </p>
               <p className="mt-3 max-w-175 text-sm text-gray-500 italic">
                 Management!
