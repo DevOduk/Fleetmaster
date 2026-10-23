@@ -2,25 +2,19 @@
 import { useTenant } from "@/context/TenantContext";
 import Link from "next/link";
 import React from "react";
-import Input from "@/components/form/input/InputField";
-import Label from "@/components/form/Label";
-import Button from "@/components/ui/button/Button";
 import Image from "next/image";
 import NewsletterSubscription from "@/components/NewsletterSubscription";
 
 const ClientFooter: React.FC = () => {
-  const { tenant } = useTenant();
+  const { tenant, loading: tenantLoading } = useTenant();
   const year = new Date().getFullYear();
+
+  const shortName = tenant?.name.split(" ").slice(0, 2).join(" ");
+  const logoShort = `${shortName?.split(" ")[0].charAt(0)}${shortName?.split(" ")[1].charAt(0)}`;
 
   return (
     <>
       {/* <div>
-        <Link
-          href={"/feedback"}
-          className="text-theme-sm fixed top-1/2 left-0 z-40 origin-bottom-left -translate-y-1/2 rotate-90 bg-black px-4 py-2 text-center font-medium text-white shadow-lg transition-all hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-gray-100"
-        >
-          Submit Feedback
-        </Link>
 
         <div className="text-theme-sm mt-4 mb-4 flex flex-wrap items-center justify-center gap-3 text-gray-500 dark:text-gray-400">
           <span>
@@ -57,12 +51,19 @@ const ClientFooter: React.FC = () => {
       {/* aeshetic footer  */}
 
       <div>
-        <div className="relative flex w-full cursor-pointer items-center gap-0 bg-gray-300 p-4 py-8 lg:px-10 dark:bg-brand-950">
+        <Link
+          href={"/feedback"}
+          className="text-theme-sm fixed top-1/2 left-0 z-40 origin-bottom-left -translate-y-1/2 rotate-90 bg-black px-4 py-2 text-center font-medium text-white shadow-lg transition-all hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-gray-100"
+        >
+          Submit Feedback
+        </Link>
+        
+        <div className="relative mt-6 flex w-full cursor-pointer items-center gap-0 bg-gray-300 p-4 py-8 lg:px-10 dark:bg-brand-950">
           <Link
             href="/"
             className="pointer-events-none relative w-full contrast-0 select-none"
           >
-            <img className="h-full w-full" src={tenant.tenant_logo} alt="" />
+            <img className="h-full w-full" src={tenant.tenant_logo || '/images/logo/logo-vector.svg'} alt="" />
           </Link>
         </div>
 
@@ -74,13 +75,26 @@ const ClientFooter: React.FC = () => {
               <div className="text-center md:col-span-4 md:text-left">
                 <div className="mb-3 flex cursor-pointer items-center gap-2">
                   <Link href="/" className="">
-                    <Image
-                      width={154}
-                      height={32}
-                      sizes="(max-width: 768px) 120px, 154px"
-                  src={tenant.tenant_logo}
-                      alt=""
-                    />
+               {tenantLoading ? (
+                 <div className="h-8 w-40 animate-pulse rounded bg-gray-500"></div>
+               ) : tenant.tenant_logo ? (
+                 <img
+                   style={{
+                     width: 154,
+                     height: 32,
+                   }}
+                   className="w-auto rounded object-cover"
+                   src={tenant.tenant_logo}
+                 // alt={`${tenant.name} Logo`}
+                 />
+               ) : (
+                 <div className="flex items-center gap-2 font-bold text-nowrap text-black dark:text-white">
+                   <span className="bg-brand-500 flex aspect-square! h-10 items-center justify-center rounded-lg p-2 font-extrabold text-white uppercase">
+                     {logoShort}
+                   </span>
+                   {shortName}
+                 </div>
+               )}
                   </Link>
                 </div>
                 <p className="mb-2 text-left text-sm font-medium text-gray-500 dark:text-gray-400">

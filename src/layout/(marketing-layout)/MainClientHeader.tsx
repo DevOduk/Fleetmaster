@@ -82,7 +82,7 @@ export default function MainClientHeader() {
       )}
 
       {/* Rounded floating card container */}
-      <div className="relative z-[60] flex items-center justify-between rounded-full border border-gray-200/50 bg-white/80 px-5 py-2.5 shadow-sm backdrop-blur-md md:px-6 dark:border-zinc-600/50 dark:bg-zinc-950/60">
+      <div className="relative z-60 flex items-center justify-between rounded-full border border-gray-200/50 bg-white/80 px-5 py-2.5 shadow-sm backdrop-blur-md md:px-6 dark:border-zinc-600/50 dark:bg-zinc-950/60">
         {/* Logo / Brand */}
         <div className="z-56 flex cursor-pointer items-center gap-2">
           <Link href="/" className="">

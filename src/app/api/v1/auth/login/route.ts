@@ -102,7 +102,7 @@ export async function POST(request: Request) {
     }
 
     // 4. Validate password hashes safely
-    const isMatch = await compare(password, userAccount.password || "");
+    const isMatch = await compare(password, userAccount.password);
     if (!isMatch) {
       return NextResponse.json(
         { error: "You have entered an invalid password." },
@@ -114,6 +114,7 @@ export async function POST(request: Request) {
     const tokenPayload = {
       id: userAccount.id,
       tenant_id: userAccount.tenant_id,
+      slug: userAccount.fleetmaster_tenants.slug,
       email: userAccount.email,
       role: normalizedType === "admin" ? userAccount.role : "Client",
       accountType: normalizedType,

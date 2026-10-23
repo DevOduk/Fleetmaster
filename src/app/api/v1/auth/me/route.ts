@@ -83,7 +83,7 @@ export async function GET(request: Request) {
       const profileFields = `id, first_name, last_name, bio, email, phone, timezone, language, created_at, city, verification_status, country, role, tenant_id, profile_pic, postal_code, socials, is_otp, notify, newsletter, popup, dob${normalizedType === "client" ? ", national_id_number, dl_number, verification_error, submitted_document, onboarded" : ""
         }, fleetmaster_tenants(*)`;
 
-      const queryBuilder = decoded.tenant_id
+      const queryBuilder = normalizedType === "client"
         ? supabase
           .from(tableName)
           .select(profileFields)

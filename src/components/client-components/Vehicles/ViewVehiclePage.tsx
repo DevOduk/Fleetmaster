@@ -250,7 +250,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
   const grandTotalAmount = subTotalBeforeVat + vatAmount;
 
   return (
-    <main className="w-full md:container md:m-auto p-6">
+    <main className="w-full md:container md:m-auto p-2">
       <PageBreadcrumb
         items={breadcrumbItems}
         pageTitle={`${VehicleDetails?.make} ${VehicleDetails?.model}`}
@@ -277,8 +277,8 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                       All Times in {tenant?.timezone || "Nairobi (UTC+3)"}
                     </p>
-            <div className="mt-4 mb-8 grid grid-cols-1 gap-3">
-              <div className="col-span-6 lg:col-span-12">
+            <div className="mt-4 mb-8 flex flex-col gap-3">
+              <div className="w-full">
                 <Label>Start Date</Label>
                 <div className="relative mt-2">
                   <Input
@@ -299,7 +299,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
                   </span>
                 </div>
               </div>
-              <div className="col-span-6 lg:col-span-12">
+              <div className="w-full">
                 <Label>End Date</Label>
                 <div className="relative mt-2">
                   <Input
@@ -320,7 +320,7 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
                   </span>
                 </div>
               </div>
-              <div className="col-span-12">
+              <div className="w-full">
                 <Label>Days</Label>
                 <div className="relative mt-2">
                   <div className="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-15.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
@@ -431,16 +431,16 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
             </div>
           )}
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-            <div className="mb-6 flex items-start justify-between">
-              <div>
-                <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <div className="mb-6 items-start justify-between flex flex-col-reverse md-flex-row gap-3">
+              <div className="mt-2">
+                <h2 className="mb-1 text-2xl font-bold text-gray-900 dark:text-white">
                   {VehicleDetails?.year} {VehicleDetails?.make}{" "}
                   {VehicleDetails?.model}
                 </h2>
                 <p className="text-gray-500">
                   Category: {VehicleDetails?.category} | Body Type:{" "}
-                  {VehicleDetails?.group}
+                  {VehicleDetails?.body_type}
                 </p>
               </div>
               <div>
@@ -450,9 +450,9 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
                     : "bg-amber-100 text-amber-700"
                     }`}
                 >
-                  {VehicleDetails?.status}
+                  Status: {VehicleDetails?.status}
                 </span>
-                <span className="font-sm ms-3 mt-2 mb-1 rounded-full bg-green-100 px-3 py-1 text-xs text-green-700">
+                <span className="font-sm ms-3 mt-2 mb-1 rounded-full bg-purple-100 px-3 py-1 text-xs text-purple-700">
                   Driver: {VehicleDetails?.driver_type}
                 </span>
               </div>
@@ -486,7 +486,9 @@ export default function ViewVehiclePage({ params }: VehiclePageProps) {
             </div>
 
             <div>
-              <p className="font-sm mt-2 mb-1 dark:text-gray-400">
+                              <p className="text-gray-400">Description</p>
+
+              <p className="text-sm mt-2 mb-1 dark:text-white">
                 {VehicleDetails?.description}
               </p>
             </div>
