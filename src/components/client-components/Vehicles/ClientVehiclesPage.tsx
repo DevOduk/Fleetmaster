@@ -407,7 +407,6 @@ export default function ClientVehiclesPage() {
                     <img
                       src={l?.image_url}
                       alt={''}
-                      loading="eager"
                       className="h-35 w-full rounded-xl object-cover"
                     />
                   </div>

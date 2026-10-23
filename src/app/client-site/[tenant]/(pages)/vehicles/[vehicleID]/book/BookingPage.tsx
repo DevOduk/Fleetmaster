@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useState, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
@@ -46,6 +46,7 @@ import { mpesaPollingIterval } from "@/components/company-profile/CompanySubscri
 import { createNewBooking } from "@/app/actions/bookings";
 import Image from "next/image";
 import { userVerified } from "@/utils/clients/checkverification";
+import { useRouter } from "next/router";
 
 dayjs.extend(isBetween);
 
@@ -484,6 +485,11 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
       document.body.appendChild(script);
     }
   }, []);
+  const hostname = typeof window !== 'undefined' ? window.location.host : '';
+
+  const whatsappText = `
+  Hello, I want to book the vehicle ${VehicleDetails.make} ${VehicleDetails.model} of ID \#${vehicleID} from ${startDayString} to ${endDayString}, ${rentalTimeString} (${totalDays} Days). \nLink: http://${hostname}/vehicles/${VehicleDetails.id}?start=${startDayString}&end=${endDayString}
+  `;
 
   if (!decodedData || vehicleID != decodedData?.vehicleID) {
     showToast(
@@ -671,17 +677,17 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
 
             <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="mb-2 block text-md font-medium text-gray-700 dark:text-gray-300">
                   1. Select Pickup Type & Fleet Handover
                 </label>
-                <FormControl component="fieldset" className="w-full">
+                <FormControl component="fieldset" className="mt-2 w-full">
                   <RadioGroup
                     value={pickupOption}
                     onChange={(e) => setPickupOption(e.target.value)}
                     className="space-y-2"
                   >
                     <div
-                      className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === VehicleDetails?.location?.title || "" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
+                      className={`flex items-center mt-2 justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === VehicleDetails?.location?.title || "" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
                     >
                       <FormControlLabel
                         value={VehicleDetails?.location?.title || ""}
@@ -698,18 +704,18 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                       </span>
                     </div>
                     <div
-                      className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === "Nairobi" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
+                      className={`flex items-center justify-between rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${pickupOption === "Door Delivery" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
                     >
                       <FormControlLabel
-                        value="Nairobi"
+                        value="Door Delivery"
                         control={<Radio size="small" color="primary" />}
                         label={
                           <span className="text-sm dark:text-gray-200">
-                            Door Delivery within Nairobib (Work, Home, Office)
+                            Door Delivery within proximity (Work, Home, Office)
                           </span>
                         }
                       />
-                      <span className="text-xs font-semibold text-blue-500">
+                      <span className="shrink-0 text-xs font-semibold text-blue-500">
                         + Ksh 1,000
                       </span>
                     </div>
@@ -725,7 +731,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                           </span>
                         }
                       />
-                      <span className="text-xs font-semibold text-blue-500">
+                      <span className="shrink-0 text-xs font-semibold text-blue-500">
                         + Ksh 1,500
                       </span>
                     </div>
@@ -741,7 +747,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                           </span>
                         }
                       />
-                      <span className="text-xs font-semibold text-blue-500">
+                      <span className="shrink-0 text-xs font-semibold text-blue-500">
                         + Ksh 1,500
                       </span>
                     </div>
@@ -757,7 +763,7 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                           </span>
                         }
                       />
-                      <span className="text-xs font-semibold text-blue-500">
+                      <span className="shrink-0 text-xs font-semibold text-blue-500">
                         + Ksh 2,000
                       </span>
                     </div>
@@ -766,15 +772,14 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
               </div>
 
               <div className="border-t border-gray-200 pt-2 dark:border-gray-800">
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="mb-2 block text-md font-medium text-gray-700 dark:text-gray-300">
                   2. Drop-off Return Coordinates
                 </label>
                 <FormControl component="fieldset" className="w-full">
                   <RadioGroup
                     value={dropoffOption}
                     onChange={(e) => setDropoffOption(e.target.value)}
-                    row
-                    className="gap-4"
+                    className="mt-2 flex flex-col gap-4 md:flex-row"
                   >
                     <div
                       className={`flex flex-1 items-center rounded-lg border bg-white px-3 py-2 dark:bg-gray-900 ${dropoffOption === "same" ? "border-brand-500 ring-brand-500 ring-1" : "border-gray-200 dark:border-gray-800"}`}
@@ -1312,7 +1317,8 @@ const BookingPage = ({ vehicleID }: { vehicleID: string; }) => {
                 </Link>
                 <Link
                   className="w-full"
-                  href={`https://wa.me/254768927617?text=I%20am%20interested%20in%20booking%20the%20${VehicleDetails.make}%20${VehicleDetails.model}`}
+                  target="_blank"
+                  href={`https://wa.me/254768927617?text=${encodeURIComponent(whatsappText)}`}
                 >
                   <Button className="w-full" size="sm" variant="success">
                     <SmsOutlinedIcon fontSize="small" className="me-1" />{" "}
